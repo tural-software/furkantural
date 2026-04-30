@@ -2,4 +2,10 @@
   <Folder Name="/Solution Items/">
     <File Path="License" />
   </Folder>
+  <Folder Name="/Core/" />
+  <Folder Name="/Application/" />
+  <Folder Name="/Business/" />
+  <Folder Name="/Infrastructure/" />
+  <Folder Name="/Presentation/" />
+  <Folder Name="/Web/" />
 </Solution>
