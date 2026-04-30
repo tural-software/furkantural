@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <!-- Global target framework -->
+    <TargetFramework>net10.0</TargetFramework>
+
+    <!-- Metadata -->
+    <Company>Tural Yazılım</Company>
+    <Authors>Furkan Tural</Authors>
+    <Copyright>© 2026 Furkan Tural</Copyright>
+
+    <!-- Shared settings -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+</Project>

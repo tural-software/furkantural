@@ -1,0 +1,12 @@
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\bin\Debug\net10.0\FurkanTural_Domain.deps.json
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\bin\Debug\net10.0\FurkanTural_Domain.dll
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\bin\Debug\net10.0\FurkanTural_Domain.pdb
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\obj\Debug\net10.0\FurkanTural_Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\obj\Debug\net10.0\FurkanTural_Domain.AssemblyInfoInputs.cache
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\obj\Debug\net10.0\FurkanTural_Domain.AssemblyInfo.cs
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\obj\Debug\net10.0\FurkanTural_Domain.csproj.CoreCompileInputs.cache
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\obj\Debug\net10.0\FurkanTural_Domain.sourcelink.json
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\obj\Debug\net10.0\FurkanTural_Domain.dll
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\obj\Debug\net10.0\refint\FurkanTural_Domain.dll
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\obj\Debug\net10.0\FurkanTural_Domain.pdb
+D:\Tural Software\Furkan Tural\Core\FurkanTural_Domain\obj\Debug\net10.0\ref\FurkanTural_Domain.dll

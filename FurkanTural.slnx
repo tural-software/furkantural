@@ -2,7 +2,9 @@
   <Folder Name="/Solution Items/">
     <File Path="License" />
   </Folder>
-  <Folder Name="/Core/" />
+  <Folder Name="/Core/">
+    <Project Path="Core/FurkanTural_Domain/FurkanTural_Domain.csproj" />
+  </Folder>
   <Folder Name="/Application/" />
   <Folder Name="/Business/" />
   <Folder Name="/Infrastructure/" />
