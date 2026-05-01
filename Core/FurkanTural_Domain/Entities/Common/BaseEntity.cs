@@ -1,4 +1,4 @@
-using FurkanTural_Domain.Interfaces.Common;
+using FurkanTural_Domain.Abstract;
 
 namespace FurkanTural_Domain.Entities.Common;
 

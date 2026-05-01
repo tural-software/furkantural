@@ -1,4 +1,4 @@
-namespace FurkanTural_Domain.Interfaces.Common;
+namespace FurkanTural_Domain.Abstract;
 
 public interface IAuditable : IInsertable
 {
