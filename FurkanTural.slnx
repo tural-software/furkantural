@@ -5,7 +5,9 @@
   <Folder Name="/Core/">
     <Project Path="Core/FurkanTural_Domain/FurkanTural_Domain.csproj" />
   </Folder>
-  <Folder Name="/Application/" />
+  <Folder Name="/Signature/">
+    <Project Path="Signature/FurkanTural_Application/FurkanTural_Application.csproj" />
+  </Folder>
   <Folder Name="/Business/" />
   <Folder Name="/Infrastructure/" />
   <Folder Name="/Presentation/" />

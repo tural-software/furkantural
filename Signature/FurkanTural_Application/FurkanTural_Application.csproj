@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Metadata -->
+  <PropertyGroup>
+    <Product>FurkanTural.Application</Product>
+    <Description>Signature application abstractions...</Description>
+  </PropertyGroup>
+
+  <!-- Assembly information -->
+  <PropertyGroup>
+    <AssemblyTitle>FurkanTural.Application</AssemblyTitle>
+    <AssemblyDescription>A signature application library for Furkan Tural's projects.</AssemblyDescription>
+  </PropertyGroup>
+
+  <!-- Versioning -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <!-- Project References -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\FurkanTural_Domain\FurkanTural_Domain.csproj" />
+  </ItemGroup>
+</Project>
