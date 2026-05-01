@@ -1,0 +1,145 @@
+# ============================================================
+#  .NET / C# — Build Outputs
+# ============================================================
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# MSBuild
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Publish output
+**/publish/
+PublishProfiles/
+*.pubxml
+*.pubxml.user
+
+# ============================================================
+#  ASP.NET Core — Web API & MVC
+# ============================================================
+# User secrets & sensitive config (never commit)
+**/appsettings.Development.json
+**/appsettings.Staging.json
+**/appsettings.Production.json
+**/appsettings.Local.json
+**/secrets.json
+
+# Static / compiled assets (front-end build output inside wwwroot)
+**/wwwroot/dist/
+**/wwwroot/lib/
+**/wwwroot/css/bundle*
+**/wwwroot/js/bundle*
+
+# Razor precompiled views
+*.PrecompiledViews.dll
+
+# ============================================================
+#  Entity Framework Core / Database
+# ============================================================
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+*.ndf
+
+# EF Core Migrations (keep source, ignore compiled output)
+# Uncomment below ONLY if you want to exclude all migrations:
+# **/Migrations/
+
+# ============================================================
+#  Environment & Secrets
+# ============================================================
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+*.pem
+*.cer
+
+# Docker secrets / override
+docker-compose.override.yml
+
+# ============================================================
+#  OS & Editor Artifacts
+# ============================================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# ============================================================
+#  Test & Coverage
+# ============================================================
+TestResults/
+coverage/
+*.coveragexml
+*.coverage
+*.cobertura.xml
+lcov.info
+
+# ============================================================
+#  Node / Front-End (if added later)
+# ============================================================
+node_modules/
+npm-debug.log*
+yarn-error.log
+.pnp/
+.pnp.js
+
+# ============================================================
+#  Miscellaneous
+# ============================================================
+*.bak
+*.tmp
+*.temp
+*.orig
+*.patch
+*.diff
+*.log
+
+# ============================================================
+#  AI / Code Generation
+# ============================================================
+.ai/
+.claude/
+.gemini/
