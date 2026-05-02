@@ -1,0 +1,80 @@
+using FurkanTural_Application.DTOs.Education;
+using FurkanTural_Application.Services.Abstract;
+using FurkanTural_API.Controllers.Base;
+using FurkanTural_API.Models.Education;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Asp.Versioning;
+
+namespace FurkanTural_API.Controllers;
+
+[ApiVersion("1.0")]
+public class EducationController : BaseApiController
+{
+    private readonly IEducationService _educationService;
+
+    public EducationController(IEducationService educationService)
+    {
+        _educationService = educationService;
+    }
+
+    /// <summary>
+    /// Eğitim bilgisini ID ile getir
+    /// </summary>
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _educationService.GetByIdAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Tüm eğitim bilgilerini listele
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        => ToActionResult(await _educationService.GetAllAsync(cancellationToken));
+
+    /// <summary>
+    /// Eğitim bilgilerini sayfalı listele
+    /// </summary>
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+        => ToActionResult(await _educationService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
+
+    /// <summary>
+    /// Yeni eğitim bilgisi ekle
+    /// </summary>
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> Create([FromBody] CreateEducationRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _educationService.CreateAsync(new CreateEducationDto
+        {
+            Institution = request.Institution,
+            Degree = request.Degree,
+            FieldOfStudy = request.FieldOfStudy,
+            StartDate = request.StartDate,
+            EndDate = request.EndDate
+        }, cancellationToken));
+
+    /// <summary>
+    /// Eğitim bilgisini güncelle
+    /// </summary>
+    [HttpPut]
+    [Authorize]
+    public async Task<IActionResult> Update([FromBody] UpdateEducationRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _educationService.UpdateAsync(new UpdateEducationDto
+        {
+            Id = request.Id,
+            Institution = request.Institution,
+            Degree = request.Degree,
+            FieldOfStudy = request.FieldOfStudy,
+            StartDate = request.StartDate,
+            EndDate = request.EndDate
+        }, cancellationToken));
+
+    /// <summary>
+    /// Eğitim bilgisini sil
+    /// </summary>
+    [HttpDelete("{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _educationService.DeleteAsync(id, cancellationToken));
+}
