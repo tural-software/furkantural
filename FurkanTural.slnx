@@ -8,7 +8,9 @@
   <Folder Name="/Signature/">
     <Project Path="Signature/FurkanTural_Application/FurkanTural_Application.csproj" />
   </Folder>
-  <Folder Name="/Business/" />
+  <Folder Name="/Business/">
+    <Project Path="Business/FurkanTural_Business/FurkanTural_Business.csproj" />
+  </Folder>
   <Folder Name="/Infrastructure/">
     <Project Path="Infrastructure/FurkanTural_Persistence/FurkanTural_Persistence.csproj" />
   </Folder>
