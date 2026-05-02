@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Metadata -->
+  <PropertyGroup>
+    <Product>FurkanTural.Business</Product>
+    <Description>Business logic for Furkan Tural's projects.</Description>
+  </PropertyGroup>
+
+  <!-- Assembly information -->
+  <PropertyGroup>
+    <AssemblyTitle>FurkanTural.Business</AssemblyTitle>
+    <AssemblyDescription>Business logic for Furkan Tural's projects.</AssemblyDescription>
+  </PropertyGroup>
+
+  <!-- Versioning -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <!-- NuGet References -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+  </ItemGroup>
+
+  <!-- Project References -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\FurkanTural_Domain\FurkanTural_Domain.csproj" />
+    <ProjectReference Include="..\..\Signature\FurkanTural_Application\FurkanTural_Application.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\FurkanTural_Persistence\FurkanTural_Persistence.csproj" />
+  </ItemGroup>
+</Project>
