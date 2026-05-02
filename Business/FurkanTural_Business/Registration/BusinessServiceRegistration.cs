@@ -18,6 +18,7 @@ public static class BusinessServiceRegistration
         services.AddScoped<ISubscriberService, SubscriberService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IEncryptionService, EncryptionService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }
