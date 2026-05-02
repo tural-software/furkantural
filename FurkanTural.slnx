@@ -9,7 +9,9 @@
     <Project Path="Signature/FurkanTural_Application/FurkanTural_Application.csproj" />
   </Folder>
   <Folder Name="/Business/" />
-  <Folder Name="/Infrastructure/" />
+  <Folder Name="/Infrastructure/">
+    <Project Path="Infrastructure/FurkanTural_Persistence/FurkanTural_Persistence.csproj" />
+  </Folder>
   <Folder Name="/Presentation/" />
   <Folder Name="/Web/" />
 </Solution>
