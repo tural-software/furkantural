@@ -1,0 +1,32 @@
+using FurkanTural_Application.DTOs.BlogImage;
+using FurkanTural_Domain.Entities;
+
+namespace FurkanTural_Business.Mappers;
+
+public static class BlogImageMapper
+{
+    public static BlogImageDto ToDto(this BlogImage entity) => new()
+    {
+        Id = entity.Id,
+        Url = entity.Url,
+        AltText = entity.AltText,
+        IsCover = entity.IsCover,
+        BlogId = entity.BlogId
+    };
+
+    public static BlogImage ToEntity(this CreateBlogImageDto dto) => new()
+    {
+        Url = dto.Url,
+        AltText = dto.AltText,
+        IsCover = dto.IsCover,
+        BlogId = dto.BlogId
+    };
+
+    public static void UpdateEntity(this BlogImage entity, UpdateBlogImageDto dto)
+    {
+        entity.Url = dto.Url;
+        entity.AltText = dto.AltText;
+        entity.IsCover = dto.IsCover;
+        entity.BlogId = dto.BlogId;
+    }
+}
