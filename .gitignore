@@ -8,6 +8,7 @@
 [Ll]ogs/
 !**/DTOs/Log/
 !**/DTOs/Logs/
+.[Dd]ocs/
 
 # NuGet
 *.nupkg
