@@ -15,5 +15,7 @@
     <Project Path="Infrastructure/FurkanTural_Persistence/FurkanTural_Persistence.csproj" />
   </Folder>
   <Folder Name="/Presentation/" />
-  <Folder Name="/Web/" />
+  <Folder Name="/Web/">
+    <Project Path="Web/FurkanTural_API/FurkanTural_API.csproj" />
+  </Folder>
 </Solution>

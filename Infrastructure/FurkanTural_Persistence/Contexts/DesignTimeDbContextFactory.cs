@@ -11,7 +11,7 @@ internal sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<F
     {
         var options = new DbContextOptionsBuilder<FurkanTuralDbContext>()
             .UseSqlServer(
-                "Server=localhost;Database=FurkanTural_Dev;User ID=furkan.tural;Password=^m88*Q;TrustServerCertificate=True;",
+                "Server = localhost; Database = FurkanTural_Dev; User ID = furkan.tural; Password = ^m88*Q; Trusted_Connection = True; TrustServerCertificate=True;",
                 sql => sql.MigrationsAssembly(typeof(FurkanTuralDbContext).Assembly.FullName))
             .Options;
 
