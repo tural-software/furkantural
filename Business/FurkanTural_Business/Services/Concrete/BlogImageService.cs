@@ -6,14 +6,9 @@ using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class BlogImageService : IBlogImageService
+public class BlogImageService(IUnitOfWork unitOfWork) : IBlogImageService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public BlogImageService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<BlogImageDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {

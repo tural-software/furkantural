@@ -6,14 +6,9 @@ using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class SkillService : ISkillService
+public class SkillService(IUnitOfWork unitOfWork) : ISkillService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public SkillService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<SkillDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {

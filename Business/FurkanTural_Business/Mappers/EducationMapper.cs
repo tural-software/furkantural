@@ -1,5 +1,5 @@
-using FurkanTural_Application.DTOs.Education;
 using FurkanTural_Domain.Entities;
+using FurkanTural_Application.DTOs.Education;
 
 namespace FurkanTural_Business.Mappers;
 

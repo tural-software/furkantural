@@ -1,5 +1,5 @@
-using FurkanTural_Application.DTOs.Log;
 using FurkanTural_Domain.Entities;
+using FurkanTural_Application.DTOs.Log;
 
 namespace FurkanTural_Business.Mappers;
 

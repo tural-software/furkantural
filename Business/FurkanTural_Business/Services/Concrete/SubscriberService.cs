@@ -6,14 +6,9 @@ using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class SubscriberService : ISubscriberService
+public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public SubscriberService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<SubscriberDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {

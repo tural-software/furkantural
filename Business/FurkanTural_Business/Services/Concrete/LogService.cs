@@ -6,14 +6,9 @@ using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class LogService : ILogService
+public class LogService(IUnitOfWork unitOfWork) : ILogService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public LogService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<LogDto>> CreateAsync(CreateLogDto dto, CancellationToken cancellationToken = default)
     {

@@ -7,19 +7,10 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public partial class EncryptionService : IEncryptionService
+public partial class EncryptionService(IConfiguration configuration) : IEncryptionService
 {
-    private readonly byte[] _key;
-    private readonly byte[] _iv;
-
-    public EncryptionService(IConfiguration configuration)
-    {
-        var keyString = configuration["EncryptionConfiguration:Key"];
-        var ivString = configuration["EncryptionConfiguration:IV"];
-
-        _key = Encoding.UTF8.GetBytes(keyString ?? "E546C8DF278CD5931069B522E695D4F2");
-        _iv = Encoding.UTF8.GetBytes(ivString ?? "A2C46DD81522E695");
-    }
+    private readonly byte[] _key = Encoding.UTF8.GetBytes(configuration["EncryptionConfiguration:Key"] ?? "E546C8DF278CD5931069B522E695D4F2");
+    private readonly byte[] _iv = Encoding.UTF8.GetBytes(configuration["EncryptionConfiguration:IV"] ?? "A2C46DD81522E695");
 
     public Result<string> Encrypt(string value)
     {

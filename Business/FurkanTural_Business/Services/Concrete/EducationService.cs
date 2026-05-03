@@ -6,14 +6,9 @@ using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class EducationService : IEducationService
+public class EducationService(IUnitOfWork unitOfWork) : IEducationService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public EducationService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<EducationDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {

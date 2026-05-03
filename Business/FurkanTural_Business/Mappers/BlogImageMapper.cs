@@ -1,5 +1,5 @@
-using FurkanTural_Application.DTOs.BlogImage;
 using FurkanTural_Domain.Entities;
+using FurkanTural_Application.DTOs.BlogImage;
 
 namespace FurkanTural_Business.Mappers;
 

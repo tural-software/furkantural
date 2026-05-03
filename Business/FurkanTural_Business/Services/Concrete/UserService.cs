@@ -6,16 +6,10 @@ using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class UserService : IUserService
+public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionService) : IUserService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IEncryptionService _encryptionService;
-
-    public UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionService)
-    {
-        _unitOfWork = unitOfWork;
-        _encryptionService = encryptionService;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IEncryptionService _encryptionService = encryptionService;
 
     public async Task<Result<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {

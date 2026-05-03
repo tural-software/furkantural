@@ -6,14 +6,9 @@ using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class MusicImageService : IMusicImageService
+public class MusicImageService(IUnitOfWork unitOfWork) : IMusicImageService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public MusicImageService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<MusicImageDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {

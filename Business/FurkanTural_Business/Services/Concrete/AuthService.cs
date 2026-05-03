@@ -10,18 +10,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class AuthService : IAuthService
+public class AuthService(IUnitOfWork unitOfWork, IEncryptionService encryptionService, IConfiguration configuration) : IAuthService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IEncryptionService _encryptionService;
-    private readonly IConfiguration _configuration;
-
-    public AuthService(IUnitOfWork unitOfWork, IEncryptionService encryptionService, IConfiguration configuration)
-    {
-        _unitOfWork = unitOfWork;
-        _encryptionService = encryptionService;
-        _configuration = configuration;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IEncryptionService _encryptionService = encryptionService;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task<Result<LoginResultDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default)
     {

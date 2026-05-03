@@ -6,14 +6,9 @@ using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class BlogService : IBlogService
+public class BlogService(IUnitOfWork unitOfWork) : IBlogService
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public BlogService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<BlogDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -27,6 +22,12 @@ public class BlogService : IBlogService
     public async Task<Result<IEnumerable<BlogDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _unitOfWork.Blogs.GetAllAsync(cancellationToken);
+        return Result<IEnumerable<BlogDto>>.Ok(entities.Select(e => e.ToDto()));
+    }
+
+    public async Task<Result<IEnumerable<BlogDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _unitOfWork.Blogs.GetAllForAdminAsync(cancellationToken);
         return Result<IEnumerable<BlogDto>>.Ok(entities.Select(e => e.ToDto()));
     }
 
