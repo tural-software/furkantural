@@ -1,13 +1,11 @@
-using FurkanTural_Domain.Entities;
 using FurkanTural_Domain.Entities.Common;
+using FurkanTural_Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace FurkanTural_Persistence.Contexts;
 
-public class FurkanTuralDbContext : DbContext
+public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options) : DbContext(options)
 {
-    public FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options) : base(options) { }
-
     public DbSet<Blog> Blogs => Set<Blog>();
     public DbSet<BlogImage> BlogImages => Set<BlogImage>();
     public DbSet<Education> Educations => Set<Education>();

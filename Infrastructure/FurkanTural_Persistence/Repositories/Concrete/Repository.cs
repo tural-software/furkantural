@@ -1,21 +1,14 @@
-using System.Linq.Expressions;
-using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Domain.Entities.Common;
+using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Persistence.Contexts;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
-public class Repository<T> : IRepository<T> where T : BaseEntity
+public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where T : BaseEntity
 {
-    private readonly FurkanTuralDbContext _context;
-    private readonly DbSet<T> _dbSet;
-
-    public Repository(FurkanTuralDbContext context)
-    {
-        _context = context;
-        _dbSet = context.Set<T>();
-    }
+    protected readonly DbSet<T> _dbSet = context.Set<T>();
 
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         => await _dbSet.FindAsync([id], cancellationToken);

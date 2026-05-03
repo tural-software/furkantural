@@ -6,16 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
-public class LogRepository : ILogRepository
+public class LogRepository(FurkanTuralDbContext context) : ILogRepository
 {
-    private readonly FurkanTuralDbContext _context;
-    private readonly DbSet<Log> _dbSet;
-
-    public LogRepository(FurkanTuralDbContext context)
-    {
-        _context = context;
-        _dbSet = context.Set<Log>();
-    }
+    private readonly DbSet<Log> _dbSet = context.Set<Log>();
 
     public async Task AddAsync(Log log, CancellationToken cancellationToken = default)
         => await _dbSet.AddAsync(log, cancellationToken);
