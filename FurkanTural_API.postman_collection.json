@@ -1,0 +1,734 @@
+{
+  "info": {
+    "name": "FurkanTural API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "FurkanTural API v1 - Tüm uç noktalar"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Kullanıcı girişi yap ve JWT token al"
+          }
+        },
+        {
+          "name": "Register (İlk Kurulum)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "İlk kurulum: Sistemde hiç kullanıcı yokken yönetici hesabı oluştur. Kullanıcı mevcut olduğunda bu uç çalışmaz."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Blog",
+      "item": [
+        {
+          "name": "Get By Id",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/blog/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blog", "1"] },
+            "description": "Blog yazısını ID ile getir"
+          }
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/blog", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blog"] },
+            "description": "Tüm blog yazılarını listele"
+          }
+        },
+        {
+          "name": "Get Paged",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/blog/paged?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "blog", "paged"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Blog yazılarını sayfalı listele"
+          }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/blog", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blog"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Blog Başlığı\",\n  \"content\": \"Blog içeriği burada...\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yeni blog yazısı oluştur [Authorize]"
+          }
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/blog", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blog"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"title\": \"Güncellenmiş Başlık\",\n  \"content\": \"Güncellenmiş içerik...\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Blog yazısını güncelle [Authorize]"
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/blog/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blog", "1"] },
+            "description": "Blog yazısını sil [Authorize]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "BlogImage",
+      "item": [
+        {
+          "name": "Get By Id",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/blogimage/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blogimage", "1"] },
+            "description": "Blog görselini ID ile getir"
+          }
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/blogimage", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blogimage"] },
+            "description": "Tüm blog görsellerini listele"
+          }
+        },
+        {
+          "name": "Get Paged",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/blogimage/paged?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "blogimage", "paged"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Blog görsellerini sayfalı listele"
+          }
+        },
+        {
+          "name": "Get By Blog Id",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/blogimage/by-blog/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blogimage", "by-blog", "1"] },
+            "description": "Belirli bir bloğa ait görselleri getir"
+          }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/blogimage", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blogimage"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imageData\": \"<base64-encoded-bytes>\",\n  \"imageName\": \"photo.jpg\",\n  \"altText\": \"Açıklama metni\",\n  \"isCover\": true,\n  \"blogId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Blog görseli yükle ve kaydet [Authorize]. imageData: base64 kodlanmış byte dizisi."
+          }
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/blogimage", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blogimage"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"imageData\": null,\n  \"imageName\": null,\n  \"altText\": \"Güncellenmiş açıklama\",\n  \"isCover\": false,\n  \"blogId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Blog görselini güncelle [Authorize]. imageData güncellenmeyecekse null bırakın."
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/blogimage/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "blogimage", "1"] },
+            "description": "Blog görselini sil [Authorize]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Education",
+      "item": [
+        {
+          "name": "Get By Id",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/education/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "education", "1"] },
+            "description": "Eğitim bilgisini ID ile getir"
+          }
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/education", "host": ["{{baseUrl}}"], "path": ["api", "v1", "education"] },
+            "description": "Tüm eğitim bilgilerini listele"
+          }
+        },
+        {
+          "name": "Get Paged",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/education/paged?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "education", "paged"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Eğitim bilgilerini sayfalı listele"
+          }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/education", "host": ["{{baseUrl}}"], "path": ["api", "v1", "education"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institution\": \"İstanbul Teknik Üniversitesi\",\n  \"degree\": \"Lisans\",\n  \"fieldOfStudy\": \"Bilgisayar Mühendisliği\",\n  \"startDate\": \"2018-09-01T00:00:00Z\",\n  \"endDate\": \"2022-06-30T00:00:00Z\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yeni eğitim bilgisi ekle [Authorize]"
+          }
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/education", "host": ["{{baseUrl}}"], "path": ["api", "v1", "education"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"institution\": \"İstanbul Teknik Üniversitesi\",\n  \"degree\": \"Yüksek Lisans\",\n  \"fieldOfStudy\": \"Bilgisayar Mühendisliği\",\n  \"startDate\": \"2022-09-01T00:00:00Z\",\n  \"endDate\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Eğitim bilgisini güncelle [Authorize]"
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/education/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "education", "1"] },
+            "description": "Eğitim bilgisini sil [Authorize]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Log",
+      "description": "Tüm uçlar [Authorize] gerektirir",
+      "item": [
+        {
+          "name": "Get By Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/log/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "log", "1"] },
+            "description": "Sistem logunu ID ile getir [Authorize]"
+          }
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/log", "host": ["{{baseUrl}}"], "path": ["api", "v1", "log"] },
+            "description": "Tüm sistem loglarını listele [Authorize]"
+          }
+        },
+        {
+          "name": "Get Paged",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/log/paged?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "log", "paged"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Sistem loglarını sayfalı listele [Authorize]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Music",
+      "item": [
+        {
+          "name": "Get By Id",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/music/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "music", "1"] },
+            "description": "Müziği ID ile getir"
+          }
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/music", "host": ["{{baseUrl}}"], "path": ["api", "v1", "music"] },
+            "description": "Tüm müzikleri listele"
+          }
+        },
+        {
+          "name": "Get Paged",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/music/paged?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "music", "paged"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Müzikleri sayfalı listele"
+          }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/music", "host": ["{{baseUrl}}"], "path": ["api", "v1", "music"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Şarkı Adı\",\n  \"artist\": \"Sanatçı\",\n  \"productor\": \"Prodüktör\",\n  \"album\": \"Albüm\",\n  \"genre\": \"Tür\",\n  \"lyrics\": \"Sözler...\",\n  \"duration\": \"00:03:45\",\n  \"releaseDate\": \"2024-01-15T00:00:00Z\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yeni müzik ekle [Authorize]"
+          }
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/music", "host": ["{{baseUrl}}"], "path": ["api", "v1", "music"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"name\": \"Güncellenmiş Şarkı Adı\",\n  \"artist\": \"Sanatçı\",\n  \"productor\": \"Prodüktör\",\n  \"album\": \"Yeni Albüm\",\n  \"genre\": \"Tür\",\n  \"lyrics\": \"Güncellenmiş sözler...\",\n  \"duration\": \"00:04:10\",\n  \"releaseDate\": \"2024-06-01T00:00:00Z\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Müziği güncelle [Authorize]"
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/music/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "music", "1"] },
+            "description": "Müziği sil [Authorize]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MusicImage",
+      "item": [
+        {
+          "name": "Get By Id",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/musicimage/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "musicimage", "1"] },
+            "description": "Müzik görselini ID ile getir"
+          }
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/musicimage", "host": ["{{baseUrl}}"], "path": ["api", "v1", "musicimage"] },
+            "description": "Tüm müzik görsellerini listele"
+          }
+        },
+        {
+          "name": "Get Paged",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/musicimage/paged?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "musicimage", "paged"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Müzik görsellerini sayfalı listele"
+          }
+        },
+        {
+          "name": "Get By Music Id",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/musicimage/by-music/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "musicimage", "by-music", "1"] },
+            "description": "Belirli bir müziğe ait görselleri getir"
+          }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/musicimage", "host": ["{{baseUrl}}"], "path": ["api", "v1", "musicimage"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imageData\": \"<base64-encoded-bytes>\",\n  \"imageName\": \"cover.png\",\n  \"musicId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Müzik görseli yükle ve kaydet [Authorize]. imageData: base64 kodlanmış byte dizisi."
+          }
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/musicimage", "host": ["{{baseUrl}}"], "path": ["api", "v1", "musicimage"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"imageData\": null,\n  \"imageName\": null,\n  \"musicId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Müzik görselini güncelle [Authorize]. imageData güncellenmeyecekse null bırakın."
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/musicimage/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "musicimage", "1"] },
+            "description": "Müzik görselini sil [Authorize]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Skill",
+      "item": [
+        {
+          "name": "Get By Id",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/skill/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "skill", "1"] },
+            "description": "Yetkinliği ID ile getir"
+          }
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/skill", "host": ["{{baseUrl}}"], "path": ["api", "v1", "skill"] },
+            "description": "Tüm yetkinlikleri listele"
+          }
+        },
+        {
+          "name": "Get Paged",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/skill/paged?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "skill", "paged"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Yetkinlikleri sayfalı listele"
+          }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/skill", "host": ["{{baseUrl}}"], "path": ["api", "v1", "skill"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"C#\",\n  \"proficiency\": 90\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yeni yetkinlik ekle [Authorize]"
+          }
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/skill", "host": ["{{baseUrl}}"], "path": ["api", "v1", "skill"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"name\": \"C#\",\n  \"proficiency\": 95\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yetkinliği güncelle [Authorize]"
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/skill/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "skill", "1"] },
+            "description": "Yetkinliği sil [Authorize]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subscriber",
+      "item": [
+        {
+          "name": "Get By Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/subscriber/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "subscriber", "1"] },
+            "description": "Aboneyi ID ile getir [Authorize]"
+          }
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/subscriber", "host": ["{{baseUrl}}"], "path": ["api", "v1", "subscriber"] },
+            "description": "Tüm aboneleri listele [Authorize]"
+          }
+        },
+        {
+          "name": "Get Paged",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/subscriber/paged?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "subscriber", "paged"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Aboneleri sayfalı listele [Authorize]"
+          }
+        },
+        {
+          "name": "Subscribe",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/subscriber/subscribe", "host": ["{{baseUrl}}"], "path": ["api", "v1", "subscriber", "subscribe"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ornek@email.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Bültene abone ol"
+          }
+        },
+        {
+          "name": "Unsubscribe",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/subscriber/unsubscribe", "host": ["{{baseUrl}}"], "path": ["api", "v1", "subscriber", "unsubscribe"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ornek@email.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Bülten aboneliğini iptal et"
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/subscriber/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "subscriber", "1"] },
+            "description": "Aboneyi sistemden sil [Authorize]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "description": "Tüm uçlar [Authorize] gerektirir",
+      "item": [
+        {
+          "name": "Get By Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/user/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "user", "1"] },
+            "description": "Kullanıcıyı ID ile getir [Authorize]"
+          }
+        },
+        {
+          "name": "Get All",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/user", "host": ["{{baseUrl}}"], "path": ["api", "v1", "user"] },
+            "description": "Tüm kullanıcıları listele [Authorize]"
+          }
+        },
+        {
+          "name": "Get Paged",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/user/paged?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "user", "paged"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Kullanıcıları sayfalı listele [Authorize]"
+          }
+        },
+        {
+          "name": "Get By Username",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/user/by-username/admin", "host": ["{{baseUrl}}"], "path": ["api", "v1", "user", "by-username", "admin"] },
+            "description": "Kullanıcı adına göre kullanıcıyı getir [Authorize]"
+          }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/user", "host": ["{{baseUrl}}"], "path": ["api", "v1", "user"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"yenikullanici\",\n  \"password\": \"Sifre123!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yeni kullanıcı oluştur [Authorize]"
+          }
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/user", "host": ["{{baseUrl}}"], "path": ["api", "v1", "user"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"username\": \"guncelkullanici\",\n  \"password\": \"YeniSifre123!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Kullanıcı bilgilerini güncelle [Authorize]"
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/user/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "user", "1"] },
+            "description": "Kullanıcıyı sil [Authorize]"
+          }
+        }
+      ]
+    }
+  ]
+}
