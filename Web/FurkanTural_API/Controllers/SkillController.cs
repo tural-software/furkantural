@@ -9,15 +9,10 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class SkillController : BaseApiController
+public class SkillController(ISkillService skillService) : BaseApiController
 {
-    private readonly ISkillService _skillService;
-
-    public SkillController(ISkillService skillService)
-    {
-        _skillService = skillService;
-    }
-
+    private readonly ISkillService _skillService = skillService;
+    
     /// <summary>
     /// Yetkinliği ID ile getir
     /// </summary>

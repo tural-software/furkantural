@@ -9,14 +9,9 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class BlogController : BaseApiController
+public class BlogController(IBlogService blogService) : BaseApiController
 {
-    private readonly IBlogService _blogService;
-
-    public BlogController(IBlogService blogService)
-    {
-        _blogService = blogService;
-    }
+    private readonly IBlogService _blogService = blogService;
 
     /// <summary>
     /// Blog yazısını ID ile getir
@@ -31,6 +26,14 @@ public class BlogController : BaseApiController
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetAllAsync(cancellationToken));
+
+    /// <summary>
+    /// Tüm blog yazılarını yönetici paneli için listele
+    /// </summary>
+    [HttpGet("admin")]
+    [Authorize]
+    public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
+        => ToActionResult(await _blogService.GetAllForAdminAsync(cancellationToken));
 
     /// <summary>
     /// Blog yazılarını sayfalı listele

@@ -9,14 +9,9 @@ namespace FurkanTural_API.Controllers;
 
 [Authorize]
 [ApiVersion("1.0")]
-public class LogController : BaseApiController
+public class LogController(ILogService logService) : BaseApiController
 {
-    private readonly ILogService _logService;
-
-    public LogController(ILogService logService)
-    {
-        _logService = logService;
-    }
+    private readonly ILogService _logService = logService;
 
     /// <summary>
     /// Sistem logunu ID ile getir

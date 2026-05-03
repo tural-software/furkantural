@@ -11,16 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class AuthController : BaseApiController
+public class AuthController(IAuthService authService, IUserService userService) : BaseApiController
 {
-    private readonly IAuthService _authService;
-    private readonly IUserService _userService;
-
-    public AuthController(IAuthService authService, IUserService userService)
-    {
-        _authService = authService;
-        _userService = userService;
-    }
+    private readonly IAuthService _authService = authService;
+    private readonly IUserService _userService = userService;
 
     /// <summary>
     /// Kullanıcı girişi yap ve JWT token al

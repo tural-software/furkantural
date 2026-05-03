@@ -8,14 +8,9 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class SubscriberController : BaseApiController
+public class SubscriberController(ISubscriberService subscriberService) : BaseApiController
 {
-    private readonly ISubscriberService _subscriberService;
-
-    public SubscriberController(ISubscriberService subscriberService)
-    {
-        _subscriberService = subscriberService;
-    }
+    private readonly ISubscriberService _subscriberService = subscriberService;
 
     /// <summary>
     /// Aboneyi ID ile getir

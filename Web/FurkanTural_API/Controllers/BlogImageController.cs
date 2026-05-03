@@ -10,16 +10,10 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class BlogImageController : BaseApiController
+public class BlogImageController(IBlogImageService blogImageService, IWebHostEnvironment environment) : BaseApiController
 {
-    private readonly IBlogImageService _blogImageService;
-    private readonly IWebHostEnvironment _environment;
-
-    public BlogImageController(IBlogImageService blogImageService, IWebHostEnvironment environment)
-    {
-        _blogImageService = blogImageService;
-        _environment = environment;
-    }
+    private readonly IBlogImageService _blogImageService = blogImageService;
+    private readonly IWebHostEnvironment _environment = environment;
 
     /// <summary>
     /// Blog görselini ID ile getir

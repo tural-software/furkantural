@@ -9,14 +9,9 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class MusicController : BaseApiController
+public class MusicController(IMusicService musicService) : BaseApiController
 {
-    private readonly IMusicService _musicService;
-
-    public MusicController(IMusicService musicService)
-    {
-        _musicService = musicService;
-    }
+    private readonly IMusicService _musicService = musicService;
 
     /// <summary>
     /// Müziği ID ile getir

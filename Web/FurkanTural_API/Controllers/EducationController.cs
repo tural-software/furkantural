@@ -9,14 +9,9 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class EducationController : BaseApiController
+public class EducationController(IEducationService educationService) : BaseApiController
 {
-    private readonly IEducationService _educationService;
-
-    public EducationController(IEducationService educationService)
-    {
-        _educationService = educationService;
-    }
+    private readonly IEducationService _educationService = educationService;
 
     /// <summary>
     /// Eğitim bilgisini ID ile getir

@@ -10,16 +10,10 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class MusicImageController : BaseApiController
+public class MusicImageController(IMusicImageService musicImageService, IWebHostEnvironment environment) : BaseApiController
 {
-    private readonly IMusicImageService _musicImageService;
-    private readonly IWebHostEnvironment _environment;
-
-    public MusicImageController(IMusicImageService musicImageService, IWebHostEnvironment environment)
-    {
-        _musicImageService = musicImageService;
-        _environment = environment;
-    }
+    private readonly IMusicImageService _musicImageService = musicImageService;
+    private readonly IWebHostEnvironment _environment = environment;
 
     /// <summary>
     /// Müzik görselini ID ile getir
