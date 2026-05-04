@@ -10,7 +10,7 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class BlogImageController(IBlogImageService blogImageService, IWebHostEnvironment environment) : BaseApiController
+public class BlogImageController(IBlogImageService blogImageService, IWebHostEnvironment environment) : JwtBaseController
 {
     private readonly IBlogImageService _blogImageService = blogImageService;
     private readonly IWebHostEnvironment _environment = environment;
@@ -53,7 +53,7 @@ public class BlogImageController(IBlogImageService blogImageService, IWebHostEnv
         if (request.ImageData.Length == 0)
             return BadRequest("ImageData boş olamaz.");
 
-        var userId = GetUserId();
+        var userId = SortUserId() ?? 0;
         var fileName = await ImageUploadHelper.SaveAsync(request.ImageData, request.ImageName, userId, _environment.WebRootPath);
 
         var dto = new CreateBlogImageDto
@@ -61,7 +61,8 @@ public class BlogImageController(IBlogImageService blogImageService, IWebHostEnv
             Url = fileName,
             AltText = request.AltText,
             IsCover = request.IsCover,
-            BlogId = request.BlogId
+            BlogId = request.BlogId,
+            CreatedBy = SortUserId()
         };
 
         return ToActionResult(await _blogImageService.CreateAsync(dto, cancellationToken));
@@ -81,7 +82,7 @@ public class BlogImageController(IBlogImageService blogImageService, IWebHostEnv
         string? fileName = null;
         if (request.ImageData is { Length: > 0 })
         {
-            var userId = GetUserId();
+            var userId = SortUserId() ?? 0;
             fileName = await ImageUploadHelper.SaveAsync(request.ImageData, request.ImageName ?? string.Empty, userId, _environment.WebRootPath);
         }
 
@@ -91,7 +92,8 @@ public class BlogImageController(IBlogImageService blogImageService, IWebHostEnv
             Url = fileName ?? existing.Data!.Url,
             AltText = request.AltText,
             IsCover = request.IsCover,
-            BlogId = request.BlogId
+            BlogId = request.BlogId,
+            UpdatedBy = SortUserId()
         };
 
         return ToActionResult(await _blogImageService.UpdateAsync(dto, cancellationToken));
@@ -104,11 +106,4 @@ public class BlogImageController(IBlogImageService blogImageService, IWebHostEnv
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.DeleteAsync(id, cancellationToken));
-
-    private int GetUserId()
-    {
-        var sub = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-               ?? User.FindFirst("sub")?.Value;
-        return int.TryParse(sub, out var id) ? id : 0;
-    }
 }

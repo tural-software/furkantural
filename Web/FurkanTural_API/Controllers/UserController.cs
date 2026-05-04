@@ -10,7 +10,7 @@ namespace FurkanTural_API.Controllers;
 
 [Authorize]
 [ApiVersion("1.0")]
-public class UserController : BaseApiController
+public class UserController : JwtBaseController
 {
     private readonly IUserService _userService;
 
@@ -55,7 +55,8 @@ public class UserController : BaseApiController
         => ToActionResult(await _userService.CreateAsync(new CreateUserDto
         {
             Username = request.Username,
-            Password = request.Password
+            Password = request.Password,
+            CreatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>
@@ -67,7 +68,8 @@ public class UserController : BaseApiController
         {
             Id = request.Id,
             Username = request.Username,
-            Password = request.Password
+            Password = request.Password,
+            UpdatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>

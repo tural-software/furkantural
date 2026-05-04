@@ -9,7 +9,7 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class MusicController(IMusicService musicService) : BaseApiController
+public class MusicController(IMusicService musicService) : JwtBaseController
 {
     private readonly IMusicService _musicService = musicService;
 
@@ -49,7 +49,8 @@ public class MusicController(IMusicService musicService) : BaseApiController
             Genre = request.Genre,
             Lyrics = request.Lyrics,
             Duration = request.Duration,
-            ReleaseDate = request.ReleaseDate
+            ReleaseDate = request.ReleaseDate,
+            CreatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>
@@ -68,7 +69,8 @@ public class MusicController(IMusicService musicService) : BaseApiController
             Genre = request.Genre,
             Lyrics = request.Lyrics,
             Duration = request.Duration,
-            ReleaseDate = request.ReleaseDate
+            ReleaseDate = request.ReleaseDate,
+            UpdatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>

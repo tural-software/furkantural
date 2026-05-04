@@ -9,7 +9,7 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class SkillController(ISkillService skillService) : BaseApiController
+public class SkillController(ISkillService skillService) : JwtBaseController
 {
     private readonly ISkillService _skillService = skillService;
     
@@ -43,7 +43,8 @@ public class SkillController(ISkillService skillService) : BaseApiController
         => ToActionResult(await _skillService.CreateAsync(new CreateSkillDto
         {
             Name = request.Name,
-            Proficiency = request.Proficiency
+            Proficiency = request.Proficiency,
+            CreatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>
@@ -56,7 +57,8 @@ public class SkillController(ISkillService skillService) : BaseApiController
         {
             Id = request.Id,
             Name = request.Name,
-            Proficiency = request.Proficiency
+            Proficiency = request.Proficiency,
+            UpdatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>

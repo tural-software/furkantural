@@ -9,7 +9,7 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class BlogController(IBlogService blogService) : BaseApiController
+public class BlogController(IBlogService blogService) : JwtBaseController
 {
     private readonly IBlogService _blogService = blogService;
 
@@ -51,7 +51,8 @@ public class BlogController(IBlogService blogService) : BaseApiController
         => ToActionResult(await _blogService.CreateAsync(new CreateBlogDto
         {
             Title = request.Title,
-            Content = request.Content
+            Content = request.Content,
+            CreatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>
@@ -64,7 +65,8 @@ public class BlogController(IBlogService blogService) : BaseApiController
         {
             Id = request.Id,
             Title = request.Title,
-            Content = request.Content
+            Content = request.Content,
+            UpdatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>

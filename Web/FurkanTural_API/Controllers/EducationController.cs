@@ -9,7 +9,7 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class EducationController(IEducationService educationService) : BaseApiController
+public class EducationController(IEducationService educationService) : JwtBaseController
 {
     private readonly IEducationService _educationService = educationService;
 
@@ -46,7 +46,8 @@ public class EducationController(IEducationService educationService) : BaseApiCo
             Degree = request.Degree,
             FieldOfStudy = request.FieldOfStudy,
             StartDate = request.StartDate,
-            EndDate = request.EndDate
+            EndDate = request.EndDate,
+            CreatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>
@@ -62,7 +63,8 @@ public class EducationController(IEducationService educationService) : BaseApiCo
             Degree = request.Degree,
             FieldOfStudy = request.FieldOfStudy,
             StartDate = request.StartDate,
-            EndDate = request.EndDate
+            EndDate = request.EndDate,
+            UpdatedBy = SortUserId()
         }, cancellationToken));
 
     /// <summary>

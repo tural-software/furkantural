@@ -10,7 +10,7 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class MusicImageController(IMusicImageService musicImageService, IWebHostEnvironment environment) : BaseApiController
+public class MusicImageController(IMusicImageService musicImageService, IWebHostEnvironment environment) : JwtBaseController
 {
     private readonly IMusicImageService _musicImageService = musicImageService;
     private readonly IWebHostEnvironment _environment = environment;
@@ -53,13 +53,14 @@ public class MusicImageController(IMusicImageService musicImageService, IWebHost
         if (request.ImageData.Length == 0)
             return BadRequest("ImageData boş olamaz.");
 
-        var userId = GetUserId();
+        var userId = SortUserId() ?? 0;
         var fileName = await ImageUploadHelper.SaveAsync(request.ImageData, request.ImageName, userId, _environment.WebRootPath);
 
         var dto = new CreateMusicImageDto
         {
             Url = fileName,
-            MusicId = request.MusicId
+            MusicId = request.MusicId,
+            CreatedBy = SortUserId()
         };
 
         return ToActionResult(await _musicImageService.CreateAsync(dto, cancellationToken));
@@ -79,7 +80,7 @@ public class MusicImageController(IMusicImageService musicImageService, IWebHost
         string? fileName = null;
         if (request.ImageData is { Length: > 0 })
         {
-            var userId = GetUserId();
+            var userId = SortUserId() ?? 0;
             fileName = await ImageUploadHelper.SaveAsync(request.ImageData, request.ImageName ?? string.Empty, userId, _environment.WebRootPath);
         }
 
@@ -87,7 +88,8 @@ public class MusicImageController(IMusicImageService musicImageService, IWebHost
         {
             Id = request.Id,
             Url = fileName ?? existing.Data!.Url,
-            MusicId = request.MusicId
+            MusicId = request.MusicId,
+            UpdatedBy = SortUserId()
         };
 
         return ToActionResult(await _musicImageService.UpdateAsync(dto, cancellationToken));
@@ -100,11 +102,4 @@ public class MusicImageController(IMusicImageService musicImageService, IWebHost
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.DeleteAsync(id, cancellationToken));
-
-    private int GetUserId()
-    {
-        var sub = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-               ?? User.FindFirst("sub")?.Value;
-        return int.TryParse(sub, out var id) ? id : 0;
-    }
 }
