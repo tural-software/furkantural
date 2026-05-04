@@ -8,5 +8,5 @@ namespace FurkanTural_Persistence.Repositories.Concrete;
 public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(context), IBlogRepository
 {
     public async Task<IEnumerable<Blog>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
-        => await _dbSet.AsNoTracking().ToListAsync(cancellationToken);
+        => await _dbSet.IgnoreQueryFilters().AsNoTracking().ToListAsync(cancellationToken);
 }
