@@ -6,4 +6,5 @@ public class CreateBlogImageDto
     public string? AltText { get; set; }
     public bool IsCover { get; set; }
     public int BlogId { get; set; }
+    public int? CreatedBy { get; set; }
 }

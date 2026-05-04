@@ -7,4 +7,5 @@ public class UpdateBlogImageDto
     public string? AltText { get; set; }
     public bool IsCover { get; set; }
     public int BlogId { get; set; }
+    public int? UpdatedBy { get; set; }
 }

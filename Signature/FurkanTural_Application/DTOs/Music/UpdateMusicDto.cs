@@ -11,4 +11,5 @@ public class UpdateMusicDto
     public string? Lyrics { get; set; }
     public TimeSpan? Duration { get; set; }
     public DateTime? ReleaseDate { get; set; }
+    public int? UpdatedBy { get; set; }
 }

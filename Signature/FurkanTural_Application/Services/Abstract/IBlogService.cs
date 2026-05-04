@@ -5,5 +5,5 @@ namespace FurkanTural_Application.Services.Abstract;
 
 public interface IBlogService : IService<BlogDto, CreateBlogDto, UpdateBlogDto>
 {
-    Task<Result<IEnumerable<BlogDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<AdminBlogDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
 }
