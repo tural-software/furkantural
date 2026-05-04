@@ -25,10 +25,10 @@ public class BlogService(IUnitOfWork unitOfWork) : IBlogService
         return Result<IEnumerable<BlogDto>>.Ok(entities.Select(e => e.ToDto()));
     }
 
-    public async Task<Result<IEnumerable<BlogDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<AdminBlogDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _unitOfWork.Blogs.GetAllForAdminAsync(cancellationToken);
-        return Result<IEnumerable<BlogDto>>.Ok(entities.Select(e => e.ToDto()));
+        return Result<IEnumerable<AdminBlogDto>>.Ok(entities.Select(e => e.ToAdminDto()));
     }
 
     public async Task<PagedResult<BlogDto>> GetAllPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)

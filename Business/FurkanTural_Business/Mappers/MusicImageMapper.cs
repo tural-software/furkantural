@@ -15,12 +15,14 @@ public static class MusicImageMapper
     public static MusicImage ToEntity(this CreateMusicImageDto dto) => new()
     {
         Url = dto.Url,
-        MusicId = dto.MusicId
+        MusicId = dto.MusicId,
+        CreatedBy = dto.CreatedBy
     };
 
     public static void UpdateEntity(this MusicImage entity, UpdateMusicImageDto dto)
     {
         entity.Url = dto.Url;
         entity.MusicId = dto.MusicId;
+        entity.UpdatedBy = dto.UpdatedBy;
     }
 }

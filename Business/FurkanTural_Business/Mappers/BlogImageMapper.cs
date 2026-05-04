@@ -19,7 +19,8 @@ public static class BlogImageMapper
         Url = dto.Url,
         AltText = dto.AltText,
         IsCover = dto.IsCover,
-        BlogId = dto.BlogId
+        BlogId = dto.BlogId,
+        CreatedBy = dto.CreatedBy
     };
 
     public static void UpdateEntity(this BlogImage entity, UpdateBlogImageDto dto)
@@ -28,5 +29,6 @@ public static class BlogImageMapper
         entity.AltText = dto.AltText;
         entity.IsCover = dto.IsCover;
         entity.BlogId = dto.BlogId;
+        entity.UpdatedBy = dto.UpdatedBy;
     }
 }

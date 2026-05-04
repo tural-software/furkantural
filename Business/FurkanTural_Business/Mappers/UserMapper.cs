@@ -13,7 +13,8 @@ public static class UserMapper
 
     public static User ToEntity(this CreateUserDto dto) => new()
     {
-        Username = dto.Username
+        Username = dto.Username,
         // Password is set explicitly in UserService after encryption
+        CreatedBy = dto.CreatedBy
     };
 }

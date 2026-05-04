@@ -15,12 +15,14 @@ public static class SkillMapper
     public static Skill ToEntity(this CreateSkillDto dto) => new()
     {
         Name = dto.Name,
-        Proficiency = dto.Proficiency
+        Proficiency = dto.Proficiency,
+        CreatedBy = dto.CreatedBy
     };
 
     public static void UpdateEntity(this Skill entity, UpdateSkillDto dto)
     {
         entity.Name = dto.Name;
         entity.Proficiency = dto.Proficiency;
+        entity.UpdatedBy = dto.UpdatedBy;
     }
 }

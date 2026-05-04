@@ -27,7 +27,8 @@ public static class MusicMapper
         Genre = dto.Genre,
         Lyrics = dto.Lyrics,
         Duration = dto.Duration,
-        ReleaseDate = dto.ReleaseDate
+        ReleaseDate = dto.ReleaseDate,
+        CreatedBy = dto.CreatedBy
     };
 
     public static void UpdateEntity(this Music entity, UpdateMusicDto dto)
@@ -40,5 +41,6 @@ public static class MusicMapper
         entity.Lyrics = dto.Lyrics;
         entity.Duration = dto.Duration;
         entity.ReleaseDate = dto.ReleaseDate;
+        entity.UpdatedBy = dto.UpdatedBy;
     }
 }

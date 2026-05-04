@@ -21,7 +21,8 @@ public static class EducationMapper
         Degree = dto.Degree,
         FieldOfStudy = dto.FieldOfStudy,
         StartDate = dto.StartDate,
-        EndDate = dto.EndDate
+        EndDate = dto.EndDate,
+        CreatedBy = dto.CreatedBy
     };
 
     public static void UpdateEntity(this Education entity, UpdateEducationDto dto)
@@ -31,5 +32,6 @@ public static class EducationMapper
         entity.FieldOfStudy = dto.FieldOfStudy;
         entity.StartDate = dto.StartDate;
         entity.EndDate = dto.EndDate;
+        entity.UpdatedBy = dto.UpdatedBy;
     }
 }
