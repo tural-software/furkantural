@@ -7,7 +7,7 @@ public interface IUnitOfWork
 {
     IRepository<T> GetRepository<T>() where T : BaseEntity;
 
-    IBlogRepository Blogs { get; }
+    IRepository<Blog> Blogs { get; }
     IRepository<BlogImage> BlogImages { get; }
     IRepository<Education> Educations { get; }
     IRepository<Music> Musics { get; }

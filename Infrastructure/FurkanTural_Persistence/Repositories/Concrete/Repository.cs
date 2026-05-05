@@ -13,6 +13,12 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         => await _dbSet.FindAsync([id], cancellationToken);
 
+    public async Task<T?> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+        => await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+    public async Task<IEnumerable<T>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+        => await _dbSet.IgnoreQueryFilters().AsNoTracking().ToListAsync(cancellationToken);
+
     public async Task<T?> GetAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         => await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
 
@@ -72,6 +78,15 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
         entity.IsDeleted = true;
         entity.IsActive = false;
         entity.DeletedAt = DateTime.UtcNow;
+        _dbSet.Update(entity);
+        return Task.CompletedTask;
+    }
+
+    public Task RestoreAsync(T entity, CancellationToken cancellationToken = default)
+    {
+        entity.IsDeleted = false;
+        entity.IsActive = true;
+        entity.DeletedAt = null;
         _dbSet.Update(entity);
         return Task.CompletedTask;
     }

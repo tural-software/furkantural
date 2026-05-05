@@ -11,4 +11,5 @@ public interface IWriteRepository<T> where T : BaseEntity
     Task DeleteAsync(T entity, CancellationToken cancellationToken = default);
     Task DeleteRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
     Task SoftDeleteAsync(T entity, CancellationToken cancellationToken = default);
+    Task RestoreAsync(T entity, CancellationToken cancellationToken = default);
 }

@@ -8,7 +8,8 @@ namespace FurkanTural_Persistence.Repositories.Concrete;
 public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
 {
     private readonly Dictionary<Type, object> _repos = new();
-    private IBlogRepository? _blogs;
+    private IRepository<Blog>? _blogs;
+    private IRepository<BlogImage>? _blogImages;
     private ILogRepository? _logs;
 
     public IRepository<T> GetRepository<T>() where T : BaseEntity
@@ -18,9 +19,9 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
         return (IRepository<T>)repo;
     }
 
-    public IBlogRepository Blogs => _blogs ??= new BlogRepository(context);
+    public IRepository<Blog> Blogs => _blogs ??= new Repository<Blog>(context);
+    public IRepository<BlogImage> BlogImages => _blogImages ??= new Repository<BlogImage>(context);
     public ILogRepository Logs => _logs ??= new LogRepository(context);
-    public IRepository<BlogImage> BlogImages => GetRepository<BlogImage>();
     public IRepository<Education> Educations => GetRepository<Education>();
     public IRepository<Music> Musics => GetRepository<Music>();
     public IRepository<MusicImage> MusicImages => GetRepository<MusicImage>();

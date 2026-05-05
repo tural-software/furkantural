@@ -12,6 +12,6 @@ public abstract class BaseEntityConfiguration<T> : IEntityTypeConfiguration<T> w
         builder.Property(e => e.CreatedAt).IsRequired();
         builder.Property(e => e.IsActive).HasDefaultValue(true);
         builder.Property(e => e.IsDeleted).HasDefaultValue(false);
-        builder.HasQueryFilter(e => !e.IsDeleted);
+        builder.HasQueryFilter(e => !e.IsDeleted && e.IsActive);
     }
 }
