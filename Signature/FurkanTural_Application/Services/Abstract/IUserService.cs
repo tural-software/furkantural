@@ -6,4 +6,5 @@ namespace FurkanTural_Application.Services.Abstract;
 public interface IUserService : IService<UserDto, CreateUserDto, UpdateUserDto>
 {
     Task<Result<UserDto>> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
+    Task<Result<AdminUserDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
 }
