@@ -33,7 +33,21 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     [HttpGet("paged")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _educationService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
+    /// <summary>
+    /// Tüm eğitim bilgilerini yönetici paneli için listele (silinmişler dahil)
+    /// </summary>
+    [HttpGet("admin")]
+    [Authorize]
+    public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
+        => ToActionResult(await _educationService.GetAllForAdminAsync(cancellationToken));
 
+    /// <summary>
+    /// Eğitim bilgisini yönetici paneli için ID ile getir (silinmiş dahil)
+    /// </summary>
+    [HttpGet("admin/{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _educationService.GetByIdForAdminAsync(id, cancellationToken));
     /// <summary>
     /// Yeni eğitim bilgisi ekle
     /// </summary>
@@ -74,4 +88,20 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _educationService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Eğitim bilgisinin aktiflik durumunu değiştir
+    /// </summary>
+    [HttpPatch("{id:int}/toggle-active")]
+    [Authorize]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _educationService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
+    /// Silinen eğitim bilgisini geri yükle
+    /// </summary>
+    [HttpPatch("{id:int}/restore")]
+    [Authorize]
+    public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _educationService.RestoreAsync(id, SortUserId(), cancellationToken));
 }

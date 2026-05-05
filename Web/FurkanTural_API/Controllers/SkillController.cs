@@ -68,4 +68,12 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Silinen yetkinliği geri yükle
+    /// </summary>
+    [HttpPatch("{id:int}/restore")]
+    [Authorize]
+    public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _skillService.RestoreAsync(id, SortUserId(), cancellationToken));
 }

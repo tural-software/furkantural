@@ -78,4 +78,11 @@ public class UserController : JwtBaseController
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _userService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Silinen kullanıcıyı geri yükle
+    /// </summary>
+    [HttpPatch("{id:int}/restore")]
+    public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _userService.RestoreAsync(id, SortUserId(), cancellationToken));
 }

@@ -34,8 +34,22 @@ public class MusicController(IMusicService musicService) : JwtBaseController
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _musicService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
+    /// <summary>    /// Tüm müzikleri yönetici paneli için listele (silinmişler dahil)
+    /// </summary>
+    [HttpGet("admin")]
+    [Authorize]
+    public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
+        => ToActionResult(await _musicService.GetAllForAdminAsync(cancellationToken));
+
     /// <summary>
-    /// Yeni müzik ekle
+    /// Müzii yönetici paneli için ID ile getir (silinmiş dahil)
+    /// </summary>
+    [HttpGet("admin/{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _musicService.GetByIdForAdminAsync(id, cancellationToken));
+
+    /// <summary>    /// Yeni müzik ekle
     /// </summary>
     [HttpPost]
     [Authorize]
@@ -80,4 +94,19 @@ public class MusicController(IMusicService musicService) : JwtBaseController
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicService.DeleteAsync(id, cancellationToken));
-}
+
+    /// <summary>
+    /// Müziin aktiflik durumunu değiştir
+    /// </summary>
+    [HttpPatch("{id:int}/toggle-active")]
+    [Authorize]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _musicService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
+    /// Silinen müzii geri yükle
+    /// </summary>
+    [HttpPatch("{id:int}/restore")]
+    [Authorize]
+    public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _musicService.RestoreAsync(id, SortUserId(), cancellationToken));}

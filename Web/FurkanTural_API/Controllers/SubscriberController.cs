@@ -8,7 +8,7 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class SubscriberController(ISubscriberService subscriberService) : BaseApiController
+public class SubscriberController(ISubscriberService subscriberService) : JwtBaseController
 {
     private readonly ISubscriberService _subscriberService = subscriberService;
 
@@ -57,4 +57,12 @@ public class SubscriberController(ISubscriberService subscriberService) : BaseAp
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Silinen aboneyi geri yükle
+    /// </summary>
+    [HttpPatch("{id:int}/restore")]
+    [Authorize]
+    public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _subscriberService.RestoreAsync(id, SortUserId(), cancellationToken));
 }

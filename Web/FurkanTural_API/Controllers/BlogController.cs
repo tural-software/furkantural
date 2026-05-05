@@ -35,12 +35,34 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetAllForAdminAsync(cancellationToken));
 
-    /// <summary>
-    /// Blog yazılarını sayfalı listele
+    /// <summary>    /// Blog yazısını yönetici paneli için ID ile getir (silinmiş dahil)
+    /// </summary>
+    [HttpGet("admin/{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _blogService.GetByIdForAdminAsync(id, cancellationToken));
+
+    /// <summary>    /// Blog yazılarını sayfalı listele
     /// </summary>
     [HttpGet("paged")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _blogService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
+
+    /// <summary>
+    /// Blog yazısının aktiflik durumunu değiştir
+    /// </summary>
+    [HttpPatch("{id:int}/toggle-active")]
+    [Authorize]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _blogService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
+    /// Silinmiş blog yazısını geri yükle
+    /// </summary>
+    [HttpPatch("{id:int}/restore")]
+    [Authorize]
+    public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _blogService.RestoreAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>
     /// Yeni blog yazısı oluştur

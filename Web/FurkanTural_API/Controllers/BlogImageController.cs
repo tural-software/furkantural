@@ -30,6 +30,38 @@ public class BlogImageController(IBlogImageService blogImageService, IWebHostEnv
         => ToActionResult(await _blogImageService.GetAllAsync(cancellationToken));
 
     /// <summary>
+    /// Admin için tüm blog görsellerini listele (soft-deleted dahil)
+    /// </summary>
+    [HttpGet("admin")]
+    [Authorize]
+    public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
+        => ToActionResult(await _blogImageService.GetAllForAdminAsync(cancellationToken));
+
+    /// <summary>
+    /// Blog görselini yönetici paneli için ID ile getir (silinmiş dahil)
+    /// </summary>
+    [HttpGet("admin/{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _blogImageService.GetByIdForAdminAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Blog görselinin aktiflik durumunu değiştir
+    /// </summary>
+    [HttpPatch("{id:int}/toggle-active")]
+    [Authorize]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _blogImageService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
+    /// Silinmiş blog görselini geri yükle
+    /// </summary>
+    [HttpPatch("{id:int}/restore")]
+    [Authorize]
+    public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _blogImageService.RestoreAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
     /// Blog görsellerini sayfalı listele
     /// </summary>
     [HttpGet("paged")]
