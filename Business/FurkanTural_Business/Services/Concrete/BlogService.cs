@@ -31,6 +31,49 @@ public class BlogService(IUnitOfWork unitOfWork) : IBlogService
         return Result<IEnumerable<AdminBlogDto>>.Ok(entities.Select(e => e.ToAdminDto()));
     }
 
+    public async Task<Result<AdminBlogDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Blogs.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminBlogDto>.Fail("Blog bulunamadı.", statusCode: 404);
+
+        return Result<AdminBlogDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminBlogDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Blogs.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminBlogDto>.Fail("Blog bulunamadı.", statusCode: 404);
+
+        if (entity.IsDeleted)
+            return Result<AdminBlogDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
+
+        entity.IsActive = !entity.IsActive;
+        entity.UpdatedBy = updatedBy;
+
+        await _unitOfWork.Blogs.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminBlogDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminBlogDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Blogs.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminBlogDto>.Fail("Blog bulunamadı.", statusCode: 404);
+
+        if (!entity.IsDeleted)
+            return Result<AdminBlogDto>.Fail("Bu kayıt silinmemiş, geri yükleme yapılamaz.", statusCode: 400);
+
+        entity.UpdatedBy = updatedBy;
+        await _unitOfWork.Blogs.RestoreAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminBlogDto>.Ok(entity.ToAdminDto());
+    }
+
     public async Task<PagedResult<BlogDto>> GetAllPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         var entities = await _unitOfWork.Blogs.GetAllPagedAsync(pageNumber, pageSize, cancellationToken: cancellationToken);

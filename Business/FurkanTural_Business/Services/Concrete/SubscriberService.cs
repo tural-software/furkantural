@@ -102,4 +102,20 @@ public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
 
         return Result.Ok("Abonelik başarıyla iptal edildi.");
     }
+
+    public async Task<Result<AdminSubscriberDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Subscribers.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminSubscriberDto>.Fail("Abone bulunamadı.", statusCode: 404);
+
+        if (!entity.IsDeleted)
+            return Result<AdminSubscriberDto>.Fail("Bu kayıt silinmemiş, geri yükleme yapılamaz.", statusCode: 400);
+
+        entity.UpdatedBy = updatedBy;
+        await _unitOfWork.Subscribers.RestoreAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminSubscriberDto>.Ok(entity.ToAdminDto());
+    }
 }

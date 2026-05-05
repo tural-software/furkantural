@@ -15,6 +15,23 @@ public static class EducationMapper
         EndDate = entity.EndDate
     };
 
+    public static AdminEducationDto ToAdminDto(this Education entity) => new()
+    {
+        Id = entity.Id,
+        Institution = entity.Institution,
+        Degree = entity.Degree,
+        FieldOfStudy = entity.FieldOfStudy,
+        StartDate = entity.StartDate,
+        EndDate = entity.EndDate,
+        IsActive = entity.IsActive,
+        IsDeleted = entity.IsDeleted,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy,
+        DeletedAt = entity.DeletedAt
+    };
+
     public static Education ToEntity(this CreateEducationDto dto) => new()
     {
         Institution = dto.Institution,

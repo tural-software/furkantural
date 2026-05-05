@@ -77,4 +77,20 @@ public class SkillService(IUnitOfWork unitOfWork) : ISkillService
 
         return Result.Ok();
     }
+
+    public async Task<Result<AdminSkillDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Skills.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminSkillDto>.Fail("Yetenek bulunamadı.", statusCode: 404);
+
+        if (!entity.IsDeleted)
+            return Result<AdminSkillDto>.Fail("Bu kayıt silinmemiş, geri yükleme yapılamaz.", statusCode: 400);
+
+        entity.UpdatedBy = updatedBy;
+        await _unitOfWork.Skills.RestoreAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminSkillDto>.Ok(entity.ToAdminDto());
+    }
 }

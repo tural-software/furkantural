@@ -12,6 +12,20 @@ public static class SkillMapper
         Proficiency = entity.Proficiency
     };
 
+    public static AdminSkillDto ToAdminDto(this Skill entity) => new()
+    {
+        Id = entity.Id,
+        Name = entity.Name,
+        Proficiency = entity.Proficiency,
+        IsActive = entity.IsActive,
+        IsDeleted = entity.IsDeleted,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy,
+        DeletedAt = entity.DeletedAt
+    };
+
     public static Skill ToEntity(this CreateSkillDto dto) => new()
     {
         Name = dto.Name,

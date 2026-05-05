@@ -77,4 +77,53 @@ public class MusicService(IUnitOfWork unitOfWork) : IMusicService
 
         return Result.Ok();
     }
+
+    public async Task<Result<AdminMusicDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Musics.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminMusicDto>.Fail("Müzik bulunamadı.", statusCode: 404);
+
+        if (!entity.IsDeleted)
+            return Result<AdminMusicDto>.Fail("Bu kayıt silinmemiş, geri yükleme yapılamaz.", statusCode: 400);
+
+        entity.UpdatedBy = updatedBy;
+        await _unitOfWork.Musics.RestoreAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminMusicDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminMusicDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Musics.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminMusicDto>.Fail("Müzik bulunamadı.", statusCode: 404);
+
+        if (entity.IsDeleted)
+            return Result<AdminMusicDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
+
+        entity.IsActive = !entity.IsActive;
+        entity.UpdatedBy = updatedBy;
+
+        await _unitOfWork.Musics.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminMusicDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<IEnumerable<AdminMusicDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _unitOfWork.Musics.GetAllForAdminAsync(cancellationToken);
+        return Result<IEnumerable<AdminMusicDto>>.Ok(entities.Select(e => e.ToAdminDto()));
+    }
+
+    public async Task<Result<AdminMusicDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Musics.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminMusicDto>.Fail("Müzik bulunamadı.", statusCode: 404);
+
+        return Result<AdminMusicDto>.Ok(entity.ToAdminDto());
+    }
 }

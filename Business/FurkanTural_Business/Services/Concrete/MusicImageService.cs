@@ -81,4 +81,53 @@ public class MusicImageService(IUnitOfWork unitOfWork) : IMusicImageService
 
         return Result.Ok();
     }
+
+    public async Task<Result<AdminMusicImageDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.MusicImages.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminMusicImageDto>.Fail("Müzik görseli bulunamadı.", statusCode: 404);
+
+        if (!entity.IsDeleted)
+            return Result<AdminMusicImageDto>.Fail("Bu kayıt silinmemiş, geri yükleme yapılamaz.", statusCode: 400);
+
+        entity.UpdatedBy = updatedBy;
+        await _unitOfWork.MusicImages.RestoreAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminMusicImageDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminMusicImageDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.MusicImages.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminMusicImageDto>.Fail("Müzik görseli bulunamadı.", statusCode: 404);
+
+        if (entity.IsDeleted)
+            return Result<AdminMusicImageDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
+
+        entity.IsActive = !entity.IsActive;
+        entity.UpdatedBy = updatedBy;
+
+        await _unitOfWork.MusicImages.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminMusicImageDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<IEnumerable<AdminMusicImageDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _unitOfWork.MusicImages.GetAllForAdminAsync(cancellationToken);
+        return Result<IEnumerable<AdminMusicImageDto>>.Ok(entities.Select(e => e.ToAdminDto()));
+    }
+
+    public async Task<Result<AdminMusicImageDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.MusicImages.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminMusicImageDto>.Fail("Müzik görseli bulunamadı.", statusCode: 404);
+
+        return Result<AdminMusicImageDto>.Ok(entity.ToAdminDto());
+    }
 }

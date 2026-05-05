@@ -14,6 +14,22 @@ public static class BlogImageMapper
         BlogId = entity.BlogId
     };
 
+    public static AdminBlogImageDto ToAdminDto(this BlogImage entity) => new()
+    {
+        Id = entity.Id,
+        Url = entity.Url,
+        AltText = entity.AltText,
+        IsCover = entity.IsCover,
+        BlogId = entity.BlogId,
+        IsActive = entity.IsActive,
+        IsDeleted = entity.IsDeleted,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy,
+        DeletedAt = entity.DeletedAt
+    };
+
     public static BlogImage ToEntity(this CreateBlogImageDto dto) => new()
     {
         Url = dto.Url,

@@ -18,6 +18,26 @@ public static class MusicMapper
         ReleaseDate = entity.ReleaseDate
     };
 
+    public static AdminMusicDto ToAdminDto(this Music entity) => new()
+    {
+        Id = entity.Id,
+        Name = entity.Name,
+        Artist = entity.Artist,
+        Productor = entity.Productor,
+        Album = entity.Album,
+        Genre = entity.Genre,
+        Lyrics = entity.Lyrics,
+        Duration = entity.Duration,
+        ReleaseDate = entity.ReleaseDate,
+        IsActive = entity.IsActive,
+        IsDeleted = entity.IsDeleted,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy,
+        DeletedAt = entity.DeletedAt
+    };
+
     public static Music ToEntity(this CreateMusicDto dto) => new()
     {
         Name = dto.Name,

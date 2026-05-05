@@ -38,6 +38,55 @@ public class BlogImageService(IUnitOfWork unitOfWork) : IBlogImageService
         return Result<IEnumerable<BlogImageDto>>.Ok(entities.Select(e => e.ToDto()));
     }
 
+    public async Task<Result<IEnumerable<AdminBlogImageDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _unitOfWork.BlogImages.GetAllForAdminAsync(cancellationToken);
+        return Result<IEnumerable<AdminBlogImageDto>>.Ok(entities.Select(x => x.ToAdminDto()));
+    }
+
+    public async Task<Result<AdminBlogImageDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.BlogImages.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminBlogImageDto>.Fail("Blog görseli bulunamadı.", statusCode: 404);
+
+        return Result<AdminBlogImageDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminBlogImageDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.BlogImages.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminBlogImageDto>.Fail("Blog görseli bulunamadı.", statusCode: 404);
+
+        if (entity.IsDeleted)
+            return Result<AdminBlogImageDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
+
+        entity.IsActive = !entity.IsActive;
+        entity.UpdatedBy = updatedBy;
+
+        await _unitOfWork.BlogImages.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminBlogImageDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminBlogImageDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.BlogImages.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminBlogImageDto>.Fail("Blog görseli bulunamadı.", statusCode: 404);
+
+        if (!entity.IsDeleted)
+            return Result<AdminBlogImageDto>.Fail("Bu kayıt silinmemiş, geri yükleme yapılamaz.", statusCode: 400);
+
+        entity.UpdatedBy = updatedBy;
+        await _unitOfWork.BlogImages.RestoreAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminBlogImageDto>.Ok(entity.ToAdminDto());
+    }
+
     public async Task<Result<BlogImageDto>> CreateAsync(CreateBlogImageDto dto, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(dto.Url))

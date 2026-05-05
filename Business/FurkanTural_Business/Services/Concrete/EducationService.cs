@@ -83,4 +83,53 @@ public class EducationService(IUnitOfWork unitOfWork) : IEducationService
 
         return Result.Ok();
     }
+
+    public async Task<Result<AdminEducationDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Educations.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminEducationDto>.Fail("Eğitim bilgisi bulunamadı.", statusCode: 404);
+
+        if (!entity.IsDeleted)
+            return Result<AdminEducationDto>.Fail("Bu kayıt silinmemiş, geri yükleme yapılamaz.", statusCode: 400);
+
+        entity.UpdatedBy = updatedBy;
+        await _unitOfWork.Educations.RestoreAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminEducationDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminEducationDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Educations.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminEducationDto>.Fail("Eğitim bilgisi bulunamadı.", statusCode: 404);
+
+        if (entity.IsDeleted)
+            return Result<AdminEducationDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
+
+        entity.IsActive = !entity.IsActive;
+        entity.UpdatedBy = updatedBy;
+
+        await _unitOfWork.Educations.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminEducationDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<IEnumerable<AdminEducationDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _unitOfWork.Educations.GetAllForAdminAsync(cancellationToken);
+        return Result<IEnumerable<AdminEducationDto>>.Ok(entities.Select(e => e.ToAdminDto()));
+    }
+
+    public async Task<Result<AdminEducationDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Educations.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminEducationDto>.Fail("Eğitim bilgisi bulunamadı.", statusCode: 404);
+
+        return Result<AdminEducationDto>.Ok(entity.ToAdminDto());
+    }
 }

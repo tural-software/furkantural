@@ -112,4 +112,20 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
 
         return Result.Ok();
     }
+
+    public async Task<Result<AdminUserDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Users.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminUserDto>.Fail("Kullanıcı bulunamadı.", statusCode: 404);
+
+        if (!entity.IsDeleted)
+            return Result<AdminUserDto>.Fail("Bu kayıt silinmemiş, geri yükleme yapılamaz.", statusCode: 400);
+
+        entity.UpdatedBy = updatedBy;
+        await _unitOfWork.Users.RestoreAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminUserDto>.Ok(entity.ToAdminDto());
+    }
 }

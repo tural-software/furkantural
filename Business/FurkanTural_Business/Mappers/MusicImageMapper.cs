@@ -12,6 +12,20 @@ public static class MusicImageMapper
         MusicId = entity.MusicId
     };
 
+    public static AdminMusicImageDto ToAdminDto(this MusicImage entity) => new()
+    {
+        Id = entity.Id,
+        Url = entity.Url,
+        MusicId = entity.MusicId,
+        IsActive = entity.IsActive,
+        IsDeleted = entity.IsDeleted,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy,
+        DeletedAt = entity.DeletedAt
+    };
+
     public static MusicImage ToEntity(this CreateMusicImageDto dto) => new()
     {
         Url = dto.Url,
