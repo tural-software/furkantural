@@ -7,5 +7,8 @@ public interface ISubscriberService : IService<SubscriberDto, CreateSubscriberDt
 {
     Task<Result> SubscribeAsync(string email, CancellationToken cancellationToken = default);
     Task<Result> UnsubscribeAsync(string email, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<AdminSubscriberDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
+    Task<Result<AdminSubscriberDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<AdminSubscriberDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminSubscriberDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
 }
