@@ -78,6 +78,39 @@ public class SkillService(IUnitOfWork unitOfWork) : ISkillService
         return Result.Ok();
     }
 
+    public async Task<Result<IEnumerable<AdminSkillDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _unitOfWork.Skills.GetAllForAdminAsync(cancellationToken);
+        return Result<IEnumerable<AdminSkillDto>>.Ok(entities.Select(e => e.ToAdminDto()));
+    }
+
+    public async Task<Result<AdminSkillDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Skills.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminSkillDto>.Fail("Yetenek bulunamadı.", statusCode: 404);
+
+        return Result<AdminSkillDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminSkillDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Skills.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminSkillDto>.Fail("Yetenek bulunamadı.", statusCode: 404);
+
+        if (entity.IsDeleted)
+            return Result<AdminSkillDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
+
+        entity.IsActive = !entity.IsActive;
+        entity.UpdatedBy = updatedBy;
+
+        await _unitOfWork.Skills.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminSkillDto>.Ok(entity.ToAdminDto());
+    }
+
     public async Task<Result<AdminSkillDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Skills.GetByIdForAdminAsync(id, cancellationToken);

@@ -113,6 +113,39 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
         return Result.Ok();
     }
 
+    public async Task<Result<IEnumerable<AdminUserDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _unitOfWork.Users.GetAllForAdminAsync(cancellationToken);
+        return Result<IEnumerable<AdminUserDto>>.Ok(entities.Select(e => e.ToAdminDto()));
+    }
+
+    public async Task<Result<AdminUserDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Users.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminUserDto>.Fail("Kullanıcı bulunamadı.", statusCode: 404);
+
+        return Result<AdminUserDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminUserDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Users.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminUserDto>.Fail("Kullanıcı bulunamadı.", statusCode: 404);
+
+        if (entity.IsDeleted)
+            return Result<AdminUserDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
+
+        entity.IsActive = !entity.IsActive;
+        entity.UpdatedBy = updatedBy;
+
+        await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminUserDto>.Ok(entity.ToAdminDto());
+    }
+
     public async Task<Result<AdminUserDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Users.GetByIdForAdminAsync(id, cancellationToken);

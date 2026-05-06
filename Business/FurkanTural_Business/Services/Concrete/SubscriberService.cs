@@ -72,6 +72,39 @@ public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
         return Result.Ok();
     }
 
+    public async Task<Result<IEnumerable<AdminSubscriberDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _unitOfWork.Subscribers.GetAllForAdminAsync(cancellationToken);
+        return Result<IEnumerable<AdminSubscriberDto>>.Ok(entities.Select(e => e.ToAdminDto()));
+    }
+
+    public async Task<Result<AdminSubscriberDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Subscribers.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminSubscriberDto>.Fail("Abone bulunamadı.", statusCode: 404);
+
+        return Result<AdminSubscriberDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<AdminSubscriberDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Subscribers.GetByIdForAdminAsync(id, cancellationToken);
+        if (entity is null)
+            return Result<AdminSubscriberDto>.Fail("Abone bulunamadı.", statusCode: 404);
+
+        if (entity.IsDeleted)
+            return Result<AdminSubscriberDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
+
+        entity.IsActive = !entity.IsActive;
+        entity.UpdatedBy = updatedBy;
+
+        await _unitOfWork.Subscribers.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<AdminSubscriberDto>.Ok(entity.ToAdminDto());
+    }
+
     public async Task<Result> SubscribeAsync(string email, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(email))
