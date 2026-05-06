@@ -58,6 +58,10 @@ PublishProfiles/
 **/wwwroot/lib/
 **/wwwroot/css/bundle*
 **/wwwroot/js/bundle*
+**/wwwroot/images/uploads/
+
+# User uploaded files & temporary assets
+Tool/*/docs/
 
 # Razor precompiled views
 *.PrecompiledViews.dll
