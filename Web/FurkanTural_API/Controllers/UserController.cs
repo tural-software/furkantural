@@ -41,6 +41,20 @@ public class UserController : JwtBaseController
         => ToActionResult(await _userService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
     /// <summary>
+    /// Tüm kullanıcıları (admin) listele
+    /// </summary>
+    [HttpGet("admin")]
+    public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
+        => ToActionResult(await _userService.GetAllForAdminAsync(cancellationToken));
+
+    /// <summary>
+    /// Kullanıcıyı ID ile getir (admin)
+    /// </summary>
+    [HttpGet("admin/{id:int}")]
+    public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _userService.GetByIdForAdminAsync(id, cancellationToken));
+
+    /// <summary>
     /// Kullanıcı adına göre kullanıcıyı getir
     /// </summary>
     [HttpGet("by-username/{username}")]
@@ -78,6 +92,13 @@ public class UserController : JwtBaseController
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _userService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Kullanıcının aktiflik durumunu değiştir
+    /// </summary>
+    [HttpPatch("{id:int}/toggle-active")]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _userService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>
     /// Silinen kullanıcıyı geri yükle

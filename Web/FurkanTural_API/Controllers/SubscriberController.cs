@@ -29,6 +29,22 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
         => ToActionResult(await _subscriberService.GetAllAsync(cancellationToken));
 
     /// <summary>
+    /// Tüm aboneleri (admin) listele
+    /// </summary>
+    [HttpGet("admin")]
+    [Authorize]
+    public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
+        => ToActionResult(await _subscriberService.GetAllForAdminAsync(cancellationToken));
+
+    /// <summary>
+    /// Aboneyi ID ile getir (admin)
+    /// </summary>
+    [HttpGet("admin/{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _subscriberService.GetByIdForAdminAsync(id, cancellationToken));
+
+    /// <summary>
     /// Aboneleri sayfalı listele
     /// </summary>
     [HttpGet("paged")]
@@ -57,6 +73,14 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Abonelinin aktiflik durumunu değiştir
+    /// </summary>
+    [HttpPatch("{id:int}/toggle-active")]
+    [Authorize]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _subscriberService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>
     /// Silinen aboneyi geri yükle

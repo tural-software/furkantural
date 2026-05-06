@@ -28,6 +28,22 @@ public class SkillController(ISkillService skillService) : JwtBaseController
         => ToActionResult(await _skillService.GetAllAsync(cancellationToken));
 
     /// <summary>
+    /// Tüm yetkinlikleri (admin) listele
+    /// </summary>
+    [HttpGet("admin")]
+    [Authorize]
+    public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
+        => ToActionResult(await _skillService.GetAllForAdminAsync(cancellationToken));
+
+    /// <summary>
+    /// Yetkinliği ID ile getir (admin)
+    /// </summary>
+    [HttpGet("admin/{id:int}")]
+    [Authorize]
+    public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _skillService.GetByIdForAdminAsync(id, cancellationToken));
+
+    /// <summary>
     /// Yetkinlikleri sayfalı listele
     /// </summary>
     [HttpGet("paged")]
@@ -68,6 +84,14 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Yetkinliğin aktiflik durumunu değiştir
+    /// </summary>
+    [HttpPatch("{id:int}/toggle-active")]
+    [Authorize]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _skillService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>
     /// Silinen yetkinliği geri yükle
