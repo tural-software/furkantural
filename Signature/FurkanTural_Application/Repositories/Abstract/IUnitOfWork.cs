@@ -10,6 +10,7 @@ public interface IUnitOfWork
     IRepository<Blog> Blogs { get; }
     IRepository<BlogImage> BlogImages { get; }
     IRepository<Education> Educations { get; }
+    IRepository<Experience> Experiences { get; }
     IRepository<Music> Musics { get; }
     IRepository<MusicImage> MusicImages { get; }
     IRepository<Skill> Skills { get; }
