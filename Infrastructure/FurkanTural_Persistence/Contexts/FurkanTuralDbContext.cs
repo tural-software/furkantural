@@ -9,6 +9,7 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     public DbSet<Blog> Blogs => Set<Blog>();
     public DbSet<BlogImage> BlogImages => Set<BlogImage>();
     public DbSet<Education> Educations => Set<Education>();
+    public DbSet<Experience> Experiences => Set<Experience>();
     public DbSet<Log> Logs => Set<Log>();
     public DbSet<Music> Musics => Set<Music>();
     public DbSet<MusicImage> MusicImages => Set<MusicImage>();
