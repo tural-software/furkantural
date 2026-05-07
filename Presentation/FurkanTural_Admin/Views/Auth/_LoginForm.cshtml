@@ -1,0 +1,24 @@
+@model FurkanTural_Admin.Models.Auth.LoginRequestModel
+
+<div class="card auth-card">
+    <p class="section-eyebrow">Admin Console</p>
+    <h1 class="section-title">FurkanTural</h1>
+
+    <form id="loginForm" method="post" class="auth-form" asp-controller="Auth" asp-action="Login" novalidate>
+        @Html.AntiForgeryToken()
+
+        <div class="auth-field">
+            <label asp-for="Username">Kullanıcı Adı</label>
+            <input asp-for="Username" autocomplete="username" autofocus placeholder="username" />
+        </div>
+
+        <div class="auth-field">
+            <label asp-for="Password">Parola</label>
+            <input asp-for="Password" type="password" autocomplete="current-password" placeholder="••••••••" />
+        </div>
+
+        <button type="submit" class="btn-primary auth-submit">Giriş Yap</button>
+
+        <div id="loginErrors" class="auth-errors" role="alert" aria-live="polite"></div>
+    </form>
+</div>

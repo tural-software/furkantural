@@ -1,0 +1,21 @@
+@model FurkanTural_Admin.Models.Auth.LoginRequestModel
+@{
+    ViewData["Title"] = "Giriş Yap";
+    ViewData["HideChrome"] = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/auth/login.css" asp-append-version="true" />
+}
+
+<button type="button" class="theme-toggle-btn theme-toggle-btn--floating" data-theme-toggle aria-label="Temayı değiştir">
+    <span data-theme-icon>🌙</span>
+</button>
+
+<div class="auth-stage">
+    @await Html.PartialAsync("_LoginForm", Model)
+</div>
+
+@section Scripts {
+    <script src="~/js/auth/login.js" asp-append-version="true"></script>
+}
