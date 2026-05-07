@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Metadata -->
+  <PropertyGroup>
+    <Product>FurkanTural.Admin</Product>
+    <Description>Admin panel for Furkan Tural's projects.</Description>
+  </PropertyGroup>
+
+  <!-- Assembly information -->
+  <PropertyGroup>
+    <AssemblyTitle>FurkanTural.Admin</AssemblyTitle>
+    <AssemblyDescription>Admin panel for Furkan Tural's projects.</AssemblyDescription>
+  </PropertyGroup>
+
+  <!-- Versioning -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+</Project>
