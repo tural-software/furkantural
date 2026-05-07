@@ -1,0 +1,54 @@
+/* Tema-bağımsız token'lar */
+:root {
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Inter', Roboto, 'Segoe UI', sans-serif;
+    --radius-sm: .5rem;
+    --radius-md: .75rem;
+    --radius-lg: 1rem;
+    --z-content: 10;
+    --z-chrome: 999;
+    --error: #ef4444;
+}
+
+/* DARK (default) */
+:root,
+[data-theme="dark"] {
+    --bg-main: #0f1117;
+    --bg-card: rgba(30, 32, 40, 0.6);
+    --bg-card-solid: #1e2028;
+    --text-main: #f9fafb;
+    --text-dim: #9ca3af;
+    --accent: #38bdf8;
+    --accent-rgb: 56, 189, 248;
+    --border-color: rgba(255, 255, 255, 0.07);
+    --toast-bg: rgba(15, 17, 23, 0.9);
+    --toast-text: #f9fafb;
+    --toast-border-success: rgba(56, 189, 248, .6);
+    --toast-border-error: rgba(239, 68, 68, .6);
+}
+
+/* LIGHT */
+[data-theme="light"] {
+    --bg-main: #f8fafc;
+    --bg-card: rgba(255, 255, 255, 0.7);
+    --bg-card-solid: #ffffff;
+    --text-main: #0f172a;
+    --text-dim: #4b5563;
+    --accent: #0ea5e9;
+    --accent-rgb: 14, 165, 233;
+    --border-color: rgba(0, 0, 0, 0.08);
+    --toast-bg: rgba(255, 255, 255, 0.95);
+    --toast-text: #0f172a;
+    --toast-border-success: rgba(14, 165, 233, .6);
+    --toast-border-error: rgba(239, 68, 68, .6);
+}
+
+/* Smooth tema geçişi — global */
+html, body, .navbar, .bottombar, .card, .tag, .btn-primary, .btn-outline,
+.theme-toggle-btn, .user-chip, input, button, #toastBox {
+    transition:
+        background 0.25s ease,
+        background-color 0.25s ease,
+        border-color 0.25s ease,
+        color 0.25s ease,
+        box-shadow 0.25s ease;
+}

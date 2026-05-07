@@ -1,0 +1,18 @@
+.tag {
+    font-size: .7rem;
+    background-color: var(--bg-card-solid);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: .4rem .6rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+    cursor: default;
+    display: inline-block;
+}
+
+.tag:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+}
