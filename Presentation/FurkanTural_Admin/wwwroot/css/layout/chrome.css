@@ -1,0 +1,105 @@
+/* Navbar */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-chrome);
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: .75rem 1rem;
+}
+
+.brand {
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: -0.03em;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.brand:hover {
+    transform: scale(1.05);
+    text-decoration: none;
+}
+
+.brand span {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.user-chip {
+    padding: .35rem .7rem;
+    border-radius: 999px;
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: .8rem;
+}
+
+.logout-chip {
+    padding: .35rem .7rem !important;
+}
+
+/* Theme toggle */
+.theme-toggle-btn {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    font-size: .8rem;
+    padding: .5rem .75rem;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-family: var(--font-sans);
+    transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    background-color: var(--bg-card-solid);
+    border-color: var(--accent);
+}
+
+.theme-toggle-btn:hover [data-theme-icon] {
+    animation: spin 0.5s ease-in-out;
+}
+
+.theme-toggle-btn--floating {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: var(--z-chrome);
+}
+
+/* Footer */
+.bottombar {
+    position: sticky;
+    bottom: 0;
+    z-index: var(--z-chrome);
+    padding: 1rem 1.5rem;
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border-color);
+    color: var(--text-dim);
+    font-size: .8rem;
+    text-align: center;
+}

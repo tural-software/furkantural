@@ -1,0 +1,63 @@
+@{
+    var hideChrome = ViewData["HideChrome"] as bool? ?? false;
+    var username = Context.Session.GetString("username");
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FurkanTural Admin</title>
+
+    @* FOUC engelleyici inline tema seti — link'lerden önce *@
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme');
+                var t = (saved === 'light' || saved === 'dark')
+                    ? saved
+                    : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+                document.documentElement.dataset.theme = t;
+            } catch (_) {
+                document.documentElement.dataset.theme = 'dark';
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/animations.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/buttons.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/cards.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/tags.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/section.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/toast.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout/base.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout/chrome.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="app">
+        @if (!hideChrome)
+        {
+            @await Html.PartialAsync("~/Views/Shared/_LayoutSections/_Header.cshtml", username)
+        }
+        <main class="main">
+            @RenderBody()
+        </main>
+        @if (!hideChrome)
+        {
+            @await Html.PartialAsync("~/Views/Shared/_LayoutSections/_Footer.cshtml")
+        }
+    </div>
+
+    <div id="toastBox" role="status" aria-live="polite">
+        <div id="toastTitle"></div>
+        <div id="toastMsg"></div>
+    </div>
+
+    <script src="~/js/theme.js" asp-append-version="true"></script>
+    <script src="~/js/toast.js" asp-append-version="true"></script>
+    <script src="~/js/reveal.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,20 @@
+@model string
+<header class="navbar">
+    <div class="nav-inner">
+        <a class="brand" href="/">Furkan<span>Tural</span> Admin</a>
+        <div class="nav-actions">
+            <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Temayı değiştir">
+                <span data-theme-icon>🌙</span>
+                <span class="toggle-text">Tema</span>
+            </button>
+            @if (!string.IsNullOrEmpty(Model))
+            {
+                <span class="user-chip">@Model</span>
+            }
+            <form asp-controller="Auth" asp-action="Logout" method="post" style="margin:0;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-outline logout-chip">Çıkış</button>
+            </form>
+        </div>
+    </div>
+</header>
