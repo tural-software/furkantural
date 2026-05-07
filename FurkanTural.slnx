@@ -14,7 +14,11 @@
   <Folder Name="/Infrastructure/">
     <Project Path="Infrastructure/FurkanTural_Persistence/FurkanTural_Persistence.csproj" />
   </Folder>
-  <Folder Name="/Presentation/" />
+  <Folder Name="/Presentation/">
+    <Project Path="Presentation/FurkanTural_Admin/FurkanTural_Admin.csproj" />
+    <Project Path="Presentation/FurkanTural_Blog/FurkanTural_Blog.csproj" />
+    <Project Path="Presentation/FurkanTural_Portfolio/FurkanTural_Portfolio.csproj" />
+  </Folder>
   <Folder Name="/Web/">
     <Project Path="Web/FurkanTural_API/FurkanTural_API.csproj" />
   </Folder>
