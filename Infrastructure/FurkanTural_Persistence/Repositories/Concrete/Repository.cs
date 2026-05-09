@@ -1,4 +1,5 @@
 using FurkanTural_Domain.Entities.Common;
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Persistence.Contexts;
 using System.Linq.Expressions;
@@ -42,6 +43,26 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
 
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         => await _dbSet.AnyAsync(predicate, cancellationToken);
+
+    public async Task<EntitySummaryDto> GetAdminSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var query = _dbSet.IgnoreQueryFilters().AsNoTracking();
+
+        var count = await query.CountAsync(cancellationToken);
+        if (count == 0)
+            return new EntitySummaryDto(0, null);
+
+        var maxCreated = await query.MaxAsync(e => (DateTime?)e.CreatedAt, cancellationToken);
+        var maxUpdated = await query.MaxAsync(e => e.UpdatedAt, cancellationToken);
+        var maxDeleted = await query.MaxAsync(e => e.DeletedAt, cancellationToken);
+
+        DateTime? last = null;
+        foreach (var t in new[] { maxCreated, maxUpdated, maxDeleted })
+            if (t.HasValue && (last is null || t.Value > last.Value))
+                last = t.Value;
+
+        return new EntitySummaryDto(count, last);
+    }
 
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
         => await _dbSet.AddAsync(entity, cancellationToken);

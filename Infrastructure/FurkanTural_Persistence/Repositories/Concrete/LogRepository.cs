@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Domain.Entities;
 using FurkanTural_Persistence.Contexts;
@@ -34,4 +35,16 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
         => predicate is null
             ? await _dbSet.CountAsync(cancellationToken)
             : await _dbSet.CountAsync(predicate, cancellationToken);
+
+    public async Task<EntitySummaryDto> GetAdminSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var query = _dbSet.AsNoTracking();
+
+        var count = await query.CountAsync(cancellationToken);
+        if (count == 0)
+            return new EntitySummaryDto(0, null);
+
+        var lastCreated = await query.MaxAsync(e => (DateTime?)e.CreatedAt, cancellationToken);
+        return new EntitySummaryDto(count, lastCreated);
+    }
 }

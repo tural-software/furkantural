@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Application.Repositories.Abstract;
@@ -10,4 +11,5 @@ public interface ILogRepository
     Task<IEnumerable<Log>> GetAllAsync(Expression<Func<Log, bool>>? predicate = null, CancellationToken cancellationToken = default);
     Task<IEnumerable<Log>> GetAllPagedAsync(int pageNumber, int pageSize, Expression<Func<Log, bool>>? predicate = null, CancellationToken cancellationToken = default);
     Task<int> CountAsync(Expression<Func<Log, bool>>? predicate = null, CancellationToken cancellationToken = default);
+    Task<EntitySummaryDto> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
 }
