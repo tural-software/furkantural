@@ -73,6 +73,8 @@ public class MusicImageController(IMusicImageService musicImageService, IWebHost
         var dto = new CreateMusicImageDto
         {
             Url = fileName,
+            AltText = request.AltText,
+            IsCover = request.IsCover,
             MusicId = request.MusicId,
             CreatedBy = SortUserId()
         };
@@ -102,6 +104,8 @@ public class MusicImageController(IMusicImageService musicImageService, IWebHost
         {
             Id = request.Id,
             Url = fileName ?? existing.Data!.Url,
+            AltText = request.AltText,
+            IsCover = request.IsCover,
             MusicId = request.MusicId,
             UpdatedBy = SortUserId()
         };

@@ -9,6 +9,8 @@ public static class MusicImageMapper
     {
         Id = entity.Id,
         Url = entity.Url,
+        AltText = entity.AltText,
+        IsCover = entity.IsCover,
         MusicId = entity.MusicId
     };
 
@@ -16,6 +18,8 @@ public static class MusicImageMapper
     {
         Id = entity.Id,
         Url = entity.Url,
+        AltText = entity.AltText,
+        IsCover = entity.IsCover,
         MusicId = entity.MusicId,
         IsActive = entity.IsActive,
         IsDeleted = entity.IsDeleted,
@@ -29,6 +33,8 @@ public static class MusicImageMapper
     public static MusicImage ToEntity(this CreateMusicImageDto dto) => new()
     {
         Url = dto.Url,
+        AltText = dto.AltText,
+        IsCover = dto.IsCover,
         MusicId = dto.MusicId,
         CreatedBy = dto.CreatedBy
     };
@@ -36,6 +42,8 @@ public static class MusicImageMapper
     public static void UpdateEntity(this MusicImage entity, UpdateMusicImageDto dto)
     {
         entity.Url = dto.Url;
+        entity.AltText = dto.AltText;
+        entity.IsCover = dto.IsCover;
         entity.MusicId = dto.MusicId;
         entity.UpdatedBy = dto.UpdatedBy;
     }
