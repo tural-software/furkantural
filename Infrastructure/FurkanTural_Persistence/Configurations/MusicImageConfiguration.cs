@@ -11,6 +11,7 @@ public class MusicImageConfiguration : BaseEntityConfiguration<MusicImage>
         base.Configure(builder);
         builder.ToTable("MusicImages");
         builder.Property(e => e.Url).HasMaxLength(1000);
+        builder.Property(e => e.AltText).HasMaxLength(500);
         builder.HasOne<Music>()
             .WithMany()
             .HasForeignKey(e => e.MusicId)
