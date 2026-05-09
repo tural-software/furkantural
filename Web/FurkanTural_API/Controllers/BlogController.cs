@@ -98,4 +98,12 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Yönetici paneli için blog yazısı özetini getir (toplam + son işlem tarihi)
+    /// </summary>
+    [HttpGet("admin/summary")]
+    [Authorize]
+    public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
+        => ToActionResult(await _blogService.GetAdminSummaryAsync(cancellationToken));
 }

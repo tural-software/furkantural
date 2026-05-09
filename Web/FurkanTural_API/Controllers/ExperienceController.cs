@@ -104,4 +104,12 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     [Authorize]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.RestoreAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
+    /// Yönetici paneli için tecrübe özetini getir (toplam + son işlem tarihi)
+    /// </summary>
+    [HttpGet("admin/summary")]
+    [Authorize]
+    public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
+        => ToActionResult(await _experienceService.GetAdminSummaryAsync(cancellationToken));
 }

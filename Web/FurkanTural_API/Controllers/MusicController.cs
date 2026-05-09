@@ -109,4 +109,13 @@ public class MusicController(IMusicService musicService) : JwtBaseController
     [HttpPatch("{id:int}/restore")]
     [Authorize]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _musicService.RestoreAsync(id, SortUserId(), cancellationToken));}
+        => ToActionResult(await _musicService.RestoreAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
+    /// Yönetici paneli için müzik özetini getir (toplam + son işlem tarihi)
+    /// </summary>
+    [HttpGet("admin/summary")]
+    [Authorize]
+    public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
+        => ToActionResult(await _musicService.GetAdminSummaryAsync(cancellationToken));
+}

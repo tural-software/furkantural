@@ -136,4 +136,12 @@ public class MusicImageController(IMusicImageService musicImageService, IWebHost
     [Authorize]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.RestoreAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
+    /// Yönetici paneli için müzik görseli özetini getir (toplam + son işlem tarihi)
+    /// </summary>
+    [HttpGet("admin/summary")]
+    [Authorize]
+    public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
+        => ToActionResult(await _musicImageService.GetAdminSummaryAsync(cancellationToken));
 }

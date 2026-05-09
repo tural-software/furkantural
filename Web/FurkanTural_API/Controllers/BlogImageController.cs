@@ -138,4 +138,12 @@ public class BlogImageController(IBlogImageService blogImageService, IWebHostEnv
     [Authorize]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>
+    /// Yönetici paneli için blog görseli özetini getir (toplam + son işlem tarihi)
+    /// </summary>
+    [HttpGet("admin/summary")]
+    [Authorize]
+    public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
+        => ToActionResult(await _blogImageService.GetAdminSummaryAsync(cancellationToken));
 }

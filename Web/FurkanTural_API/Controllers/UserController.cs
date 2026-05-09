@@ -108,4 +108,11 @@ public class UserController : JwtBaseController
     [HttpPatch("{id:int}/restore")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _userService.RestoreAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
+    /// Yönetici paneli için kullanıcı özetini getir (toplam + son işlem tarihi)
+    /// </summary>
+    [HttpGet("admin/summary")]
+    public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
+        => ToActionResult(await _userService.GetAdminSummaryAsync(cancellationToken));
 }

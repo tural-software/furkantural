@@ -100,4 +100,12 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     [Authorize]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.RestoreAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>
+    /// Yönetici paneli için yetkinlik özetini getir (toplam + son işlem tarihi)
+    /// </summary>
+    [HttpGet("admin/summary")]
+    [Authorize]
+    public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
+        => ToActionResult(await _skillService.GetAdminSummaryAsync(cancellationToken));
 }
