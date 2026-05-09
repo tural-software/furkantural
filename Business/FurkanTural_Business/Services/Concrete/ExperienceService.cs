@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Experience;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
@@ -131,5 +132,11 @@ public class ExperienceService(IUnitOfWork unitOfWork) : IExperienceService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<AdminExperienceDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var summary = await _unitOfWork.Experiences.GetAdminSummaryAsync(cancellationToken);
+        return Result<EntitySummaryDto>.Ok(summary);
     }
 }

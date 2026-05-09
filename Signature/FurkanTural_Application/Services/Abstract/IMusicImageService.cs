@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.MusicImage;
 using FurkanTural_Application.Wrappers;
 
@@ -10,4 +11,5 @@ public interface IMusicImageService : IService<MusicImageDto, CreateMusicImageDt
     Task<Result<AdminMusicImageDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);
     Task<Result<AdminMusicImageDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminMusicImageDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
+    Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
 }

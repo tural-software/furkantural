@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.MusicImage;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
@@ -129,5 +130,11 @@ public class MusicImageService(IUnitOfWork unitOfWork) : IMusicImageService
             return Result<AdminMusicImageDto>.Fail("Müzik görseli bulunamadı.", statusCode: 404);
 
         return Result<AdminMusicImageDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var summary = await _unitOfWork.MusicImages.GetAdminSummaryAsync(cancellationToken);
+        return Result<EntitySummaryDto>.Ok(summary);
     }
 }

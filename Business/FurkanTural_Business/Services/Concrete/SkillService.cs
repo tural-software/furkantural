@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Skill;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
@@ -125,5 +126,11 @@ public class SkillService(IUnitOfWork unitOfWork) : ISkillService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<AdminSkillDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var summary = await _unitOfWork.Skills.GetAdminSummaryAsync(cancellationToken);
+        return Result<EntitySummaryDto>.Ok(summary);
     }
 }

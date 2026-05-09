@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Music;
 using FurkanTural_Application.Wrappers;
 
@@ -9,4 +10,5 @@ public interface IMusicService : IService<MusicDto, CreateMusicDto, UpdateMusicD
     Task<Result<AdminMusicDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);
     Task<Result<AdminMusicDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminMusicDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
+    Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
 }

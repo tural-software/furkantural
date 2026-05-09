@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Education;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
@@ -131,5 +132,11 @@ public class EducationService(IUnitOfWork unitOfWork) : IEducationService
             return Result<AdminEducationDto>.Fail("Eğitim bilgisi bulunamadı.", statusCode: 404);
 
         return Result<AdminEducationDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var summary = await _unitOfWork.Educations.GetAdminSummaryAsync(cancellationToken);
+        return Result<EntitySummaryDto>.Ok(summary);
     }
 }

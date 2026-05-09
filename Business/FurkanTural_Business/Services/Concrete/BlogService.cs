@@ -1,4 +1,5 @@
 using FurkanTural_Application.DTOs.Blog;
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
@@ -125,5 +126,11 @@ public class BlogService(IUnitOfWork unitOfWork) : IBlogService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Ok();
+    }
+
+    public async Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var summary = await _unitOfWork.Blogs.GetAdminSummaryAsync(cancellationToken);
+        return Result<EntitySummaryDto>.Ok(summary);
     }
 }

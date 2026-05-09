@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.User;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
@@ -161,5 +162,11 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<AdminUserDto>.Ok(entity.ToAdminDto());
+    }
+
+    public async Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        var summary = await _unitOfWork.Users.GetAdminSummaryAsync(cancellationToken);
+        return Result<EntitySummaryDto>.Ok(summary);
     }
 }
