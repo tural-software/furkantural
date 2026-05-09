@@ -13,5 +13,10 @@ public class UserConfiguration : BaseEntityConfiguration<User>
         builder.Property(e => e.Username).HasMaxLength(100).IsRequired();
         builder.Property(e => e.Password).HasMaxLength(500).IsRequired();
         builder.HasIndex(e => e.Username).IsUnique();
+
+        builder.HasOne<Role>()
+            .WithMany()
+            .HasForeignKey(e => e.RoleId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
