@@ -15,6 +15,9 @@ public static class BusinessServiceRegistration
         services.AddScoped<ILogService, LogService>();
         services.AddScoped<IMusicService, MusicService>();
         services.AddScoped<IMusicImageService, MusicImageService>();
+        services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<IProjectImageService, ProjectImageService>();
+        services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<ISkillService, SkillService>();
         services.AddScoped<ISubscriberService, SubscriberService>();
         services.AddScoped<IUserService, UserService>();

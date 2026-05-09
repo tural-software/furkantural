@@ -26,6 +26,9 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     public IRepository<Experience> Experiences => GetRepository<Experience>();
     public IRepository<Music> Musics => GetRepository<Music>();
     public IRepository<MusicImage> MusicImages => GetRepository<MusicImage>();
+    public IRepository<Project> Projects => GetRepository<Project>();
+    public IRepository<ProjectImage> ProjectImages => GetRepository<ProjectImage>();
+    public IRepository<Role> Roles => GetRepository<Role>();
     public IRepository<Skill> Skills => GetRepository<Skill>();
     public IRepository<Subscriber> Subscribers => GetRepository<Subscriber>();
     public IRepository<User> Users => GetRepository<User>();

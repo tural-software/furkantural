@@ -13,6 +13,9 @@ public interface IUnitOfWork
     IRepository<Experience> Experiences { get; }
     IRepository<Music> Musics { get; }
     IRepository<MusicImage> MusicImages { get; }
+    IRepository<Project> Projects { get; }
+    IRepository<ProjectImage> ProjectImages { get; }
+    IRepository<Role> Roles { get; }
     IRepository<Skill> Skills { get; }
     IRepository<Subscriber> Subscribers { get; }
     IRepository<User> Users { get; }

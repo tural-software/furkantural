@@ -13,6 +13,9 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     public DbSet<Log> Logs => Set<Log>();
     public DbSet<Music> Musics => Set<Music>();
     public DbSet<MusicImage> MusicImages => Set<MusicImage>();
+    public DbSet<Project> Projects => Set<Project>();
+    public DbSet<ProjectImage> ProjectImages => Set<ProjectImage>();
+    public DbSet<Role> Roles => Set<Role>();
     public DbSet<Skill> Skills => Set<Skill>();
     public DbSet<Subscriber> Subscribers => Set<Subscriber>();
     public DbSet<User> Users => Set<User>();
