@@ -1,3 +1,5 @@
+@using FurkanTural_Admin.Models.Dashboard
+@model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
 }
@@ -5,11 +7,14 @@
 <div class="container">
     <div class="section-header reveal">
         <p class="section-eyebrow">Hoş Geldin</p>
-        <h1 class="section-title">@ViewData["Username"]</h1>
-        <p class="section-desc">Admin paneli iskeleti hazır. Modüller bu noktadan eklenecek.</p>
+        <h1 class="section-title">@Model.Username</h1>
+        <p class="section-desc">Yönetebileceğin modüller aşağıda listelenmiştir. Bir kart üzerindeki "Yönet" butonu ile ilgili modülün CRUD sayfasına ulaşabilirsin.</p>
     </div>
 
-    <div class="card reveal">
-        <p style="margin:0; color: var(--text-dim);">Burası dashboard içeriği için ayrılmış alan. İlk modül buraya gelecek.</p>
+    <div class="dashboard-grid">
+        @foreach (var card in Model.Modules)
+        {
+            <partial name="_EntityCard" model="card" />
+        }
     </div>
 </div>

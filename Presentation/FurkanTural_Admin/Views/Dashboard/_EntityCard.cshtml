@@ -1,0 +1,103 @@
+@using FurkanTural_Admin.Models.Dashboard
+@model EntityCardViewModel
+@{
+    string FormatLastActivity(DateTime? when)
+    {
+        if (when is null) return "—";
+        var local = when.Value.ToLocalTime();
+        var diff = DateTime.Now - local;
+        if (diff.TotalMinutes < 1) return "az önce";
+        if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes} dk önce";
+        if (local.Date == DateTime.Today) return "Bugün";
+        if (local.Date == DateTime.Today.AddDays(-1)) return "Dün";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} gün önce";
+        return local.ToString("dd.MM.yyyy");
+    }
+
+    string ChipClass(EntityAction a) => a switch
+    {
+        EntityAction.Create => "action-chip action-chip--create",
+        EntityAction.Read => "action-chip action-chip--read",
+        EntityAction.Update => "action-chip action-chip--update",
+        EntityAction.Delete => "action-chip action-chip--delete",
+        _ => "action-chip"
+    };
+
+    string ChipIcon(EntityAction a) => a switch
+    {
+        EntityAction.Create => "plus",
+        EntityAction.Read => "eye",
+        EntityAction.Update => "pencil",
+        EntityAction.Delete => "trash",
+        _ => "eye"
+    };
+
+    string ChipLabel(EntityAction a) => a switch
+    {
+        EntityAction.Create => "Create",
+        EntityAction.Read => "Read",
+        EntityAction.Update => "Update",
+        EntityAction.Delete => "Delete",
+        _ => ""
+    };
+
+    var countText = Model.TotalCount.HasValue ? Model.TotalCount.Value.ToString("N0") : "—";
+    var lastActivityText = FormatLastActivity(Model.LastActivityAt);
+}
+<article class="card entity-card reveal">
+    @if (Model.IsLocked)
+    {
+        <span class="entity-card__locked-badge">Yakında</span>
+    }
+
+    <span class="entity-card__icon">
+        @await Html.PartialAsync("_Icons", Model.IconKey)
+    </span>
+
+    <h2 class="entity-card__title">@Model.Title</h2>
+    <p class="entity-card__desc">@Model.Description</p>
+
+    <div class="entity-card__actions">
+        @foreach (var a in Model.Actions)
+        {
+            <span class="@ChipClass(a)">
+                @await Html.PartialAsync("_Icons", ChipIcon(a))
+                @ChipLabel(a)
+            </span>
+        }
+    </div>
+
+    <div class="entity-card__divider"></div>
+
+    <div class="entity-card__stats">
+        <div class="entity-card__stat">
+            <span class="entity-card__stat-icon">@await Html.PartialAsync("_Icons", "person")</span>
+            <span class="entity-card__stat-text">
+                <span class="entity-card__stat-value">@countText @Model.CountUnitLabel</span>
+            </span>
+        </div>
+        <div class="entity-card__stats-divider"></div>
+        <div class="entity-card__stat">
+            <span class="entity-card__stat-icon">@await Html.PartialAsync("_Icons", "clock")</span>
+            <span class="entity-card__stat-text">
+                <span class="entity-card__stat-label">Son güncelleme</span>
+                <span class="entity-card__stat-value">@lastActivityText</span>
+            </span>
+        </div>
+    </div>
+
+    @if (Model.IsLocked || string.IsNullOrEmpty(Model.ManageUrl))
+    {
+        <button type="button" class="btn-primary entity-card__cta" disabled aria-disabled="true">
+            @await Html.PartialAsync("_Icons", "settings")
+            Yönet
+        </button>
+    }
+    else
+    {
+        <a href="@Model.ManageUrl" class="btn-primary entity-card__cta">
+            @await Html.PartialAsync("_Icons", "settings")
+            Yönet
+        </a>
+    }
+</article>
