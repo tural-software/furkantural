@@ -84,6 +84,7 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
             return Result<UserDto>.Fail("Bu kullanıcı adı zaten kullanılıyor.");
 
         entity.Username = dto.Username;
+        entity.RoleId = dto.RoleId;
         entity.UpdatedBy = dto.UpdatedBy;
 
         if (!string.IsNullOrWhiteSpace(dto.Password))
