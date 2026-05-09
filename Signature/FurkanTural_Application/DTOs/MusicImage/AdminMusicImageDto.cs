@@ -4,6 +4,8 @@ public class AdminMusicImageDto
 {
     public int Id { get; set; }
     public string? Url { get; set; }
+    public string? AltText { get; set; }
+    public bool IsCover { get; set; }
     public int MusicId { get; set; }
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
