@@ -41,7 +41,8 @@ public class AuthController(IAuthService authService, IUserService userService) 
         return ToActionResult(await _userService.CreateAsync(new CreateUserDto
         {
             Username = request.Username,
-            Password = request.Password
+            Password = request.Password,
+            RoleId = 1 // İlk kurulumda yönetici (Admin) rolü atanır
         }, cancellationToken));
     }
 }

@@ -70,6 +70,7 @@ public class UserController : JwtBaseController
         {
             Username = request.Username,
             Password = request.Password,
+            RoleId = request.RoleId,
             CreatedBy = SortUserId()
         }, cancellationToken));
 
@@ -83,6 +84,7 @@ public class UserController : JwtBaseController
             Id = request.Id,
             Username = request.Username,
             Password = request.Password,
+            RoleId = request.RoleId,
             UpdatedBy = SortUserId()
         }, cancellationToken));
 
