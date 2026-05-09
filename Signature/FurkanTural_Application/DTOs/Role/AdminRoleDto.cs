@@ -1,10 +1,9 @@
-namespace FurkanTural_Application.DTOs.User;
+namespace FurkanTural_Application.DTOs.Role;
 
-public class AdminUserDto
+public class AdminRoleDto
 {
     public int Id { get; set; }
-    public string? Username { get; set; }
-    public int RoleId { get; set; }
+    public string? Name { get; set; }
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime CreatedAt { get; set; }
