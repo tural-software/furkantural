@@ -22,6 +22,30 @@ builder.Services.AddHttpClient<IAdminSummaryClient, AdminSummaryClient>(client =
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 
+builder.Services.AddHttpClient<ISubscriberApiClient, SubscriberApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<ISkillApiClient, SkillApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<IBlogApiClient, BlogApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<IBlogImageApiClient, BlogImageApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

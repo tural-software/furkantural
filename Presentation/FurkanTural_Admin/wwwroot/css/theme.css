@@ -12,6 +12,7 @@
 /* DARK (default) */
 :root,
 [data-theme="dark"] {
+    color-scheme: dark;
     --bg-main: #0f1117;
     --bg-card: rgba(30, 32, 40, 0.6);
     --bg-card-solid: #1e2028;
@@ -44,6 +45,7 @@
 
 /* LIGHT */
 [data-theme="light"] {
+    color-scheme: light;
     --bg-main: #f8fafc;
     --bg-card: rgba(255, 255, 255, 0.7);
     --bg-card-solid: #ffffff;

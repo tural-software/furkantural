@@ -1,3 +1,4 @@
+using System.Globalization;
 using FurkanTural_Admin.Models.Dashboard;
 using FurkanTural_Admin.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -49,7 +50,19 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
         new("logs", "log", "Kayıtlar",
             "Sistem loglarını görüntüleyin. Salt okunur kayıtlardır.",
             [EntityAction.Read],
-            "kayıt")
+            "kayıt"),
+        new("projects", "project", "Projeler",
+            "Proje kayıtlarını görüntüleyin ve CRUD işlemlerini yönetin.",
+            [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
+            "proje"),
+        new("project-images", "projectimage", "Proje Görselleri",
+            "Projelere bağlı görselleri görüntüleyin ve CRUD işlemlerini yönetin.",
+            [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
+            "görsel"),
+        new("roles", "role", "Roller",
+            "Kullanıcı rollerini görüntüleyin ve CRUD işlemlerini yönetin.",
+            [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
+            "rol")
     ];
 
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -61,6 +74,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
         var summaries = await Task.WhenAll(
             Modules.Select(m => _summaryClient.GetAsync(m.ApiPath, token, cancellationToken)));
 
+        var trCulture = CultureInfo.GetCultureInfo("tr-TR");
         var cards = Modules
             .Select((m, i) => new EntityCardViewModel
             {
@@ -71,10 +85,15 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
                 Actions = m.Actions,
                 TotalCount = summaries[i]?.TotalCount,
                 LastActivityAt = summaries[i]?.LastActivityAt,
-                IsLocked = true,
-                ManageUrl = null,
+                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images",
+                ManageUrl = m.Slug == "subscribers" ? Url.Action("Index", "Subscriber")
+                          : m.Slug == "skills"       ? Url.Action("Index", "Skill")
+                          : m.Slug == "blogs"        ? Url.Action("Index", "Blog")
+                          : m.Slug == "blog-images"  ? Url.Action("Index", "BlogImage")
+                          : null,
                 CountUnitLabel = m.CountUnitLabel
             })
+            .OrderBy(c => c.Title, StringComparer.Create(trCulture, ignoreCase: false))
             .ToList();
 
         var vm = new DashboardViewModel
