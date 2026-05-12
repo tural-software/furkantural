@@ -2,7 +2,6 @@ using Asp.Versioning;
 using FurkanTural_Application.DTOs.ProjectImage;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_API.Controllers.Base;
-using FurkanTural_API.Helpers;
 using FurkanTural_API.Models.ProjectImage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class ProjectImageController(IProjectImageService projectImageService, IWebHostEnvironment environment) : JwtBaseController
+public class ProjectImageController(IProjectImageService projectImageService, IFileService fileService) : JwtBaseController
 {
     private readonly IProjectImageService _projectImageService = projectImageService;
-    private readonly IWebHostEnvironment _environment = environment;
+    private readonly IFileService _fileService = fileService;
 
     /// <summary>
     /// Proje görselini ID ile getir
@@ -86,7 +85,7 @@ public class ProjectImageController(IProjectImageService projectImageService, IW
             return BadRequest("ImageData boş olamaz.");
 
         var userId = SortUserId() ?? 0;
-        var fileName = await ImageUploadHelper.SaveAsync(request.ImageData, request.ImageName, userId, _environment.WebRootPath);
+        var fileName = await _fileService.SaveAsync(request.ImageData, request.ImageName, "Project", request.ProjectId, userId);
 
         var dto = new CreateProjectImageDto
         {
@@ -111,24 +110,72 @@ public class ProjectImageController(IProjectImageService projectImageService, IW
         if (existing.IsFailure)
             return ToActionResult(existing);
 
-        string? fileName = null;
-        if (request.ImageData is { Length: > 0 })
+        var existingData = existing.Data!;
+
+        // Yeni görsel gönderilmediyse sadece metadata güncelle, dosya işlemi yapma
+        if (request.ImageData is not { Length: > 0 })
         {
-            var userId = SortUserId() ?? 0;
-            fileName = await ImageUploadHelper.SaveAsync(request.ImageData, request.ImageName ?? string.Empty, userId, _environment.WebRootPath);
+            var metaDto = new UpdateProjectImageDto
+            {
+                Id = request.Id,
+                Url = existingData.Url,
+                AltText = request.AltText,
+                IsCover = request.IsCover,
+                ProjectId = request.ProjectId,
+                UpdatedBy = SortUserId()
+            };
+            return ToActionResult(await _projectImageService.UpdateAsync(metaDto, cancellationToken));
         }
 
-        var dto = new UpdateProjectImageDto
+        var userId = SortUserId() ?? 0;
+        var oldUrl = existingData.Url;
+
+        // Adım 1: Yeni dosyayı fiziksel olarak kaydet
+        var newFileName = await _fileService.SaveAsync(
+            request.ImageData, request.ImageName ?? string.Empty, "Project", request.ProjectId, userId);
+
+        // Adım 2: Veritabanını yeni dosya adıyla güncelle
+        var updateDto = new UpdateProjectImageDto
         {
             Id = request.Id,
-            Url = fileName ?? existing.Data!.Url,
+            Url = newFileName,
             AltText = request.AltText,
             IsCover = request.IsCover,
             ProjectId = request.ProjectId,
             UpdatedBy = SortUserId()
         };
 
-        return ToActionResult(await _projectImageService.UpdateAsync(dto, cancellationToken));
+        var updateResult = await _projectImageService.UpdateAsync(updateDto, cancellationToken);
+        if (updateResult.IsFailure)
+        {
+            // DB başarısız → yeni dosyayı diskten sil (disk rollback)
+            try { await _fileService.DeleteAsync(newFileName); } catch { /* best-effort */ }
+            return ToActionResult(updateResult);
+        }
+
+        // Adım 3: Eski dosyayı fiziksel olarak sil
+        try
+        {
+            await _fileService.DeleteAsync(oldUrl);
+        }
+        catch
+        {
+            // Eski dosya silinemedi → DB'yi eski haline geri sar + yeni dosyayı sil
+            var rollbackDto = new UpdateProjectImageDto
+            {
+                Id = existingData.Id,
+                Url = oldUrl,
+                AltText = existingData.AltText,
+                IsCover = existingData.IsCover,
+                ProjectId = existingData.ProjectId,
+                UpdatedBy = SortUserId()
+            };
+            try { await _projectImageService.UpdateAsync(rollbackDto, cancellationToken); } catch { /* best-effort */ }
+            try { await _fileService.DeleteAsync(newFileName); } catch { /* best-effort */ }
+            return StatusCode(500, "Eski görsel dosyası silinemedi. İşlem geri alındı.");
+        }
+
+        return ToActionResult(updateResult);
     }
 
     /// <summary>

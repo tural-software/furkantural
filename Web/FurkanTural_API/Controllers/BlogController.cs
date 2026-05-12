@@ -35,14 +35,16 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetAllForAdminAsync(cancellationToken));
 
-    /// <summary>    /// Blog yazısını yönetici paneli için ID ile getir (silinmiş dahil)
+    /// <summary>    
+    /// Blog yazısını yönetici paneli için ID ile getir (silinmiş dahil)
     /// </summary>
     [HttpGet("admin/{id:int}")]
     [Authorize]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetByIdForAdminAsync(id, cancellationToken));
 
-    /// <summary>    /// Blog yazılarını sayfalı listele
+    /// <summary>    
+    /// Blog yazılarını sayfalı listele
     /// </summary>
     [HttpGet("paged")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)

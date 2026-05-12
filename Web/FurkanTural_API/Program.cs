@@ -16,6 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddBusinessServices();
+builder.Services.AddSingleton(new FurkanTural_Application.Settings.FileStorageSettings
+{
+    UploadsPath = Path.Combine(builder.Environment.WebRootPath, "images", "uploads")
+});
 
 builder.Services.AddControllers();
 
