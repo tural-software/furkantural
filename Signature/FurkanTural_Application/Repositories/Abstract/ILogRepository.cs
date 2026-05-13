@@ -11,5 +11,7 @@ public interface ILogRepository
     Task<IEnumerable<Log>> GetAllAsync(Expression<Func<Log, bool>>? predicate = null, CancellationToken cancellationToken = default);
     Task<IEnumerable<Log>> GetAllPagedAsync(int pageNumber, int pageSize, Expression<Func<Log, bool>>? predicate = null, CancellationToken cancellationToken = default);
     Task<int> CountAsync(Expression<Func<Log, bool>>? predicate = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Log>> GetAllForAdminPagedAsync(string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    Task<int> CountForAdminAsync(string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo, CancellationToken cancellationToken = default);
     Task<EntitySummaryDto> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
 }

@@ -40,4 +40,19 @@ public class LogController(ILogService logService) : BaseApiController
     [HttpGet("admin/summary")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _logService.GetAdminSummaryAsync(cancellationToken));
+
+    /// <summary>
+    /// Yönetici paneli için filtrelenmiş sayfalı log listesi
+    /// </summary>
+    [HttpGet("admin/paged")]
+    public async Task<IActionResult> GetAdminPaged(
+        [FromQuery] string? level,
+        [FromQuery] string? project,
+        [FromQuery] string? message,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _logService.GetAllForAdminPagedAsync(level, project, message, dateFrom, dateTo, pageNumber, pageSize, cancellationToken));
 }

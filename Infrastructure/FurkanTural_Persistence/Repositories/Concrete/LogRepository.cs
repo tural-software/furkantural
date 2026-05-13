@@ -47,4 +47,40 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
         var lastCreated = await query.MaxAsync(e => (DateTime?)e.CreatedAt, cancellationToken);
         return new EntitySummaryDto(count, lastCreated);
     }
+
+    private IQueryable<Log> ApplyAdminFilters(IQueryable<Log> query, string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo)
+    {
+        if (!string.IsNullOrWhiteSpace(level))
+            query = query.Where(e => e.Level == level);
+
+        if (!string.IsNullOrWhiteSpace(project))
+            query = query.Where(e => e.Project != null && e.Project.Contains(project));
+
+        if (!string.IsNullOrWhiteSpace(message))
+            query = query.Where(e => e.Message != null && e.Message.Contains(message));
+
+        if (dateFrom.HasValue)
+            query = query.Where(e => e.Date >= dateFrom.Value);
+
+        if (dateTo.HasValue)
+            query = query.Where(e => e.Date < dateTo.Value.AddDays(1));
+
+        return query;
+    }
+
+    public async Task<IEnumerable<Log>> GetAllForAdminPagedAsync(string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var query = ApplyAdminFilters(_dbSet.AsNoTracking().AsQueryable(), level, project, message, dateFrom, dateTo);
+        return await query
+            .OrderByDescending(e => e.Date)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> CountForAdminAsync(string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo, CancellationToken cancellationToken = default)
+    {
+        var query = ApplyAdminFilters(_dbSet.AsNoTracking().AsQueryable(), level, project, message, dateFrom, dateTo);
+        return await query.CountAsync(cancellationToken);
+    }
 }
