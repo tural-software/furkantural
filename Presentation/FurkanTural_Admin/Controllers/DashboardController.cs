@@ -35,7 +35,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
             "Müzik kayıtlarını görüntüleyin ve CRUD işlemlerini yönetin.",
             [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
             "müzik"),
-        new("music-images", "musicimage", "Müzik Görselleri",
+        new("music-images", "musicimage", "Müzikler Görselleri",
             "Müziklere bağlı görselleri görüntüleyin ve CRUD işlemlerini yönetin.",
             [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
             "görsel"),
@@ -85,11 +85,16 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
                 Actions = m.Actions,
                 TotalCount = summaries[i]?.TotalCount,
                 LastActivityAt = summaries[i]?.LastActivityAt,
-                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images",
+                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images" && m.Slug != "experiences" && m.Slug != "educations" && m.Slug != "logs" && m.Slug != "users" && m.Slug != "music",
                 ManageUrl = m.Slug == "subscribers" ? Url.Action("Index", "Subscriber")
                           : m.Slug == "skills"       ? Url.Action("Index", "Skill")
                           : m.Slug == "blogs"        ? Url.Action("Index", "Blog")
                           : m.Slug == "blog-images"  ? Url.Action("Index", "BlogImage")
+                          : m.Slug == "experiences"  ? Url.Action("Index", "Experience")
+                          : m.Slug == "educations"   ? Url.Action("Index", "Education")
+                          : m.Slug == "logs"          ? Url.Action("Index", "Log")
+                          : m.Slug == "users"         ? Url.Action("Index", "User")
+                          : m.Slug == "music"          ? Url.Action("Index", "Music")
                           : null,
                 CountUnitLabel = m.CountUnitLabel
             })

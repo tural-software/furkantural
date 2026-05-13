@@ -69,6 +69,17 @@
             '</div>';
     }
 
+    function buildPasswordField(field, value) {
+        var reqClass = field.required ? ' fm-field__label--required' : '';
+        var maxLen = field.maxLength ? ' maxlength="' + field.maxLength + '"' : '';
+        var ph = field.placeholder ? ' placeholder="' + escAttr(field.placeholder) + '"' : '';
+        return '<div class="fm-field" data-field="' + field.name + '">' +
+            '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
+            '<input type="password" class="fm-field__input" name="' + field.name + '"' + maxLen + ph + ' autocomplete="new-password" />' +
+            '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
+            '</div>';
+    }
+
     function buildNumberField(field, value) {
         var reqClass = field.required ? ' fm-field__label--required' : '';
         var val = (value !== undefined && value !== null) ? String(value) : '';
@@ -142,6 +153,18 @@
             '</div>';
     }
 
+    function buildDateField(field, value) {
+        var reqClass = field.required ? ' fm-field__label--required' : '';
+        var val = (value !== undefined && value !== null) ? String(value) : '';
+        var minAttr = field.min ? ' min="' + escAttr(field.min) + '"' : '';
+        var maxAttr = field.max ? ' max="' + escAttr(field.max) + '"' : '';
+        return '<div class="fm-field" data-field="' + field.name + '">' +
+            '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
+            '<input type="date" class="fm-field__input" name="' + field.name + '" value="' + escAttr(val) + '"' + minAttr + maxAttr + ' autocomplete="off" />' +
+            '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
+            '</div>';
+    }
+
     function buildTextareaField(field, value) {
         var reqClass = field.required ? ' fm-field__label--required' : '';
         var val = (value !== undefined && value !== null) ? String(value) : '';
@@ -163,6 +186,8 @@
         if (field.type === 'file')              return buildFileField(field);
         if (field.type === 'hidden')            return buildHiddenField(field, value);
         if (field.type === 'searchable-select') return buildSearchableSelectField(field, value);
+        if (field.type === 'date')              return buildDateField(field, value);
+        if (field.type === 'password')          return buildPasswordField(field, value);
         return buildTextField(field, value);
     }
 
