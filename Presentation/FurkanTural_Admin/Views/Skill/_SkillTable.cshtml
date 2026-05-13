@@ -31,10 +31,6 @@
                 <th class="col-proficiency">Yetkinlik</th>
                 <th>Aktif</th>
                 <th>Silinmiş</th>
-                <th>Oluşturulma Tarihi</th>
-                <th>Oluşturan</th>
-                <th>Güncellenme Tarihi</th>
-                <th>Güncelleyen</th>
                 <th class="col-actions">İşlemler</th>
             </tr>
         </thead>
@@ -82,18 +78,17 @@
                             <span class="sbadge sbadge--safe">Hayır</span>
                         }
                     </td>
-                    <td>@row.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
-                    <td>@(row.CreatedBy.HasValue ? $"Admin (ID: {row.CreatedBy})" : "—")</td>
-                    <td>@(row.UpdatedAt.HasValue ? row.UpdatedAt.Value.ToString("dd MMM yyyy HH:mm") : "—")</td>
-                    <td>@(row.UpdatedBy.HasValue ? $"Admin (ID: {row.UpdatedBy})" : "—")</td>
                     <td>
                         <div class="row-actions">
                             <button type="button" class="row-btn ft-view-btn" title="Görüntüle" data-id="@row.Id">
                                 @await Html.PartialAsync("_Icons", "eye")
                             </button>
-                            <button type="button" class="row-btn row-btn--edit ft-edit-btn" title="Düzenle" data-id="@row.Id">
-                                @await Html.PartialAsync("_Icons", "pencil")
-                            </button>
+                            @if (!row.IsDeleted && row.IsActive)
+                            {
+                                <button type="button" class="row-btn row-btn--edit ft-edit-btn" title="Düzenle" data-id="@row.Id">
+                                    @await Html.PartialAsync("_Icons", "pencil")
+                                </button>
+                            }
 
                             @if (!row.IsDeleted)
                             {
@@ -129,7 +124,7 @@
                                     </button>
                                 </form>
                             }
-                            else
+                            else if (row.IsActive)
                             {
                                 <form method="post" action="@Url.Action("Delete")" style="display:inline">
                                     @Html.AntiForgeryToken()
@@ -146,7 +141,7 @@
             @if (!Model.Rows.Any())
             {
                 <tr class="empty-row">
-                    <td colspan="10">Kayıt bulunamadı.</td>
+                    <td colspan="6">Kayıt bulunamadı.</td>
                 </tr>
             }
         </tbody>
