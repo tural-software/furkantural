@@ -1,0 +1,240 @@
+@using FurkanTural_Admin.Models.MusicImage
+@using System.Text.Json
+@model MusicImageIndexViewModel
+@{
+    int rangeStart = Model.TotalFiltered > 0 ? (Model.PageNumber - 1) * Model.PageSize + 1 : 0;
+    int rangeEnd   = Math.Min(Model.PageNumber * Model.PageSize, Model.TotalFiltered);
+
+    string PageUrl(int p) => Url.Action("Index", new
+    {
+        url           = Model.SearchUrl,
+        isCoverFilter = Model.IsCoverFilter,
+        activeFilter  = Model.ActiveFilter,
+        deletedFilter = Model.DeletedFilter,
+        musicId       = Model.MusicIdFilter,
+        dateFrom      = Model.DateFrom,
+        dateTo        = Model.DateTo,
+        pageNumber    = p,
+        pageSize      = Model.PageSize
+    }) ?? "#";
+
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    static string TruncateStr(string? text, int maxLength = 60)
+    {
+        if (string.IsNullOrEmpty(text)) return string.Empty;
+        return text.Length <= maxLength ? text : text[..maxLength] + "…";
+    }
+}
+
+<script id="__music-image-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
+
+<div class="data-table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th class="col-id">ID</th>
+                <th class="col-alttext">AltText</th>
+                <th>Kapak</th>
+                <th>Müzik ID</th>
+                <th>Aktif</th>
+                <th>Silinmiş</th>
+                <th class="col-actions">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                <tr>
+                    <td>@row.Id</td>
+                    <td>
+                        @if (string.IsNullOrEmpty(row.AltText))
+                        {
+                            <span class="alttext-cell alttext-cell--empty">—</span>
+                        }
+                        else
+                        {
+                            <span class="alttext-cell" title="@row.AltText">@TruncateStr(row.AltText)</span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.IsCover)
+                        {
+                            <span class="sbadge sbadge--cover">
+                                @await Html.PartialAsync("_Icons", "check-circle")
+                                Kapak
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="sbadge sbadge--null">Değil</span>
+                        }
+                    </td>
+                    <td>@row.MusicId</td>
+                    <td>
+                        @if (row.IsActive)
+                        {
+                            <span class="sbadge sbadge--active">
+                                @await Html.PartialAsync("_Icons", "check-circle")
+                                Aktif
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="sbadge sbadge--passive">
+                                @await Html.PartialAsync("_Icons", "x-circle")
+                                Pasif
+                            </span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.IsDeleted)
+                        {
+                            <span class="sbadge sbadge--deleted">Evet</span>
+                        }
+                        else
+                        {
+                            <span class="sbadge sbadge--safe">Hayır</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <a href="@Url.Action("Index", "Music", new { musicId = row.MusicId })" class="row-btn row-btn--info" title="Müziği Görüntüle">
+                                @await Html.PartialAsync("_Icons", "music")
+                            </a>
+                            <button type="button" class="row-btn ft-view-btn" title="Görüntüle" data-id="@row.Id">
+                                @await Html.PartialAsync("_Icons", "eye")
+                            </button>
+                            @if (!row.IsDeleted && row.IsActive)
+                            {
+                                <button type="button" class="row-btn row-btn--edit ft-edit-btn" title="Düzenle" data-id="@row.Id">
+                                    @await Html.PartialAsync("_Icons", "pencil")
+                                </button>
+                            }
+
+                            @if (!row.IsDeleted)
+                            {
+                                if (row.IsActive)
+                                {
+                                    <form method="post" action="@Url.Action("ToggleActive")" style="display:inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@row.Id" />
+                                        <button type="submit" class="row-btn row-btn--warn" title="Pasife Al">
+                                            @await Html.PartialAsync("_Icons", "toggle-on")
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form method="post" action="@Url.Action("ToggleActive")" style="display:inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@row.Id" />
+                                        <button type="submit" class="row-btn row-btn--success" title="Aktife Al">
+                                            @await Html.PartialAsync("_Icons", "toggle-off")
+                                        </button>
+                                    </form>
+                                }
+                            }
+
+                            @if (row.IsDeleted)
+                            {
+                                <form method="post" action="@Url.Action("Restore")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button type="submit" class="row-btn row-btn--restore" title="Geri Yükle">
+                                        @await Html.PartialAsync("_Icons", "restore")
+                                    </button>
+                                </form>
+                            }
+                            else if (row.IsActive)
+                            {
+                                <form method="post" action="@Url.Action("Delete")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button type="submit" class="row-btn row-btn--delete" title="Sil">
+                                        @await Html.PartialAsync("_Icons", "trash")
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Rows.Any())
+            {
+                <tr class="empty-row">
+                    <td colspan="7">Kayıt bulunamadı.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="tbl-footer">
+    <div class="tbl-footer__left">
+        <form method="get" action="@Url.Action("Index")">
+            <input type="hidden" name="url"           value="@Model.SearchUrl" />
+            <input type="hidden" name="isCoverFilter" value="@Model.IsCoverFilter" />
+            <input type="hidden" name="activeFilter"  value="@Model.ActiveFilter" />
+            <input type="hidden" name="deletedFilter" value="@Model.DeletedFilter" />
+            <input type="hidden" name="musicId"       value="@Model.MusicIdFilter" />
+            <input type="hidden" name="dateFrom"      value="@Model.DateFrom" />
+            <input type="hidden" name="dateTo"        value="@Model.DateTo" />
+            <input type="hidden" name="pageNumber"    value="1" />
+            Sayfa başına
+            <select name="pageSize" class="page-size-sel" onchange="this.form.submit()">
+                @foreach (var s in new[] { 10, 25, 50, 100 })
+                {
+                    <option value="@s" selected="@(Model.PageSize == s)">@s</option>
+                }
+            </select>
+            kayıt gösteriliyor
+        </form>
+    </div>
+
+    <div class="tbl-footer__right">
+        <span class="tbl-footer__range">
+            @if (Model.TotalFiltered > 0)
+            {
+                @($"{rangeStart} - {rangeEnd} / {Model.TotalFiltered:N0} kayıt")
+            }
+            else
+            {
+                <text>0 kayıt</text>
+            }
+        </span>
+        <nav class="pagination" aria-label="Sayfalama">
+            @{
+                var prevOff = Model.PageNumber <= 1 ? "pag-btn--off" : "";
+                var nextOff = Model.PageNumber >= Model.TotalPages ? "pag-btn--off" : "";
+            }
+            <a href="@PageUrl(Model.PageNumber - 1)" class="pag-btn @prevOff" aria-label="Önceki">
+                @await Html.PartialAsync("_Icons", "chevron-left")
+            </a>
+            @{
+                const int maxVis = 5;
+                int sp = Math.Max(1, Model.PageNumber - maxVis / 2);
+                int ep = Math.Min(Model.TotalPages, sp + maxVis - 1);
+                if (ep - sp < maxVis - 1) sp = Math.Max(1, ep - maxVis + 1);
+            }
+            @if (sp > 1)
+            {
+                <a href="@PageUrl(1)" class="pag-btn">1</a>
+                if (sp > 2) { <span class="pag-ellipsis">...</span> }
+            }
+            @for (int p = sp; p <= ep; p++)
+            {
+                var active = p == Model.PageNumber ? "pag-btn--active" : "";
+                <a href="@PageUrl(p)" class="pag-btn @active">@p</a>
+            }
+            @if (ep < Model.TotalPages)
+            {
+                if (ep < Model.TotalPages - 1) { <span class="pag-ellipsis">...</span> }
+                <a href="@PageUrl(Model.TotalPages)" class="pag-btn">@Model.TotalPages</a>
+            }
+            <a href="@PageUrl(Model.PageNumber + 1)" class="pag-btn @nextOff" aria-label="Sonraki">
+                @await Html.PartialAsync("_Icons", "chevron-right")
+            </a>
+        </nav>
+    </div>
+</div>
