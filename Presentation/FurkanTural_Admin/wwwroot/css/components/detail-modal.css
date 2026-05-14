@@ -367,3 +367,46 @@
     margin-top: .875rem;
     border-top: 1px solid var(--border-color);
 }
+
+/* ── Expandable code block (isCode fields) ─────────────── */
+.dm-field > div {
+    flex: 1;
+    min-width: 0;
+}
+.dm-code-wrap {
+    width: 100%;
+}
+.dm-code {
+    display: block;
+    font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+    font-size: .78rem;
+    line-height: 1.55;
+    color: var(--text-main);
+    background: rgba(var(--accent-rgb), .04);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: .65rem .875rem;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-x: auto;
+}
+.dm-expand-btn {
+    display: block;
+    width: 100%;
+    margin-top: .45rem;
+    padding: .3rem .75rem;
+    font-size: .78rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), .07);
+    border: 1px solid rgba(var(--accent-rgb), .2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+    text-align: center;
+}
+.dm-expand-btn:hover {
+    background: rgba(var(--accent-rgb), .14);
+    border-color: rgba(var(--accent-rgb), .35);
+}

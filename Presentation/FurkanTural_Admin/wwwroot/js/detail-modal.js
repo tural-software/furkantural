@@ -38,7 +38,10 @@
         'experiences': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
         'logs': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="16" y2="16"/><line x1="8" y1="8" x2="11" y2="8"/></svg>',
         'users': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-        'music': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>'
+        'music': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+        'music-images': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 15l-5-5L5 21"/></svg>',
+        'projects': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+        'project-images': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/><path d="M3 3l4 4"/></svg>'
     };
 
     function icon(key) {
@@ -82,6 +85,27 @@
         if (field.badgeVariant) {
             const v = field.badgeVariant(record);
             valueHtml = renderBadge(rawVal, v);
+        } else if (field.isCode) {
+            const escAttr = function (v) {
+                return String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            };
+            const escHtml = function (v) {
+                return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            };
+            if (rawVal === '—') {
+                valueHtml = '<div class="dm-code-wrap"><pre class="dm-code">—</pre></div>';
+            } else {
+                const words = rawVal.split(/\s+/).filter(Boolean);
+                if (words.length > 20) {
+                    const shortText = words.slice(0, 20).join(' ') + '\u2026';
+                    valueHtml = '<div class="dm-code-wrap">'
+                        + '<pre class="dm-code" data-full="' + escAttr(rawVal) + '" data-short="' + escAttr(shortText) + '">' + escHtml(shortText) + '</pre>'
+                        + '<button class="dm-expand-btn" data-expanded="false">Daha Fazla Göster</button>'
+                        + '</div>';
+                } else {
+                    valueHtml = '<div class="dm-code-wrap"><pre class="dm-code">' + escHtml(rawVal) + '</pre></div>';
+                }
+            }
         } else {
             const safe = String(rawVal).replace(/</g, '&lt;').replace(/>/g, '&gt;');
             valueHtml = `<span class="dm-field__value">${safe}</span>`;
@@ -191,6 +215,22 @@
                     const key = btn.dataset.key;
                     if (key === 'close') { window.DetailModal.close(); return; }
                     if (_onAction) _onAction(key, record);
+                });
+            });
+
+            _overlay.querySelectorAll('.dm-expand-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var pre = btn.previousElementSibling;
+                    var expanded = btn.dataset.expanded === 'true';
+                    if (expanded) {
+                        pre.textContent = pre.dataset.short;
+                        btn.textContent = 'Daha Fazla Göster';
+                        btn.dataset.expanded = 'false';
+                    } else {
+                        pre.textContent = pre.dataset.full;
+                        btn.textContent = 'Daha Az Göster';
+                        btn.dataset.expanded = 'true';
+                    }
                 });
             });
         },
