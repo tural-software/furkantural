@@ -6,6 +6,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/music/music-index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/filter-blog-select.css" asp-append-version="true" />
 }
 
 @section Scripts {
@@ -15,6 +16,7 @@
             searchArtist: '@Html.Raw(Model.SearchArtist ?? "")',
             activeFilter: '@Html.Raw(Model.ActiveFilter ?? "")',
             deletedFilter:'@Html.Raw(Model.DeletedFilter ?? "")',
+            musicId:      '@Html.Raw(Model.MusicIdFilter?.ToString() ?? "")',
             dateFrom:     '@Html.Raw(Model.DateFrom ?? "")',
             dateTo:       '@Html.Raw(Model.DateTo ?? "")',
             pageNumber:   @Model.PageNumber,
@@ -24,6 +26,7 @@
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
     <script src="~/js/form-modal.js" asp-append-version="true"></script>
+    <script src="~/js/filter-blog-select.js" asp-append-version="true"></script>
     <script src="~/js/pages/music-detail.js" asp-append-version="true"></script>
 }
 
@@ -137,6 +140,17 @@
                         <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
                         <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
                     </select>
+                </div>
+                <div class="filter-group">
+                    <label>Müzik</label>
+                    <div class="fbs-wrap"
+                         data-fbs-endpoint="/Music/MusicOptions"
+                         data-fbs-initial="@(Model.MusicIdFilter.HasValue ? Model.MusicIdFilter.Value.ToString() : "")">
+                        <input type="text" class="fbs-search filter-input" autocomplete="off"
+                               placeholder="Müzik ara..." />
+                        <input type="hidden" class="fbs-value" name="musicId" value="@Model.MusicIdFilter" />
+                        <div class="fbs-dropdown"></div>
+                    </div>
                 </div>
                 <div class="filter-group">
                     <label>Oluşturulma Tarihi</label>

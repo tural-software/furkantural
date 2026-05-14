@@ -6,6 +6,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/blog/blog-index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/filter-blog-select.css" asp-append-version="true" />
 }
 
 @section Scripts {
@@ -16,6 +17,7 @@
             deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
             dateFrom:      '@Html.Raw(Model.DateFrom ?? "")',
             dateTo:        '@Html.Raw(Model.DateTo ?? "")',
+            blogId:        '@(Model.BlogIdFilter.HasValue ? Model.BlogIdFilter.Value.ToString() : "")',
             pageNumber:    @Model.PageNumber,
             pageSize:      @Model.PageSize
         };
@@ -23,6 +25,7 @@
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
     <script src="~/js/form-modal.js" asp-append-version="true"></script>
+    <script src="~/js/filter-blog-select.js" asp-append-version="true"></script>
     <script src="~/js/pages/blog-detail.js" asp-append-version="true"></script>
 }
 
@@ -127,6 +130,17 @@
                         <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
                         <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
                     </select>
+                </div>
+                <div class="filter-group">
+                    <label>Blog</label>
+                    <div class="fbs-wrap"
+                         data-fbs-endpoint="/Blog/BlogOptions"
+                         data-fbs-initial="@(Model.BlogIdFilter.HasValue ? Model.BlogIdFilter.Value.ToString() : "")">
+                        <input type="text" class="fbs-search filter-input" autocomplete="off"
+                               placeholder="Blog ara..." />
+                        <input type="hidden" class="fbs-value" name="blogId" value="@Model.BlogIdFilter" />
+                        <div class="fbs-dropdown"></div>
+                    </div>
                 </div>
                 <div class="filter-group">
                     <label>Oluşturulma Tarihi</label>

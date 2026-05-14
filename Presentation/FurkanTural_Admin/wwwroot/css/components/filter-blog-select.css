@@ -1,0 +1,70 @@
+/* ── Filter Blog Select (fbs) ──────────────────────────────────────────────
+   Searchable dropdown component for filter bars.
+   Usage: .fbs-wrap[data-fbs-endpoint][data-fbs-initial]
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.fbs-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.fbs-search {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Dropdown panel */
+.fbs-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    background: var(--bg-card-solid, #fff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: var(--radius-sm, 6px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .10);
+    max-height: 210px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.fbs-dropdown.fbs-open {
+    display: block;
+}
+
+/* Individual option */
+.fbs-option {
+    padding: .45rem .75rem;
+    font-size: .825rem;
+    color: var(--text-main, #1a202c);
+    cursor: pointer;
+    transition: background .12s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fbs-option:hover,
+.fbs-option:focus {
+    background: rgba(var(--accent-rgb, 99 102 241), .10);
+    color: var(--accent, #6366f1);
+    outline: none;
+}
+
+.fbs-option.fbs-option--active {
+    background: rgba(var(--accent-rgb, 99 102 241), .12);
+    color: var(--accent, #6366f1);
+    font-weight: 500;
+}
+
+/* Hint / empty message */
+.fbs-hint {
+    padding: .45rem .75rem;
+    font-size: .8rem;
+    color: var(--text-dim, #718096);
+    font-style: italic;
+    cursor: default;
+    user-select: none;
+}

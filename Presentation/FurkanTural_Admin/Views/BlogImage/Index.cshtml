@@ -6,6 +6,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/blog-image/blog-image-index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/filter-blog-select.css" asp-append-version="true" />
 }
 
 @section Scripts {
@@ -26,6 +27,7 @@
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
     <script src="~/js/form-modal.js" asp-append-version="true"></script>
+    <script src="~/js/filter-blog-select.js" asp-append-version="true"></script>
     <script src="~/js/pages/blog-image-detail.js" asp-append-version="true"></script>
 }
 
@@ -140,9 +142,15 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Blog ID</label>
-                    <input type="number" name="blogId" value="@Model.BlogIdFilter" min="1"
-                           class="filter-input" placeholder="Blog ID..." style="width:100px" />
+                    <label>Blog</label>
+                    <div class="fbs-wrap"
+                         data-fbs-endpoint="/BlogImage/BlogOptions"
+                         data-fbs-initial="@(Model.BlogIdFilter.HasValue ? Model.BlogIdFilter.Value.ToString() : "")">
+                        <input type="text" class="fbs-search filter-input" autocomplete="off"
+                               placeholder="Blog ara..." />
+                        <input type="hidden" class="fbs-value" name="blogId" value="@Model.BlogIdFilter" />
+                        <div class="fbs-dropdown"></div>
+                    </div>
                 </div>
                 <div class="filter-group">
                     <label>Oluşturulma Tarihi</label>

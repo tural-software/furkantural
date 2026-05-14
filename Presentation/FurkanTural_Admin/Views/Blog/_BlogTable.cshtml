@@ -12,6 +12,7 @@
         deletedFilter = Model.DeletedFilter,
         dateFrom      = Model.DateFrom,
         dateTo        = Model.DateTo,
+        blogId        = Model.BlogIdFilter,
         pageNumber    = p,
         pageSize      = Model.PageSize
     }) ?? "#";
@@ -146,6 +147,7 @@
             <input type="hidden" name="deletedFilter" value="@Model.DeletedFilter" />
             <input type="hidden" name="dateFrom"      value="@Model.DateFrom" />
             <input type="hidden" name="dateTo"        value="@Model.DateTo" />
+            <input type="hidden" name="blogId"        value="@Model.BlogIdFilter" />
             <input type="hidden" name="pageNumber"    value="1" />
             Sayfa başına
             <select name="pageSize" class="page-size-sel" onchange="this.form.submit()">

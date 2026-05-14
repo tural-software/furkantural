@@ -207,6 +207,7 @@
             searchArtist: meta.searchArtist || '',
             activeFilter: meta.activeFilter || '',
             deletedFilter:meta.deletedFilter|| '',
+            musicId:      meta.musicId      || '',
             dateFrom:     meta.dateFrom     || '',
             dateTo:       meta.dateTo       || '',
             pageNumber:   meta.pageNumber   || 1,

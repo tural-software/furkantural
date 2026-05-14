@@ -13,7 +13,8 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
         string? searchName, string? searchArtist,
         string? activeFilter, string? deletedFilter,
         string? dateFrom, string? dateTo,
-        int pageNumber, int pageSize)
+        int pageNumber, int pageSize,
+        int? musicIdFilter = null)
     {
         var filtered = all.AsEnumerable();
 
@@ -39,6 +40,9 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
         if (DateTime.TryParse(dateTo, out var to))
             filtered = filtered.Where(m => m.CreatedAt < to.AddDays(1));
 
+        if (musicIdFilter.HasValue)
+            filtered = filtered.Where(m => m.Id == musicIdFilter.Value);
+
         var filteredList = filtered.ToList();
         var totalFiltered = filteredList.Count;
 
@@ -63,6 +67,7 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
             DeletedFilter = deletedFilter,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
+            MusicIdFilter = musicIdFilter,
             PageNumber    = safePageNumber,
             PageSize      = safePageSize,
             TotalFiltered = totalFiltered
@@ -76,6 +81,7 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
         string? deletedFilter,
         string? dateFrom,
         string? dateTo,
+        int? musicId = null,
         int pageNumber = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
@@ -85,7 +91,7 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
             return RedirectToAction("Login", "Auth");
 
         var all = await _musicApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, searchName, searchArtist, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var vm = BuildViewModel(all, searchName, searchArtist, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, musicId);
         return View(vm);
     }
 
@@ -97,6 +103,7 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
         string? deletedFilter,
         string? dateFrom,
         string? dateTo,
+        int? musicId = null,
         int pageNumber = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
@@ -106,8 +113,25 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
             return Unauthorized();
 
         var all = await _musicApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, searchName, searchArtist, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var vm = BuildViewModel(all, searchName, searchArtist, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, musicId);
         return PartialView("_MusicTable", vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MusicOptions(CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
+
+        var musics = await _musicApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var options = musics
+            .Where(m => !m.IsDeleted)
+            .OrderBy(m => m.Name)
+            .Select(m => new { value = m.Id, label = m.Name ?? $"Müzik #{m.Id}" })
+            .ToList();
+
+        return Json(options);
     }
 
     public IActionResult TableDetail()

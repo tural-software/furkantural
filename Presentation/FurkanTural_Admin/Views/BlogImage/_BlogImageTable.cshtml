@@ -99,6 +99,9 @@
                     </td>
                     <td>
                         <div class="row-actions">
+                            <a href="@Url.Action("Index", "Blog", new { blogId = row.BlogId })" class="row-btn row-btn--info" title="Blogu Görüntüle">
+                                @await Html.PartialAsync("_Icons", "blogs")
+                            </a>
                             <button type="button" class="row-btn ft-view-btn" title="Görüntüle" data-id="@row.Id">
                                 @await Html.PartialAsync("_Icons", "eye")
                             </button>

@@ -170,6 +170,7 @@
             deletedFilter: meta.deletedFilter || '',
             dateFrom:      meta.dateFrom      || '',
             dateTo:        meta.dateTo        || '',
+            blogId:        meta.blogId        || '',
             pageNumber:    meta.pageNumber    || 1,
             pageSize:      meta.pageSize      || 10
         });

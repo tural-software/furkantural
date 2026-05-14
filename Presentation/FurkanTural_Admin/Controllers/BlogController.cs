@@ -14,6 +14,7 @@ public class BlogController(IBlogApiClient blogApiClient) : Controller
         string? deletedFilter,
         string? dateFrom,
         string? dateTo,
+        int? blogId = null,
         int pageNumber = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
@@ -45,6 +46,9 @@ public class BlogController(IBlogApiClient blogApiClient) : Controller
         if (DateTime.TryParse(dateTo, out var to))
             filtered = filtered.Where(b => b.CreatedAt < to.AddDays(1));
 
+        if (blogId.HasValue)
+            filtered = filtered.Where(b => b.Id == blogId.Value);
+
         var filteredList = filtered.ToList();
         var totalFiltered = filteredList.Count;
 
@@ -68,6 +72,7 @@ public class BlogController(IBlogApiClient blogApiClient) : Controller
             DeletedFilter = deletedFilter,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
+            BlogIdFilter  = blogId,
             PageNumber    = safePageNumber,
             PageSize      = safePageSize,
             TotalFiltered = totalFiltered
@@ -83,6 +88,7 @@ public class BlogController(IBlogApiClient blogApiClient) : Controller
         string? deletedFilter,
         string? dateFrom,
         string? dateTo,
+        int? blogId = null,
         int pageNumber = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
@@ -114,6 +120,9 @@ public class BlogController(IBlogApiClient blogApiClient) : Controller
         if (DateTime.TryParse(dateTo, out var to))
             filtered = filtered.Where(b => b.CreatedAt < to.AddDays(1));
 
+        if (blogId.HasValue)
+            filtered = filtered.Where(b => b.Id == blogId.Value);
+
         var filteredList = filtered.ToList();
         var totalFiltered = filteredList.Count;
 
@@ -137,6 +146,7 @@ public class BlogController(IBlogApiClient blogApiClient) : Controller
             DeletedFilter = deletedFilter,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
+            BlogIdFilter  = blogId,
             PageNumber    = safePageNumber,
             PageSize      = safePageSize,
             TotalFiltered = totalFiltered
@@ -152,6 +162,24 @@ public class BlogController(IBlogApiClient blogApiClient) : Controller
             return RedirectToAction("Login", "Auth");
 
         return View();
+    }
+
+    // ── Blog options (filter dropdown) ───────────────────────────────────────
+    [HttpGet]
+    public async Task<IActionResult> BlogOptions(CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
+
+        var blogs = await _blogApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var options = blogs
+            .Where(b => !b.IsDeleted)
+            .OrderBy(b => b.Title)
+            .Select(b => new { value = b.Id, label = b.Title ?? $"Blog #{b.Id}" })
+            .ToList();
+
+        return Json(options);
     }
 
     [HttpPost]
