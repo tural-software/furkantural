@@ -1,0 +1,186 @@
+@using FurkanTural_Admin.Models.ProjectImage
+@model ProjectImageIndexViewModel
+@{
+    ViewData["Title"] = "Proje Görselleri";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/project-image/project-image-index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/filter-blog-select.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.__projectImageMeta = {
+            url:           '@Html.Raw(Model.SearchUrl ?? "")',
+            isCoverFilter: '@Html.Raw(Model.IsCoverFilter ?? "")',
+            activeFilter:  '@Html.Raw(Model.ActiveFilter ?? "")',
+            deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
+            projectId:     '@Html.Raw(Model.ProjectIdFilter?.ToString() ?? "")',
+            dateFrom:      '@Html.Raw(Model.DateFrom ?? "")',
+            dateTo:        '@Html.Raw(Model.DateTo ?? "")',
+            pageNumber:    @Model.PageNumber,
+            pageSize:      @Model.PageSize
+        };
+        window.__apiBaseUrl = '@Html.Raw(ViewData["ApiBaseUrl"] ?? "")';
+    </script>
+    <script src="~/js/detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
+    <script src="~/js/form-modal.js" asp-append-version="true"></script>
+    <script src="~/js/filter-blog-select.js" asp-append-version="true"></script>
+    <script src="~/js/pages/project-image-detail.js" asp-append-version="true"></script>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container">
+
+    <nav class="bc">
+        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
+        <span class="bc__sep">›</span>
+        <a href="@Url.Action("Index", "Project")">Projeler</a>
+        <span class="bc__sep">›</span>
+        <span>Proje Görselleri</span>
+    </nav>
+
+    <div class="pg-header">
+        <div>
+            <h1 class="section-title">Proje Görselleri Verileri</h1>
+            <p class="section-desc">Projelere ait görselleri görüntüleyin, arayın ve yönetin.</p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "refresh")
+                Yenile
+            </a>
+            <a href="@Url.Action("TableDetail")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "table-icon")
+                Tablo Detayları
+            </a>
+            <button type="button" id="project-image-add-btn" class="btn-primary">
+                @await Html.PartialAsync("_Icons", "plus")
+                Yeni Kayıt Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--total">
+                @await Html.PartialAsync("_Icons", "project-images")
+            </div>
+            <div>
+                <p class="stat-box__label">Toplam Kayıt</p>
+                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <span class="stat-box__unit">görsel</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--active">
+                @await Html.PartialAsync("_Icons", "check-circle")
+            </div>
+            <div>
+                <p class="stat-box__label">Aktif Kayıt</p>
+                <div class="stat-box__value">@Model.ActiveCount.ToString("N0")</div>
+                <span class="stat-box__unit">görsel</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--passive">
+                @await Html.PartialAsync("_Icons", "x-circle")
+            </div>
+            <div>
+                <p class="stat-box__label">Pasif Kayıt</p>
+                <div class="stat-box__value">@Model.PassiveCount.ToString("N0")</div>
+                <span class="stat-box__unit">görsel</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--deleted">
+                @await Html.PartialAsync("_Icons", "trash")
+            </div>
+            <div>
+                <p class="stat-box__label">Silinmiş Kayıt</p>
+                <div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div>
+                <span class="stat-box__unit">görsel</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+        <form method="get" action="@Url.Action("Index")">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>URL ara</label>
+                    <div class="filter-input-wrap">
+                        @await Html.PartialAsync("_Icons", "search")
+                        <input type="text" name="url" value="@Model.SearchUrl"
+                               class="filter-input filter-input--search"
+                               placeholder="Görsel URL ara..." />
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Kapak Durumu</label>
+                    <select name="isCoverFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.IsCoverFilter))">Tümü</option>
+                        <option value="cover" selected="@(Model.IsCoverFilter == "cover")">Kapak</option>
+                        <option value="notCover" selected="@(Model.IsCoverFilter == "notCover")">Kapak Değil</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Aktiflik Durumu</label>
+                    <select name="activeFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.ActiveFilter))">Tümü</option>
+                        <option value="active" selected="@(Model.ActiveFilter == "active")">Aktif</option>
+                        <option value="passive" selected="@(Model.ActiveFilter == "passive")">Pasif</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Silinme Durumu</label>
+                    <select name="deletedFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.DeletedFilter))">Tümü</option>
+                        <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
+                        <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Proje</label>
+                    <div class="fbs-wrap"
+                         data-fbs-endpoint="/ProjectImage/ProjectOptions"
+                         data-fbs-initial="@(Model.ProjectIdFilter.HasValue ? Model.ProjectIdFilter.Value.ToString() : "")">
+                        <input type="text" class="fbs-search filter-input" autocomplete="off"
+                               placeholder="Proje ara..." />
+                        <input type="hidden" class="fbs-value" name="projectId" value="@Model.ProjectIdFilter" />
+                        <div class="fbs-dropdown"></div>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Oluşturulma Tarihi</label>
+                    <div class="filter-date-row">
+                        <input type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
+                        <span class="filter-date-sep">→</span>
+                        <input type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
+                    </div>
+                </div>
+                <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                <div class="filter-actions">
+                    <button type="submit" class="btn-primary">
+                        @await Html.PartialAsync("_Icons", "filter-icon")
+                        Filtrele
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn-outline">
+                        @await Html.PartialAsync("_Icons", "x-mark")
+                        Temizle
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div id="project-image-table-section">
+            @await Html.PartialAsync("_ProjectImageTable", Model)
+        </div>
+    </div>
+
+</div>
