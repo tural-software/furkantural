@@ -55,7 +55,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
             "Proje kayıtlarını görüntüleyin ve CRUD işlemlerini yönetin.",
             [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
             "proje"),
-        new("project-images", "projectimage", "Proje Görselleri",
+        new("project-images", "projectimage", "Projeler Görselleri",
             "Projelere bağlı görselleri görüntüleyin ve CRUD işlemlerini yönetin.",
             [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
             "görsel"),
@@ -85,7 +85,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
                 Actions = m.Actions,
                 TotalCount = summaries[i]?.TotalCount,
                 LastActivityAt = summaries[i]?.LastActivityAt,
-                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images" && m.Slug != "experiences" && m.Slug != "educations" && m.Slug != "logs" && m.Slug != "users" && m.Slug != "music",
+                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images" && m.Slug != "experiences" && m.Slug != "educations" && m.Slug != "logs" && m.Slug != "users" && m.Slug != "music" && m.Slug != "music-images" && m.Slug != "projects" && m.Slug != "project-images",
                 ManageUrl = m.Slug == "subscribers" ? Url.Action("Index", "Subscriber")
                           : m.Slug == "skills"       ? Url.Action("Index", "Skill")
                           : m.Slug == "blogs"        ? Url.Action("Index", "Blog")
@@ -95,6 +95,9 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
                           : m.Slug == "logs"          ? Url.Action("Index", "Log")
                           : m.Slug == "users"         ? Url.Action("Index", "User")
                           : m.Slug == "music"          ? Url.Action("Index", "Music")
+                          : m.Slug == "music-images"   ? Url.Action("Index", "MusicImage")
+                          : m.Slug == "projects"       ? Url.Action("Index", "Project")
+                          : m.Slug == "project-images" ? Url.Action("Index", "ProjectImage")
                           : null,
                 CountUnitLabel = m.CountUnitLabel
             })
