@@ -143,6 +143,7 @@ yarn-error.log
 *.patch
 *.diff
 *.log
+*.lscache
 
 # ============================================================
 #  AI / Code Generation
