@@ -27,6 +27,7 @@
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
     <script src="~/js/form-modal.js" asp-append-version="true"></script>
+    <script src="~/js/filter-blog-select.js" asp-append-version="true"></script>
     <script src="~/js/pages/user-detail.js" asp-append-version="true"></script>
 }
 
@@ -118,13 +119,14 @@
                 </div>
                 <div class="filter-group">
                     <label>Rol</label>
-                    <select name="roleFilter" class="filter-select">
-                        <option value="" selected="@(!Model.RoleFilter.HasValue)">Tüm Roller</option>
-                        @foreach (var role in Model.RoleOptions)
-                        {
-                            <option value="@role.Id" selected="@(Model.RoleFilter == role.Id)">@role.Name</option>
-                        }
-                    </select>
+                    <div class="fbs-wrap"
+                         data-fbs-endpoint="/Role/RoleOptions"
+                         data-fbs-initial="@(Model.RoleFilter.HasValue ? Model.RoleFilter.Value.ToString() : "")">
+                        <input type="text" class="fbs-search filter-input" autocomplete="off"
+                               placeholder="Rol ara..." />
+                        <input type="hidden" class="fbs-value" name="roleFilter" value="@Model.RoleFilter" />
+                        <div class="fbs-dropdown"></div>
+                    </div>
                 </div>
                 <div class="filter-group">
                     <label>Aktiflik Durumu</label>

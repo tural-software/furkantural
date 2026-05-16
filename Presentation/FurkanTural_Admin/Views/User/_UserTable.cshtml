@@ -70,6 +70,10 @@
                     </td>
                     <td>
                         <div class="row-actions">
+                            <a href="@Url.Action("Index", "Role", new { roleId = row.RoleId })"
+                               class="row-btn row-btn--info" title="Rolü Görüntüle">
+                                @await Html.PartialAsync("_Icons", "roles")
+                            </a>
                             <button type="button" class="row-btn ft-view-btn" title="Görüntüle" data-id="@row.Id">
                                 @await Html.PartialAsync("_Icons", "eye")
                             </button>
