@@ -209,7 +209,6 @@ public class MusicImageController(
         string? altText,
         bool isCover   = false,
         int musicId    = 0,
-        bool isActive  = true,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
@@ -229,9 +228,6 @@ public class MusicImageController(
         if (!newId.HasValue)
             return StatusCode(500, new { message = "Kayıt oluşturulurken bir hata oluştu." });
 
-        if (!isActive)
-            await _musicImageApiClient.ToggleActiveAsync(newId.Value, token, cancellationToken);
-
         return Ok();
     }
 
@@ -244,8 +240,6 @@ public class MusicImageController(
         string? altText,
         bool isCover        = false,
         int musicId         = 0,
-        bool isActive       = true,
-        bool currentIsActive = true,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
@@ -261,9 +255,6 @@ public class MusicImageController(
         var ok = await _musicImageApiClient.UpdateAsync(id, imageFile, altText, isCover, musicId, token, cancellationToken);
         if (!ok)
             return StatusCode(500, new { message = "Güncelleme işlemi başarısız oldu." });
-
-        if (isActive != currentIsActive)
-            await _musicImageApiClient.ToggleActiveAsync(id, token, cancellationToken);
 
         return Ok();
     }

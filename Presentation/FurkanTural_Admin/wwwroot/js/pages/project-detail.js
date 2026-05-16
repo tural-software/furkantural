@@ -150,7 +150,7 @@
 
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' },
-            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: false }
+            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: false, hidden: function(r) { return r.isDeleted || !r.isActive; } }
         ]
     };
 
@@ -171,9 +171,7 @@
             description: 'Yeni bir proje kaydı oluşturun.',
             submitUrl: '/Project/Create',
             submitLabel: 'Ekle',
-            fields: FORM_FIELDS_BASE.concat([
-                { name: 'isActive', label: 'Aktif', type: 'checkbox', required: false }
-            ]),
+            fields: FORM_FIELDS_BASE,
             onSuccess: onSuccess
         };
     }
@@ -184,10 +182,7 @@
             description: 'Mevcut proje kaydını güncelleyin.',
             submitUrl: '/Project/Update/' + id,
             submitLabel: 'Güncelle',
-            fields: FORM_FIELDS_BASE.concat([
-                { name: 'isActive',        label: 'Aktif',           type: 'checkbox', required: false },
-                { name: 'currentIsActive', label: '',                 type: 'hidden',   required: false }
-            ]),
+            fields: FORM_FIELDS_BASE,
             onSuccess: onSuccess
         };
     }
@@ -301,9 +296,7 @@
                 techStack:        record.techStack        || '',
                 gitHubUrl:        record.gitHubUrl        || '',
                 demoUrl:          record.demoUrl          || '',
-                isCompleted:      record.isCompleted      ? 'true' : '',
-                isActive:         record.isActive         ? 'true' : '',
-                currentIsActive:  String(record.isActive)
+                isCompleted:      record.isCompleted      ? 'true' : ''
             }
         );
     }

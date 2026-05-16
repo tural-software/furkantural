@@ -189,7 +189,6 @@ public class ProjectController(IProjectApiClient projectApiClient) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
         [FromForm] ProjectFormDto dto,
-        bool isActive = true,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
@@ -200,14 +199,6 @@ public class ProjectController(IProjectApiClient projectApiClient) : Controller
         if (!ok)
             return StatusCode(500, new { message = "Kayıt oluşturulurken bir hata oluştu." });
 
-        if (!isActive)
-        {
-            var all = await _projectApiClient.GetAllForAdminAsync(token, cancellationToken);
-            var created = all.OrderByDescending(p => p.CreatedAt).FirstOrDefault(p => p.Title == dto.Title);
-            if (created != null)
-                await _projectApiClient.ToggleActiveAsync(created.Id, token, cancellationToken);
-        }
-
         return Ok();
     }
 
@@ -216,8 +207,6 @@ public class ProjectController(IProjectApiClient projectApiClient) : Controller
     public async Task<IActionResult> Update(
         int id,
         [FromForm] ProjectFormDto dto,
-        bool isActive = true,
-        bool currentIsActive = true,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
@@ -227,9 +216,6 @@ public class ProjectController(IProjectApiClient projectApiClient) : Controller
         var ok = await _projectApiClient.UpdateAsync(id, dto, token, cancellationToken);
         if (!ok)
             return StatusCode(500, new { message = "Kayıt güncellenirken bir hata oluştu." });
-
-        if (isActive != currentIsActive)
-            await _projectApiClient.ToggleActiveAsync(id, token, cancellationToken);
 
         return Ok();
     }

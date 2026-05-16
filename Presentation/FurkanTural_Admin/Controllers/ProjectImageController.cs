@@ -200,7 +200,6 @@ public class ProjectImageController(
         string? altText,
         bool isCover    = false,
         int projectId   = 0,
-        bool isActive   = true,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
@@ -220,9 +219,6 @@ public class ProjectImageController(
         if (!newId.HasValue)
             return StatusCode(500, new { message = "Kayıt oluşturulurken bir hata oluştu." });
 
-        if (!isActive)
-            await _projectImageApiClient.ToggleActiveAsync(newId.Value, token, cancellationToken);
-
         return Ok();
     }
 
@@ -234,8 +230,6 @@ public class ProjectImageController(
         string? altText,
         bool isCover         = false,
         int projectId        = 0,
-        bool isActive        = true,
-        bool currentIsActive = true,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
@@ -251,9 +245,6 @@ public class ProjectImageController(
         var ok = await _projectImageApiClient.UpdateAsync(id, imageFile, altText, isCover, projectId, token, cancellationToken);
         if (!ok)
             return StatusCode(500, new { message = "Güncelleme işlemi başarısız oldu." });
-
-        if (isActive != currentIsActive)
-            await _projectImageApiClient.ToggleActiveAsync(id, token, cancellationToken);
 
         return Ok();
     }

@@ -204,7 +204,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         string? altText,
         bool isCover = false,
         int blogId = 0,
-        bool isActive = true,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
@@ -224,10 +223,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         if (!newId.HasValue)
             return StatusCode(500, new { message = "Kayıt oluşturulurken bir hata oluştu." });
 
-        // If user set isActive=false (default is true on create), toggle it
-        if (!isActive)
-            await _blogImageApiClient.ToggleActiveAsync(newId.Value, token, cancellationToken);
-
         return Ok();
     }
 
@@ -240,8 +235,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         string? altText,
         bool isCover = false,
         int blogId = 0,
-        bool isActive = true,
-        bool currentIsActive = true,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
@@ -257,10 +250,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         var ok = await _blogImageApiClient.UpdateAsync(id, imageFile, altText, isCover, blogId, token, cancellationToken);
         if (!ok)
             return StatusCode(500, new { message = "Güncelleme işlemi başarısız oldu." });
-
-        // Sync active state if it changed
-        if (isActive != currentIsActive)
-            await _blogImageApiClient.ToggleActiveAsync(id, token, cancellationToken);
 
         return Ok();
     }

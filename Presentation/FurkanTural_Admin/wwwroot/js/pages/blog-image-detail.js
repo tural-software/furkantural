@@ -119,7 +119,7 @@
 
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' },
-            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary' }
+            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', hidden: function(r) { return r.isDeleted || !r.isActive; } }
         ],
 
         imagePreview: function (r) {
@@ -181,13 +181,7 @@
                 type: 'checkbox',
                 required: false
             },
-            buildBlogIdField(options),
-            {
-                name: 'isActive',
-                label: 'Aktiflik Durumu',
-                type: 'checkbox',
-                required: false
-            }
+            buildBlogIdField(options)
         ];
     }
 
@@ -216,17 +210,7 @@
                 type: 'checkbox',
                 required: false
             },
-            buildBlogIdField(options),
-            {
-                name: 'isActive',
-                label: 'Aktiflik Durumu',
-                type: 'checkbox',
-                required: false
-            },
-            {
-                name: 'currentIsActive',
-                type: 'hidden'
-            }
+            buildBlogIdField(options)
         ];
     }
 
@@ -350,11 +334,9 @@
                     reloadTable();
                 }),
                 {
-                    altText:         record.altText  || '',
-                    isCover:         record.isCover,
-                    blogId:          record.blogId,
-                    isActive:        record.isActive,
-                    currentIsActive: String(record.isActive)
+                    altText: record.altText || '',
+                    isCover: record.isCover,
+                    blogId:  record.blogId
                 }
             );
         });
@@ -367,7 +349,7 @@
                     if (typeof showToast === 'function') showToast('success', 'Başarılı', ACTION_MESSAGES.Create.success);
                     reloadTable();
                 }),
-                { isActive: true }
+                {}
             );
         });
     }
