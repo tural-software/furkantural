@@ -108,7 +108,7 @@
 
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' },
-            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary' }
+            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', hidden: function(r) { return r.isDeleted || !r.isActive; } }
         ]
     };
 

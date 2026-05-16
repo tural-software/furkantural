@@ -145,8 +145,11 @@
         </div>`;
     }
 
-    function renderActions(actions) {
-        return (actions || []).map(a => {
+    function renderActions(actions, record) {
+        return (actions || []).filter(a => {
+            const hidden = typeof a.hidden === 'function' ? a.hidden(record) : !!a.hidden;
+            return !hidden;
+        }).map(a => {
             const iconHtml = a.icon ? icon(a.icon) : '';
             const cls = a.variant === 'primary' ? 'btn-primary' : 'btn-outline';
             const disabled = a.disabled ? ' disabled' : '';
@@ -180,7 +183,7 @@
 
             const sectionsHtml = (config.sections || [])
                 .map(s => renderSection(s, record)).join('');
-            const actionsHtml = renderActions(config.actions);
+            const actionsHtml = renderActions(config.actions, record);
 
             const imagePreviewHtml = (config.imagePreview && typeof config.imagePreview === 'function')
                 ? config.imagePreview(record)

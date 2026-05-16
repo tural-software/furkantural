@@ -93,7 +93,7 @@
 
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' },
-            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: true }
+            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: true, hidden: function(r) { return r.isDeleted || !r.isActive; } }
         ]
     };
 
