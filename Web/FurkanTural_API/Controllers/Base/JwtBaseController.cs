@@ -12,4 +12,7 @@ public abstract class JwtBaseController : BaseApiController
                ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         return int.TryParse(sub, out var id) ? id : null;
     }
+
+    protected string? SortUserRole()
+        => User.FindFirst(ClaimTypes.Role)?.Value;
 }

@@ -18,6 +18,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     /// Blog görselini ID ile getir
     /// </summary>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.GetByIdAsync(id, cancellationToken));
 
@@ -25,6 +26,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     /// Tüm blog görsellerini listele
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.GetAllAsync(cancellationToken));
 
@@ -32,7 +34,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     /// Admin için tüm blog görsellerini listele (soft-deleted dahil)
     /// </summary>
     [HttpGet("admin")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.GetAllForAdminAsync(cancellationToken));
 
@@ -40,7 +42,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     /// Blog görselini yönetici paneli için ID ile getir (silinmiş dahil)
     /// </summary>
     [HttpGet("admin/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.GetByIdForAdminAsync(id, cancellationToken));
 
@@ -48,22 +50,31 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     /// Blog görselinin aktiflik durumunu değiştir
     /// </summary>
     [HttpPatch("{id:int}/toggle-active")]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _blogImageService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
+    {
+        if (!await HasOwnershipOrAdmin(id, cancellationToken))
+            return Forbid();
+        return ToActionResult(await _blogImageService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
+    }
 
     /// <summary>
     /// Silinmiş blog görselini geri yükle
     /// </summary>
     [HttpPatch("{id:int}/restore")]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _blogImageService.RestoreAsync(id, SortUserId(), cancellationToken));
+    {
+        if (!await HasOwnershipOrAdmin(id, cancellationToken))
+            return Forbid();
+        return ToActionResult(await _blogImageService.RestoreAsync(id, SortUserId(), cancellationToken));
+    }
 
     /// <summary>
     /// Blog görsellerini sayfalı listele
     /// </summary>
     [HttpGet("paged")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _blogImageService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
@@ -71,6 +82,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     /// Belirli bir bloğa ait görselleri getir
     /// </summary>
     [HttpGet("by-blog/{blogId:int}")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetByBlogId(int blogId, CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.GetByBlogIdAsync(blogId, cancellationToken));
 
@@ -78,7 +90,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     /// Blog görseli yükle ve kaydet
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Create([FromBody] CreateBlogImageRequest request, CancellationToken cancellationToken)
     {
         if (request.ImageData.Length == 0)
@@ -103,9 +115,12 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     /// Blog görselini güncelle
     /// </summary>
     [HttpPut]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Update([FromBody] UpdateBlogImageRequest request, CancellationToken cancellationToken)
     {
+        if (!await HasOwnershipOrAdmin(request.Id, cancellationToken))
+            return Forbid();
+
         var existing = await _blogImageService.GetByIdAsync(request.Id, cancellationToken);
         if (existing.IsFailure)
             return ToActionResult(existing);
@@ -182,15 +197,31 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     /// Blog görselini sil
     /// </summary>
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _blogImageService.DeleteAsync(id, cancellationToken));
+    {
+        if (!await HasOwnershipOrAdmin(id, cancellationToken))
+            return Forbid();
+        return ToActionResult(await _blogImageService.DeleteAsync(id, cancellationToken));
+    }
 
     /// <summary>
     /// Yönetici paneli için blog görseli özetini getir (toplam + son işlem tarihi)
     /// </summary>
     [HttpGet("admin/summary")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.GetAdminSummaryAsync(cancellationToken));
+
+    // User rolü için kayıt sahipliği kontrolü; Admin rolü her zaman geçer
+    private async Task<bool> HasOwnershipOrAdmin(int imageId, CancellationToken cancellationToken)
+    {
+        if (SortUserRole() == "Admin") return true;
+
+        var userId = SortUserId();
+        if (userId is null) return false;
+
+        var entity = await _blogImageService.GetByIdForAdminAsync(imageId, cancellationToken);
+        return entity.Success && entity.Data?.CreatedBy == userId;
+    }
 }

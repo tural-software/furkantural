@@ -18,6 +18,7 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Müzik görselini ID ile getir
     /// </summary>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.GetByIdAsync(id, cancellationToken));
 
@@ -25,6 +26,7 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Tüm müzik görsellerini listele
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.GetAllAsync(cancellationToken));
 
@@ -32,13 +34,14 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Müzik görsellerini sayfalı listele
     /// </summary>
     [HttpGet("paged")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _musicImageService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
     /// <summary>    /// Tüm müzik görsellerini yönetici paneli için listele (silinmişler dahil)
     /// </summary>
     [HttpGet("admin")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.GetAllForAdminAsync(cancellationToken));
 
@@ -46,13 +49,14 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Müzik görselini yönetici paneli için ID ile getir (silinmiş dahil)
     /// </summary>
     [HttpGet("admin/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.GetByIdForAdminAsync(id, cancellationToken));
 
     /// <summary>    /// Belirli bir müziğe ait görselleri getir
     /// </summary>
     [HttpGet("by-music/{musicId:int}")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetByMusicId(int musicId, CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.GetByMusicIdAsync(musicId, cancellationToken));
 
@@ -60,7 +64,7 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Müzik görseli yükle ve kaydet
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateMusicImageRequest request, CancellationToken cancellationToken)
     {
         if (request.ImageData.Length == 0)
@@ -85,7 +89,7 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Müzik görselini güncelle
     /// </summary>
     [HttpPut]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateMusicImageRequest request, CancellationToken cancellationToken)
     {
         var existing = await _musicImageService.GetByIdAsync(request.Id, cancellationToken);
@@ -164,7 +168,7 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Müzik görselini sil
     /// </summary>
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.DeleteAsync(id, cancellationToken));
 
@@ -172,7 +176,7 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Müzik görselinin aktiflik durumunu değiştir
     /// </summary>
     [HttpPatch("{id:int}/toggle-active")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
@@ -180,7 +184,7 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Silinen müzik görselini geri yükle
     /// </summary>
     [HttpPatch("{id:int}/restore")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.RestoreAsync(id, SortUserId(), cancellationToken));
 
@@ -188,7 +192,7 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     /// Yönetici paneli için müzik görseli özetini getir (toplam + son işlem tarihi)
     /// </summary>
     [HttpGet("admin/summary")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _musicImageService.GetAdminSummaryAsync(cancellationToken));
 }

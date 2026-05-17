@@ -16,7 +16,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Aboneyi ID ile getir
     /// </summary>
     [HttpGet("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.GetByIdAsync(id, cancellationToken));
 
@@ -24,7 +24,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Tüm aboneleri listele
     /// </summary>
     [HttpGet]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.GetAllAsync(cancellationToken));
 
@@ -32,7 +32,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Tüm aboneleri (admin) listele
     /// </summary>
     [HttpGet("admin")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.GetAllForAdminAsync(cancellationToken));
 
@@ -40,7 +40,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Aboneyi ID ile getir (admin)
     /// </summary>
     [HttpGet("admin/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.GetByIdForAdminAsync(id, cancellationToken));
 
@@ -48,7 +48,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Aboneleri sayfalı listele
     /// </summary>
     [HttpGet("paged")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _subscriberService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
@@ -56,6 +56,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Bültene abone ol
     /// </summary>
     [HttpPost("subscribe")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> Subscribe([FromBody] SubscribeRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.SubscribeAsync(request.Email ?? string.Empty, cancellationToken));
 
@@ -63,6 +64,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Bülten aboneliğini iptal et
     /// </summary>
     [HttpPost("unsubscribe")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> Unsubscribe([FromBody] SubscribeRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.UnsubscribeAsync(request.Email ?? string.Empty, cancellationToken));
 
@@ -70,7 +72,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Aboneyi sistemden sil
     /// </summary>
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.DeleteAsync(id, cancellationToken));
 
@@ -78,7 +80,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Abonelinin aktiflik durumunu değiştir
     /// </summary>
     [HttpPatch("{id:int}/toggle-active")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
@@ -86,7 +88,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Silinen aboneyi geri yükle
     /// </summary>
     [HttpPatch("{id:int}/restore")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.RestoreAsync(id, SortUserId(), cancellationToken));
 
@@ -94,7 +96,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     /// Yönetici paneli için abone özetini getir (toplam + son işlem tarihi)
     /// </summary>
     [HttpGet("admin/summary")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _subscriberService.GetAdminSummaryAsync(cancellationToken));
 }

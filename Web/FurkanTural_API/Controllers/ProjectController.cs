@@ -17,6 +17,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Projeyi ID ile getir
     /// </summary>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectService.GetByIdAsync(id, cancellationToken));
 
@@ -24,6 +25,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Tüm projeleri listele
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _projectService.GetAllAsync(cancellationToken));
 
@@ -31,7 +33,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Tüm projeleri yönetici paneli için listele
     /// </summary>
     [HttpGet("admin")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _projectService.GetAllForAdminAsync(cancellationToken));
 
@@ -39,7 +41,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Projeyi yönetici paneli için ID ile getir (silinmiş dahil)
     /// </summary>
     [HttpGet("admin/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectService.GetByIdForAdminAsync(id, cancellationToken));
 
@@ -47,6 +49,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Projeleri sayfalı listele
     /// </summary>
     [HttpGet("paged")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _projectService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
@@ -54,7 +57,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Projenin aktiflik durumunu değiştir
     /// </summary>
     [HttpPatch("{id:int}/toggle-active")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
@@ -62,7 +65,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Silinmiş projeyi geri yükle
     /// </summary>
     [HttpPatch("{id:int}/restore")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectService.RestoreAsync(id, SortUserId(), cancellationToken));
 
@@ -70,7 +73,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Yeni proje oluştur
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateProjectRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _projectService.CreateAsync(new CreateProjectDto
         {
@@ -88,7 +91,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Projeyi güncelle
     /// </summary>
     [HttpPut]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateProjectRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _projectService.UpdateAsync(new UpdateProjectDto
         {
@@ -107,7 +110,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Projeyi sil
     /// </summary>
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectService.DeleteAsync(id, cancellationToken));
 
@@ -115,7 +118,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     /// Yönetici paneli için proje özetini getir (toplam + son işlem tarihi)
     /// </summary>
     [HttpGet("admin/summary")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _projectService.GetAdminSummaryAsync(cancellationToken));
 }

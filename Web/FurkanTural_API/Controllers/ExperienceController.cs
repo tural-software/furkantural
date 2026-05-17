@@ -17,6 +17,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Tecrübeyi ID ile getir
     /// </summary>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.GetByIdAsync(id, cancellationToken));
 
@@ -24,6 +25,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Tüm tecrübeleri listele
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.GetAllAsync(cancellationToken));
 
@@ -31,7 +33,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Tüm tecrübeleri (admin) listele
     /// </summary>
     [HttpGet("admin")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.GetAllForAdminAsync(cancellationToken));
 
@@ -39,7 +41,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Tecrübeyi ID ile getir (admin)
     /// </summary>
     [HttpGet("admin/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.GetByIdForAdminAsync(id, cancellationToken));
 
@@ -47,6 +49,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Tecrübeleri sayfalı listele
     /// </summary>
     [HttpGet("paged")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _experienceService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
@@ -54,7 +57,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Yeni tecrübe ekle
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateExperienceRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.CreateAsync(new CreateExperienceDto
         {
@@ -69,7 +72,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Tecrübeyi güncelle
     /// </summary>
     [HttpPut]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateExperienceRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.UpdateAsync(new UpdateExperienceDto
         {
@@ -85,7 +88,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Tecrübeyi sil
     /// </summary>
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.DeleteAsync(id, cancellationToken));
 
@@ -93,7 +96,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Tecrübenin aktiflik durumunu değiştir
     /// </summary>
     [HttpPatch("{id:int}/toggle-active")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
@@ -101,7 +104,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Silinen tecrübeyi geri yükle
     /// </summary>
     [HttpPatch("{id:int}/restore")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.RestoreAsync(id, SortUserId(), cancellationToken));
 
@@ -109,7 +112,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     /// Yönetici paneli için tecrübe özetini getir (toplam + son işlem tarihi)
     /// </summary>
     [HttpGet("admin/summary")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.GetAdminSummaryAsync(cancellationToken));
 }

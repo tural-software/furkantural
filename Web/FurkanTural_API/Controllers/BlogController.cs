@@ -17,6 +17,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     /// Blog yazısını ID ile getir
     /// </summary>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetByIdAsync(id, cancellationToken));
 
@@ -24,6 +25,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     /// Tüm blog yazılarını listele
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetAllAsync(cancellationToken));
 
@@ -31,7 +33,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     /// Tüm blog yazılarını yönetici paneli için listele
     /// </summary>
     [HttpGet("admin")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetAllForAdminAsync(cancellationToken));
 
@@ -39,7 +41,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     /// Blog yazısını yönetici paneli için ID ile getir (silinmiş dahil)
     /// </summary>
     [HttpGet("admin/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetByIdForAdminAsync(id, cancellationToken));
 
@@ -47,6 +49,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     /// Blog yazılarını sayfalı listele
     /// </summary>
     [HttpGet("paged")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _blogService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
@@ -54,23 +57,31 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     /// Blog yazısının aktiflik durumunu değiştir
     /// </summary>
     [HttpPatch("{id:int}/toggle-active")]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _blogService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
+    {
+        if (!await HasOwnershipOrAdmin(id, cancellationToken))
+            return Forbid();
+        return ToActionResult(await _blogService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
+    }
 
     /// <summary>
     /// Silinmiş blog yazısını geri yükle
     /// </summary>
     [HttpPatch("{id:int}/restore")]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _blogService.RestoreAsync(id, SortUserId(), cancellationToken));
+    {
+        if (!await HasOwnershipOrAdmin(id, cancellationToken))
+            return Forbid();
+        return ToActionResult(await _blogService.RestoreAsync(id, SortUserId(), cancellationToken));
+    }
 
     /// <summary>
     /// Yeni blog yazısı oluştur
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Create([FromBody] CreateBlogRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _blogService.CreateAsync(new CreateBlogDto
         {
@@ -83,29 +94,49 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     /// Blog yazısını güncelle
     /// </summary>
     [HttpPut]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Update([FromBody] UpdateBlogRequest request, CancellationToken cancellationToken)
-        => ToActionResult(await _blogService.UpdateAsync(new UpdateBlogDto
+    {
+        if (!await HasOwnershipOrAdmin(request.Id, cancellationToken))
+            return Forbid();
+        return ToActionResult(await _blogService.UpdateAsync(new UpdateBlogDto
         {
             Id = request.Id,
             Title = request.Title,
             Content = request.Content,
             UpdatedBy = SortUserId()
         }, cancellationToken));
+    }
 
     /// <summary>
     /// Blog yazısını sil
     /// </summary>
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _blogService.DeleteAsync(id, cancellationToken));
+    {
+        if (!await HasOwnershipOrAdmin(id, cancellationToken))
+            return Forbid();
+        return ToActionResult(await _blogService.DeleteAsync(id, cancellationToken));
+    }
 
     /// <summary>
     /// Yönetici paneli için blog yazısı özetini getir (toplam + son işlem tarihi)
     /// </summary>
     [HttpGet("admin/summary")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetAdminSummaryAsync(cancellationToken));
+
+    // User rolü için kayıt sahipliği kontrolü; Admin rolü her zaman geçer
+    private async Task<bool> HasOwnershipOrAdmin(int blogId, CancellationToken cancellationToken)
+    {
+        if (SortUserRole() == "Admin") return true;
+
+        var userId = SortUserId();
+        if (userId is null) return false;
+
+        var entity = await _blogService.GetByIdForAdminAsync(blogId, cancellationToken);
+        return entity.Success && entity.Data?.CreatedBy == userId;
+    }
 }

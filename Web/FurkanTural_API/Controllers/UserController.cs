@@ -8,7 +8,7 @@ using Asp.Versioning;
 
 namespace FurkanTural_API.Controllers;
 
-[Authorize]
+[Authorize(Policy = "AdminOnly")]
 [ApiVersion("1.0")]
 public class UserController : JwtBaseController
 {

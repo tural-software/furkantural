@@ -17,6 +17,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Yetkinliği ID ile getir
     /// </summary>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.GetByIdAsync(id, cancellationToken));
 
@@ -24,6 +25,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Tüm yetkinlikleri listele
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _skillService.GetAllAsync(cancellationToken));
 
@@ -31,7 +33,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Tüm yetkinlikleri (admin) listele
     /// </summary>
     [HttpGet("admin")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _skillService.GetAllForAdminAsync(cancellationToken));
 
@@ -39,7 +41,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Yetkinliği ID ile getir (admin)
     /// </summary>
     [HttpGet("admin/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.GetByIdForAdminAsync(id, cancellationToken));
 
@@ -47,6 +49,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Yetkinlikleri sayfalı listele
     /// </summary>
     [HttpGet("paged")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _skillService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
@@ -54,7 +57,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Yeni yetkinlik ekle
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateSkillRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.CreateAsync(new CreateSkillDto
         {
@@ -67,7 +70,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Yetkinliği güncelle
     /// </summary>
     [HttpPut]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateSkillRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.UpdateAsync(new UpdateSkillDto
         {
@@ -81,7 +84,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Yetkinliği sil
     /// </summary>
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.DeleteAsync(id, cancellationToken));
 
@@ -89,7 +92,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Yetkinliğin aktiflik durumunu değiştir
     /// </summary>
     [HttpPatch("{id:int}/toggle-active")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
@@ -97,7 +100,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Silinen yetkinliği geri yükle
     /// </summary>
     [HttpPatch("{id:int}/restore")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _skillService.RestoreAsync(id, SortUserId(), cancellationToken));
 
@@ -105,7 +108,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     /// Yönetici paneli için yetkinlik özetini getir (toplam + son işlem tarihi)
     /// </summary>
     [HttpGet("admin/summary")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _skillService.GetAdminSummaryAsync(cancellationToken));
 }

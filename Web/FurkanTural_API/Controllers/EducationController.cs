@@ -17,6 +17,7 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     /// Eğitim bilgisini ID ile getir
     /// </summary>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _educationService.GetByIdAsync(id, cancellationToken));
 
@@ -24,6 +25,7 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     /// Tüm eğitim bilgilerini listele
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _educationService.GetAllAsync(cancellationToken));
 
@@ -31,13 +33,14 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     /// Eğitim bilgilerini sayfalı listele
     /// </summary>
     [HttpGet("paged")]
+    [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _educationService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
     /// <summary>
     /// Tüm eğitim bilgilerini yönetici paneli için listele (silinmişler dahil)
     /// </summary>
     [HttpGet("admin")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _educationService.GetAllForAdminAsync(cancellationToken));
 
@@ -45,14 +48,14 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     /// Eğitim bilgisini yönetici paneli için ID ile getir (silinmiş dahil)
     /// </summary>
     [HttpGet("admin/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _educationService.GetByIdForAdminAsync(id, cancellationToken));
     /// <summary>
     /// Yeni eğitim bilgisi ekle
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateEducationRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _educationService.CreateAsync(new CreateEducationDto
         {
@@ -68,7 +71,7 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     /// Eğitim bilgisini güncelle
     /// </summary>
     [HttpPut]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateEducationRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _educationService.UpdateAsync(new UpdateEducationDto
         {
@@ -85,7 +88,7 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     /// Eğitim bilgisini sil
     /// </summary>
     [HttpDelete("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _educationService.DeleteAsync(id, cancellationToken));
 
@@ -93,7 +96,7 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     /// Eğitim bilgisinin aktiflik durumunu değiştir
     /// </summary>
     [HttpPatch("{id:int}/toggle-active")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
         => ToActionResult(await _educationService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
@@ -101,7 +104,7 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     /// Silinen eğitim bilgisini geri yükle
     /// </summary>
     [HttpPatch("{id:int}/restore")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _educationService.RestoreAsync(id, SortUserId(), cancellationToken));
 
@@ -109,7 +112,7 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     /// Yönetici paneli için eğitim özetini getir (toplam + son işlem tarihi)
     /// </summary>
     [HttpGet("admin/summary")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _educationService.GetAdminSummaryAsync(cancellationToken));
 }
