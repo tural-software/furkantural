@@ -31,6 +31,22 @@ public class RoleConfiguration : BaseEntityConfiguration<Role>
                 CreatedAt = SeedDate,
                 IsActive = true,
                 IsDeleted = false
+            },
+            new Role
+            {
+                Id = 3,
+                Name = "Subscriber",
+                CreatedAt = SeedDate,
+                IsActive = true,
+                IsDeleted = false
+            },
+            new Role
+            {
+                Id = 4,
+                Name = "Visitor",
+                CreatedAt = SeedDate,
+                IsActive = true,
+                IsDeleted = false
             }
         );
     }
