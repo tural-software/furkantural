@@ -1,7 +1,10 @@
+using Dapper;
 using FurkanTural_Domain.Entities.Common;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Persistence.Contexts;
+using System.Data;
+using System.Data.Common;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,60 +12,109 @@ namespace FurkanTural_Persistence.Repositories.Concrete;
 
 public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where T : BaseEntity
 {
+    private readonly FurkanTuralDbContext _context = context;
     protected readonly DbSet<T> _dbSet = context.Set<T>();
+    private string? _tableName;
+    private string TableName => _tableName ??= _context.Model.FindEntityType(typeof(T))!.GetTableName()!;
+
+    private async Task<DbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken)
+    {
+        var conn = (DbConnection)_context.Database.GetDbConnection();
+        if (conn.State == ConnectionState.Closed)
+            await conn.OpenAsync(cancellationToken);
+        return conn;
+    }
+
+    // ── READ – Dapper ──────────────────────────────────────────────────────
 
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-        => await _dbSet.FindAsync([id], cancellationToken);
+    {
+        var conn = await GetOpenConnectionAsync(cancellationToken);
+        return await conn.QueryFirstOrDefaultAsync<T>(new CommandDefinition(
+            $"SELECT * FROM [{TableName}] WHERE Id = @Id AND IsDeleted = 0 AND IsActive = 1",
+            new { Id = id }, cancellationToken: cancellationToken));
+    }
 
     public async Task<T?> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
-        => await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    {
+        var conn = await GetOpenConnectionAsync(cancellationToken);
+        return await conn.QueryFirstOrDefaultAsync<T>(new CommandDefinition(
+            $"SELECT * FROM [{TableName}] WHERE Id = @Id",
+            new { Id = id }, cancellationToken: cancellationToken));
+    }
 
     public async Task<IEnumerable<T>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
-        => await _dbSet.IgnoreQueryFilters().AsNoTracking().ToListAsync(cancellationToken);
+    {
+        var conn = await GetOpenConnectionAsync(cancellationToken);
+        return await conn.QueryAsync<T>(new CommandDefinition(
+            $"SELECT * FROM [{TableName}]",
+            cancellationToken: cancellationToken));
+    }
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         => await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
 
     public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await _dbSet.AsNoTracking().ToListAsync(cancellationToken);
+    {
+        var conn = await GetOpenConnectionAsync(cancellationToken);
+        return await conn.QueryAsync<T>(new CommandDefinition(
+            $"SELECT * FROM [{TableName}] WHERE IsDeleted = 0 AND IsActive = 1",
+            cancellationToken: cancellationToken));
+    }
 
     public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         => await _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
 
     public async Task<IEnumerable<T>> GetAllPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsNoTracking().AsQueryable();
-        if (predicate != null) query = query.Where(predicate);
-        return await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        if (predicate != null)
+            return await _dbSet.AsNoTracking()
+                .Where(predicate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+        var conn = await GetOpenConnectionAsync(cancellationToken);
+        return await conn.QueryAsync<T>(new CommandDefinition(
+            $"SELECT * FROM [{TableName}] WHERE IsDeleted = 0 AND IsActive = 1 " +
+            $"ORDER BY Id OFFSET @Offset ROWS FETCH NEXT @Size ROWS ONLY",
+            new { Offset = (pageNumber - 1) * pageSize, Size = pageSize },
+            cancellationToken: cancellationToken));
     }
 
     public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
-        => predicate is null
-            ? await _dbSet.CountAsync(cancellationToken)
-            : await _dbSet.CountAsync(predicate, cancellationToken);
+    {
+        if (predicate != null)
+            return await _dbSet.CountAsync(predicate, cancellationToken);
+
+        var conn = await GetOpenConnectionAsync(cancellationToken);
+        return await conn.ExecuteScalarAsync<int>(new CommandDefinition(
+            $"SELECT COUNT(*) FROM [{TableName}] WHERE IsDeleted = 0 AND IsActive = 1",
+            cancellationToken: cancellationToken));
+    }
 
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         => await _dbSet.AnyAsync(predicate, cancellationToken);
 
     public async Task<EntitySummaryDto> GetAdminSummaryAsync(CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.IgnoreQueryFilters().AsNoTracking();
-
-        var count = await query.CountAsync(cancellationToken);
-        if (count == 0)
-            return new EntitySummaryDto(0, null);
-
-        var maxCreated = await query.MaxAsync(e => (DateTime?)e.CreatedAt, cancellationToken);
-        var maxUpdated = await query.MaxAsync(e => e.UpdatedAt, cancellationToken);
-        var maxDeleted = await query.MaxAsync(e => e.DeletedAt, cancellationToken);
-
-        DateTime? last = null;
-        foreach (var t in new[] { maxCreated, maxUpdated, maxDeleted })
-            if (t.HasValue && (last is null || t.Value > last.Value))
-                last = t.Value;
-
-        return new EntitySummaryDto(count, last);
+        var conn = await GetOpenConnectionAsync(cancellationToken);
+        var row = await conn.QuerySingleAsync<SummaryRow>(new CommandDefinition(
+            $"""
+            SELECT
+                COUNT(*)  AS [Count],
+                MAX(CASE
+                    WHEN UpdatedAt IS NOT NULL THEN UpdatedAt
+                    WHEN DeletedAt IS NOT NULL THEN DeletedAt
+                    ELSE CreatedAt
+                END)      AS [LastModifiedDate]
+            FROM [{TableName}]
+            """,
+            cancellationToken: cancellationToken));
+        return new EntitySummaryDto(row.Count, row.LastModifiedDate);
     }
+
+    // ── WRITE – EF Core ────────────────────────────────────────────────────
 
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
         => await _dbSet.AddAsync(entity, cancellationToken);
@@ -110,5 +162,13 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
         entity.DeletedAt = null;
         _dbSet.Update(entity);
         return Task.CompletedTask;
+    }
+
+    // ── Private helpers ────────────────────────────────────────────────────
+
+    private sealed class SummaryRow
+    {
+        public int Count { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
     }
 }
