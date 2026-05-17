@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.MusicImage;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class MusicImageService(IUnitOfWork unitOfWork) : IMusicImageService
+public class MusicImageService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IMusicImageService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<MusicImageDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -51,6 +53,7 @@ public class MusicImageService(IUnitOfWork unitOfWork) : IMusicImageService
         var entity = dto.ToEntity();
         await _unitOfWork.MusicImages.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"MusicImage oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<MusicImageDto>.Ok(entity.ToDto());
     }
@@ -67,6 +70,7 @@ public class MusicImageService(IUnitOfWork unitOfWork) : IMusicImageService
         entity.UpdateEntity(dto);
         await _unitOfWork.MusicImages.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"MusicImage güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<MusicImageDto>.Ok(entity.ToDto());
     }
@@ -79,6 +83,7 @@ public class MusicImageService(IUnitOfWork unitOfWork) : IMusicImageService
 
         await _unitOfWork.MusicImages.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"MusicImage silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }
@@ -95,6 +100,7 @@ public class MusicImageService(IUnitOfWork unitOfWork) : IMusicImageService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.MusicImages.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"MusicImage geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminMusicImageDto>.Ok(entity.ToAdminDto());
     }
@@ -113,6 +119,7 @@ public class MusicImageService(IUnitOfWork unitOfWork) : IMusicImageService
 
         await _unitOfWork.MusicImages.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"MusicImage aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminMusicImageDto>.Ok(entity.ToAdminDto());
     }

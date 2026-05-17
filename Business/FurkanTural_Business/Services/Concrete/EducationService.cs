@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.Education;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class EducationService(IUnitOfWork unitOfWork) : IEducationService
+public class EducationService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IEducationService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<EducationDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -47,6 +49,7 @@ public class EducationService(IUnitOfWork unitOfWork) : IEducationService
         var entity = dto.ToEntity();
         await _unitOfWork.Educations.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Eğitim oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<EducationDto>.Ok(entity.ToDto());
     }
@@ -69,6 +72,7 @@ public class EducationService(IUnitOfWork unitOfWork) : IEducationService
         entity.UpdateEntity(dto);
         await _unitOfWork.Educations.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Eğitim güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<EducationDto>.Ok(entity.ToDto());
     }
@@ -81,6 +85,7 @@ public class EducationService(IUnitOfWork unitOfWork) : IEducationService
 
         await _unitOfWork.Educations.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Eğitim silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }
@@ -97,6 +102,7 @@ public class EducationService(IUnitOfWork unitOfWork) : IEducationService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.Educations.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Eğitim geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminEducationDto>.Ok(entity.ToAdminDto());
     }
@@ -115,6 +121,7 @@ public class EducationService(IUnitOfWork unitOfWork) : IEducationService
 
         await _unitOfWork.Educations.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Eğitim aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminEducationDto>.Ok(entity.ToAdminDto());
     }

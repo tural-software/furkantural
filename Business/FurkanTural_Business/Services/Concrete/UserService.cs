@@ -3,14 +3,16 @@ using FurkanTural_Application.DTOs.User;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionService) : IUserService
+public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionService, ActivityLogger activityLogger) : IUserService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEncryptionService _encryptionService = encryptionService;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -67,6 +69,7 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
 
         await _unitOfWork.Users.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Kullanıcı oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<UserDto>.Ok(entity.ToDto());
     }
@@ -99,6 +102,7 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Kullanıcı güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<UserDto>.Ok(entity.ToDto());
     }
@@ -111,6 +115,7 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
 
         await _unitOfWork.Users.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Kullanıcı silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }
@@ -144,6 +149,7 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Kullanıcı aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminUserDto>.Ok(entity.ToAdminDto());
     }
@@ -160,6 +166,7 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.Users.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Kullanıcı geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminUserDto>.Ok(entity.ToAdminDto());
     }

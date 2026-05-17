@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.Skill;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class SkillService(IUnitOfWork unitOfWork) : ISkillService
+public class SkillService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : ISkillService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<SkillDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -44,6 +46,7 @@ public class SkillService(IUnitOfWork unitOfWork) : ISkillService
         var entity = dto.ToEntity();
         await _unitOfWork.Skills.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Yetenek oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<SkillDto>.Ok(entity.ToDto());
     }
@@ -63,6 +66,7 @@ public class SkillService(IUnitOfWork unitOfWork) : ISkillService
         entity.UpdateEntity(dto);
         await _unitOfWork.Skills.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Yetenek güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<SkillDto>.Ok(entity.ToDto());
     }
@@ -75,6 +79,7 @@ public class SkillService(IUnitOfWork unitOfWork) : ISkillService
 
         await _unitOfWork.Skills.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Yetenek silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }
@@ -108,6 +113,7 @@ public class SkillService(IUnitOfWork unitOfWork) : ISkillService
 
         await _unitOfWork.Skills.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Yetenek aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminSkillDto>.Ok(entity.ToAdminDto());
     }
@@ -124,6 +130,7 @@ public class SkillService(IUnitOfWork unitOfWork) : ISkillService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.Skills.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Yetenek geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminSkillDto>.Ok(entity.ToAdminDto());
     }

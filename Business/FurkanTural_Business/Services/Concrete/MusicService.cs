@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.Music;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class MusicService(IUnitOfWork unitOfWork) : IMusicService
+public class MusicService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IMusicService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<MusicDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -44,6 +46,7 @@ public class MusicService(IUnitOfWork unitOfWork) : IMusicService
         var entity = dto.ToEntity();
         await _unitOfWork.Musics.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Müzik oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<MusicDto>.Ok(entity.ToDto());
     }
@@ -63,6 +66,7 @@ public class MusicService(IUnitOfWork unitOfWork) : IMusicService
         entity.UpdateEntity(dto);
         await _unitOfWork.Musics.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Müzik güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<MusicDto>.Ok(entity.ToDto());
     }
@@ -75,6 +79,7 @@ public class MusicService(IUnitOfWork unitOfWork) : IMusicService
 
         await _unitOfWork.Musics.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Müzik silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }
@@ -91,6 +96,7 @@ public class MusicService(IUnitOfWork unitOfWork) : IMusicService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.Musics.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Müzik geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminMusicDto>.Ok(entity.ToAdminDto());
     }
@@ -109,6 +115,7 @@ public class MusicService(IUnitOfWork unitOfWork) : IMusicService
 
         await _unitOfWork.Musics.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Müzik aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminMusicDto>.Ok(entity.ToAdminDto());
     }

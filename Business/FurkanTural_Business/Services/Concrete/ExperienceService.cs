@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.Experience;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class ExperienceService(IUnitOfWork unitOfWork) : IExperienceService
+public class ExperienceService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IExperienceService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<ExperienceDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -47,6 +49,7 @@ public class ExperienceService(IUnitOfWork unitOfWork) : IExperienceService
         var entity = dto.ToEntity();
         await _unitOfWork.Experiences.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Tecrübe oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<ExperienceDto>.Ok(entity.ToDto());
     }
@@ -69,6 +72,7 @@ public class ExperienceService(IUnitOfWork unitOfWork) : IExperienceService
         entity.UpdateEntity(dto);
         await _unitOfWork.Experiences.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Tecrübe güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<ExperienceDto>.Ok(entity.ToDto());
     }
@@ -81,6 +85,7 @@ public class ExperienceService(IUnitOfWork unitOfWork) : IExperienceService
 
         await _unitOfWork.Experiences.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Tecrübe silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }
@@ -114,6 +119,7 @@ public class ExperienceService(IUnitOfWork unitOfWork) : IExperienceService
 
         await _unitOfWork.Experiences.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Tecrübe aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminExperienceDto>.Ok(entity.ToAdminDto());
     }
@@ -130,6 +136,7 @@ public class ExperienceService(IUnitOfWork unitOfWork) : IExperienceService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.Experiences.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Tecrübe geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminExperienceDto>.Ok(entity.ToAdminDto());
     }

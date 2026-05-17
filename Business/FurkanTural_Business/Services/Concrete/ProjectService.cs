@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.Project;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class ProjectService(IUnitOfWork unitOfWork) : IProjectService
+public class ProjectService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IProjectService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<ProjectDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -55,6 +57,7 @@ public class ProjectService(IUnitOfWork unitOfWork) : IProjectService
 
         await _unitOfWork.Projects.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Proje aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminProjectDto>.Ok(entity.ToAdminDto());
     }
@@ -71,6 +74,7 @@ public class ProjectService(IUnitOfWork unitOfWork) : IProjectService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.Projects.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Proje geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminProjectDto>.Ok(entity.ToAdminDto());
     }
@@ -93,6 +97,7 @@ public class ProjectService(IUnitOfWork unitOfWork) : IProjectService
         var entity = dto.ToEntity();
         await _unitOfWork.Projects.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Proje oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<ProjectDto>.Ok(entity.ToDto());
     }
@@ -112,6 +117,7 @@ public class ProjectService(IUnitOfWork unitOfWork) : IProjectService
         entity.UpdateEntity(dto);
         await _unitOfWork.Projects.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Proje güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<ProjectDto>.Ok(entity.ToDto());
     }
@@ -124,6 +130,7 @@ public class ProjectService(IUnitOfWork unitOfWork) : IProjectService
 
         await _unitOfWork.Projects.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Proje silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }

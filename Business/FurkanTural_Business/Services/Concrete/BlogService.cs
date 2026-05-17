@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class BlogService(IUnitOfWork unitOfWork) : IBlogService
+public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IBlogService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<BlogDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -55,6 +57,7 @@ public class BlogService(IUnitOfWork unitOfWork) : IBlogService
 
         await _unitOfWork.Blogs.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Blog aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminBlogDto>.Ok(entity.ToAdminDto());
     }
@@ -71,6 +74,7 @@ public class BlogService(IUnitOfWork unitOfWork) : IBlogService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.Blogs.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Blog geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminBlogDto>.Ok(entity.ToAdminDto());
     }
@@ -93,6 +97,7 @@ public class BlogService(IUnitOfWork unitOfWork) : IBlogService
         var entity = dto.ToEntity();
         await _unitOfWork.Blogs.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Blog oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<BlogDto>.Ok(entity.ToDto());
     }
@@ -112,6 +117,7 @@ public class BlogService(IUnitOfWork unitOfWork) : IBlogService
         entity.UpdateEntity(dto);
         await _unitOfWork.Blogs.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Blog güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<BlogDto>.Ok(entity.ToDto());
     }
@@ -124,6 +130,7 @@ public class BlogService(IUnitOfWork unitOfWork) : IBlogService
 
         await _unitOfWork.Blogs.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Blog silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }

@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.Role;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class RoleService(IUnitOfWork unitOfWork) : IRoleService
+public class RoleService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IRoleService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<RoleDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -45,6 +47,7 @@ public class RoleService(IUnitOfWork unitOfWork) : IRoleService
         var entity = dto.ToEntity();
         await _unitOfWork.Roles.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Rol oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<RoleDto>.Ok(entity.ToDto());
     }
@@ -65,6 +68,7 @@ public class RoleService(IUnitOfWork unitOfWork) : IRoleService
         entity.UpdateEntity(dto);
         await _unitOfWork.Roles.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Rol güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<RoleDto>.Ok(entity.ToDto());
     }
@@ -77,6 +81,7 @@ public class RoleService(IUnitOfWork unitOfWork) : IRoleService
 
         await _unitOfWork.Roles.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Rol silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }
@@ -110,6 +115,7 @@ public class RoleService(IUnitOfWork unitOfWork) : IRoleService
 
         await _unitOfWork.Roles.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Rol aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminRoleDto>.Ok(entity.ToAdminDto());
     }
@@ -126,6 +132,7 @@ public class RoleService(IUnitOfWork unitOfWork) : IRoleService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.Roles.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Rol geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminRoleDto>.Ok(entity.ToAdminDto());
     }

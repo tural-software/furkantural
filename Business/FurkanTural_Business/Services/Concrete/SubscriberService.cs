@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.Subscriber;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
+public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : ISubscriberService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<SubscriberDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -41,6 +43,7 @@ public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
         var entity = dto.ToEntity();
         await _unitOfWork.Subscribers.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Abone oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<SubscriberDto>.Ok(entity.ToDto());
     }
@@ -57,6 +60,7 @@ public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
         entity.UpdateEntity(dto);
         await _unitOfWork.Subscribers.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Abone güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<SubscriberDto>.Ok(entity.ToDto());
     }
@@ -69,6 +73,7 @@ public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
 
         await _unitOfWork.Subscribers.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Abone silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }
@@ -102,6 +107,7 @@ public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
 
         await _unitOfWork.Subscribers.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Abone aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminSubscriberDto>.Ok(entity.ToAdminDto());
     }
@@ -118,6 +124,7 @@ public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
         var entity = new CreateSubscriberDto { Email = email }.ToEntity();
         await _unitOfWork.Subscribers.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Abone olundu. Email: {email}", cancellationToken);
 
         return Result.Ok("Abonelik başarıyla tamamlandı.");
     }
@@ -133,6 +140,7 @@ public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
 
         await _unitOfWork.Subscribers.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Abonelik iptal edildi. Email: {email}", cancellationToken);
 
         return Result.Ok("Abonelik başarıyla iptal edildi.");
     }
@@ -149,6 +157,7 @@ public class SubscriberService(IUnitOfWork unitOfWork) : ISubscriberService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.Subscribers.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Abone geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminSubscriberDto>.Ok(entity.ToAdminDto());
     }

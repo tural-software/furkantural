@@ -1,4 +1,5 @@
 using FurkanTural_Application.Services.Abstract;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Services.Concrete;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,6 +9,7 @@ public static class BusinessServiceRegistration
 {
     public static IServiceCollection AddBusinessServices(this IServiceCollection services)
     {
+        services.AddScoped<ActivityLogger>();
         services.AddScoped<IBlogService, BlogService>();
         services.AddScoped<IBlogImageService, BlogImageService>();
         services.AddScoped<IEducationService, EducationService>();

@@ -3,13 +3,15 @@ using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class BlogImageService(IUnitOfWork unitOfWork) : IBlogImageService
+public class BlogImageService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IBlogImageService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result<BlogImageDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -68,6 +70,7 @@ public class BlogImageService(IUnitOfWork unitOfWork) : IBlogImageService
 
         await _unitOfWork.BlogImages.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"BlogImage aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
         return Result<AdminBlogImageDto>.Ok(entity.ToAdminDto());
     }
@@ -84,6 +87,7 @@ public class BlogImageService(IUnitOfWork unitOfWork) : IBlogImageService
         entity.UpdatedBy = updatedBy;
         await _unitOfWork.BlogImages.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"BlogImage geri yüklendi. Id: {id}", cancellationToken);
 
         return Result<AdminBlogImageDto>.Ok(entity.ToAdminDto());
     }
@@ -100,6 +104,7 @@ public class BlogImageService(IUnitOfWork unitOfWork) : IBlogImageService
         var entity = dto.ToEntity();
         await _unitOfWork.BlogImages.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"BlogImage oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         return Result<BlogImageDto>.Ok(entity.ToDto());
     }
@@ -116,6 +121,7 @@ public class BlogImageService(IUnitOfWork unitOfWork) : IBlogImageService
         entity.UpdateEntity(dto);
         await _unitOfWork.BlogImages.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"BlogImage güncellendi. Id: {entity.Id}", cancellationToken);
 
         return Result<BlogImageDto>.Ok(entity.ToDto());
     }
@@ -128,6 +134,7 @@ public class BlogImageService(IUnitOfWork unitOfWork) : IBlogImageService
 
         await _unitOfWork.BlogImages.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"BlogImage silindi. Id: {id}", cancellationToken);
 
         return Result.Ok();
     }
