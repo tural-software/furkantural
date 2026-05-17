@@ -20,11 +20,25 @@ public class AuthController(IAuthService authService, IUserService userService) 
     /// Kullanıcı girişi yap ve JWT token al
     /// </summary>
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _authService.LoginAsync(new LoginDto
         {
             Username = request.Username,
-            Password = request.Password
+            Password = request.Password,
+            AppSource = request.AppSource
+        }, cancellationToken));
+
+    /// <summary>
+    /// Uygulama varsayılan token'ı al (Visitor rolü, uzun süreli)
+    /// </summary>
+    [HttpPost("app-token")]
+    [AllowAnonymous]
+    public async Task<IActionResult> AppToken([FromBody] AppTokenRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _authService.GenerateAppTokenAsync(new AppTokenRequestDto
+        {
+            AppKey = request.AppKey,
+            AppName = request.AppName
         }, cancellationToken));
 
     /// <summary>

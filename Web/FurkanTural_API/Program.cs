@@ -4,6 +4,7 @@ using Asp.Versioning.ApiExplorer;
 using FurkanTural_Business.Registration;
 using FurkanTural_Persistence.Registration;
 using FurkanTural_API.Middlewares;
+using FurkanTural_Application.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,6 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddBusinessServices();
+builder.Services.AddHttpContextAccessor();
+builder.Services.Configure<AppTokenSettings>(builder.Configuration.GetSection("AppTokens"));
 builder.Services.AddSingleton(new FurkanTural_Application.Settings.FileStorageSettings
 {
     UploadsPath = Path.Combine(builder.Environment.WebRootPath, "images", "uploads")
@@ -57,7 +60,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly",      policy => policy.RequireRole("Admin"));
+    options.AddPolicy("UserOrAdmin",    policy => policy.RequireRole("Admin", "User"));
+    options.AddPolicy("VisitorOrAbove", policy => policy.RequireRole("Admin", "User", "Subscriber", "Visitor"));
+});
 
 // Swagger — her versiyon için ayrı SwaggerDoc
 builder.Services.AddEndpointsApiExplorer();
