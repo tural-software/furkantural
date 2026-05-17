@@ -1,7 +1,22 @@
+using FurkanTural_Blog;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// API entegrasyonu — uygulama token servisi
+builder.Services.AddHttpClient("AppTokenClient", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7000");
+});
+
+builder.Services.AddSingleton<IAppTokenService, AppTokenService>();
+builder.Services.AddTransient<DefaultTokenHandler>();
+
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7000");
+}).AddHttpMessageHandler<DefaultTokenHandler>();
 
 var app = builder.Build();
 
