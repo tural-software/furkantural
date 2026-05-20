@@ -108,36 +108,40 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("VisitorOrAbove", policy => policy.RequireRole("Admin", "User", "Subscriber", "Visitor"));
 });
 
-// Swagger — her versiyon için ayrı SwaggerDoc
+// Swagger — yalnızca etkinleştirildiğinde kayıt yapılır
+var swaggerEnabled = builder.Configuration.GetValue<bool>("Swagger:Enabled");
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-builder.Services.AddSwaggerGen(options =>
+if (swaggerEnabled)
 {
-    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    options.IncludeXmlComments(xmlPath);
-
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+    builder.Services.AddSwaggerGen(options =>
     {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "JWT token giriniz. Swagger otomatik 'Bearer ' ekler, sadece token'ı yapıştırın."
-    });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+        var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        options.IncludeXmlComments(xmlPath);
+    
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
-            new OpenApiSecurityScheme
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "JWT token giriniz. Swagger otomatik 'Bearer ' ekler, sadece token'ı yapıştırın."
+        });
+    
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
             {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            },
-            Array.Empty<string>()
-        }
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                },
+                Array.Empty<string>()
+            }
+        });
     });
-});
+}
 
 // CORS
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
@@ -160,8 +164,22 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-if (app.Environment.IsDevelopment())
+if (swaggerEnabled)
 {
+    app.UseWhen(
+        ctx => ctx.Request.Path.StartsWithSegments("/swagger"),
+        branch => branch.Use(async (ctx, next) =>
+        {
+            var requestOrigin = $"{ctx.Request.Scheme}://{ctx.Request.Host.Value}";
+            if (!allowedOrigins.Any(o => string.Equals(o, requestOrigin, StringComparison.OrdinalIgnoreCase)))
+            {
+                ctx.Response.StatusCode = 404;
+                return;
+            }
+            await next();
+        })
+    );
+
     var apiVersionDescriptions = app.Services
         .GetRequiredService<IApiVersionDescriptionProvider>();
 
