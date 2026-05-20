@@ -16,6 +16,11 @@
     <Version>1.0.0</Version>
   </PropertyGroup>
 
+  <!-- Publishing settings -->
+  <PropertyGroup>
+    <DeleteExistingFiles>true</DeleteExistingFiles>
+  </PropertyGroup>
+
   <!-- NuGet References -->
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
