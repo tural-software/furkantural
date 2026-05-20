@@ -115,4 +115,12 @@ public class UserController : JwtBaseController
     [HttpGet("admin/summary")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _userService.GetAdminSummaryAsync(cancellationToken));
+
+    /// <summary>
+    /// Sistemde hiç kullanıcı yoksa ilk admin kullanıcısını oluştur
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("seed-admin")]
+    public async Task<IActionResult> SeedAdmin([FromBody] SeedAdminRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _userService.SeedAdminAsync(request.Username, request.Password, cancellationToken));
 }

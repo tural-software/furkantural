@@ -7,6 +7,12 @@ public class CreateUserRequest
     public int RoleId { get; set; }
 }
 
+public class SeedAdminRequest
+{
+    public string? Username { get; set; }
+    public string? Password { get; set; }
+}
+
 public class UpdateUserRequest
 {
     public int Id { get; set; }

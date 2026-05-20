@@ -176,4 +176,31 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
         var summary = await _unitOfWork.Users.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
+
+    public async Task<Result<UserDto>> SeedAdminAsync(string? username, string? password, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            return Result<UserDto>.Fail("Kullanıcı adı boş olamaz.");
+
+        if (string.IsNullOrWhiteSpace(password))
+            return Result<UserDto>.Fail("Şifre boş olamaz.");
+
+        var anyUser = await _unitOfWork.Users.AnyAsync(_ => true, cancellationToken);
+        if (anyUser)
+            return Result<UserDto>.Fail("Sistemde zaten kullanıcı mevcut. Seed işlemi yapılamaz.", statusCode: 409);
+
+        var encryptResult = _encryptionService.Encrypt(password);
+        if (encryptResult.IsFailure)
+            return Result<UserDto>.Fail(encryptResult.Errors, encryptResult.InternalMessage);
+
+        var dto = new CreateUserDto { Username = username, Password = password, RoleId = 1 };
+        var entity = dto.ToEntity();
+        entity.Password = encryptResult.Data;
+
+        await _unitOfWork.Users.AddAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"İlk admin kullanıcısı oluşturuldu. Kullanıcı adı: {entity.Username}", cancellationToken);
+
+        return Result<UserDto>.Ok(entity.ToDto());
+    }
 }
