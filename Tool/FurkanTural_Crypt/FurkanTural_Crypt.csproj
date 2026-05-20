@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <AssemblyName>FurkanTural_PngToBase64</AssemblyName>
-    <RootNamespace>FurkanTural_PngToBase64</RootNamespace>
+    <AssemblyName>FurkanTural_Crypt</AssemblyName>
+    <RootNamespace>FurkanTural_Crypt</RootNamespace>
   </PropertyGroup>
 
 </Project>

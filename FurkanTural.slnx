@@ -22,4 +22,8 @@
   <Folder Name="/Web/">
     <Project Path="Web/FurkanTural_API/FurkanTural_API.csproj" />
   </Folder>
+  <Folder Name="/Tool/">
+    <Project Path="Tool/FurkanTural_Crypt/FurkanTural_Crypt.csproj" />
+    <Project Path="Tool/FurkanTural_PngToBase64/FurkanTural_PngToBase64.csproj" />
+  </Folder>
 </Solution>
