@@ -13,6 +13,47 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- Şifreli config değerlerini startup'ta çöz ---
+{
+    var encKey = builder.Configuration["EncryptionSettings:Key"]
+        ?? throw new InvalidOperationException("EncryptionSettings:Key yapılandırılmamış.");
+    var encIv = builder.Configuration["EncryptionSettings:IV"]
+        ?? throw new InvalidOperationException("EncryptionSettings:IV yapılandırılmamış.");
+
+    var pattern = new System.Text.RegularExpressions.Regex(@"^(\d{4}):(.+):(\d{4})$");
+    var overrides = new Dictionary<string, string?>();
+
+    foreach (var kv in builder.Configuration.AsEnumerable())
+    {
+        if (kv.Value is null) continue;
+        if (kv.Key.StartsWith("EncryptionSettings:")) continue;
+
+        var m = pattern.Match(kv.Value);
+        if (!m.Success) continue;
+
+        try
+        {
+            using var aes = System.Security.Cryptography.Aes.Create();
+            aes.Key = Encoding.UTF8.GetBytes(encKey);
+            aes.IV  = Encoding.UTF8.GetBytes(encIv);
+
+            using var ms = new MemoryStream(Convert.FromBase64String(m.Groups[2].Value));
+            using var cs = new System.Security.Cryptography.CryptoStream(ms, aes.CreateDecryptor(), System.Security.Cryptography.CryptoStreamMode.Read);
+            using var sr = new StreamReader(cs);
+            var decrypted = sr.ReadToEnd();
+
+            var s1 = m.Groups[1].Value;
+            var s2 = m.Groups[3].Value;
+            if (decrypted.StartsWith(s1, StringComparison.Ordinal) && decrypted.EndsWith(s2, StringComparison.Ordinal))
+                overrides[kv.Key] = decrypted[s1.Length..^s2.Length];
+        }
+        catch (System.Security.Cryptography.CryptographicException) { /* şifreli değil, atla */ }
+    }
+
+    if (overrides.Count > 0)
+        builder.Configuration.AddInMemoryCollection(overrides);
+}
+
 // --- Services ---
 
 builder.Services.AddPersistenceServices(builder.Configuration);
