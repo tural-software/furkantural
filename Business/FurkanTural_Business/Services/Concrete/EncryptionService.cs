@@ -9,8 +9,15 @@ namespace FurkanTural_Business.Services.Concrete;
 
 public partial class EncryptionService(IConfiguration configuration) : IEncryptionService
 {
-    private readonly byte[] _key = Encoding.UTF8.GetBytes(configuration["EncryptionConfiguration:Key"] ?? "E546C8DF278CD5931069B522E695D4F2");
-    private readonly byte[] _iv = Encoding.UTF8.GetBytes(configuration["EncryptionConfiguration:IV"] ?? "A2C46DD81522E695");
+    private readonly byte[] _key = Encoding.UTF8.GetBytes(
+        configuration["EncryptionSettings:Key"]
+        ?? configuration["EncryptionConfiguration:Key"]
+        ?? "IJ%p*85DZ853*96@#@o32ivpR*2o#$@%");
+
+    private readonly byte[] _iv = Encoding.UTF8.GetBytes(
+        configuration["EncryptionSettings:IV"]
+        ?? configuration["EncryptionConfiguration:IV"]
+        ?? "31eH*208Z%#W2**E");
 
     public Result<string> Encrypt(string value)
     {
