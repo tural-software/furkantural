@@ -4,17 +4,15 @@ using FurkanTural_Application.DTOs.User;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_API.Controllers.Base;
 using FurkanTural_API.Models.Auth;
-using FurkanTural_API.Models.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class AuthController(IAuthService authService, IUserService userService) : BaseApiController
+public class AuthController(IAuthService authService) : BaseApiController
 {
     private readonly IAuthService _authService = authService;
-    private readonly IUserService _userService = userService;
 
     /// <summary>
     /// Kullanıcı girişi yap ve JWT token al
@@ -26,7 +24,8 @@ public class AuthController(IAuthService authService, IUserService userService) 
         {
             Username = request.Username,
             Password = request.Password,
-            AppSource = request.AppSource
+            AppSource = request.AppSource,
+            TurnstileToken = request.TurnstileToken
         }, cancellationToken));
 
     /// <summary>
@@ -42,21 +41,17 @@ public class AuthController(IAuthService authService, IUserService userService) 
         }, cancellationToken));
 
     /// <summary>
-    /// İlk kurulum: Sistemde hiç kullanıcı yokken yönetici hesabı oluştur. Kullanıcı mevcut olduğunda bu uç çalışmaz.
+    /// Yeni üye kaydı oluştur ve giriş token'ı al
     /// </summary>
     [HttpPost("register")]
     [AllowAnonymous]
-    public async Task<IActionResult> Register([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
-    {
-        var existing = await _userService.GetAllAsync(cancellationToken);
-        if (existing.Success && existing.Data?.Any() == true)
-            return StatusCode(403, new { message = "Sistem zaten yapılandırılmış. Yeni kullanıcı oluşturmak için giriş yapın." });
-
-        return ToActionResult(await _userService.CreateAsync(new CreateUserDto
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _authService.RegisterAsync(new RegisterDto
         {
             Username = request.Username,
+            Email = request.Email,
             Password = request.Password,
-            RoleId = 1 // İlk kurulumda yönetici (Admin) rolü atanır
+            DisplayName = request.DisplayName,
+            TurnstileToken = request.TurnstileToken
         }, cancellationToken));
-    }
 }

@@ -3,9 +3,15 @@ using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using FurkanTural_Business.Registration;
 using FurkanTural_Persistence.Registration;
+using FurkanTural_Persistence.Contexts;
 using FurkanTural_API.Middlewares;
+using FurkanTural_API.Hubs;
+using FurkanTural_API.Realtime;
+using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -56,13 +62,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- Services ---
 
+builder.Services.AddHttpClient();
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddBusinessServices();
 builder.Services.AddHttpContextAccessor();
+
+// SignalR (gerçek zamanlı sohbet + bildirimler)
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IChatNotifier, ChatNotifier>();
+builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 builder.Services.Configure<AppTokenSettings>(builder.Configuration.GetSection("AppTokens"));
 builder.Services.AddSingleton(new FurkanTural_Application.Settings.FileStorageSettings
 {
-    UploadsPath = Path.Combine(builder.Environment.WebRootPath, "images", "uploads")
+    // Yüklemeler wwwroot kökü altında modül/medya-türü klasörlerine yazılır (FileService oluşturur).
+    WebRootPath = builder.Environment.WebRootPath
 });
 
 builder.Services.AddControllers();
@@ -99,6 +112,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["JwtSettings:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
+
+        // SignalR tarayıcı istemcisi token'ı query string ile gönderir (WebSocket).
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                    context.Token = accessToken;
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization(options =>
@@ -106,6 +132,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly",      policy => policy.RequireRole("Admin"));
     options.AddPolicy("UserOrAdmin",    policy => policy.RequireRole("Admin", "User"));
     options.AddPolicy("VisitorOrAbove", policy => policy.RequireRole("Admin", "User", "Subscriber", "Visitor"));
+    // Yalnızca app-token sahibi (kayıtlı ön-yüz) erişebilir — app-token her zaman app_source claim'i taşır.
+    options.AddPolicy("AppClient",      policy => policy.RequireClaim("app_source"));
 });
 
 // Swagger — yalnızca etkinleştirildiğinde kayıt yapılır
@@ -151,7 +179,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -159,6 +188,24 @@ builder.Services.AddCors(options =>
 builder.Services.AddDirectoryBrowser();
 
 var app = builder.Build();
+
+// --- Bekleyen EF migration'larını başlangıçta otomatik uygula ---
+if (builder.Configuration.GetValue<bool?>("Database:ApplyMigrationsOnStartup") ?? true)
+{
+    using var migrationScope = app.Services.CreateScope();
+    var dbContext = migrationScope.ServiceProvider.GetRequiredService<FurkanTuralDbContext>();
+    try
+    {
+        // DB yoksa oluşturur, bekleyen migration'ları uygular, günceldeyse no-op. (EF Core eşzamanlı başlatmada kilit alır.)
+        dbContext.Database.Migrate();
+        app.Logger.LogInformation("Veritabanı migration kontrolü tamamlandı (bekleyenler uygulandı).");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Başlangıçta migration uygulanamadı; uygulama durduruluyor.");
+        throw; // fail-fast: bozuk migration sessizce geçmesin
+    }
+}
 
 // --- Middleware pipeline ---
 
@@ -203,6 +250,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();
 
