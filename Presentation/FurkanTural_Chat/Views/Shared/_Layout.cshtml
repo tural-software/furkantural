@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Tural Chat</title>
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme');
+                var t = (saved === 'light' || saved === 'dark')
+                    ? saved
+                    : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+                document.documentElement.dataset.theme = t;
+            } catch (_) { document.documentElement.dataset.theme = 'dark'; }
+        })();
+    </script>
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+
+    @* PWA — kurulabilir uygulama *@
+    <link rel="manifest" href="~/site.webmanifest" />
+    <meta name="theme-color" content="#0f1117" />
+    <link rel="icon" href="~/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="~/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Tural Chat" />
+</head>
+<body>
+    @RenderBody()
+
+    <div id="toastBox" role="status" aria-live="polite">
+        <div id="toastTitle"></div>
+        <div id="toastMsg"></div>
+    </div>
+
+    <div id="pwaInstallBar" class="pwa-install-bar" hidden>
+        <button type="button" id="pwaInstallBtn" class="pwa-install-btn">⬇ Uygulamayı yükle</button>
+        <button type="button" id="pwaInstallClose" class="pwa-install-close" aria-label="Kapat" title="Kapat">✕</button>
+    </div>
+
+    <script src="~/js/theme.js" asp-append-version="true"></script>
+    <script src="~/js/toast.js" asp-append-version="true"></script>
+    <script src="~/js/pwa.js" asp-append-version="true"></script>
+
+    @if (TempData["ToastMsg"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (window.showToast) {
+                    showToast(
+                        @Html.Raw(System.Text.Json.JsonSerializer.Serialize((TempData["ToastType"] as string) ?? "success")),
+                        @Html.Raw(System.Text.Json.JsonSerializer.Serialize((TempData["ToastTitle"] as string) ?? "")),
+                        @Html.Raw(System.Text.Json.JsonSerializer.Serialize((TempData["ToastMsg"] as string) ?? "")));
+                }
+            });
+        </script>
+    }
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

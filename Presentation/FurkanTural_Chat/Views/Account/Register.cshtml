@@ -1,0 +1,52 @@
+@model RegisterRequestModel
+@{
+    ViewData["Title"] = "Üye Ol";
+}
+<button type="button" class="theme-toggle-btn theme-toggle-btn--floating" data-theme-toggle aria-label="Temayı değiştir">
+    <span data-theme-icon>🌙</span>
+</button>
+
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-brand">Tural <span>Chat</span></div>
+        <p class="auth-sub">Yeni bir hesap oluştur</p>
+
+        <form id="registerForm" asp-action="Register" method="post" class="auth-form"
+              data-auth-form data-fail-title="Kayıt başarısız">
+            @Html.AntiForgeryToken()
+
+            <label asp-for="Username">Kullanıcı adı</label>
+            <input asp-for="Username" autocomplete="username" autofocus />
+
+            <label asp-for="Email">E-posta</label>
+            <input asp-for="Email" type="email" autocomplete="email" />
+
+            <label asp-for="DisplayName">Görünen ad (opsiyonel)</label>
+            <input asp-for="DisplayName" autocomplete="nickname" />
+
+            <label asp-for="Password">Şifre</label>
+            <input asp-for="Password" type="password" autocomplete="new-password" />
+
+            @if (!string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string))
+            {
+                <div class="cf-turnstile" data-sitekey="@ViewBag.TurnstileSiteKey" data-callback="onTurnstileSuccess"></div>
+            }
+            <input type="hidden" name="TurnstileToken" id="turnstileToken" />
+
+            <button type="submit" class="btn-primary">Üye ol</button>
+        </form>
+
+        <p class="auth-foot">Zaten hesabın var mı? <a asp-action="Login">Giriş yap</a></p>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script>
+        function onTurnstileSuccess(token) {
+            var el = document.getElementById('turnstileToken');
+            if (el) el.value = token;
+        }
+    </script>
+    <script src="~/js/auth.js" asp-append-version="true"></script>
+}

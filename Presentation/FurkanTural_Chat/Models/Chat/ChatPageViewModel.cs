@@ -1,0 +1,11 @@
+namespace FurkanTural_Chat.Models.Chat;
+
+public class ChatPageViewModel
+{
+    public string Token { get; set; } = string.Empty;
+    public string ApiBaseUrl { get; set; } = string.Empty;
+    public int UserId { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string AvatarUrl { get; set; } = string.Empty;
+}

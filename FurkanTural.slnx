@@ -17,6 +17,7 @@
   <Folder Name="/Presentation/">
     <Project Path="Presentation/FurkanTural_Admin/FurkanTural_Admin.csproj" />
     <Project Path="Presentation/FurkanTural_Blog/FurkanTural_Blog.csproj" />
+    <Project Path="Presentation/FurkanTural_Chat/FurkanTural_Chat.csproj" />
     <Project Path="Presentation/FurkanTural_Portfolio/FurkanTural_Portfolio.csproj" />
   </Folder>
   <Folder Name="/Web/">

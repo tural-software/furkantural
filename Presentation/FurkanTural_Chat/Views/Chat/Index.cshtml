@@ -1,0 +1,94 @@
+@model ChatPageViewModel
+@{
+    ViewData["Title"] = "Sohbet";
+    var initial = string.IsNullOrWhiteSpace(Model.DisplayName) ? "?" : Model.DisplayName.Trim().Substring(0, 1).ToUpperInvariant();
+    var chatConfig = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        apiBase = Model.ApiBaseUrl,
+        token = Model.Token,
+        userId = Model.UserId,
+        username = Model.Username,
+        avatarUrl = Model.AvatarUrl
+    });
+}
+
+<div class="chat-app">
+    <aside class="sidebar">
+        <div class="search">
+            <input id="searchInput" type="search" placeholder="Kullanıcı adı veya e-posta ara…" autocomplete="off" />
+            <div id="searchResults" class="search-results" hidden></div>
+        </div>
+
+        <div class="panel requests" id="requestsPanel">
+            <div class="section-head">
+                <span>Arkadaşlık İstekleri</span>
+                <span id="requestBadge" class="badge" hidden>0</span>
+            </div>
+            <div id="requestsList" class="requests-list"></div>
+        </div>
+
+        <div class="friends">
+            <div class="section-head"><span>Arkadaşlar</span></div>
+            <div id="friendsList" class="friends-list"></div>
+        </div>
+
+        <div class="me">
+            @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+            {
+                <div class="avatar" id="meAvatar" title="Avatarı değiştir" style="cursor:pointer;background-image:url('@(Model.AvatarUrl.Contains('/') ? $"{Model.ApiBaseUrl}/{Model.AvatarUrl}" : $"{Model.ApiBaseUrl}/images/uploads/{Model.AvatarUrl}")');background-size:cover;background-position:center;"></div>
+            }
+            else
+            {
+                <div class="avatar" id="meAvatar" title="Avatarı değiştir" style="cursor:pointer">@initial</div>
+            }
+            <input type="file" id="avatarFileInput" accept="image/*" hidden />
+            <div class="me-name">@Model.DisplayName</div>
+            <button type="button" id="audioSettingsBtn" class="theme-toggle-btn" aria-label="Ses ve cihaz ayarları" title="Ses ve cihaz ayarları">⚙️</button>
+            <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Temayı değiştir" title="Temayı değiştir">
+                <span data-theme-icon>🌙</span>
+            </button>
+            <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-outline logout-chip">Çıkış</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="conversation">
+        <div class="conv-header">
+            <span id="convTitle">Sohbet etmek için bir arkadaş seç</span>
+            <span id="typingIndicator" class="typing" hidden>yazıyor…</span>
+            <div class="conv-actions">
+                <button type="button" id="callAudioBtn" class="conv-act" title="Sesli ara" aria-label="Sesli ara" hidden>📞</button>
+                <button type="button" id="callVideoBtn" class="conv-act" title="Görüntülü ara" aria-label="Görüntülü ara" hidden>🎥</button>
+                <div class="conv-menu-wrap">
+                    <button type="button" id="convMenuBtn" class="conv-act" title="Daha fazla" aria-label="Daha fazla" hidden>⋮</button>
+                    <div id="convMenu" class="conv-menu" hidden>
+                        <button type="button" data-act="block">Engelle</button>
+                        <button type="button" data-act="report">Şikayet et</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="messages" class="messages">
+            <div class="empty-hint">Henüz bir sohbet seçilmedi.</div>
+        </div>
+        <form id="composer" class="composer" hidden>
+            <button type="button" id="attachBtn" class="rec-btn" title="Foto/Video gönder" aria-label="Foto/Video gönder">📎</button>
+            <input id="attachInput" type="file" accept="image/*,video/*" hidden />
+            <button type="button" id="recBtn" class="rec-btn" title="Sesli mesaj kaydet" aria-label="Sesli mesaj">🎤</button>
+            <span id="recTimer" class="rec-timer" hidden>0:00</span>
+            <input id="messageInput" type="text" placeholder="Bir mesaj yaz…" autocomplete="off" maxlength="4000" />
+            <button type="submit">Gönder</button>
+        </form>
+    </main>
+</div>
+
+<div id="connStatus" class="conn-status" hidden></div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@@8.0.7/dist/browser/signalr.min.js"></script>
+    <script>window.CHAT = @Html.Raw(chatConfig);</script>
+    <script src="~/js/chat.js" asp-append-version="true"></script>
+    <script src="~/js/call.js" asp-append-version="true"></script>
+}

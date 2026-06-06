@@ -1,0 +1,536 @@
+/* Palet + tema token'ları theme.css'ten gelir (Admin ile ortak). */
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { font-family: inherit; cursor: pointer; }
+
+html, body, .sidebar, .conversation, .conv-header, .composer, .auth-card,
+input, button, .friend-item, .msg .bubble, #toastBox {
+    transition: background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease;
+}
+
+/* ───────── Tema toggle (Admin ile birebir) ───────── */
+.theme-toggle-btn {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    font-size: .8rem;
+    padding: .5rem .75rem;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-family: var(--font-sans);
+    transition: all 0.2s ease;
+}
+.theme-toggle-btn:hover {
+    background-color: var(--bg-card-solid);
+    border-color: var(--accent);
+}
+.theme-toggle-btn:hover [data-theme-icon] {
+    animation: spin 0.5s ease-in-out;
+}
+.theme-toggle-btn--floating {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: var(--z-chrome);
+}
+@keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ───────── PWA "Uygulamayı yükle" çubuğu (kapatılabilir, composer üstünde) ───────── */
+.pwa-install-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 72px;
+    transform: translateX(-50%);
+    z-index: var(--z-chrome);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 5px 5px 5px 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.pwa-install-bar[hidden] { display: none; }
+.pwa-install-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--accent);
+    color: #0f172a;
+    border: 0;
+    border-radius: 999px;
+    padding: .55rem 1rem;
+    font-size: .85rem;
+    font-weight: 600;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: filter .15s ease;
+}
+.pwa-install-btn:hover { filter: brightness(1.05); }
+.pwa-install-close {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    color: var(--text-dim);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+.pwa-install-close:hover { background: var(--bg-main); color: var(--text-main); }
+
+/* ───────── Auth ───────── */
+.auth-wrap {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: radial-gradient(1200px 600px at 50% -10%, var(--accent-soft), transparent 60%);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 32px 28px;
+    box-shadow: 0 20px 60px -10px rgba(0,0,0,.45);
+}
+
+.auth-brand { font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
+.auth-brand span { color: var(--accent); }
+.auth-sub { color: var(--text-dim); margin: 6px 0 22px; font-size: 14px; }
+
+.auth-form { display: flex; flex-direction: column; gap: 6px; }
+.auth-form label { font-size: 13px; color: var(--text-dim); margin-top: 10px; }
+.auth-form input {
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: var(--radius-md);
+    padding: 11px 13px;
+    font-size: 14px;
+    outline: none;
+}
+.auth-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+/* Turnstile widget'ı formda ortala */
+.auth-form .cf-turnstile { display: flex; justify-content: center; margin-top: 10px; }
+
+.btn-primary {
+    background: var(--accent);
+    color: #0f172a;
+    font-weight: 600;
+    font-size: .95rem;
+    border: 0;
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-top: 18px;
+    cursor: pointer;
+    transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-primary:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.4); }
+.btn-primary:active:not(:disabled) { transform: scale(0.97); }
+.btn-primary:disabled { opacity: .6; cursor: progress; }
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-weight: 500;
+    font-size: .9rem;
+    border-radius: var(--radius-md);
+    padding: .75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-outline:hover { background-color: var(--bg-main); transform: scale(1.05); border-color: var(--accent); }
+.btn-outline:active { transform: scale(0.95); }
+.logout-chip { padding: .35rem .7rem !important; font-size: .85rem; }
+
+.auth-foot { text-align: center; margin-top: 18px; color: var(--text-dim); font-size: 14px; }
+
+/* ───────── Chat layout ───────── */
+.chat-app {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+}
+
+.sidebar {
+    background: var(--bg-card-solid);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center; font-weight: 700; color: #0f172a;
+    background: var(--accent);
+    flex: 0 0 auto;
+}
+.avatar.sm { width: 36px; height: 36px; font-size: 14px; }
+
+.search { padding: 14px 14px 6px; position: relative; }
+.search input {
+    width: 100%; background: var(--bg-main); border: 1px solid var(--border-color);
+    color: var(--text-main); border-radius: var(--radius-md); padding: 10px 12px; outline: none; font-size: 14px;
+}
+.search input:focus { border-color: var(--accent); }
+.search-results {
+    position: absolute; left: 14px; right: 14px; top: 54px; z-index: 5;
+    background: var(--bg-card-solid); border: 1px solid var(--border-color); border-radius: var(--radius-md);
+    box-shadow: 0 12px 40px rgba(0,0,0,.4); max-height: 280px; overflow-y: auto;
+}
+.search-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+.search-item:hover { background: var(--bg-main); }
+.btn-add {
+    background: var(--accent-soft); color: var(--accent); border: 1px solid transparent;
+    border-radius: var(--radius-sm); padding: 6px 12px; font-size: 13px; font-weight: 600;
+}
+.btn-add:hover { background: var(--accent); color: #0f172a; }
+.btn-add:disabled { opacity: .7; cursor: default; }
+
+.panel { padding: 8px 0; }
+.section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px 6px; font-size: 12px; text-transform: uppercase;
+    letter-spacing: .6px; color: var(--text-dim);
+}
+.badge {
+    background: var(--error); color: #fff; border-radius: 20px; min-width: 20px;
+    height: 20px; padding: 0 6px; font-size: 12px; font-weight: 700;
+    display: inline-grid; place-items: center;
+}
+
+.requests.has-requests .section-head { color: #f59e0b; }
+.requests.flash { animation: flash 1.8s ease; }
+@keyframes flash {
+    0%, 100% { background: transparent; }
+    20% { background: rgba(245, 158, 11, .14); }
+}
+
+.friends { flex: 1; overflow-y: auto; min-height: 0; border-top: 1px solid var(--border-color); margin-top: 6px; }
+
+.friend-item, .request-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 14px; position: relative;
+}
+.friend-item { cursor: pointer; }
+.friend-item:hover { background: var(--bg-main); }
+.friend-item.active { background: var(--accent-soft); }
+.friend-meta { flex: 1; min-width: 0; }
+.friend-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.friend-sub { font-size: 12px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.unread-dot {
+    background: var(--accent); color: #0f172a; border-radius: 20px; min-width: 18px; height: 18px;
+    padding: 0 5px; font-size: 11px; font-weight: 700; display: inline-grid; place-items: center;
+}
+/* display:inline-grid, [hidden]'ın display:none'unu ezdiği için rozetlerde
+   hidden özniteliğinin gerçekten gizlemesini garanti et. */
+.badge[hidden], .unread-dot[hidden] { display: none !important; }
+.friend-item.has-unread .friend-name { color: var(--text-main); font-weight: 700; }
+
+.req-actions { display: flex; gap: 6px; }
+.req-actions button {
+    width: 30px; height: 30px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);
+    background: var(--bg-main); font-size: 14px;
+}
+.btn-accept { color: #10b981; }
+.btn-accept:hover { background: #10b981; color: #fff; border-color: #10b981; }
+.btn-reject { color: var(--error); }
+.btn-reject:hover { background: var(--error); color: #fff; border-color: var(--error); }
+
+/* Giden (onay bekleyen) istek — salt-okunur "Bekliyor" rozeti */
+.req-pending {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 4px 10px;
+    white-space: nowrap;
+}
+
+.empty-hint { color: var(--text-dim); text-align: center; padding: 24px 16px; font-size: 14px; }
+.empty-hint.small { padding: 12px; font-size: 13px; }
+
+/* Profil — sidebar'ın EN ALTINDA sabit */
+.me {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+}
+.me-name { font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.logout-form { margin: 0; }
+
+/* ───────── Conversation ───────── */
+.conversation { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--bg-main); }
+.conv-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-card-solid);
+    font-weight: 700;
+}
+.typing { font-weight: 400; font-size: 13px; color: var(--accent); }
+
+/* Konuşma başlığı aksiyonları (ara / menü) */
+.conv-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.conv-menu-wrap { position: relative; }
+.conv-act {
+    width: 38px; height: 38px; border-radius: 50% !important; padding: 0 !important;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: transparent !important; color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important; font-size: 16px; cursor: pointer;
+}
+.conv-act:hover { border-color: var(--accent) !important; box-shadow: none !important; }
+/* [hidden] gerçekten gizlesin (sohbet seçilene kadar arama/menü butonları görünmesin) */
+.conv-act[hidden] { display: none !important; }
+.conv-menu {
+    position: absolute; top: 44px; right: 0; z-index: 50; min-width: 160px;
+    background: var(--bg-card-solid); border: 1px solid var(--border-color);
+    border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,.35); overflow: hidden;
+}
+.conv-menu button {
+    display: block; width: 100%; text-align: left; padding: 10px 14px;
+    background: transparent !important; color: var(--text-main) !important; border: none !important;
+    font-size: 13px; font-weight: 500; cursor: pointer; box-shadow: none !important;
+}
+.conv-menu button:hover { background: var(--bg-main) !important; color: var(--error) !important; }
+
+/* ───────── Arama (sesli/görüntülü) overlay ───────── */
+.call-overlay {
+    position: fixed; inset: 0; z-index: 1100; display: none;
+    align-items: center; justify-content: center; background: rgba(8, 10, 16, .92);
+}
+.call-overlay:not([hidden]) { display: flex; }
+.call-box {
+    position: relative; width: min(92vw, 760px); height: min(86vh, 560px);
+    /* Arama modalı her iki temada koyu (beyaz buton/yazı okunur kalsın) */
+    background: #0f1117; border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: var(--radius-lg, 16px); overflow: hidden; display: flex;
+    align-items: center; justify-content: center;
+}
+.call-remote { width: 100%; height: 100%; object-fit: cover; background: #0b0e14; }
+.call-overlay[data-type="audio"] .call-remote { display: none; }
+.call-poster { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+.call-overlay[data-type="audio"] .call-poster,
+.call-overlay[data-mode="calling"] .call-poster,
+.call-overlay[data-mode="incoming"] .call-poster { display: flex; }
+/* Görüntülü çağrıda karşı tarafın kamerası kapalıysa → avatar göster, siyah videoyu gizle */
+.call-overlay[data-type="video"][data-remote-video="off"] .call-remote { display: none; }
+.call-overlay[data-type="video"][data-remote-video="off"][data-mode="in-call"] .call-poster { display: flex; }
+.call-avatar {
+    width: 120px; height: 120px; border-radius: 50%; background-size: cover; background-position: center;
+    background-color: var(--accent-soft); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 700;
+    border: 2px solid transparent; transition: border-color .12s ease, box-shadow .12s ease;
+}
+/* Konuşma göstergesi: yalnız konuşurken yan (kim konuşuyor anlaşılsın) */
+.call-avatar.speaking { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), .25); }
+.call-local {
+    position: absolute; right: 14px; bottom: 84px; width: 150px; max-width: 34vw;
+    border-radius: var(--radius-md); border: 1px solid var(--border-color);
+    background: #0b0e14; object-fit: cover; box-shadow: 0 6px 18px rgba(0,0,0,.4);
+}
+.call-overlay[data-type="audio"] .call-local { display: none; }
+.call-head { position: absolute; top: 16px; left: 0; right: 0; text-align: center; pointer-events: none; }
+.call-name { font-size: 18px; font-weight: 700; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+.call-state { margin-top: 4px; font-size: 13px; color: rgba(255,255,255,.78); text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+.call-actions { position: absolute; bottom: 18px; left: 0; right: 0; display: flex; justify-content: center; gap: 16px; }
+.call-btn {
+    width: 56px; height: 56px; border-radius: 50% !important; padding: 0 !important; font-size: 22px;
+    border: none !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.14) !important; color: #fff !important; box-shadow: none !important;
+}
+.call-btn:hover { background: rgba(255,255,255,.24) !important; }
+.call-btn.off { background: rgba(239,68,68,.85) !important; }
+.call-accept { background: #22c55e !important; }
+.call-accept:hover { background: #16a34a !important; }
+.call-hang { background: #ef4444 !important; }
+.call-hang:hover { background: #dc2626 !important; }
+/* [hidden] gerçekten gizlesin (.call-btn/.call-min display:inline-flex'i ezmesin) */
+.call-btn[hidden], .call-min[hidden] { display: none !important; }
+
+/* Ses/cihaz ayarları modalı */
+.device-modal {
+    position: fixed; inset: 0; z-index: 1200; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(8, 10, 16, .6);
+}
+.device-modal:not([hidden]) { display: flex; }
+.dev-card {
+    width: min(94vw, 420px); background: var(--bg-card-solid);
+    border: 1px solid var(--border-color); border-radius: var(--radius-lg, 16px);
+    padding: 18px 20px; box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
+}
+.dev-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; font-weight: 700; color: var(--text-main); }
+.dev-close { background: transparent; border: none; color: var(--text-dim); font-size: 16px; cursor: pointer; }
+.dev-close:hover { color: var(--text-main); }
+.dev-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.dev-row:last-child { margin-bottom: 0; }
+.dev-row label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
+.dev-row select {
+    background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main);
+    border-radius: var(--radius-md); padding: 9px 10px; font-size: 14px; outline: none;
+}
+.dev-row select:focus { border-color: var(--accent); }
+.dev-vol { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+/* Aramayı küçült (PiP) */
+.call-min {
+    position: absolute; top: 10px; left: 10px; z-index: 3;
+    width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255, 255, 255, .14); color: #fff; font-size: 15px;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.call-min:hover { background: rgba(255, 255, 255, .26); }
+.call-mini { display: none; position: absolute; bottom: 6px; left: 0; right: 0; justify-content: center; gap: 8px; z-index: 3; }
+.call-mbtn {
+    width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255, 255, 255, .18); color: #fff; font-size: 16px;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.call-mbtn:hover { background: rgba(255, 255, 255, .3); }
+.call-mbtn.call-mhang { background: #ef4444; }
+.call-mbtn.call-mhang:hover { background: #dc2626; }
+.call-mbtn.off { background: rgba(239, 68, 68, .85); }
+
+/* Minimized (köşe widget) — alttaki chat tıklanabilir; widget sürüklenebilir (JS left/top) */
+.call-overlay[data-min] { background: transparent; pointer-events: none; padding: 0; }
+.call-overlay[data-min] .call-box {
+    pointer-events: auto; position: absolute; width: 320px; height: 210px;
+    cursor: move; touch-action: none; box-shadow: 0 12px 38px rgba(0, 0, 0, .6);
+}
+.call-overlay[data-min] .call-actions,
+.call-overlay[data-min] .call-min,
+.call-overlay[data-min] .call-local { display: none !important; }
+.call-overlay[data-min] .call-head { top: 10px; }
+.call-overlay[data-min] .call-name { font-size: 14px; }
+.call-overlay[data-min] .call-state { display: none; }
+.call-overlay[data-min] .call-avatar { width: 72px; height: 72px; font-size: 26px; }
+.call-overlay[data-min] .call-mini { display: flex; bottom: 0; padding: 16px 0 10px; background: linear-gradient(transparent, rgba(0, 0, 0, .5)); }
+
+.messages { flex: 1; min-height: 0; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 6px; }
+
+/* Gizli scrollbar (fare tekeri/touchpad ile kaydırma çalışır) */
+.friends, .messages, .search-results { scrollbar-width: none; -ms-overflow-style: none; }
+.friends::-webkit-scrollbar, .messages::-webkit-scrollbar, .search-results::-webkit-scrollbar { display: none; }
+.msg { display: flex; flex-direction: column; max-width: 68%; }
+.msg.in { align-self: flex-start; align-items: flex-start; }
+.msg.out { align-self: flex-end; align-items: flex-end; }
+.bubble {
+    padding: 9px 13px; border-radius: var(--radius-md); font-size: 14px; line-height: 1.4;
+    word-wrap: break-word; white-space: pre-wrap;
+}
+.msg.in .bubble { background: var(--bg-card-solid); border: 1px solid var(--border-color); color: var(--text-main); border-bottom-left-radius: 4px; }
+.msg.out .bubble { background: var(--accent); color: #0f172a; border-bottom-right-radius: 4px; }
+.msg-meta { display: flex; align-items: center; gap: 5px; margin: 2px 4px; font-size: 11px; color: var(--text-dim); }
+.ticks { font-size: 12px; letter-spacing: -2px; color: var(--text-dim); }
+.ticks.read { color: var(--accent); }
+
+/* Ses mesajı */
+.msg .bubble.audio { padding: 6px 8px; }
+.msg .bubble.audio audio { display: block; height: 38px; min-width: 220px; max-width: 260px; }
+
+/* Foto/Video mesajı */
+.msg .bubble.media { padding: 4px; overflow: hidden; }
+.msg .bubble.media .msg-img,
+.msg .bubble.media .msg-video {
+    display: block; max-width: 260px; max-height: 320px; width: 100%;
+    border-radius: calc(var(--radius-md) - 4px); object-fit: cover;
+}
+.msg .bubble.media .msg-img { cursor: zoom-in; }
+
+/* Görsel lightbox */
+.img-lightbox {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 24px;
+    background: rgba(0, 0, 0, .82); cursor: zoom-out;
+}
+.img-lightbox.open { display: flex; }
+.img-lightbox img { max-width: 96vw; max-height: 92vh; border-radius: var(--radius-md); box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+
+.composer { display: flex; gap: 10px; align-items: center; padding: 14px 20px; border-top: 1px solid var(--border-color); background: var(--bg-card-solid); }
+/* [hidden] gerçekten gizlesin (sohbet seçilene kadar composer görünmesin) */
+.composer[hidden] { display: none !important; }
+.composer input[type=text] {
+    flex: 1; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main);
+    border-radius: 22px; padding: 11px 16px; outline: none; font-size: 14px;
+}
+.composer input[type=text]:focus { border-color: var(--accent); }
+.composer button {
+    background: var(--accent); color: #0f172a;
+    border: none; border-radius: 22px; padding: 0 20px; height: 42px; font-weight: 600; font-size: 14px;
+}
+.composer button:hover { box-shadow: 0 0 12px rgba(var(--accent-rgb), .4); }
+.rec-btn {
+    width: 42px; height: 42px; border-radius: 50% !important; padding: 0 !important;
+    background: var(--bg-main) !important; color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important; font-size: 18px;
+    display: grid; place-items: center;
+}
+.rec-btn:hover { border-color: var(--accent) !important; }
+.rec-btn.recording { background: var(--error) !important; color: #fff !important; border-color: var(--error) !important; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.5); } 50% { box-shadow: 0 0 0 7px rgba(239,68,68,0); } }
+.rec-timer { font-size: 13px; color: var(--error); font-weight: 600; min-width: 38px; }
+
+/* ───────── Toast (#toastBox) ───────── */
+#toastBox {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; min-width: 280px; max-width: 360px;
+    padding: 1rem 1.25rem; background: var(--toast-bg); color: var(--toast-text);
+    border: 1px solid var(--toast-border-success); border-radius: var(--radius-md);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 20px 60px -10px rgba(0,0,0,.5); display: none; opacity: 0;
+    transition: opacity .3s ease, transform .3s ease; z-index: 9999;
+}
+#toastBox.error { border-color: var(--toast-border-error); }
+#toastTitle { font-weight: 600; font-size: .95rem; margin-bottom: .25rem; }
+#toastMsg { font-size: .85rem; color: var(--text-dim); line-height: 1.4; }
+
+/* Bağlantı durumu */
+.conn-status {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    background: #f59e0b; color: #1a1205; padding: 7px 16px; border-radius: 20px;
+    font-size: 13px; font-weight: 600; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+}
+
+/* ───────── Responsive ───────── */
+@media (max-width: 720px) {
+    .chat-app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+}
