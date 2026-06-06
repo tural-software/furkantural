@@ -1,13 +1,14 @@
-namespace FurkanTural_Application.DTOs.User;
+namespace FurkanTural_Application.DTOs.Status;
 
-public class AdminUserDto
+public class AdminStatusDto
 {
     public int Id { get; set; }
-    public string? Username { get; set; }
-    public int RoleId { get; set; }
-    public string? Email { get; set; }
-    public string? DisplayName { get; set; }
-    public string? AvatarUrl { get; set; }
+    public string? Group { get; set; }
+    public string? Code { get; set; }
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+    public string? Color { get; set; }
+    public int SortOrder { get; set; }
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime CreatedAt { get; set; }

@@ -19,6 +19,14 @@ public interface IUnitOfWork
     IRepository<Skill> Skills { get; }
     IRepository<Subscriber> Subscribers { get; }
     IRepository<User> Users { get; }
+    IRepository<Contact> Contacts { get; }
+    IRepository<ContactTemplate> ContactTemplates { get; }
+    IRepository<Status> Statuses { get; }
+    IRepository<UserFriend> UserFriends { get; }
+    IRepository<ChatMessage> ChatMessages { get; }
+    IRepository<CallLog> CallLogs { get; }
+    IRepository<Report> Reports { get; }
+    IRepository<CallPolicy> CallPolicies { get; }
     ILogRepository Logs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

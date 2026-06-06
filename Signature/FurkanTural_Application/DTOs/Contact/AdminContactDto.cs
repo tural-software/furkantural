@@ -1,13 +1,14 @@
-namespace FurkanTural_Application.DTOs.User;
+namespace FurkanTural_Application.DTOs.Contact;
 
-public class AdminUserDto
+public class AdminContactDto
 {
     public int Id { get; set; }
-    public string? Username { get; set; }
-    public int RoleId { get; set; }
+    public string? Name { get; set; }
     public string? Email { get; set; }
-    public string? DisplayName { get; set; }
-    public string? AvatarUrl { get; set; }
+    public string? Message { get; set; }
+    public bool IsRead { get; set; }
+    public string? IpAddress { get; set; }
+    public string? UserAgent { get; set; }
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime CreatedAt { get; set; }
