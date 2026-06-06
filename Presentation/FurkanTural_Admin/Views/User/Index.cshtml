@@ -12,6 +12,7 @@
 
 @section Scripts {
     <script>
+        window.__apiBaseUrl = '@Html.Raw(ViewData["ApiBaseUrl"] ?? "")';
         window.__userMeta = {
             searchUsername: '@Html.Raw(Model.SearchUsername ?? "")',
             roleFilter:     '@(Model.RoleFilter?.ToString() ?? "")',

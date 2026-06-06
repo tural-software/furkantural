@@ -10,4 +10,5 @@ public interface IUserApiClient
     Task<bool> DeleteAsync(int id, string token, CancellationToken ct = default);
     Task<bool> ToggleActiveAsync(int id, string token, CancellationToken ct = default);
     Task<bool> RestoreAsync(int id, string token, CancellationToken ct = default);
+    Task<bool> UploadAvatarAsync(int id, IFormFile file, string token, CancellationToken ct = default);
 }

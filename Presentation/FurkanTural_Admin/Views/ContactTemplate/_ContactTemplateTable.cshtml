@@ -1,0 +1,138 @@
+@using FurkanTural_Admin.Models.ContactTemplate
+@using System.Text.Json
+@model ContactTemplateIndexViewModel
+@{
+    int rangeStart = Model.TotalFiltered > 0 ? (Model.PageNumber - 1) * Model.PageSize + 1 : 0;
+    int rangeEnd   = Math.Min(Model.PageNumber * Model.PageSize, Model.TotalFiltered);
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+}
+
+<script id="__contact-template-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
+
+<div class="data-table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th class="col-id">ID</th>
+                <th>Ad</th>
+                <th>Tip</th>
+                <th>Durum</th>
+                <th>Tarih</th>
+                <th class="col-actions">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                <tr class="@(row.IsDeleted ? "row--deleted" : "")">
+                    <td class="col-id">@row.Id</td>
+                    <td>@row.Name</td>
+                    <td>
+                        @if (row.TemplateType == "Owner")
+                        {
+                            <span class="badge badge--primary">Owner</span>
+                        }
+                        else if (row.TemplateType == "User")
+                        {
+                            <span class="badge badge--info">User</span>
+                        }
+                        else
+                        {
+                            <span>@row.TemplateType</span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.IsDeleted)
+                        {
+                            <span class="badge badge--danger">Silinmiş</span>
+                        }
+                        else if (row.IsActive)
+                        {
+                            <span class="badge badge--success">Aktif</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge--secondary">Pasif</span>
+                        }
+                    </td>
+                    <td>@row.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td class="col-actions">
+                        <div class="row-actions">
+                            <button type="button" class="row-btn ft-view-btn"
+                                    data-id="@row.Id"
+                                    title="Görüntüle">
+                                @await Html.PartialAsync("_Icons", "eye")
+                            </button>
+                            @if (!row.IsDeleted && row.IsActive)
+                            {
+                                <button type="button" class="row-btn row-btn--edit ft-edit-btn"
+                                        data-id="@row.Id"
+                                        title="Düzenle">
+                                    @await Html.PartialAsync("_Icons", "pencil")
+                                </button>
+                            }
+                            @if (!row.IsDeleted)
+                            {
+                                if (row.IsActive)
+                                {
+                                    <form method="post" action="@Url.Action("ToggleActive", "ContactTemplate")" style="display:inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@row.Id" />
+                                        <button type="submit" class="row-btn row-btn--warn" title="Pasif Yap">
+                                            @await Html.PartialAsync("_Icons", "toggle-on")
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form method="post" action="@Url.Action("ToggleActive", "ContactTemplate")" style="display:inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@row.Id" />
+                                        <button type="submit" class="row-btn row-btn--success" title="Aktif Yap">
+                                            @await Html.PartialAsync("_Icons", "toggle-off")
+                                        </button>
+                                    </form>
+                                }
+                                <form method="post" action="@Url.Action("Delete", "ContactTemplate")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button type="submit" class="row-btn row-btn--delete" title="Sil">
+                                        @await Html.PartialAsync("_Icons", "trash")
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" action="@Url.Action("Restore", "ContactTemplate")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button type="submit" class="row-btn row-btn--restore" title="Geri Yükle">
+                                        @await Html.PartialAsync("_Icons", "restore")
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.TotalFiltered == 0)
+{
+    <div class="empty-state">
+        <p>Filtreye uygun kayıt bulunamadı.</p>
+    </div>
+}
+
+<div class="pagination-bar">
+    <span class="pagination-info">@rangeStart–@rangeEnd / @Model.TotalFiltered kayıt</span>
+    <div class="pagination-pages">
+        @for (int p = 1; p <= Model.TotalPages; p++)
+        {
+            <a href="@Url.Action("Index", new { name = Model.SearchName, activeFilter = Model.ActiveFilter, deletedFilter = Model.DeletedFilter, dateFrom = Model.DateFrom, dateTo = Model.DateTo, pageNumber = p, pageSize = Model.PageSize })"
+               class="page-btn @(p == Model.PageNumber ? "page-btn--active" : "")">@p</a>
+        }
+    </div>
+</div>

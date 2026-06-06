@@ -1,0 +1,181 @@
+@using System.Text.Json
+@using FurkanTural_Admin.Models.Report
+@model ReportIndexViewModel
+@{
+    int rangeStart = Model.TotalFiltered > 0 ? (Model.PageNumber - 1) * Model.PageSize + 1 : 0;
+    int rangeEnd = Math.Min(Model.PageNumber * Model.PageSize, Model.TotalFiltered);
+
+    string PageUrl(int p) => Url.Action("Index", new
+    {
+        search = Model.Search,
+        typeFilter = Model.TypeFilter,
+        statusFilter = Model.StatusFilter,
+        deletedFilter = Model.DeletedFilter,
+        dateFrom = Model.DateFrom,
+        dateTo = Model.DateTo,
+        pageNumber = p,
+        pageSize = Model.PageSize
+    }) ?? "#";
+
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    var statuses = new[] { "Pending", "Reviewed", "Dismissed", "ActionTaken" };
+
+    string Reason(ReportAdminDto r)
+    {
+        var c = r.Reason ?? "";
+        return c.Length > 50 ? c.Substring(0, 50) + "…" : (c.Length == 0 ? "—" : c);
+    }
+}
+
+<script id="__report-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
+
+<div class="data-table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th class="col-id">ID</th>
+                <th>Şikayetçi</th>
+                <th>Hedef Kullanıcı</th>
+                <th>Tür</th>
+                <th>Neden</th>
+                <th>Durum</th>
+                <th>Tarih</th>
+                <th>Silinmiş</th>
+                <th class="col-actions">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                <tr>
+                    <td>@row.Id</td>
+                    <td>@(row.ReporterName ?? $"#{row.ReporterId}")</td>
+                    <td>@(row.ReportedUserName ?? (row.ReportedUserId.HasValue ? $"#{row.ReportedUserId}" : "—"))</td>
+                    <td>@(row.TargetType ?? "—")</td>
+                    <td>@Reason(row)</td>
+                    <td>
+                        <form class="status-form" method="post" action="@Url.Action("UpdateStatus")" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@row.Id" />
+                            <select name="status" class="status-sel" data-current="@row.Status" @(row.IsDeleted ? "disabled" : "")>
+                                @foreach (var s in statuses)
+                                {
+                                    <option value="@s" selected="@(row.Status == s)">@s</option>
+                                }
+                            </select>
+                        </form>
+                    </td>
+                    <td>@row.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        @if (row.IsDeleted)
+                        {
+                            <span class="sbadge sbadge--deleted">Evet</span>
+                        }
+                        else
+                        {
+                            <span class="sbadge sbadge--safe">Hayır</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <button type="button" class="row-btn ft-view-btn" title="Görüntüle" data-id="@row.Id">@await Html.PartialAsync("_Icons", "eye")</button>
+                            @if (!row.IsDeleted)
+                            {
+                                if (row.IsActive)
+                                {
+                                    <form method="post" action="@Url.Action("ToggleActive")" style="display:inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@row.Id" />
+                                        <button type="submit" class="row-btn row-btn--warn" title="Pasife Al">@await Html.PartialAsync("_Icons", "toggle-on")</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form method="post" action="@Url.Action("ToggleActive")" style="display:inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@row.Id" />
+                                        <button type="submit" class="row-btn row-btn--success" title="Aktife Al">@await Html.PartialAsync("_Icons", "toggle-off")</button>
+                                    </form>
+                                }
+                            }
+                            @if (row.IsDeleted)
+                            {
+                                <form method="post" action="@Url.Action("Restore")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button type="submit" class="row-btn row-btn--restore" title="Geri Yükle">@await Html.PartialAsync("_Icons", "restore")</button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Rows.Any())
+            {
+                <tr class="empty-row"><td colspan="9">Kayıt bulunamadı.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="tbl-footer">
+    <div class="tbl-footer__left">
+        <form method="get" action="@Url.Action("Index")" id="pageSizeForm">
+            <input type="hidden" name="search" value="@Model.Search" />
+            <input type="hidden" name="typeFilter" value="@Model.TypeFilter" />
+            <input type="hidden" name="statusFilter" value="@Model.StatusFilter" />
+            <input type="hidden" name="deletedFilter" value="@Model.DeletedFilter" />
+            <input type="hidden" name="dateFrom" value="@Model.DateFrom" />
+            <input type="hidden" name="dateTo" value="@Model.DateTo" />
+            <input type="hidden" name="pageNumber" value="1" />
+            Sayfa başına
+            <select name="pageSize" class="page-size-sel" onchange="this.form.submit()">
+                @foreach (var s in new[] { 10, 25, 50, 100 })
+                {
+                    <option value="@s" selected="@(Model.PageSize == s)">@s</option>
+                }
+            </select>
+            kayıt gösteriliyor
+        </form>
+    </div>
+    <div class="tbl-footer__right">
+        <span class="tbl-footer__range">
+            @if (Model.TotalFiltered > 0)
+            {
+                @($"{rangeStart} - {rangeEnd} / {Model.TotalFiltered:N0} kayıt")
+            }
+            else
+            {
+                <text>0 kayıt</text>
+            }
+        </span>
+        <nav class="pagination" aria-label="Sayfalama">
+            @{
+                var prevOff = Model.PageNumber <= 1 ? "pag-btn--off" : "";
+                var nextOff = Model.PageNumber >= Model.TotalPages ? "pag-btn--off" : "";
+            }
+            <a href="@PageUrl(Model.PageNumber - 1)" class="pag-btn @prevOff" aria-label="Önceki">@await Html.PartialAsync("_Icons", "chevron-left")</a>
+            @{
+                const int maxVis = 5;
+                int sp = Math.Max(1, Model.PageNumber - maxVis / 2);
+                int ep = Math.Min(Model.TotalPages, sp + maxVis - 1);
+                if (ep - sp < maxVis - 1) sp = Math.Max(1, ep - maxVis + 1);
+            }
+            @if (sp > 1)
+            {
+                <a href="@PageUrl(1)" class="pag-btn">1</a>
+                if (sp > 2) { <span class="pag-ellipsis">...</span> }
+            }
+            @for (var i = sp; i <= ep; i++)
+            {
+                <a href="@PageUrl(i)" class="pag-btn @(i == Model.PageNumber ? "pag-btn--active" : "")">@i</a>
+            }
+            @if (ep < Model.TotalPages)
+            {
+                if (ep < Model.TotalPages - 1) { <span class="pag-ellipsis">...</span> }
+                <a href="@PageUrl(Model.TotalPages)" class="pag-btn">@Model.TotalPages</a>
+            }
+            <a href="@PageUrl(Model.PageNumber + 1)" class="pag-btn @nextOff" aria-label="Sonraki">@await Html.PartialAsync("_Icons", "chevron-right")</a>
+        </nav>
+    </div>
+</div>

@@ -1,0 +1,159 @@
+@using FurkanTural_Admin.Models.Call
+@model CallLogIndexViewModel
+@{
+    ViewData["Title"] = "Aramalar";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/call-log/call-log-index.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.__callMeta = {
+            search:        '@Html.Raw(Model.Search ?? "")',
+            typeFilter:    '@Html.Raw(Model.TypeFilter ?? "")',
+            statusFilter:  '@Html.Raw(Model.StatusFilter ?? "")',
+            activeFilter:  '@Html.Raw(Model.ActiveFilter ?? "")',
+            deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
+            dateFrom:      '@Html.Raw(Model.DateFrom ?? "")',
+            dateTo:        '@Html.Raw(Model.DateTo ?? "")',
+            pageNumber:    @Model.PageNumber,
+            pageSize:      @Model.PageSize
+        };
+    </script>
+    <script src="~/js/detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
+    <script src="~/js/pages/call-log-index.js" asp-append-version="true"></script>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container">
+    <nav class="bc">
+        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
+        <span class="bc__sep">›</span>
+        <span>Aramalar</span>
+    </nav>
+
+    <div class="pg-header">
+        <div>
+            <h1 class="section-title">Arama Kayıtları</h1>
+            <p class="section-desc">Sesli/görüntülü arama geçmişini görüntüleyin ve denetleyin.</p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index")" class="btn-outline">@await Html.PartialAsync("_Icons", "refresh") Yenile</a>
+        </div>
+    </div>
+
+    <div class="card call-settings-card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+        <form id="callSettingsForm" action="@Url.Action("SaveSettings")">
+            @Html.AntiForgeryToken()
+            <div class="cs-head">
+                <div>
+                    <h2 class="cs-title">Görüntülü Arama Bit Hızı Politikası</h2>
+                    <p class="cs-desc">Açıkken sistemdeki <strong>tüm</strong> kullanıcılar (mevcut + yeni) bu video tavanına tabidir, ötesine geçemez. Kapalıyken sınır uygulanmaz.</p>
+                </div>
+                <label class="cs-switch">
+                    <input type="checkbox" name="BitrateLimitEnabled" value="true" @(Model.Policy?.BitrateLimitEnabled == true ? "checked" : "") />
+                    <span>Limiti uygula</span>
+                </label>
+            </div>
+            <div class="cs-grid">
+                <div class="cs-field"><label>Max bit hızı (kbps)</label><input type="number" name="MaxVideoBitrateKbps" min="100" max="8000" value="@(Model.Policy?.MaxVideoBitrateKbps ?? 600)" /></div>
+                <div class="cs-field"><label>Genişlik (px)</label><input type="number" name="MaxWidth" min="160" max="1920" value="@(Model.Policy?.MaxWidth ?? 640)" /></div>
+                <div class="cs-field"><label>Yükseklik (px)</label><input type="number" name="MaxHeight" min="120" max="1080" value="@(Model.Policy?.MaxHeight ?? 480)" /></div>
+                <div class="cs-field"><label>FPS</label><input type="number" name="MaxFps" min="10" max="60" value="@(Model.Policy?.MaxFps ?? 24)" /></div>
+            </div>
+            <div class="cs-actions">
+                <button type="submit" class="btn-primary">@await Html.PartialAsync("_Icons", "check-circle") Kaydet</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="stats-row">
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--total">@await Html.PartialAsync("_Icons", "calls")</div>
+            <div><p class="stat-box__label">Toplam</p><div class="stat-box__value">@Model.TotalCount.ToString("N0")</div><span class="stat-box__unit">arama</span></div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--active">@await Html.PartialAsync("_Icons", "check-circle")</div>
+            <div><p class="stat-box__label">Aktif</p><div class="stat-box__value">@Model.ActiveCount.ToString("N0")</div><span class="stat-box__unit">arama</span></div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--passive">@await Html.PartialAsync("_Icons", "x-circle")</div>
+            <div><p class="stat-box__label">Pasif</p><div class="stat-box__value">@Model.PassiveCount.ToString("N0")</div><span class="stat-box__unit">arama</span></div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--deleted">@await Html.PartialAsync("_Icons", "trash")</div>
+            <div><p class="stat-box__label">Silinmiş</p><div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div><span class="stat-box__unit">arama</span></div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+        <form method="get" action="@Url.Action("Index")">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Kişi ara</label>
+                    <div class="filter-input-wrap">
+                        @await Html.PartialAsync("_Icons", "search")
+                        <input type="text" name="search" value="@Model.Search" class="filter-input filter-input--search" placeholder="Arayan/aranan ara..." />
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Tür</label>
+                    <select name="typeFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.TypeFilter))">Tümü</option>
+                        <option value="Audio" selected="@(Model.TypeFilter == "Audio")">Sesli</option>
+                        <option value="Video" selected="@(Model.TypeFilter == "Video")">Görüntülü</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Durum</label>
+                    <select name="statusFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.StatusFilter))">Tümü</option>
+                        @foreach (var s in new[] { "Ringing", "Answered", "Ended", "Rejected", "Missed", "Canceled", "Failed" })
+                        {
+                            <option value="@s" selected="@(Model.StatusFilter == s)">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Aktiflik Durumu</label>
+                    <select name="activeFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.ActiveFilter))">Tümü</option>
+                        <option value="active" selected="@(Model.ActiveFilter == "active")">Aktif</option>
+                        <option value="passive" selected="@(Model.ActiveFilter == "passive")">Pasif</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Silinme Durumu</label>
+                    <select name="deletedFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.DeletedFilter))">Tümü</option>
+                        <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
+                        <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Başlangıç Tarihi</label>
+                    <div class="filter-date-row">
+                        <input type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
+                        <span class="filter-date-sep">→</span>
+                        <input type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
+                    </div>
+                </div>
+                <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                <div class="filter-actions">
+                    <button type="submit" class="btn-primary">@await Html.PartialAsync("_Icons", "filter-icon") Filtrele</button>
+                    <a href="@Url.Action("Index")" class="btn-outline">@await Html.PartialAsync("_Icons", "x-mark") Temizle</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" id="call-table-card" style="padding: 0; overflow: hidden;">
+        <div id="call-table-section">
+            @await Html.PartialAsync("_CallLogTable", Model)
+        </div>
+    </div>
+</div>

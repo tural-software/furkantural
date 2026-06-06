@@ -1,0 +1,127 @@
+@using FurkanTural_Admin.Models.Report
+@model ReportIndexViewModel
+@{
+    ViewData["Title"] = "Şikayetler";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/report/report-index.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.__reportMeta = {
+            search:        '@Html.Raw(Model.Search ?? "")',
+            typeFilter:    '@Html.Raw(Model.TypeFilter ?? "")',
+            statusFilter:  '@Html.Raw(Model.StatusFilter ?? "")',
+            deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
+            dateFrom:      '@Html.Raw(Model.DateFrom ?? "")',
+            dateTo:        '@Html.Raw(Model.DateTo ?? "")',
+            pageNumber:    @Model.PageNumber,
+            pageSize:      @Model.PageSize
+        };
+    </script>
+    <script src="~/js/detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
+    <script src="~/js/pages/report-index.js" asp-append-version="true"></script>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container">
+    <nav class="bc">
+        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
+        <span class="bc__sep">›</span>
+        <span>Şikayetler</span>
+    </nav>
+
+    <div class="pg-header">
+        <div>
+            <h1 class="section-title">Şikayet Kayıtları</h1>
+            <p class="section-desc">Kullanıcı/mesaj/medya/arama şikayetlerini inceleyin ve yönetin.</p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index")" class="btn-outline">@await Html.PartialAsync("_Icons", "refresh") Yenile</a>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--total">@await Html.PartialAsync("_Icons", "reports")</div>
+            <div><p class="stat-box__label">Toplam</p><div class="stat-box__value">@Model.TotalCount.ToString("N0")</div><span class="stat-box__unit">şikayet</span></div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--passive">@await Html.PartialAsync("_Icons", "x-circle")</div>
+            <div><p class="stat-box__label">Bekleyen</p><div class="stat-box__value">@Model.PendingCount.ToString("N0")</div><span class="stat-box__unit">şikayet</span></div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--active">@await Html.PartialAsync("_Icons", "check-circle")</div>
+            <div><p class="stat-box__label">Çözülen</p><div class="stat-box__value">@Model.ResolvedCount.ToString("N0")</div><span class="stat-box__unit">şikayet</span></div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--deleted">@await Html.PartialAsync("_Icons", "trash")</div>
+            <div><p class="stat-box__label">Silinmiş</p><div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div><span class="stat-box__unit">şikayet</span></div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+        <form method="get" action="@Url.Action("Index")">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Ara</label>
+                    <div class="filter-input-wrap">
+                        @await Html.PartialAsync("_Icons", "search")
+                        <input type="text" name="search" value="@Model.Search" class="filter-input filter-input--search" placeholder="Şikayetçi / neden ara..." />
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Tür</label>
+                    <select name="typeFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.TypeFilter))">Tümü</option>
+                        @foreach (var t in new[] { "User", "Message", "Media", "Call" })
+                        {
+                            <option value="@t" selected="@(Model.TypeFilter == t)">@t</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Durum</label>
+                    <select name="statusFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.StatusFilter))">Tümü</option>
+                        @foreach (var s in new[] { "Pending", "Reviewed", "Dismissed", "ActionTaken" })
+                        {
+                            <option value="@s" selected="@(Model.StatusFilter == s)">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Silinme Durumu</label>
+                    <select name="deletedFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.DeletedFilter))">Tümü</option>
+                        <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
+                        <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Oluşturulma Tarihi</label>
+                    <div class="filter-date-row">
+                        <input type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
+                        <span class="filter-date-sep">→</span>
+                        <input type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
+                    </div>
+                </div>
+                <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                <div class="filter-actions">
+                    <button type="submit" class="btn-primary">@await Html.PartialAsync("_Icons", "filter-icon") Filtrele</button>
+                    <a href="@Url.Action("Index")" class="btn-outline">@await Html.PartialAsync("_Icons", "x-mark") Temizle</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" id="report-table-card" style="padding: 0; overflow: hidden;">
+        <div id="report-table-section">
+            @await Html.PartialAsync("_ReportTable", Model)
+        </div>
+    </div>
+</div>

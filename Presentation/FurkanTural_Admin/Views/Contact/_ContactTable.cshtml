@@ -1,0 +1,125 @@
+@using FurkanTural_Admin.Models.Contact
+@using System.Text.Json
+@model ContactIndexViewModel
+@{
+    int rangeStart = Model.TotalFiltered > 0 ? (Model.PageNumber - 1) * Model.PageSize + 1 : 0;
+    int rangeEnd   = Math.Min(Model.PageNumber * Model.PageSize, Model.TotalFiltered);
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+}
+
+<script id="__contact-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
+
+<div class="data-table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th class="col-id">ID</th>
+                <th>Ad</th>
+                <th>E-Posta</th>
+                <th>Mesaj</th>
+                <th>Durum</th>
+                <th>Tarih</th>
+                <th class="col-actions">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                <tr class="@(row.IsDeleted ? "row--deleted" : "") @(!row.IsRead ? "row--unread" : "")">
+                    <td class="col-id">@row.Id</td>
+                    <td>@row.Name</td>
+                    <td>@row.Email</td>
+                    <td class="td-truncate" title="@row.Message">@(row.Message?.Length > 60 ? row.Message[..60] + "…" : row.Message)</td>
+                    <td>
+                        @if (!row.IsRead)
+                        {
+                            <span class="badge badge--warning">Okunmadı</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge--success">Okundu</span>
+                        }
+                        @if (row.IsDeleted)
+                        {
+                            <span class="badge badge--danger">Silinmiş</span>
+                        }
+                        else if (!row.IsActive)
+                        {
+                            <span class="badge badge--secondary">Pasif</span>
+                        }
+                    </td>
+                    <td>@row.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td class="col-actions">
+                        <div class="row-actions">
+                            <button type="button" class="row-btn"
+                                    data-contact-id="@row.Id"
+                                    title="Detay">
+                                @await Html.PartialAsync("_Icons", "eye")
+                            </button>
+                            @if (!row.IsRead)
+                            {
+                                <button type="button" class="row-btn row-btn--read"
+                                        data-contact-id="@row.Id"
+                                        title="Okundu İşaretle">
+                                    @await Html.PartialAsync("_Icons", "check")
+                                </button>
+                            }
+                            @if (!row.IsDeleted)
+                            {
+                                if (row.IsActive)
+                                {
+                                    <button type="button" class="row-btn row-btn--warn"
+                                            data-contact-id="@row.Id"
+                                            data-is-active="true"
+                                            title="Pasif Yap">
+                                        @await Html.PartialAsync("_Icons", "toggle-on")
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="row-btn row-btn--success"
+                                            data-contact-id="@row.Id"
+                                            data-is-active="false"
+                                            title="Aktif Yap">
+                                        @await Html.PartialAsync("_Icons", "toggle-off")
+                                    </button>
+                                }
+                                <button type="button" class="row-btn row-btn--delete"
+                                        data-contact-id="@row.Id"
+                                        title="Sil">
+                                    @await Html.PartialAsync("_Icons", "trash")
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="row-btn row-btn--restore"
+                                        data-contact-id="@row.Id"
+                                        title="Geri Yükle">
+                                    @await Html.PartialAsync("_Icons", "restore")
+                                </button>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.TotalFiltered == 0)
+{
+    <div class="empty-state">
+        <p>Filtreye uygun kayıt bulunamadı.</p>
+    </div>
+}
+
+<div class="pagination-bar">
+    <span class="pagination-info">@rangeStart–@rangeEnd / @Model.TotalFiltered kayıt</span>
+    <div class="pagination-pages">
+        @for (int p = 1; p <= Model.TotalPages; p++)
+        {
+            <a href="@Url.Action("Index", new { name = Model.SearchName, activeFilter = Model.ActiveFilter, deletedFilter = Model.DeletedFilter, readFilter = Model.ReadFilter, dateFrom = Model.DateFrom, dateTo = Model.DateTo, pageNumber = p, pageSize = Model.PageSize })"
+               class="page-btn @(p == Model.PageNumber ? "page-btn--active" : "")">@p</a>
+        }
+    </div>
+</div>

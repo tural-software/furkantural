@@ -62,7 +62,35 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
         new("roles", "role", "Roller",
             "Kullanıcı rollerini görüntüleyin ve CRUD işlemlerini yönetin.",
             [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
-            "rol")
+            "rol"),
+        new("contact", "contact", "İletişim Mesajları",
+            "Ziyaretçi mesajlarını görüntüleyin ve yönetin.",
+            [EntityAction.Read, EntityAction.Delete],
+            "mesaj"),
+        new("contact-template", "contacttemplate", "İletişim Şablonları",
+            "E-posta şablonlarını görüntüleyin ve CRUD işlemlerini yönetin.",
+            [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
+            "şablon"),
+        new("statuses", "status", "Durumlar",
+            "Site geneli durum (status) kayıtlarını görüntüleyin ve CRUD işlemlerini yönetin.",
+            [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
+            "durum"),
+        new("friends", "friend", "Arkadaşlıklar",
+            "Kullanıcı arkadaşlık ilişkilerini görüntüleyin ve denetleyin.",
+            [EntityAction.Read],
+            "ilişki"),
+        new("messages", "message", "Mesajlar",
+            "Sohbet mesajlarını görüntüleyin ve denetleyin.",
+            [EntityAction.Read],
+            "mesaj"),
+        new("calls", "call", "Aramalar",
+            "Sesli/görüntülü arama kayıtlarını görüntüleyin ve denetleyin.",
+            [EntityAction.Read],
+            "arama"),
+        new("reports", "report", "Şikayetler",
+            "Kullanıcı/mesaj/medya/arama şikayetlerini inceleyin ve yönetin.",
+            [EntityAction.Read],
+            "şikayet")
     ];
 
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -85,7 +113,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
                 Actions = m.Actions,
                 TotalCount = summaries[i]?.TotalCount,
                 LastActivityAt = summaries[i]?.LastActivityAt,
-                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images" && m.Slug != "experiences" && m.Slug != "educations" && m.Slug != "logs" && m.Slug != "users" && m.Slug != "music" && m.Slug != "music-images" && m.Slug != "projects" && m.Slug != "project-images" && m.Slug != "roles",
+                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images" && m.Slug != "experiences" && m.Slug != "educations" && m.Slug != "logs" && m.Slug != "users" && m.Slug != "music" && m.Slug != "music-images" && m.Slug != "projects" && m.Slug != "project-images" && m.Slug != "roles" && m.Slug != "contact" && m.Slug != "contact-template" && m.Slug != "statuses" && m.Slug != "friends" && m.Slug != "messages" && m.Slug != "calls" && m.Slug != "reports",
                 ManageUrl = m.Slug == "subscribers" ? Url.Action("Index", "Subscriber")
                           : m.Slug == "skills"       ? Url.Action("Index", "Skill")
                           : m.Slug == "blogs"        ? Url.Action("Index", "Blog")
@@ -98,7 +126,14 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
                           : m.Slug == "music-images"   ? Url.Action("Index", "MusicImage")
                           : m.Slug == "projects"       ? Url.Action("Index", "Project")
                           : m.Slug == "project-images" ? Url.Action("Index", "ProjectImage")
-                          : m.Slug == "roles"           ? Url.Action("Index", "Role")
+                          : m.Slug == "roles"            ? Url.Action("Index", "Role")
+                          : m.Slug == "contact"           ? Url.Action("Index", "Contact")
+                          : m.Slug == "contact-template"  ? Url.Action("Index", "ContactTemplate")
+                          : m.Slug == "statuses"          ? Url.Action("Index", "Status")
+                          : m.Slug == "friends"           ? Url.Action("Index", "UserFriend")
+                          : m.Slug == "messages"          ? Url.Action("Index", "ChatMessage")
+                          : m.Slug == "calls"             ? Url.Action("Index", "CallLog")
+                          : m.Slug == "reports"           ? Url.Action("Index", "Report")
                           : null,
                 CountUnitLabel = m.CountUnitLabel
             })

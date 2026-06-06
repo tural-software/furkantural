@@ -18,6 +18,7 @@
     }) ?? "#";
 
     var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    var apiBase = (ViewData["ApiBaseUrl"] as string ?? "").TrimEnd('/');
 }
 
 @* rows JSON — type=application/json → tarayıcı çalıştırmaz *@
@@ -28,7 +29,9 @@
         <thead>
             <tr>
                 <th class="col-id">ID</th>
+                <th>Avatar</th>
                 <th class="col-username">Kullanıcı Adı</th>
+                <th>E-posta</th>
                 <th class="col-role">Rol</th>
                 <th>Aktif</th>
                 <th>Silinmiş</th>
@@ -40,7 +43,20 @@
             {
                 <tr>
                     <td>@row.Id</td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(row.AvatarUrl))
+                        {
+                            <img src="@(row.AvatarUrl.Contains('/') ? $"{apiBase}/{row.AvatarUrl}" : $"{apiBase}/images/uploads/{row.AvatarUrl}")" alt="avatar" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid rgba(128,128,128,.4)" />
+                        }
+                        else
+                        {
+                            <span style="width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-weight:700;">
+                                @((row.DisplayName ?? row.Username ?? "?").Trim().Substring(0, 1).ToUpperInvariant())
+                            </span>
+                        }
+                    </td>
                     <td>@(row.Username ?? "—")</td>
+                    <td>@(row.Email ?? "—")</td>
                     <td>@(row.RoleName ?? "—")</td>
                     <td>
                         @if (row.IsActive)
@@ -81,6 +97,9 @@
                             {
                                 <button type="button" class="row-btn row-btn--edit ft-edit-btn" title="Düzenle" data-id="@row.Id">
                                     @await Html.PartialAsync("_Icons", "pencil")
+                                </button>
+                                <button type="button" class="row-btn ft-avatar-btn" title="Avatar Yükle" data-id="@row.Id">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg>
                                 </button>
                             }
 
@@ -135,7 +154,7 @@
             @if (!Model.Rows.Any())
             {
                 <tr class="empty-row">
-                    <td colspan="6">Kayıt bulunamadı.</td>
+                    <td colspan="8">Kayıt bulunamadı.</td>
                 </tr>
             }
         </tbody>

@@ -61,7 +61,7 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/user");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var body = new { username = dto.Username, password = dto.Password, roleId = dto.RoleId };
+            var body = new { username = dto.Username, password = dto.Password, roleId = dto.RoleId, email = dto.Email, displayName = dto.DisplayName };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request, ct);
@@ -80,7 +80,7 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
         {
             using var request = new HttpRequestMessage(HttpMethod.Put, "/api/v1/user");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var body = new { id, username = dto.Username, password = dto.Password, roleId = dto.RoleId };
+            var body = new { id, username = dto.Username, password = dto.Password, roleId = dto.RoleId, email = dto.Email, displayName = dto.DisplayName };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request, ct);
@@ -89,6 +89,29 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
         catch (Exception ex)
         {
             _logger.LogError(ex, "Kullanıcı güncellenirken hata oluştu: {Id}", id);
+            return false;
+        }
+    }
+
+    public async Task<bool> UploadAvatarAsync(int id, IFormFile file, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms, ct);
+            var bytes = ms.ToArray();
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/user/{id}/avatar");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var body = new { imageData = bytes, imageName = file.FileName };
+            request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
+
+            using var response = await _httpClient.SendAsync(request, ct);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Avatar yüklenirken hata oluştu: {Id}", id);
             return false;
         }
     }

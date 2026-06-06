@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "İletişim Şablonu Detayı";
+}
+
+<div class="container">
+    <nav class="bc">
+        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
+        <span class="bc__sep">›</span>
+        <a href="@Url.Action("Index")">İletişim Şablonları</a>
+        <span class="bc__sep">›</span>
+        <span>Tablo Detayları</span>
+    </nav>
+
+    <div class="pg-header">
+        <div>
+            <h1 class="section-title">Tablo Detayları</h1>
+            <p class="section-desc">ContactTemplates tablosunun sütun bilgileri.</p>
+        </div>
+    </div>
+
+    <div class="card" style="padding:1.5rem">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Alan Adı</th>
+                    <th>Tür</th>
+                    <th>Açıklama</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Id</td><td>int</td><td>Birincil anahtar</td></tr>
+                <tr><td>Name</td><td>string (200)</td><td>Şablon adı</td></tr>
+                <tr><td>TemplateType</td><td>string (20)</td><td>"Owner" veya "User"</td></tr>
+                <tr><td>FileName</td><td>string (200)</td><td>İsteğe bağlı dosya adı</td></tr>
+                <tr><td>HtmlContent</td><td>nvarchar(max)</td><td>HTML e-posta içeriği; {{Name}}, {{Email}}, {{Message}}, {{Date}}, {{IpAddress}}, {{Browser}} yer tutucu destekler</td></tr>
+                <tr><td>IsActive</td><td>bool</td><td>Aktif mi?</td></tr>
+                <tr><td>IsDeleted</td><td>bool</td><td>Silinmiş mi?</td></tr>
+                <tr><td>CreatedAt</td><td>DateTime</td><td>Oluşturulma tarihi</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>

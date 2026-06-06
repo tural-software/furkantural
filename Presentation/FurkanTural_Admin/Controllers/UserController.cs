@@ -1,14 +1,17 @@
+using FurkanTural_Admin.Models.Common;
 using FurkanTural_Admin.Models.Role;
 using FurkanTural_Admin.Models.User;
 using FurkanTural_Admin.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace FurkanTural_Admin.Controllers;
 
-public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApiClient) : Controller
+public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApiClient, IOptions<ApiOptions> apiOptions) : Controller
 {
     private readonly IUserApiClient _userApiClient = userApiClient;
     private readonly IRoleApiClient _roleApiClient = roleApiClient;
+    private readonly ApiOptions _apiOptions = apiOptions.Value;
 
     private async Task<(IReadOnlyList<UserAdminDto> users, IReadOnlyList<RoleAdminDto> roles)>
         FetchUsersAndRoles(string token, CancellationToken cancellationToken)
@@ -106,6 +109,7 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
+        ViewData["ApiBaseUrl"] = _apiOptions.BaseUrl;
         var (all, roles) = await FetchUsersAndRoles(token, cancellationToken);
         var vm = BuildViewModel(all, roles, searchUsername, roleFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
         return View(vm);
@@ -127,6 +131,7 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
+        ViewData["ApiBaseUrl"] = _apiOptions.BaseUrl;
         var (all, roles) = await FetchUsersAndRoles(token, cancellationToken);
         var vm = BuildViewModel(all, roles, searchUsername, roleFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
         return PartialView("_UserTable", vm);
@@ -204,5 +209,20 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
 
         var ok = await _userApiClient.UpdateAsync(id, dto, token, cancellationToken);
         return ok ? Ok() : StatusCode(500, new { message = "Kayıt güncellenirken bir hata oluştu." });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadAvatar(int id, IFormFile? avatarFile, CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
+
+        if (avatarFile is null || avatarFile.Length == 0)
+            return BadRequest(new { message = "Avatar dosyası zorunludur." });
+
+        var ok = await _userApiClient.UploadAvatarAsync(id, avatarFile, token, cancellationToken);
+        return ok ? Ok() : StatusCode(500, new { message = "Avatar yüklenirken bir hata oluştu." });
     }
 }

@@ -125,9 +125,10 @@
         imagePreview: function (r) {
             if (!r.url) return '';
             var base = (window.__apiBaseUrl || '').replace(/\/$/, '');
+            var rel  = r.url.replace(/^\//, '');
             var src  = r.url.startsWith('http')
                 ? r.url
-                : base + '/images/uploads/' + r.url.replace(/^\//, '');
+                : (rel.indexOf('/') >= 0 ? base + '/' + rel : base + '/images/uploads/' + rel);
             var safe = src.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
             var alt  = (r.altText || 'Görsel').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
             return '<div class="dm-image-preview"><img src="' + safe + '" alt="' + alt + '" /></div>';

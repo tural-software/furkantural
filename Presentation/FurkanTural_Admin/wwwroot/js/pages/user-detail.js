@@ -43,6 +43,16 @@
                         value: function (r) { return r.roleName || '—'; }
                     },
                     {
+                        label: 'E-posta',
+                        icon: 'field-text',
+                        value: function (r) { return r.email || '—'; }
+                    },
+                    {
+                        label: 'Görünen Ad',
+                        icon: 'field-text',
+                        value: function (r) { return r.displayName || '—'; }
+                    },
+                    {
                         label: 'Aktif',
                         icon: 'check-circle',
                         value: function (r) { return r.isActive ? 'Aktif' : 'Pasif'; },
@@ -103,7 +113,20 @@
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' },
             { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: false, hidden: function(r) { return r.isDeleted || !r.isActive; } }
-        ]
+        ],
+
+        // Dairesel avatar önizlemesi (BlogImage deseni — escape edilmeden render edilir)
+        imagePreview: function (r) {
+            if (!r.avatarUrl) return '';
+            var base = (window.__apiBaseUrl || '').replace(/\/$/, '');
+            var rel  = String(r.avatarUrl).replace(/^\//, '');
+            var src  = rel.indexOf('/') >= 0 ? base + '/' + rel : base + '/images/uploads/' + rel;
+            var safe = src.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+            var alt  = (r.displayName || r.username || 'Avatar').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+            return '<div class="dm-image-preview" style="border:none;background:transparent;max-height:none;padding:.25rem 0;">'
+                + '<img src="' + safe + '" alt="' + alt + '" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);" />'
+                + '</div>';
+        }
     };
 
     /* ── Role options helper ──────────────────────────────── */
@@ -134,6 +157,22 @@
                 placeholder: 'Şifre giriniz'
             },
             {
+                name: 'email',
+                label: 'E-posta',
+                type: 'text',
+                required: false,
+                maxLength: 256,
+                placeholder: 'ornek@eposta.com'
+            },
+            {
+                name: 'displayName',
+                label: 'Görünen Ad',
+                type: 'text',
+                required: false,
+                maxLength: 150,
+                placeholder: 'Görünen ad'
+            },
+            {
                 name: 'roleId',
                 label: 'Rol',
                 type: 'searchable-select',
@@ -160,6 +199,22 @@
                 required: false,
                 maxLength: 100,
                 placeholder: 'Boş bırakılırsa değiştirilmez'
+            },
+            {
+                name: 'email',
+                label: 'E-posta',
+                type: 'text',
+                required: false,
+                maxLength: 256,
+                placeholder: 'ornek@eposta.com'
+            },
+            {
+                name: 'displayName',
+                label: 'Görünen Ad',
+                type: 'text',
+                required: false,
+                maxLength: 150,
+                placeholder: 'Görünen ad'
             },
             {
                 name: 'roleId',
@@ -323,6 +378,19 @@
             });
         });
 
+        /* Avatar yükle — form modal */
+        document.querySelectorAll('.ft-avatar-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var id = parseInt(btn.dataset.id, 10);
+                var record = null;
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].id === id) { record = rows[i]; break; }
+                }
+                if (!record) return;
+                openAvatarModal(record);
+            });
+        });
+
         /* Sil / Geri Yükle / Aktife Al / Pasife Al — confirm modal */
         document.querySelectorAll('.row-actions form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
@@ -387,8 +455,39 @@
         }), {
             username: record.username || '',
             // password intentionally left blank — not pre-filled for security
+            email: record.email || '',
+            displayName: record.displayName || '',
             roleId: record.roleId
         });
+    }
+
+    /* Avatar yükleme */
+    function buildAvatarConfig(id, onSuccess) {
+        return {
+            title: 'Avatar Yükle',
+            description: 'Kullanıcı için bir profil fotoğrafı yükleyin.',
+            submitUrl: '/User/UploadAvatar/' + id,
+            submitLabel: 'Yükle',
+            fields: [
+                {
+                    name: 'avatarFile',
+                    label: 'Avatar Görseli',
+                    type: 'file',
+                    required: true,
+                    accept: 'image/*',
+                    maxSizeBytes: 5 * 1024 * 1024,
+                    helpText: 'PNG, JPG, JPEG, WebP. Maks. 5 MB.'
+                }
+            ],
+            onSuccess: onSuccess
+        };
+    }
+
+    function openAvatarModal(record) {
+        FormModal.open(buildAvatarConfig(record.id, function () {
+            if (typeof showToast === 'function') showToast('success', 'Başarılı', 'Avatar yüklendi.');
+            reloadTable();
+        }), {});
     }
 
     document.addEventListener('DOMContentLoaded', function () {
