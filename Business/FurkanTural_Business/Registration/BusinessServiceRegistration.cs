@@ -26,6 +26,18 @@ public static class BusinessServiceRegistration
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IContactService, ContactService>();
+        services.AddScoped<ITurnstileVerifier, TurnstileVerifier>();
+        services.AddScoped<IContactTemplateService, ContactTemplateService>();
+        services.AddScoped<IStatusService, StatusService>();
+        services.AddScoped<IUserFriendService, UserFriendService>();
+        services.AddScoped<IChatMessageService, ChatMessageService>();
+        services.AddScoped<ICallLogService, CallLogService>();
+        services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<ITurnCredentialProvider, TurnCredentialProvider>();
+        services.AddScoped<ICallPolicyService, CallPolicyService>();
+        services.AddSingleton<ICallRateLimiter, CallRateLimiter>();
 
         return services;
     }

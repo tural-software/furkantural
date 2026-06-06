@@ -9,7 +9,10 @@ public static class UserMapper
     {
         Id = entity.Id,
         Username = entity.Username,
-        RoleId = entity.RoleId
+        RoleId = entity.RoleId,
+        Email = entity.Email,
+        DisplayName = entity.DisplayName,
+        AvatarUrl = entity.AvatarUrl
     };
 
     public static AdminUserDto ToAdminDto(this User entity) => new()
@@ -17,6 +20,9 @@ public static class UserMapper
         Id = entity.Id,
         Username = entity.Username,
         RoleId = entity.RoleId,
+        Email = entity.Email,
+        DisplayName = entity.DisplayName,
+        AvatarUrl = entity.AvatarUrl,
         IsActive = entity.IsActive,
         IsDeleted = entity.IsDeleted,
         CreatedAt = entity.CreatedAt,
@@ -31,6 +37,9 @@ public static class UserMapper
         Username = dto.Username,
         // Password is set explicitly in UserService after encryption
         RoleId = dto.RoleId,
-        CreatedBy = dto.CreatedBy
+        CreatedBy = dto.CreatedBy,
+        Email = dto.Email,
+        DisplayName = dto.DisplayName,
+        AvatarUrl = dto.AvatarUrl
     };
 }

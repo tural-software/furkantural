@@ -8,11 +8,12 @@ using FurkanTural_Business.Mappers;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionService, ActivityLogger activityLogger) : IUserService
+public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionService, ActivityLogger activityLogger, IUserFriendService userFriendService) : IUserService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEncryptionService _encryptionService = encryptionService;
     private readonly ActivityLogger _activityLogger = activityLogger;
+    private readonly IUserFriendService _userFriendService = userFriendService;
 
     public async Task<Result<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -89,6 +90,9 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
 
         entity.Username = dto.Username;
         entity.RoleId = dto.RoleId;
+        entity.Email = dto.Email;
+        entity.DisplayName = dto.DisplayName;
+        entity.AvatarUrl = dto.AvatarUrl;
         entity.UpdatedBy = dto.UpdatedBy;
 
         if (!string.IsNullOrWhiteSpace(dto.Password))
@@ -200,6 +204,60 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
         await _unitOfWork.Users.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"İlk admin kullanıcısı oluşturuldu. Kullanıcı adı: {entity.Username}", cancellationToken);
+
+        return Result<UserDto>.Ok(entity.ToDto());
+    }
+
+    public async Task<Result<IEnumerable<UserSearchResultDto>>> SearchAsync(string query, int currentUserId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Trim().Length < 2)
+            return Result<IEnumerable<UserSearchResultDto>>.Fail("Arama için en az 2 karakter girin.");
+
+        var q = query.Trim();
+        var matches = await _unitOfWork.Users.GetAllAsync(
+            x => x.Id != currentUserId &&
+                ((x.Username != null && x.Username.Contains(q)) ||
+                 x.Email == q ||
+                 (x.DisplayName != null && x.DisplayName.Contains(q))),
+            cancellationToken);
+
+        // Engelli kullanıcılar (her iki yön) arama sonuçlarında gizlenir.
+        var results = new List<UserSearchResultDto>();
+        foreach (var u in matches.Take(40))
+        {
+            if (await _userFriendService.IsBlockedBetweenAsync(currentUserId, u.Id, cancellationToken))
+                continue;
+
+            results.Add(new UserSearchResultDto
+            {
+                Id = u.Id,
+                Username = u.Username,
+                DisplayName = u.DisplayName,
+                AvatarUrl = u.AvatarUrl
+            });
+
+            if (results.Count >= 20)
+                break;
+        }
+
+        return Result<IEnumerable<UserSearchResultDto>>.Ok(results);
+    }
+
+    public async Task<Result<UserDto>> UpdateAvatarAsync(int userId, string fileName, int? updatedBy, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            return Result<UserDto>.Fail("Avatar dosyası gerekli.");
+
+        var entity = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
+        if (entity is null)
+            return Result<UserDto>.Fail("Kullanıcı bulunamadı.", statusCode: 404);
+
+        entity.AvatarUrl = fileName;
+        entity.UpdatedBy = updatedBy;
+
+        await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Kullanıcı avatarı güncellendi. Id: {userId}", cancellationToken);
 
         return Result<UserDto>.Ok(entity.ToDto());
     }

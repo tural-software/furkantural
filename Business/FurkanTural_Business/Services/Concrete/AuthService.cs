@@ -2,10 +2,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using FurkanTural_Application.DTOs.Auth;
+using FurkanTural_Application.DTOs.User;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Settings;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,15 +18,23 @@ public class AuthService(
     IUnitOfWork unitOfWork,
     IEncryptionService encryptionService,
     IConfiguration configuration,
-    IOptions<AppTokenSettings> appTokenSettings) : IAuthService
+    IOptions<AppTokenSettings> appTokenSettings,
+    ITurnstileVerifier turnstileVerifier) : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEncryptionService _encryptionService = encryptionService;
     private readonly IConfiguration _configuration = configuration;
     private readonly AppTokenSettings _appTokenSettings = appTokenSettings.Value;
+    private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
 
     public async Task<Result<LoginResultDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default)
     {
+        // Turnstile yalnızca onu kullanan uygulamalar için (örn. Chat). Admin gibi
+        // token göndermeyen istemciler etkilenmez. (Register ucu Chat'e özeldir; orada koşulsuz.)
+        if (IsTurnstileRequired(dto.AppSource) &&
+            !await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, null, cancellationToken))
+            return Result<LoginResultDto>.Fail("Robot doğrulaması başarısız oldu. Lütfen tekrar deneyin.", statusCode: 400);
+
         if (string.IsNullOrWhiteSpace(dto.Username))
             return Result<LoginResultDto>.Fail("Kullanıcı adı boş olamaz.");
 
@@ -48,6 +58,65 @@ public class AuthService(
         var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId, cancellationToken);
         var roleName = role?.Name ?? "User";
 
+        return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, dto.AppSource));
+    }
+
+    public async Task<Result<LoginResultDto>> RegisterAsync(RegisterDto dto, CancellationToken cancellationToken = default)
+    {
+        if (!await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, null, cancellationToken))
+            return Result<LoginResultDto>.Fail("Robot doğrulaması başarısız oldu. Lütfen tekrar deneyin.", statusCode: 400);
+
+        if (string.IsNullOrWhiteSpace(dto.Username))
+            return Result<LoginResultDto>.Fail("Kullanıcı adı boş olamaz.");
+
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return Result<LoginResultDto>.Fail("E-posta boş olamaz.");
+
+        if (string.IsNullOrWhiteSpace(dto.Password))
+            return Result<LoginResultDto>.Fail("Şifre boş olamaz.");
+
+        var usernameExists = await _unitOfWork.Users.AnyAsync(x => x.Username == dto.Username, cancellationToken);
+        if (usernameExists)
+            return Result<LoginResultDto>.Fail("Bu kullanıcı adı zaten kullanılıyor.");
+
+        var emailExists = await _unitOfWork.Users.AnyAsync(x => x.Email == dto.Email, cancellationToken);
+        if (emailExists)
+            return Result<LoginResultDto>.Fail("Bu e-posta adresi zaten kullanılıyor.");
+
+        var role = await _unitOfWork.Roles.GetAsync(x => x.Name == "User", cancellationToken);
+        if (role is null)
+            return Result<LoginResultDto>.Fail("Üyelik rolü yapılandırılmamış.", statusCode: 500);
+
+        var encryptResult = _encryptionService.Encrypt(dto.Password);
+        if (encryptResult.IsFailure)
+            return Result<LoginResultDto>.Fail(encryptResult.Errors, encryptResult.InternalMessage);
+
+        var user = new User
+        {
+            Username = dto.Username,
+            Email = dto.Email,
+            DisplayName = string.IsNullOrWhiteSpace(dto.DisplayName) ? dto.Username : dto.DisplayName,
+            Password = encryptResult.Data,
+            RoleId = role.Id
+        };
+
+        await _unitOfWork.Users.AddAsync(user, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result<LoginResultDto>.Ok(BuildLoginResult(user, role.Name ?? "User"));
+    }
+
+    // Turnstile, config'deki Turnstile:RequiredApps listesindeki AppSource'lar için zorunludur.
+    private bool IsTurnstileRequired(string? appSource)
+    {
+        if (string.IsNullOrWhiteSpace(appSource)) return false;
+        return _configuration.GetSection("Turnstile:RequiredApps")
+            .GetChildren()
+            .Any(c => string.Equals(c.Value, appSource, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private LoginResultDto BuildLoginResult(User user, string roleName, string? appSource = null)
+    {
         var (secret, issuer, audience, expiryMinutes) = GetJwtConfig();
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -61,8 +130,8 @@ public class AuthService(
             new(ClaimTypes.Role, roleName)
         };
 
-        if (!string.IsNullOrWhiteSpace(dto.AppSource))
-            claims.Add(new Claim("app_source", dto.AppSource));
+        if (!string.IsNullOrWhiteSpace(appSource))
+            claims.Add(new Claim("app_source", appSource));
 
         var token = new JwtSecurityToken(
             issuer: issuer,
@@ -73,13 +142,15 @@ public class AuthService(
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return Result<LoginResultDto>.Ok(new LoginResultDto
+        return new LoginResultDto
         {
             Token = tokenString,
+            UserId = user.Id,
             Username = user.Username,
             RoleName = roleName,
+            AvatarUrl = user.AvatarUrl,
             ExpiresAt = expiresAt
-        });
+        };
     }
 
     public Task<Result<LoginResultDto>> GenerateAppTokenAsync(AppTokenRequestDto dto, CancellationToken cancellationToken = default)

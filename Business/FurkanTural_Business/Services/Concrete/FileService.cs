@@ -5,31 +5,65 @@ namespace FurkanTural_Business.Services.Concrete;
 
 public sealed class FileService : IFileService
 {
-    private static readonly HashSet<string> _allowedExtensions =
+    private static readonly HashSet<string> _imageExtensions =
         new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
 
-    private readonly string _uploadsPath;
+    // .webm / .ogg ses üreticilerimizden (MediaRecorder voice note) geldiği için "voices" sayılır.
+    private static readonly HashSet<string> _audioExtensions =
+        new(StringComparer.OrdinalIgnoreCase) { ".webm", ".mp3", ".m4a", ".ogg", ".wav" };
+
+    private static readonly HashSet<string> _videoExtensions =
+        new(StringComparer.OrdinalIgnoreCase) { ".mp4", ".mov", ".m4v", ".avi", ".mkv" };
+
+    // relatedTableName -> modül klasörü
+    private static readonly Dictionary<string, string> _moduleFolders =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["User"] = "users",
+            ["Project"] = "projects",
+            ["Music"] = "musics",
+            ["ChatMessage"] = "chats",
+            ["Blog"] = "blogs",
+        };
+
+    private const string LegacyFolder = "images/uploads"; // eski düz yükleme klasörü (geri-uyum)
+
+    private readonly string _webRootPath;
 
     public FileService(FileStorageSettings settings)
     {
-        _uploadsPath = settings.UploadsPath;
+        _webRootPath = settings.WebRootPath;
     }
 
-    public async Task<string> SaveAsync(byte[] imageData, string imageName, string relatedTableName, int relatedRecordId, int userId)
+    public async Task<string> SaveAsync(byte[] imageData, string imageName, string relatedTableName, int relatedRecordId, int userId, long? maxBytes = null)
     {
         var extension = Path.GetExtension(imageName);
-        if (!_allowedExtensions.Contains(extension))
-            throw new InvalidOperationException(
-                $"Desteklenmeyen dosya uzantısı: {extension}. İzin verilenler: jpg, jpeg, png, webp, gif");
+        var isImage = _imageExtensions.Contains(extension);
+        var isAudio = _audioExtensions.Contains(extension);
+        var isVideo = _videoExtensions.Contains(extension);
 
-        Directory.CreateDirectory(_uploadsPath);
+        if (!isImage && !isAudio && !isVideo)
+            throw new InvalidOperationException(
+                $"Desteklenmeyen dosya uzantısı: {extension}. İzin verilenler: jpg, jpeg, png, webp, gif, webm, mp3, m4a, ogg, wav, mp4, mov, m4v, avi, mkv");
+
+        if (maxBytes is > 0 && imageData.LongLength > maxBytes.Value)
+            throw new InvalidOperationException(
+                $"Dosya boyutu sınırı aşıldı. En fazla {maxBytes.Value / (1024 * 1024)} MB yükleyebilirsiniz.");
+
+        var module = _moduleFolders.TryGetValue(relatedTableName, out var folder) ? folder : "misc";
+        // .webm/.ogg ambiguous: ses kümesinde olduğundan "voices"; saf video uzantıları "videos".
+        var mediaType = isImage ? "images" : isAudio ? "voices" : "videos";
+
+        var targetDir = Path.Combine(_webRootPath, module, mediaType);
+        Directory.CreateDirectory(targetDir);
 
         var fileName = $"{relatedTableName}-{relatedRecordId}-user-{userId}-{Guid.NewGuid():N}-{DateTime.UtcNow:yyyyMMdd}{extension}";
-        var filePath = Path.Combine(_uploadsPath, fileName);
+        var filePath = Path.Combine(targetDir, fileName);
 
         await File.WriteAllBytesAsync(filePath, imageData);
 
-        return fileName;
+        // DB'ye yazılacak göreli yol (ileri-slash, ön-yüzde apiBase + '/' + value).
+        return $"{module}/{mediaType}/{fileName}";
     }
 
     public Task DeleteAsync(string? fileName)
@@ -37,7 +71,10 @@ public sealed class FileService : IFileService
         if (string.IsNullOrWhiteSpace(fileName))
             return Task.CompletedTask;
 
-        var filePath = Path.Combine(_uploadsPath, fileName);
+        // Yeni kayıtlar göreli yol ('chats/images/..') taşır; eski kayıtlar düz dosya adı → images/uploads.
+        var relative = fileName.Contains('/') ? fileName : $"{LegacyFolder}/{fileName}";
+        var filePath = Path.Combine(_webRootPath, relative.Replace('/', Path.DirectorySeparatorChar));
+
         if (!File.Exists(filePath))
             return Task.CompletedTask;
 
