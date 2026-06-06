@@ -4,6 +4,7 @@ using FurkanTural_Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FurkanTural_Persistence.Migrations
 {
     [DbContext(typeof(FurkanTuralDbContext))]
-    partial class FurkanTuralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260603203932_AddChatModule")]
+    partial class AddChatModule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,141 +124,6 @@ namespace FurkanTural_Persistence.Migrations
                     b.ToTable("BlogImages", (string)null);
                 });
 
-            modelBuilder.Entity("FurkanTural_Domain.Entities.CallLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("AnsweredAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CallType")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("CalleeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CallerId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("DurationSeconds")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("EndedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CalleeId", "StartedAt");
-
-                    b.HasIndex("CallerId", "StartedAt");
-
-                    b.ToTable("CallLogs", (string)null);
-                });
-
-            modelBuilder.Entity("FurkanTural_Domain.Entities.CallPolicy", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("BitrateLimitEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("MaxFps")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxHeight")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxVideoBitrateKbps")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxWidth")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CallPolicies", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BitrateLimitEnabled = true,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            IsDeleted = false,
-                            MaxFps = 24,
-                            MaxHeight = 480,
-                            MaxVideoBitrateKbps = 600,
-                            MaxWidth = 640
-                        });
-                });
-
             modelBuilder.Entity("FurkanTural_Domain.Entities.ChatMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -263,10 +131,6 @@ namespace FurkanTural_Persistence.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AttachmentUrl")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
@@ -280,9 +144,6 @@ namespace FurkanTural_Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("DurationSeconds")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -295,10 +156,6 @@ namespace FurkanTural_Persistence.Migrations
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
-
-                    b.Property<string>("MessageType")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("datetime2");
@@ -851,75 +708,6 @@ namespace FurkanTural_Persistence.Migrations
                     b.ToTable("ProjectImages", (string)null);
                 });
 
-            modelBuilder.Entity("FurkanTural_Domain.Entities.Report", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AdminNote")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int?>("ReportedUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReporterId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int?>("TargetId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TargetType")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReportedUserId");
-
-                    b.HasIndex("ReporterId");
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("Reports", (string)null);
-                });
-
             modelBuilder.Entity("FurkanTural_Domain.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -1290,9 +1078,6 @@ namespace FurkanTural_Persistence.Migrations
                     b.Property<int>("AddresseeId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("BlockedByUserId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1349,21 +1134,6 @@ namespace FurkanTural_Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FurkanTural_Domain.Entities.CallLog", b =>
-                {
-                    b.HasOne("FurkanTural_Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("CalleeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FurkanTural_Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("CallerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("FurkanTural_Domain.Entities.ChatMessage", b =>
                 {
                     b.HasOne("FurkanTural_Domain.Entities.User", null)
@@ -1394,20 +1164,6 @@ namespace FurkanTural_Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("FurkanTural_Domain.Entities.Report", b =>
-                {
-                    b.HasOne("FurkanTural_Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("ReportedUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("FurkanTural_Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

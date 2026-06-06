@@ -4,6 +4,7 @@ using FurkanTural_Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FurkanTural_Persistence.Migrations
 {
     [DbContext(typeof(FurkanTuralDbContext))]
-    partial class FurkanTuralDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260605103718_AddCallsAndReports")]
+    partial class AddCallsAndReports
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,73 +190,6 @@ namespace FurkanTural_Persistence.Migrations
                     b.HasIndex("CallerId", "StartedAt");
 
                     b.ToTable("CallLogs", (string)null);
-                });
-
-            modelBuilder.Entity("FurkanTural_Domain.Entities.CallPolicy", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("BitrateLimitEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("MaxFps")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxHeight")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxVideoBitrateKbps")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxWidth")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CallPolicies", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BitrateLimitEnabled = true,
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
-                            IsDeleted = false,
-                            MaxFps = 24,
-                            MaxHeight = 480,
-                            MaxVideoBitrateKbps = 600,
-                            MaxWidth = 640
-                        });
                 });
 
             modelBuilder.Entity("FurkanTural_Domain.Entities.ChatMessage", b =>

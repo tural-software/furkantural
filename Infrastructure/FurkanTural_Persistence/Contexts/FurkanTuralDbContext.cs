@@ -19,6 +19,14 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     public DbSet<Skill> Skills => Set<Skill>();
     public DbSet<Subscriber> Subscribers => Set<Subscriber>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Contact> Contacts => Set<Contact>();
+    public DbSet<ContactTemplate> ContactTemplates => Set<ContactTemplate>();
+    public DbSet<Status> Statuses => Set<Status>();
+    public DbSet<UserFriend> UserFriends => Set<UserFriend>();
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+    public DbSet<CallLog> CallLogs => Set<CallLog>();
+    public DbSet<Report> Reports => Set<Report>();
+    public DbSet<CallPolicy> CallPolicies => Set<CallPolicy>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

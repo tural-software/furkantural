@@ -32,6 +32,14 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     public IRepository<Skill> Skills => GetRepository<Skill>();
     public IRepository<Subscriber> Subscribers => GetRepository<Subscriber>();
     public IRepository<User> Users => GetRepository<User>();
+    public IRepository<Contact> Contacts => GetRepository<Contact>();
+    public IRepository<ContactTemplate> ContactTemplates => GetRepository<ContactTemplate>();
+    public IRepository<Status> Statuses => GetRepository<Status>();
+    public IRepository<UserFriend> UserFriends => GetRepository<UserFriend>();
+    public IRepository<ChatMessage> ChatMessages => GetRepository<ChatMessage>();
+    public IRepository<CallLog> CallLogs => GetRepository<CallLog>();
+    public IRepository<Report> Reports => GetRepository<Report>();
+    public IRepository<CallPolicy> CallPolicies => GetRepository<CallPolicy>();
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => context.SaveChangesAsync(cancellationToken);
