@@ -60,6 +60,13 @@ PublishProfiles/
 **/wwwroot/css/bundle*
 **/wwwroot/js/bundle*
 **/wwwroot/images/uploads/
+# Modül/medya-türü yükleme klasörleri (Round 11 — FileService bunlara yazar)
+**/wwwroot/blogs/
+**/wwwroot/projects/
+**/wwwroot/musics/
+**/wwwroot/users/
+**/wwwroot/chats/
+**/wwwroot/misc/
 
 # User uploaded files & temporary assets
 Tool/*/docs/
