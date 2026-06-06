@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Navbar -->
+  <data name="Nav_About" xml:space="preserve"><value>Hakkımda</value></data>
+  <data name="Nav_Skills" xml:space="preserve"><value>Yetenekler</value></data>
+  <data name="Nav_Projects" xml:space="preserve"><value>Projeler</value></data>
+  <data name="Nav_Music" xml:space="preserve"><value>Müzik</value></data>
+  <data name="Nav_Pricing" xml:space="preserve"><value>Fiyatlandırma</value></data>
+  <data name="Nav_Contact" xml:space="preserve"><value>İletişim</value></data>
+
+  <!-- Theme toggle -->
+  <data name="Theme_Toggle_Light" xml:space="preserve"><value>Açık Tema</value></data>
+  <data name="Theme_Toggle_Dark" xml:space="preserve"><value>Koyu Tema</value></data>
+
+  <!-- SEO defaults -->
+  <data name="Seo_Site_Name" xml:space="preserve"><value>Furkan Tural</value></data>
+  <data name="Seo_Description" xml:space="preserve"><value>Furkan Tural'ın kişisel portföy sitesi. Full-stack geliştirici, müzisyen ve yaratıcı problem çözücü.</value></data>
+</root>

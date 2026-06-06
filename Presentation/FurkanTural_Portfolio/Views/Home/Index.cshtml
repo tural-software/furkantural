@@ -1,8 +1,21 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IndexViewModel
+@{
+    ViewData["Title"] = "Furkan Tural";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@await Html.PartialAsync("_HeroSection")
+@await Html.PartialAsync("_AboutSection")
+@await Html.PartialAsync("_SkillsSection", Model.Skills)
+@await Html.PartialAsync("_ProjectsSection", Model.Projects)
+@await Html.PartialAsync("_SongsSection", Model.Songs)
+@await Html.PartialAsync("_PricingSection")
+@await Html.PartialAsync("_ContactSection")
+
+@section Scripts {
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script>
+        window.portfolioConfig = {
+            turnstileSiteKey: '@Html.Raw(ViewBag.TurnstileSiteKey ?? "")'
+        };
+    </script>
+}

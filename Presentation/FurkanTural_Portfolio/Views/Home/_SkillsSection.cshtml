@@ -1,0 +1,32 @@
+@model IReadOnlyList<SkillViewModel>
+<section class="section skills-section" id="skills">
+    <div class="section-container">
+        <div class="section-header">
+            <span class="section-eyebrow">@L["Skills_Eyebrow"]</span>
+            <h2 class="section-title">@L["Skills_Title"]</h2>
+            <p class="section-desc">@L["Skills_Desc"]</p>
+        </div>
+        @if (Model != null && Model.Count > 0)
+        {
+            <div class="skills-grid">
+                @foreach (var skill in Model)
+                {
+                    var level = skill.Proficiency >= 91 ? L["Skill_Level_Expert"].Value
+                              : skill.Proficiency >= 76 ? L["Skill_Level_Advanced"].Value
+                              : skill.Proficiency >= 51 ? L["Skill_Level_Intermediate"].Value
+                              : L["Skill_Level_Beginner"].Value;
+                    <div class="skill-card">
+                        <div class="skill-card__header">
+                            <span class="skill-card__name">@skill.Name</span>
+                            <span class="skill-card__level">@level</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-bar__fill" style="width: @skill.Proficiency%"></div>
+                        </div>
+                        <span class="skill-card__pct">@skill.Proficiency%</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

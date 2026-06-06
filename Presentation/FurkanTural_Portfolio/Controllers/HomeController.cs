@@ -1,14 +1,49 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using FurkanTural_Portfolio.Models;
+using FurkanTural_Portfolio.Services;
 
 namespace FurkanTural_Portfolio.Controllers;
 
-public class HomeController : Controller
+public class HomeController(IPortfolioApiService apiService, IPortfolioContactClient contactClient, IAppConfigService appConfigService) : Controller
 {
-    public IActionResult Index()
+    private readonly IPortfolioApiService _apiService = apiService;
+    private readonly IPortfolioContactClient _contactClient = contactClient;
+    private readonly IAppConfigService _appConfigService = appConfigService;
+
+    public async Task<IActionResult> Index(CancellationToken ct)
     {
-        return View();
+        var skills = await _apiService.GetSkillsAsync(ct);
+        var projects = await _apiService.GetProjectsAsync(ct);
+        var songs = await _apiService.GetSongsAsync(ct);
+        var experiences = await _apiService.GetExperiencesAsync(ct);
+        var educations = await _apiService.GetEducationsAsync(ct);
+
+        var vm = new IndexViewModel
+        {
+            Skills = skills,
+            Projects = projects,
+            Songs = songs,
+            Experiences = experiences,
+            Educations = educations
+        };
+
+        ViewBag.TurnstileSiteKey = await _appConfigService.GetTurnstileSiteKeyAsync(ct);
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Contact([FromForm] ContactFormModel model, CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new { message = "Lütfen tüm alanları doldurun." });
+
+        var ok = await _contactClient.SubmitContactAsync(model, ct);
+        if (ok)
+            return Ok(new { message = "Mesajınız başarıyla gönderildi!" });
+
+        return StatusCode(500, new { message = "Mesaj gönderilemedi. Lütfen tekrar deneyin." });
     }
 
     public IActionResult Privacy()

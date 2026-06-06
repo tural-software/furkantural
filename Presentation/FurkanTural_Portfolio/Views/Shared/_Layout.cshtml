@@ -1,50 +1,68 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="tr" data-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - FurkanTural_Portfolio</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | Furkan Tural" : "Furkan Tural")</title>
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? SharedLocalizer["Seo_Description"])" />
+    <meta name="author" content="Furkan Tural" />
+    <meta property="og:title" content="@(ViewData["Title"] ?? "Furkan Tural")" />
+    <meta property="og:description" content="@(ViewData["MetaDescription"] ?? SharedLocalizer["Seo_Description"])" />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/FurkanTural_Portfolio.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">FurkanTural_Portfolio</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a class="nav-brand" asp-controller="Home" asp-action="Index">
+                <span class="nav-brand__text">Furkan Tural</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a class="nav-link" href="#about">@SharedLocalizer["Nav_About"]</a>
+                <a class="nav-link" href="#skills">@SharedLocalizer["Nav_Skills"]</a>
+                <a class="nav-link" href="#projects">@SharedLocalizer["Nav_Projects"]</a>
+                <a class="nav-link" href="#music">@SharedLocalizer["Nav_Music"]</a>
+                <a class="nav-link" href="#pricing">@SharedLocalizer["Nav_Pricing"]</a>
+                <a class="nav-link" href="#contact">@SharedLocalizer["Nav_Contact"]</a>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="@SharedLocalizer["Theme_Toggle_Dark"]">
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <button class="nav-toggle" id="navToggle" aria-label="Menü">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - FurkanTural_Portfolio - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; @DateTime.Now.Year Furkan Tural. Tüm hakları saklıdır.</p>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div class="consent-banner" id="consentBanner" style="display:none">
+        <p>@SharedLocalizer["Consent_Message"]</p>
+        <div class="consent-actions">
+            <button class="btn-consent-accept" id="consentAccept">@SharedLocalizer["Consent_Accept"]</button>
+            <button class="btn-consent-decline" id="consentDecline">@SharedLocalizer["Consent_Decline"]</button>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
