@@ -14,12 +14,16 @@ public class UserFriendService(
     IUnitOfWork unitOfWork,
     IStatusService statusService,
     IChatNotifier chatNotifier,
-    ActivityLogger activityLogger) : IUserFriendService
+    IPresenceTracker presenceTracker,
+    ActivityLogger activityLogger,
+    IClock clock) : IUserFriendService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IStatusService _statusService = statusService;
     private readonly IChatNotifier _chatNotifier = chatNotifier;
+    private readonly IPresenceTracker _presenceTracker = presenceTracker;
     private readonly ActivityLogger _activityLogger = activityLogger;
+    private readonly IClock _clock = clock;
 
     private Task<int?> StatusIdAsync(string code, CancellationToken ct)
         => _statusService.GetIdByCodeAsync(StatusDefinitions.Groups.Friendship, code, ct);
@@ -101,7 +105,7 @@ public class UserFriendService(
             return Result.Fail("Bu istek zaten yanıtlanmış.");
 
         entity.StatusId = acceptedId.Value;
-        entity.RespondedAt = DateTime.UtcNow;
+        entity.RespondedAt = _clock.UtcNow;
         await _unitOfWork.UserFriends.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Arkadaşlık isteği kabul edildi. Id: {entity.Id}", cancellationToken);
@@ -117,7 +121,7 @@ public class UserFriendService(
                 Username = accepter.Username,
                 DisplayName = accepter.DisplayName,
                 AvatarUrl = accepter.AvatarUrl,
-                Since = entity.RespondedAt ?? DateTime.UtcNow
+                Since = entity.RespondedAt ?? _clock.UtcNow
             });
         }
 
@@ -141,7 +145,7 @@ public class UserFriendService(
             return Result.Fail("Bu istek zaten yanıtlanmış.");
 
         entity.StatusId = rejectedId.Value;
-        entity.RespondedAt = DateTime.UtcNow;
+        entity.RespondedAt = _clock.UtcNow;
         await _unitOfWork.UserFriends.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Arkadaşlık isteği reddedildi. Id: {entity.Id}", cancellationToken);
@@ -196,7 +200,9 @@ public class UserFriendService(
                 Username = user.Username,
                 DisplayName = user.DisplayName,
                 AvatarUrl = user.AvatarUrl,
-                Since = relation.RespondedAt ?? relation.CreatedAt
+                Since = relation.RespondedAt ?? relation.CreatedAt,
+                IsOnline = _presenceTracker.IsOnline(otherId),
+                LastSeenAt = user.LastSeenAt
             });
         }
 
@@ -319,7 +325,7 @@ public class UserFriendService(
             existing.AddresseeId = targetUserId;
             existing.StatusId = blockedId.Value;
             existing.BlockedByUserId = currentUserId;
-            existing.RespondedAt = DateTime.UtcNow;
+            existing.RespondedAt = _clock.UtcNow;
             await _unitOfWork.UserFriends.UpdateAsync(existing, cancellationToken);
         }
         else
@@ -330,7 +336,7 @@ public class UserFriendService(
                 AddresseeId = targetUserId,
                 StatusId = blockedId.Value,
                 BlockedByUserId = currentUserId,
-                RespondedAt = DateTime.UtcNow
+                RespondedAt = _clock.UtcNow
             }, cancellationToken);
         }
 
@@ -399,7 +405,9 @@ public class UserFriendService(
                 Username = user.Username,
                 DisplayName = user.DisplayName,
                 AvatarUrl = user.AvatarUrl,
-                Since = relation.RespondedAt ?? relation.CreatedAt
+                Since = relation.RespondedAt ?? relation.CreatedAt,
+                IsOnline = _presenceTracker.IsOnline(otherId),
+                LastSeenAt = user.LastSeenAt
             });
         }
 

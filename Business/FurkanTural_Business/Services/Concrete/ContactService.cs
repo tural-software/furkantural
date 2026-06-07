@@ -14,13 +14,15 @@ public class ContactService(
     IEmailService emailService,
     IConfiguration configuration,
     ActivityLogger activityLogger,
-    ITurnstileVerifier turnstileVerifier) : IContactService
+    ITurnstileVerifier turnstileVerifier,
+    IClock clock) : IContactService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEmailService _emailService = emailService;
     private readonly IConfiguration _configuration = configuration;
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
+    private readonly IClock _clock = clock;
 
     public async Task<Result> SubmitAsync(SubmitContactDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
@@ -63,7 +65,7 @@ public class ContactService(
         var gitHubUrl    = _configuration["Contact:GitHubUrl"]    ?? "";
         var instagramUrl = _configuration["Contact:InstagramUrl"] ?? "";
         var contactEmail = _configuration["Contact:ContactEmail"] ?? "";
-        var now = DateTime.UtcNow;
+        var now = _clock.UtcNow;
 
         var templates = await _unitOfWork.ContactTemplates.GetAllAsync(ct);
 

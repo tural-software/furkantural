@@ -29,10 +29,12 @@ public sealed class FileService : IFileService
     private const string LegacyFolder = "images/uploads"; // eski düz yükleme klasörü (geri-uyum)
 
     private readonly string _webRootPath;
+    private readonly IClock _clock;
 
-    public FileService(FileStorageSettings settings)
+    public FileService(FileStorageSettings settings, IClock clock)
     {
         _webRootPath = settings.WebRootPath;
+        _clock = clock;
     }
 
     public async Task<string> SaveAsync(byte[] imageData, string imageName, string relatedTableName, int relatedRecordId, int userId, long? maxBytes = null)
@@ -57,7 +59,7 @@ public sealed class FileService : IFileService
         var targetDir = Path.Combine(_webRootPath, module, mediaType);
         Directory.CreateDirectory(targetDir);
 
-        var fileName = $"{relatedTableName}-{relatedRecordId}-user-{userId}-{Guid.NewGuid():N}-{DateTime.UtcNow:yyyyMMdd}{extension}";
+        var fileName = $"{relatedTableName}-{relatedRecordId}-user-{userId}-{Guid.NewGuid():N}-{_clock.UtcNow:yyyyMMdd}{extension}";
         var filePath = Path.Combine(targetDir, fileName);
 
         await File.WriteAllBytesAsync(filePath, imageData);

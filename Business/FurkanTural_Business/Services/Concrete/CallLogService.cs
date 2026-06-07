@@ -9,9 +9,10 @@ using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class CallLogService(IUnitOfWork unitOfWork) : ICallLogService
+public class CallLogService(IUnitOfWork unitOfWork, IClock clock) : ICallLogService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IClock _clock = clock;
 
     private static readonly HashSet<string> _terminal = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -30,7 +31,7 @@ public class CallLogService(IUnitOfWork unitOfWork) : ICallLogService
             CalleeId = calleeId,
             CallType = CallDefinitions.IsValidType(callType) ? callType : CallDefinitions.Types.Audio,
             Status = CallDefinitions.Statuses.Ringing,
-            StartedAt = DateTime.UtcNow
+            StartedAt = _clock.UtcNow
         };
         await _unitOfWork.CallLogs.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -49,7 +50,7 @@ public class CallLogService(IUnitOfWork unitOfWork) : ICallLogService
         if (entity is null || _terminal.Contains(entity.Status ?? "")) return;
 
         entity.Status = CallDefinitions.Statuses.Answered;
-        entity.AnsweredAt = DateTime.UtcNow;
+        entity.AnsweredAt = _clock.UtcNow;
         await _unitOfWork.CallLogs.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
@@ -59,7 +60,7 @@ public class CallLogService(IUnitOfWork unitOfWork) : ICallLogService
         var entity = await _unitOfWork.CallLogs.GetByIdAsync(callId, cancellationToken);
         if (entity is null || _terminal.Contains(entity.Status ?? "")) return;
 
-        var now = DateTime.UtcNow;
+        var now = _clock.UtcNow;
         entity.Status = _terminal.Contains(status) ? status : CallDefinitions.Statuses.Ended;
         entity.EndedAt = now;
         if (entity.AnsweredAt is { } answered)

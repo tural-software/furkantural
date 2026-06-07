@@ -13,11 +13,13 @@ namespace FurkanTural_Business.Services.Concrete;
 public class ChatMessageService(
     IUnitOfWork unitOfWork,
     IUserFriendService userFriendService,
-    ActivityLogger activityLogger) : IChatMessageService
+    ActivityLogger activityLogger,
+    IClock clock) : IChatMessageService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IUserFriendService _userFriendService = userFriendService;
     private readonly ActivityLogger _activityLogger = activityLogger;
+    private readonly IClock _clock = clock;
 
     // ── Üye işlemleri ──
 
@@ -142,7 +144,7 @@ public class ChatMessageService(
         if (unread.Count == 0)
             return Result.Ok();
 
-        var now = DateTime.UtcNow;
+        var now = _clock.UtcNow;
         foreach (var message in unread)
         {
             message.IsRead = true;
