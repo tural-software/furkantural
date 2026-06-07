@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using FurkanTural_Application.DTOs.Call;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
@@ -17,6 +18,8 @@ public class TurnCredentialProvider(IConfiguration configuration, IHttpClientFac
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
     private const int TtlSeconds = 86400; // 24 saat (Cloudflare maks 48 saat)
+
+    private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
 
     public async Task<Result<TurnCredentialsDto>> GetIceServersAsync(int? customIdentifier = null, CancellationToken cancellationToken = default)
     {
@@ -45,11 +48,23 @@ public class TurnCredentialProvider(IConfiguration configuration, IHttpClientFac
             if (!response.IsSuccessStatusCode)
                 return Result<TurnCredentialsDto>.Fail("Arama kimlik bilgileri alınamadı.", statusCode: 502);
 
-            var dto = await response.Content.ReadFromJsonAsync<TurnCredentialsDto>(cancellationToken: cancellationToken);
-            if (dto?.IceServers is null || dto.IceServers.Length == 0)
+            // Cloudflare "iceServers"ı dizi VEYA tek nesne döndürebilir → her ikisini de normalize et.
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+            if (!doc.RootElement.TryGetProperty("iceServers", out var ice))
                 return Result<TurnCredentialsDto>.Fail("Arama kimlik bilgileri çözümlenemedi.", statusCode: 502);
 
-            return Result<TurnCredentialsDto>.Ok(dto);
+            var servers = (ice.ValueKind switch
+            {
+                JsonValueKind.Array => ice.Deserialize<IceServerDto[]>(JsonOpts) ?? [],
+                JsonValueKind.Object => [ice.Deserialize<IceServerDto>(JsonOpts)!],
+                _ => Array.Empty<IceServerDto>()
+            }).Where(s => s?.Urls is { Length: > 0 }).ToArray();
+
+            if (servers.Length == 0)
+                return Result<TurnCredentialsDto>.Fail("Arama kimlik bilgileri çözümlenemedi.", statusCode: 502);
+
+            return Result<TurnCredentialsDto>.Ok(new TurnCredentialsDto { IceServers = servers });
         }
         catch
         {
