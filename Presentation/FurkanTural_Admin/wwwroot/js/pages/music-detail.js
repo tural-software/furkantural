@@ -11,6 +11,7 @@
     /* ── Date helper ──────────────────────────────────────── */
     function toDateInput(val) {
         if (!val) return '';
+        if (window.FtTime) return FtTime.dateInput(val);
         var d = new Date(val);
         if (isNaN(d.getTime())) return '';
         var y  = d.getFullYear();

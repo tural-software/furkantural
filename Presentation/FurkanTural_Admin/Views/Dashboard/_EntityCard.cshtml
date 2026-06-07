@@ -1,15 +1,17 @@
 @using FurkanTural_Admin.Models.Dashboard
+@using FurkanTural_Admin.Helpers
 @model EntityCardViewModel
 @{
     string FormatLastActivity(DateTime? when)
     {
         if (when is null) return "—";
-        var local = when.Value.ToLocalTime();
-        var diff = DateTime.Now - local;
+        var local = TimeHelper.ToIstanbul(when.Value);   // gelen değer UTC → Türkiye
+        var now = TimeHelper.NowIstanbul;
+        var diff = now - local;
         if (diff.TotalMinutes < 1) return "az önce";
         if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes} dk önce";
-        if (local.Date == DateTime.Today) return "Bugün";
-        if (local.Date == DateTime.Today.AddDays(-1)) return "Dün";
+        if (local.Date == now.Date) return "Bugün";
+        if (local.Date == now.Date.AddDays(-1)) return "Dün";
         if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} gün önce";
         return local.ToString("dd.MM.yyyy");
     }

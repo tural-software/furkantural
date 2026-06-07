@@ -11,6 +11,7 @@
     /* ── Yardımcı: ISO tarih → date input değeri (YYYY-MM-DD) ── */
     function toDateInput(val) {
         if (!val) return '';
+        if (window.FtTime) return FtTime.dateInput(val);
         var d = new Date(val);
         if (isNaN(d.getTime())) return '';
         var pad = function (n) { return ('0' + n).slice(-2); };

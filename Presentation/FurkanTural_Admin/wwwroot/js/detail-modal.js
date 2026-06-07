@@ -52,24 +52,19 @@
     }
 
     /* ── Date helpers ─────────────────────────────────────── */
+    // Tek kanonik biçim: gelen UTC değer DAİMA Europe/Istanbul'da gösterilir (ortak FtTime).
     function fmtDate(val) {
         if (!val) return '—';
+        if (window.FtTime) return FtTime.dateTime(val);
         const d = new Date(val);
         if (isNaN(d.getTime())) return '—';
-        return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })
-            + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Europe/Istanbul' })
+            + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
     }
 
-    function fmtDateUtc(val) {
-        if (!val) return '—';
-        const d = new Date(val);
-        if (isNaN(d.getTime())) return '—';
-        return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
-            + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
-    }
-
+    // Geriye dönük uyum: dateUtc artık date ile aynıdır (UTC/yerel ikiliği kaldırıldı).
     // Expose to configs
-    window.DmFmt = { date: fmtDate, dateUtc: fmtDateUtc };
+    window.DmFmt = { date: fmtDate, dateUtc: fmtDate };
 
     /* ── Render helpers ───────────────────────────────────── */
     function renderBadge(label, variant) {
