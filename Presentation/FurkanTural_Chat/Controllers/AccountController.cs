@@ -82,6 +82,7 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         HttpContext.Session.SetString("role", data.RoleName ?? string.Empty);
         HttpContext.Session.SetString("avatarUrl", data.AvatarUrl ?? string.Empty);
         HttpContext.Session.SetString("expiresAt", data.ExpiresAt.ToString("O"));
+        HttpContext.Session.SetString("agreementAccepted", data.MembershipAgreementAccepted ? "1" : "0");
     }
 
     private void SetFlash(string type, string title, string msg)

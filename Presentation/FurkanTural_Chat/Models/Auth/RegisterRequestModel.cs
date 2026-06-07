@@ -19,5 +19,8 @@ public class RegisterRequestModel
     [MinLength(4, ErrorMessage = "Şifre en az 4 karakter olmalı.")]
     public string? Password { get; set; }
 
+    [Range(typeof(bool), "true", "true", ErrorMessage = "Üyelik sözleşmesini kabul etmelisiniz.")]
+    public bool AcceptAgreement { get; set; }
+
     public string? TurnstileToken { get; set; }
 }

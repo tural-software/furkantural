@@ -2,7 +2,7 @@
 <html lang="tr" data-theme="dark">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>@ViewData["Title"] - Tural Chat</title>
     <script>
         (function () {
@@ -41,9 +41,25 @@
         <button type="button" id="pwaInstallClose" class="pwa-install-close" aria-label="Kapat" title="Kapat">✕</button>
     </div>
 
+    @* Çerez bilgilendirme / onay modalı — tüm sayfalarda görünür *@
+    <div id="consentOverlay" class="consent-overlay">
+        <div class="consent-modal" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+            <div class="consent-title" id="consentTitle">Çerez Bilgilendirmesi</div>
+            <div class="consent-text">
+                Tural Chat'i kullanarak, hizmetin düzgün çalışması için gerekli tüm çerezleri kabul etmiş
+                olursunuz. Ayrıntılar için <a asp-controller="Home" asp-action="Privacy">gizlilik politikamıza</a> bakabilirsiniz.
+            </div>
+            <div class="consent-actions">
+                <button id="consentOk" type="button" class="btn-consent btn-consent-primary">Kabul et ve devam et</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/js/ft-time.js" asp-append-version="true"></script>
     <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/toast.js" asp-append-version="true"></script>
     <script src="~/js/pwa.js" asp-append-version="true"></script>
+    <script src="~/js/consent.js" asp-append-version="true"></script>
 
     @if (TempData["ToastMsg"] != null)
     {

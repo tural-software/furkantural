@@ -8,4 +8,7 @@ public class ChatPageViewModel
     public string Username { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public string AvatarUrl { get; set; } = string.Empty;
+
+    /// <summary>Kullanıcı güncel üyelik sözleşmesini kabul etmiş mi? false ise zorunlu onay modalı gösterilir.</summary>
+    public bool AgreementAccepted { get; set; }
 }

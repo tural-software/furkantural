@@ -24,9 +24,25 @@ public class ChatController(IOptions<ApiOptions> apiOptions) : Controller
             UserId = HttpContext.Session.GetInt32("userId") ?? 0,
             Username = username,
             DisplayName = username,
-            AvatarUrl = HttpContext.Session.GetString("avatarUrl") ?? string.Empty
+            AvatarUrl = HttpContext.Session.GetString("avatarUrl") ?? string.Empty,
+            AgreementAccepted = HttpContext.Session.GetString("agreementAccepted") == "1"
         };
 
         return View(model);
+    }
+
+    /// <summary>
+    /// Üyelik sözleşmesi API üzerinden kabul edildikten sonra, sunum oturumunu da işaretler.
+    /// Böylece sayfa yenilense bile zorunlu onay modalı tekrar açılmaz (oturum içi kalıcılık).
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult AgreementAccepted()
+    {
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("token")))
+            return Unauthorized();
+
+        HttpContext.Session.SetString("agreementAccepted", "1");
+        return Ok();
     }
 }

@@ -337,6 +337,22 @@
         }
 
         var devModal = null;
+        var deviceCache = null;     // {mics,cams,speakers} — oturum boyunca bellekte (sayfa yenilenince/çıkışta sıfırlanır)
+        var scanAttempted = false;  // ilk tarama denendi mi? (izin reddedilse bile bir daha otomatik sorma)
+
+        // Cihazları tara: etiketler için bir kez izin + enumerateDevices. force=false ve önbellek varsa onu döndürür.
+        async function scanDevices(force) {
+            if (deviceCache && !force) return deviceCache;
+            // Etiketleri açmak için bir kez izin (aktif çağrıda zaten izinli → atla). Kamera etiketleri için video da iste.
+            if (!localStream) {
+                try { var s = await navigator.mediaDevices.getUserMedia({ audio: true, video: true }); s.getTracks().forEach(function (t) { t.stop(); }); }
+                catch (e) { try { var s2 = await navigator.mediaDevices.getUserMedia({ audio: true }); s2.getTracks().forEach(function (t) { t.stop(); }); } catch (e2) {} }
+            }
+            scanAttempted = true;
+            deviceCache = await listDevices();
+            return deviceCache;
+        }
+
         function buildDevModal() {
             var m = document.createElement('div');
             m.className = 'device-modal';
@@ -348,6 +364,7 @@
                   '<div class="dev-row"><label>Mikrofon</label><select class="dev-mic"></select></div>' +
                   '<div class="dev-row dev-row--cam"><label>Kamera</label><select class="dev-cam"></select></div>' +
                   '<div class="dev-row dev-row--spk"><label>Hoparlör</label><select class="dev-spk"></select></div>' +
+                  '<div class="dev-row"><button type="button" class="dev-rescan btn-outline">🔄 Cihazlarımı Algıla</button></div>' +
                 '</div>';
             document.body.appendChild(m);
             m.addEventListener('click', function (e) { if (e.target === m) m.hidden = true; });
@@ -357,6 +374,12 @@
             m.querySelector('.dev-mic').addEventListener('change', function (e) { applyDevice('mic', e.target.value); });
             m.querySelector('.dev-cam').addEventListener('change', function (e) { applyDevice('cam', e.target.value); });
             m.querySelector('.dev-spk').addEventListener('change', function (e) { applyDevice('spk', e.target.value); });
+            var rescan = m.querySelector('.dev-rescan');
+            rescan.addEventListener('click', async function () {
+                rescan.disabled = true; var old = rescan.textContent; rescan.textContent = 'Algılanıyor…';
+                refillDevModal(await scanDevices(true));   // kullanıcı isteğiyle yeniden tara
+                rescan.disabled = false; rescan.textContent = old;
+            });
             if (!canSetSink) m.querySelector('.dev-row--spk').style.display = 'none';
             return m;
         }
@@ -374,23 +397,24 @@
                 sel.appendChild(o);
             });
         }
-        async function openDeviceSettings() {
-            if (!devModal) devModal = buildDevModal();
-            // Etiketleri açmak için bir kez izin (aktif çağrıda zaten izinli → atla). Kamera etiketleri için video da iste.
-            if (!localStream) {
-                try { var s = await navigator.mediaDevices.getUserMedia({ audio: true, video: true }); s.getTracks().forEach(function (t) { t.stop(); }); }
-                catch (e) { try { var s2 = await navigator.mediaDevices.getUserMedia({ audio: true }); s2.getTracks().forEach(function (t) { t.stop(); }); } catch (e2) {} }
-            }
-            var d = await listDevices();
+        function refillDevModal(d) {
+            d = d || { mics: [], cams: [], speakers: [] };
             fillSelect(devModal.querySelector('.dev-mic'), d.mics, prefs.micId, 'Mikrofon');
             fillSelect(devModal.querySelector('.dev-cam'), d.cams, prefs.camId, 'Kamera');
             if (canSetSink) fillSelect(devModal.querySelector('.dev-spk'), d.speakers, prefs.speakerId, 'Hoparlör');
             devModal.querySelector('.dev-vol').value = Math.round(prefs.volume * 100);
+        }
+        async function openDeviceSettings() {
+            if (!devModal) devModal = buildDevModal();
+            // Önbellek varsa yeniden TARAMA YOK; yoksa yalnızca ilk kez tara (her ayarlar açılışında tekrar taranmaz).
+            var d = deviceCache || (!scanAttempted ? await scanDevices(false) : { mics: [], cams: [], speakers: [] });
+            refillDevModal(d);
             devModal.hidden = false;
         }
         if (navigator.mediaDevices) {
-            navigator.mediaDevices.addEventListener('devicechange', function () {
-                if (devModal && !devModal.hidden) openDeviceSettings();
+            navigator.mediaDevices.addEventListener('devicechange', async function () {
+                deviceCache = null; // donanım takıldı/çıkarıldı → önbelleği geçersiz kıl
+                if (devModal && !devModal.hidden) refillDevModal(await scanDevices(true));
             });
         }
 
@@ -683,6 +707,10 @@
         // Sidebar'daki çağrı-öncesi ses/cihaz ayarları butonu.
         var btnAudioSettings = document.getElementById('audioSettingsBtn');
         if (btnAudioSettings) btnAudioSettings.addEventListener('click', function () { openDeviceSettings(); });
+
+        // İlk girişte cihazları yalnızca BİR kez tara; sonraki ayarlar açılışları önbellekten gelir.
+        // Reddedilse bile tekrar otomatik sorulmaz (manuel "Cihazlarımı Algıla" ile yenilenebilir).
+        setTimeout(function () { if (!scanAttempted) scanDevices(false); }, 1500);
 
         // ── başlığa eklenen arama butonları ──
         var btnAudio = document.getElementById('callAudioBtn');

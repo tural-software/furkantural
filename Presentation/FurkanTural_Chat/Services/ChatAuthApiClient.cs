@@ -28,7 +28,8 @@ public class ChatAuthApiClient(HttpClient httpClient, ILogger<ChatAuthApiClient>
             email = request.Email,
             password = request.Password,
             displayName = request.DisplayName,
-            turnstileToken = request.TurnstileToken
+            turnstileToken = request.TurnstileToken,
+            acceptAgreement = request.AcceptAgreement
         }, cancellationToken);
 
     private async Task<ApiResult<AuthResultModel>> PostAsync(string url, object body, CancellationToken cancellationToken)

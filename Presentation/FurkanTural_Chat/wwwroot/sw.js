@@ -1,15 +1,19 @@
 /* Tural Chat — Service Worker (PWA shell + offline) */
-const CACHE = 'tural-chat-v1';
+const CACHE = 'tural-chat-v7';
 
 // App shell — sade path'ler (sürümsüz). Runtime cache ?v'li istekleri ayrıca yakalar.
 const SHELL = [
     '/offline.html',
     '/css/theme.css',
     '/css/chat.css',
+    '/js/ft-time.js',
     '/js/theme.js',
     '/js/toast.js',
     '/js/auth.js',
     '/js/chat.js',
+    '/js/call.js',
+    '/js/profile.js',
+    '/js/consent.js',
     '/js/pwa.js',
     '/site.webmanifest',
     '/icons/icon-192.png',

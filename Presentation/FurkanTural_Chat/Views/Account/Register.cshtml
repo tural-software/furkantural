@@ -33,6 +33,15 @@
             }
             <input type="hidden" name="TurnstileToken" id="turnstileToken" />
 
+            <label class="agreement-check">
+                <input asp-for="AcceptAgreement" />
+                <span>
+                    <a asp-controller="Home" asp-action="Agreement" target="_blank" rel="noopener">Üyelik sözleşmesini</a>
+                    okudum ve kabul ediyorum.
+                </span>
+            </label>
+            <span asp-validation-for="AcceptAgreement" class="field-error"></span>
+
             <button type="submit" class="btn-primary">Üye ol</button>
         </form>
 

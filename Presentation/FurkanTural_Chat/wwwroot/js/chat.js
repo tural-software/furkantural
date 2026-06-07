@@ -18,10 +18,14 @@
     const composer = $('composer');
     const messageInput = $('messageInput');
     const convTitle = $('convTitle');
+    const convPresence = $('convPresence');
+    const convAvatar = $('convAvatar');
     const typingIndicator = $('typingIndicator');
     const connStatus = $('connStatus');
-    const recBtn = $('recBtn');
+    const attachMenuBtn = $('attachMenuBtn');
+    const attachMenu = $('attachMenu');
     const recTimer = $('recTimer');
+    const chatApp = document.querySelector('.chat-app');   // mobil: liste ↔ sohbet geçişi
 
     let currentFriend = null;          // { id, name }
     const friends = new Map();         // friendUserId -> friend dto
@@ -33,7 +37,7 @@
     // ───────── helpers ─────────
     function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
     function initial(name) { return ((name || '?').trim().charAt(0) || '?').toUpperCase(); }
-    function fmtTime(iso) { try { return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+    function fmtTime(iso) { return window.FtTime ? FtTime.time(iso) : (function () { try { return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }); } catch (e) { return ''; } })(); }
     function toast(msg, type) { if (window.showToast) window.showToast(type === 'error' ? 'error' : 'info', type === 'error' ? 'Hata' : 'Bilgi', msg); }
     // Yeni kayıtlar göreli yol ('chats/images/..') taşır → apiBase + '/' + value; eski kayıtlar düz dosya adı → images/uploads.
     function mediaUrl(value) {
@@ -47,6 +51,29 @@
             return '<div class="' + cls + '" style="background-image:url(\'' + url + '\');background-size:cover;background-position:center;"></div>';
         }
         return '<div class="' + cls + '">' + esc(initial(name)) + '</div>';
+    }
+
+    // "son görülme" için göreli Türkçe zaman (ortak FtTime üzerinden).
+    function relTime(iso) {
+        if (!iso) return '';
+        if (window.FtTime) return FtTime.relative(iso);
+        var d = new Date(iso), now = new Date();
+        var s = Math.floor((now - d) / 1000);
+        if (isNaN(s)) return '';
+        if (s < 60) return 'az önce';
+        var m = Math.floor(s / 60); if (m < 60) return m + ' dk önce';
+        var h = Math.floor(m / 60); if (h < 24) return h + ' sa önce';
+        var days = Math.floor(h / 24);
+        if (days === 1) return 'dün';
+        if (days < 7) return days + ' gün önce';
+        try { return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', timeZone: 'Europe/Istanbul' }); } catch (e) { return ''; }
+    }
+    // Arkadaşın aktiflik metni (çevrimiçi / son görülme / çevrimdışı).
+    function presenceText(f) {
+        if (!f) return '';
+        if (f.isOnline) return 'çevrimiçi';
+        if (f.lastSeenAt) return 'son görülme ' + relTime(f.lastSeenAt);
+        return 'çevrimdışı';
     }
 
     async function api(path, opts) {
@@ -82,10 +109,15 @@
             div.className = 'friend-item';
             div.dataset.id = f.friendUserId;
             div.innerHTML =
-                avatarMarkup(name, f.avatarUrl) +
+                '<div class="avatar-wrap">' + avatarMarkup(name, f.avatarUrl) +
+                    '<span class="status-dot' + (f.isOnline ? ' online' : '') + '"></span></div>' +
                 '<div class="friend-meta"><div class="friend-name">' + esc(name) + '</div>' +
-                '<div class="friend-sub">@' + esc(f.username) + '</div></div>' +
+                '<div class="friend-sub">@' + esc(f.username) + '</div>' +
+                '<div class="friend-status' + (f.isOnline ? ' online' : '') + '">' + esc(presenceText(f)) + '</div></div>' +
                 '<span class="unread-dot" hidden></span>';
+            // Avatara tıklayınca profil aç (sohbet açılmaz); satıra tıklayınca sohbet aç.
+            const avWrap = div.querySelector('.avatar-wrap');
+            if (avWrap) avWrap.addEventListener('click', (e) => { e.stopPropagation(); if (window.Profile) window.Profile.open(f.friendUserId); });
             div.addEventListener('click', () => openConversation(f.friendUserId));
             friendsList.appendChild(div);
         });
@@ -214,6 +246,9 @@
         currentFriend = { id: friendId, name: f.displayName || f.username };
         document.querySelectorAll('.friend-item').forEach(el => el.classList.toggle('active', +el.dataset.id === friendId));
         convTitle.textContent = currentFriend.name;
+        updateConvPresence(f);
+        setConvAvatar(f);
+        if (chatApp) chatApp.classList.add('show-conversation');   // mobil: sohbet panelini öne getir
         typingIndicator.hidden = true;
         composer.hidden = false;
         messagesEl.innerHTML = '<div class="empty-hint">Yükleniyor…</div>';
@@ -226,7 +261,7 @@
         refreshUnreadDots();
         api('/api/v1/message/' + friendId + '/read', { method: 'POST' }); // okundu -> gönderene bildirilir
         messageInput.focus();
-        ['callAudioBtn', 'callVideoBtn', 'convMenuBtn'].forEach(function (cid) { var b = $(cid); if (b) b.hidden = false; });
+        ['callAudioBtn', 'callVideoBtn', 'callMenuBtn', 'convMenuBtn'].forEach(function (cid) { var b = $(cid); if (b) b.hidden = false; });
         document.dispatchEvent(new CustomEvent('chat:conversationchanged', { detail: { friendId: friendId } }));
     }
 
@@ -279,6 +314,41 @@
         });
     }
 
+    // ───────── aktiflik (çevrimiçi / son görülme) ─────────
+    function setFriendPresence(id, isOnline, lastSeenAt) {
+        const f = friends.get(id);
+        if (!f) return;
+        f.isOnline = !!isOnline;
+        if (lastSeenAt !== undefined) f.lastSeenAt = lastSeenAt;
+        const el = document.querySelector('.friend-item[data-id="' + id + '"]');
+        if (el) {
+            const sdot = el.querySelector('.status-dot');
+            if (sdot) sdot.classList.toggle('online', f.isOnline);
+            const st = el.querySelector('.friend-status');
+            if (st) { st.textContent = presenceText(f); st.classList.toggle('online', f.isOnline); }
+        }
+        if (currentFriend && currentFriend.id === id) updateConvPresence(f);
+    }
+
+    function updateConvPresence(f) {
+        if (!convPresence) return;
+        convPresence.textContent = presenceText(f);
+        convPresence.classList.toggle('online', !!(f && f.isOnline));
+    }
+
+    function setConvAvatar(f) {
+        if (!convAvatar) return;
+        const name = f.displayName || f.username;
+        if (f.avatarUrl) {
+            convAvatar.style.backgroundImage = "url('" + mediaUrl(f.avatarUrl) + "')";
+            convAvatar.textContent = '';
+        } else {
+            convAvatar.style.backgroundImage = '';
+            convAvatar.textContent = initial(name);
+        }
+        convAvatar.hidden = false;
+    }
+
     // ───────── composer (metin) ─────────
     composer.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -304,11 +374,25 @@
     // ───────── ses kaydı (voice note) ─────────
     let mediaRecorder = null, audioChunks = [], recStartTs = 0, recInterval = null;
 
-    if (recBtn) {
-        recBtn.addEventListener('click', async () => {
-            if (!currentFriend) { toast('Önce bir arkadaş seç.', 'error'); return; }
+    // Birleşik "➕ Ekle" butonu: kayıt sürüyorsa durdur (⏹), değilse Görsel/Ses menüsünü aç-kapat.
+    if (attachMenuBtn && attachMenu) {
+        attachMenuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
             if (mediaRecorder && mediaRecorder.state === 'recording') { stopRecording(); return; }
-            await startRecording();
+            if (!currentFriend) { toast('Önce bir arkadaş seç.', 'error'); return; }
+            var cm = $('convMenu'); if (cm) cm.hidden = true;
+            var km = $('callMenu'); if (km) km.hidden = true;
+            attachMenu.hidden = !attachMenu.hidden;
+        });
+        document.addEventListener('click', function () { attachMenu.hidden = true; });
+        attachMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+        attachMenu.querySelectorAll('[data-add]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                attachMenu.hidden = true;
+                if (!currentFriend) { toast('Önce bir arkadaş seç.', 'error'); return; }
+                if (b.dataset.add === 'media') { var inp = $('attachInput'); if (inp) inp.click(); }
+                else if (b.dataset.add === 'voice') startRecording();
+            });
         });
     }
 
@@ -329,7 +413,7 @@
         };
         mediaRecorder.start();
         recStartTs = Date.now();
-        recBtn.classList.add('recording'); recBtn.textContent = '⏹';
+        attachMenuBtn.classList.add('recording');   // ＋ → ■ geçişi CSS'te
         recTimer.hidden = false; recTimer.textContent = '0:00';
         recInterval = setInterval(() => {
             const s = Math.floor((Date.now() - recStartTs) / 1000);
@@ -339,7 +423,7 @@
 
     function stopRecording() {
         if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-        recBtn.classList.remove('recording'); recBtn.textContent = '🎤';
+        attachMenuBtn.classList.remove('recording');   // ■ → ＋ geçişi CSS'te
         recTimer.hidden = true; clearInterval(recInterval);
     }
 
@@ -367,14 +451,9 @@
     // ───────── foto/video eki ─────────
     const IMAGE_MAX = 10 * 1024 * 1024;   // 10 MB
     const VIDEO_MAX = 30 * 1024 * 1024;   // 30 MB
-    const attachBtn = $('attachBtn');
     const attachInput = $('attachInput');
 
-    if (attachBtn && attachInput) {
-        attachBtn.addEventListener('click', () => {
-            if (!currentFriend) { toast('Önce bir arkadaş seç.', 'error'); return; }
-            attachInput.click();
-        });
+    if (attachInput) {
         attachInput.addEventListener('change', async () => {
             const file = attachInput.files && attachInput.files[0];
             attachInput.value = '';
@@ -481,6 +560,15 @@
         if (currentFriend && byId === currentFriend.id) markOutgoingRead();
     });
 
+    // ───────── aktiflik bildirimleri ─────────
+    // Bağlanınca: o an çevrimiçi olan arkadaşların id listesi.
+    connection.on('OnlineFriends', (ids) => {
+        const set = new Set(ids || []);
+        friends.forEach((f, id) => setFriendPresence(id, set.has(id), undefined));
+    });
+    connection.on('UserOnline', (uid) => setFriendPresence(uid, true, null));
+    connection.on('UserOffline', (uid, lastSeen) => setFriendPresence(uid, false, lastSeen));
+
     // call.js'in arama sinyalleşmesi için paylaşılan köprü (aynı SignalR bağlantısı).
     window.ChatBridge = {
         connection: connection,
@@ -488,6 +576,9 @@
         toast: toast,
         mediaUrl: mediaUrl,
         initial: initial,
+        esc: esc,
+        relTime: relTime,
+        presenceText: presenceText,
         me: me,
         friend: function (id) { return friends.get(id) || null; },
         currentFriendId: function () { return currentFriend ? currentFriend.id : null; }
@@ -507,12 +598,28 @@
         catch (e) { setConn('Bağlantı kurulamadı, tekrar deneniyor…', true); setTimeout(start, 3000); }
     }
 
-    // ───────── avatar (kendi profilim) ─────────
+    // ───────── profil modalı tetikleyicileri ─────────
+    (function () {
+        var meAvatar = document.getElementById('meAvatar');
+        // Kendi avatarıma tıklayınca profil modalı açılır (fotoğraf değiştirme modal içinde).
+        if (meAvatar) meAvatar.addEventListener('click', function () { if (window.Profile) window.Profile.open(me); });
+        // Sohbet başlığındaki avatara tıklayınca o arkadaşın profili açılır.
+        if (convAvatar) convAvatar.addEventListener('click', function () {
+            var id = currentFriend && currentFriend.id;
+            if (id && window.Profile) window.Profile.open(id);
+        });
+        // Mobil: "‹ geri" → arkadaş listesine dön (sohbet durumu korunur).
+        var convBack = document.getElementById('convBack');
+        if (convBack) convBack.addEventListener('click', function () {
+            if (chatApp) chatApp.classList.remove('show-conversation');
+        });
+    })();
+
+    // ───────── avatar yükleme (profil modalındaki "Fotoğrafı değiştir" tetikler) ─────────
     (function () {
         var meAvatar = document.getElementById('meAvatar');
         var input = document.getElementById('avatarFileInput');
-        if (!meAvatar || !input) return;
-        meAvatar.addEventListener('click', function () { input.click(); });
+        if (!input) return;
         input.addEventListener('change', async function () {
             var file = input.files && input.files[0];
             input.value = '';
@@ -533,13 +640,42 @@
         });
     })();
 
+    // ───────── çağrı seçim menüsü (mobil: tek "Ara" → sesli/görüntülü) ─────────
+    (function () {
+        var btn = $('callMenuBtn');
+        var menu = $('callMenu');
+        if (!btn || !menu) return;
+
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var other = $('convMenu'); if (other) other.hidden = true;   // diğer menüyü kapat
+            menu.hidden = !menu.hidden;
+        });
+        document.addEventListener('click', function () { menu.hidden = true; });
+        menu.addEventListener('click', function (e) { e.stopPropagation(); });
+
+        menu.querySelectorAll('[data-act]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                menu.hidden = true;
+                // Mevcut (mobilde görsel gizli) çağrı butonlarını programatik tetikle → call.js startCall.
+                var id = b.dataset.act === 'call-video' ? 'callVideoBtn' : 'callAudioBtn';
+                var target = document.getElementById(id);
+                if (target) target.click();
+            });
+        });
+    })();
+
     // ───────── konuşma menüsü (engelle / şikayet et) ─────────
     (function () {
         var menuBtn = $('convMenuBtn');
         var menu = $('convMenu');
         if (!menuBtn || !menu) return;
 
-        menuBtn.addEventListener('click', function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; });
+        menuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var other = $('callMenu'); if (other) other.hidden = true;   // çağrı menüsünü kapat
+            menu.hidden = !menu.hidden;
+        });
         document.addEventListener('click', function () { menu.hidden = true; });
         menu.addEventListener('click', function (e) { e.stopPropagation(); });
 
@@ -560,9 +696,12 @@
             toast(currentFriend.name + ' engellendi.');
             currentFriend = null;
             convTitle.textContent = 'Sohbet etmek için bir arkadaş seç';
+            if (convPresence) { convPresence.textContent = ''; convPresence.classList.remove('online'); }
+            if (convAvatar) { convAvatar.hidden = true; convAvatar.style.backgroundImage = ''; convAvatar.textContent = ''; }
+            if (chatApp) chatApp.classList.remove('show-conversation');   // mobil: listeye dön
             composer.hidden = true;
             messagesEl.innerHTML = '<div class="empty-hint">Henüz bir sohbet seçilmedi.</div>';
-            ['callAudioBtn', 'callVideoBtn', 'convMenuBtn'].forEach(function (cid) { var b = $(cid); if (b) b.hidden = true; });
+            ['callAudioBtn', 'callVideoBtn', 'callMenuBtn', 'convMenuBtn'].forEach(function (cid) { var b = $(cid); if (b) b.hidden = true; });
             loadFriends();
         } else {
             toast(errOf(r, 'Engellenemedi.'), 'error');
@@ -580,6 +719,38 @@
         if (r && r.success) toast('Şikayetiniz alındı. İncelenecektir.');
         else toast(errOf(r, 'Şikayet gönderilemedi.'), 'error');
     }
+
+    // ───────── üyelik sözleşmesi (eski üyeler için zorunlu onay) ─────────
+    (function () {
+        if (cfg.agreementAccepted) return;
+        var ov = document.getElementById('agreementOverlay');
+        var btn = document.getElementById('agreementAccept');
+        if (!ov || !btn) return;
+        ov.classList.add('open');
+        btn.addEventListener('click', async function () {
+            btn.disabled = true;
+            var r = await api('/api/v1/user/me/accept-agreement', { method: 'POST' });
+            if (r && r.success) {
+                cfg.agreementAccepted = true;
+                // Sunum oturumunu da işaretle ki sayfa yenilenince modal tekrar gelmesin.
+                try {
+                    var tok = document.querySelector('input[name="__RequestVerificationToken"]');
+                    var body = new URLSearchParams();
+                    if (tok) body.set('__RequestVerificationToken', tok.value);
+                    await fetch('/Chat/AgreementAccepted', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: body.toString()
+                    });
+                } catch (e) { /* oturum güncellenemezse en kötü ihtimalle bir sonraki yenilemede tekrar sorar */ }
+                ov.classList.remove('open');
+                toast('Teşekkürler, sözleşme onaylandı.');
+            } else {
+                btn.disabled = false;
+                toast(errOf(r, 'Onay kaydedilemedi.'), 'error');
+            }
+        });
+    })();
 
     // ───────── init ─────────
     (async function () {

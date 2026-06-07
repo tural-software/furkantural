@@ -8,7 +8,9 @@
         token = Model.Token,
         userId = Model.UserId,
         username = Model.Username,
-        avatarUrl = Model.AvatarUrl
+        displayName = Model.DisplayName,
+        avatarUrl = Model.AvatarUrl,
+        agreementAccepted = Model.AgreementAccepted
     });
 }
 
@@ -56,16 +58,52 @@
 
     <main class="conversation">
         <div class="conv-header">
-            <span id="convTitle">Sohbet etmek için bir arkadaş seç</span>
+            <button type="button" id="convBack" class="conv-back" aria-label="Listeye dön" title="Geri">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div id="convAvatar" class="conv-avatar" title="Profili gör" hidden></div>
+            <div class="conv-titlewrap">
+                <span id="convTitle">Sohbet etmek için bir arkadaş seç</span>
+                <span id="convPresence" class="conv-presence"></span>
+            </div>
             <span id="typingIndicator" class="typing" hidden>yazıyor…</span>
             <div class="conv-actions">
-                <button type="button" id="callAudioBtn" class="conv-act" title="Sesli ara" aria-label="Sesli ara" hidden>📞</button>
-                <button type="button" id="callVideoBtn" class="conv-act" title="Görüntülü ara" aria-label="Görüntülü ara" hidden>🎥</button>
+                @* Masaüstü: ayrı çağrı ikonları *@
+                <button type="button" id="callAudioBtn" class="conv-act" title="Sesli ara" aria-label="Sesli ara" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </button>
+                <button type="button" id="callVideoBtn" class="conv-act" title="Görüntülü ara" aria-label="Görüntülü ara" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                </button>
+                @* Mobil: tek birleşik "Ara" ikonu + seçim *@
+                <div class="conv-menu-wrap conv-callwrap">
+                    <button type="button" id="callMenuBtn" class="conv-act" title="Ara" aria-label="Ara" hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    </button>
+                    <div id="callMenu" class="conv-menu" hidden>
+                        <button type="button" data-act="call-audio">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <span>Sesli ara</span>
+                        </button>
+                        <button type="button" data-act="call-video">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                            <span>Görüntülü ara</span>
+                        </button>
+                    </div>
+                </div>
                 <div class="conv-menu-wrap">
-                    <button type="button" id="convMenuBtn" class="conv-act" title="Daha fazla" aria-label="Daha fazla" hidden>⋮</button>
+                    <button type="button" id="convMenuBtn" class="conv-act" title="Daha fazla" aria-label="Daha fazla" hidden>
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.7"></circle><circle cx="12" cy="12" r="1.7"></circle><circle cx="12" cy="19" r="1.7"></circle></svg>
+                    </button>
                     <div id="convMenu" class="conv-menu" hidden>
-                        <button type="button" data-act="block">Engelle</button>
-                        <button type="button" data-act="report">Şikayet et</button>
+                        <button type="button" data-act="block" class="danger">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                            <span>Engelle</span>
+                        </button>
+                        <button type="button" data-act="report" class="danger">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                            <span>Şikayet et</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -74,21 +112,55 @@
             <div class="empty-hint">Henüz bir sohbet seçilmedi.</div>
         </div>
         <form id="composer" class="composer" hidden>
-            <button type="button" id="attachBtn" class="rec-btn" title="Foto/Video gönder" aria-label="Foto/Video gönder">📎</button>
+            <div class="composer-add-wrap">
+                <button type="button" id="attachMenuBtn" class="rec-btn" title="Ekle" aria-label="Ekle">
+                    <svg class="ic-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <svg class="ic-stop" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
+                </button>
+                <div id="attachMenu" class="conv-menu composer-menu" hidden>
+                    <button type="button" data-add="media">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <span>Görsel Ekle</span>
+                    </button>
+                    <button type="button" data-add="voice">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                        <span>Ses Kaydı</span>
+                    </button>
+                </div>
+            </div>
             <input id="attachInput" type="file" accept="image/*,video/*" hidden />
-            <button type="button" id="recBtn" class="rec-btn" title="Sesli mesaj kaydet" aria-label="Sesli mesaj">🎤</button>
             <span id="recTimer" class="rec-timer" hidden>0:00</span>
             <input id="messageInput" type="text" placeholder="Bir mesaj yaz…" autocomplete="off" maxlength="4000" />
-            <button type="submit">Gönder</button>
+            <button type="submit" id="sendBtn" class="send-btn" title="Gönder" aria-label="Gönder">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M2 21l21-9L2 3v7l15 2-15 2z"></path></svg>
+            </button>
         </form>
     </main>
 </div>
 
 <div id="connStatus" class="conn-status" hidden></div>
 
+@* Üyelik sözleşmesi — yalnızca henüz kabul etmemiş (eski) üyeler için JS açar; kapatılamaz. *@
+<div id="agreementOverlay" class="agreement-overlay">
+    <div class="agreement-card" role="dialog" aria-modal="true" aria-labelledby="agreementHeading">
+        <h2 id="agreementHeading">Üyelik Sözleşmesi</h2>
+        <p>
+            Hizmeti kullanmaya devam edebilmek için üyelik sözleşmesini onaylamanız gerekiyor.
+            Sohbetlerde yazılan <strong>tüm mesajların</strong> ve gönderilen <strong>tüm ses kayıtlarının</strong>
+            hizmet amaçlı saklandığını; olası bir durumda <strong>T.C. kolluk kuvvetlerine</strong> teslim
+            edilebileceğini kabul edersiniz.
+        </p>
+        <p><a href="/Home/Agreement" target="_blank" rel="noopener">Sözleşmenin tamamını okuyun →</a></p>
+        <div class="agreement-actions">
+            <button type="button" id="agreementAccept" class="btn-primary">Okudum, kabul ediyorum</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@@8.0.7/dist/browser/signalr.min.js"></script>
     <script>window.CHAT = @Html.Raw(chatConfig);</script>
     <script src="~/js/chat.js" asp-append-version="true"></script>
     <script src="~/js/call.js" asp-append-version="true"></script>
+    <script src="~/js/profile.js" asp-append-version="true"></script>
 }
