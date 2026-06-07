@@ -11,4 +11,10 @@ public class FriendDto
     public string? DisplayName { get; set; }
     public string? AvatarUrl { get; set; }
     public DateTime Since { get; set; }
+
+    /// <summary>Arkadaş şu an çevrimiçi mi (en az bir aktif SignalR bağlantısı var mı)?</summary>
+    public bool IsOnline { get; set; }
+
+    /// <summary>Çevrimdışıysa en son görüldüğü an (UTC); hiç bağlanmadıysa null.</summary>
+    public DateTime? LastSeenAt { get; set; }
 }

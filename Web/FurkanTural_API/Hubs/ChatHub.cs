@@ -12,18 +12,74 @@ public class ChatHub(
     IChatMessageService chatMessageService,
     ICallLogService callLogService,
     IUserFriendService userFriendService,
-    ICallRateLimiter callRateLimiter) : Hub
+    ICallRateLimiter callRateLimiter,
+    IPresenceTracker presenceTracker,
+    IUserService userService) : Hub
 {
     private readonly IChatMessageService _chatMessageService = chatMessageService;
     private readonly ICallLogService _callLogService = callLogService;
     private readonly IUserFriendService _userFriendService = userFriendService;
     private readonly ICallRateLimiter _callRateLimiter = callRateLimiter;
+    private readonly IPresenceTracker _presenceTracker = presenceTracker;
+    private readonly IUserService _userService = userService;
 
     private int? CurrentUserId()
     {
         var sub = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
                ?? Context.User?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         return int.TryParse(sub, out var id) ? id : null;
+    }
+
+    // ───────── Aktiflik (çevrimiçi / son görülme) ─────────
+
+    /// <summary>Bağlanan kullanıcıyı çevrimiçi işaretler; arkadaşlarını bilgilendirir ve ona o an çevrimiçi olanları gönderir.</summary>
+    public override async Task OnConnectedAsync()
+    {
+        var userId = CurrentUserId();
+        if (userId is not null)
+        {
+            var becameOnline = _presenceTracker.Connect(userId.Value, Context.ConnectionId);
+
+            var friendsResult = await _userFriendService.GetFriendsAsync(userId.Value, Context.ConnectionAborted);
+            var friends = friendsResult.Success && friendsResult.Data is not null
+                ? friendsResult.Data.ToList()
+                : [];
+
+            // Bağlanan kullanıcıya o an çevrimiçi olan arkadaşlarının id listesini gönder.
+            var onlineFriendIds = friends.Where(f => _presenceTracker.IsOnline(f.FriendUserId))
+                                         .Select(f => f.FriendUserId)
+                                         .ToArray();
+            await Clients.Caller.SendAsync("OnlineFriends", onlineFriendIds);
+
+            // İlk bağlantıysa arkadaşlarına "çevrimiçi oldu" bildir.
+            if (becameOnline)
+                foreach (var f in friends)
+                    await Clients.User(f.FriendUserId.ToString()).SendAsync("UserOnline", userId.Value);
+        }
+
+        await base.OnConnectedAsync();
+    }
+
+    /// <summary>Bağlantı kesilince; son bağlantıysa "son görülme" damgalanır ve arkadaşlar çevrimdışı bilgilendirilir.</summary>
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        var userId = CurrentUserId();
+        if (userId is not null)
+        {
+            var becameOffline = _presenceTracker.Disconnect(userId.Value, Context.ConnectionId);
+            if (becameOffline)
+            {
+                // Bağlantı koptuğu için Context.ConnectionAborted iptal edilmiş olabilir → None ile yaz.
+                var lastSeen = await _userService.UpdateLastSeenAsync(userId.Value, CancellationToken.None);
+
+                var friendsResult = await _userFriendService.GetFriendsAsync(userId.Value, CancellationToken.None);
+                if (friendsResult.Success && friendsResult.Data is not null)
+                    foreach (var f in friendsResult.Data)
+                        await Clients.User(f.FriendUserId.ToString()).SendAsync("UserOffline", userId.Value, lastSeen);
+            }
+        }
+
+        await base.OnDisconnectedAsync(exception);
     }
 
     // ───────── Mesajlaşma ─────────

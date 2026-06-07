@@ -7,4 +7,7 @@ public class RegisterDto
     public string? Password { get; set; }
     public string? DisplayName { get; set; }
     public string? TurnstileToken { get; set; }
+
+    /// <summary>Kullanıcı üyelik sözleşmesini kabul etti mi? Kayıt için zorunludur.</summary>
+    public bool AcceptAgreement { get; set; }
 }

@@ -7,4 +7,5 @@ public class RegisterRequest
     public string? Password { get; set; }
     public string? DisplayName { get; set; }
     public string? TurnstileToken { get; set; }
+    public bool AcceptAgreement { get; set; }
 }

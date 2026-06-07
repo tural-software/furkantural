@@ -7,6 +7,7 @@ using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Settings;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -19,13 +20,15 @@ public class AuthService(
     IEncryptionService encryptionService,
     IConfiguration configuration,
     IOptions<AppTokenSettings> appTokenSettings,
-    ITurnstileVerifier turnstileVerifier) : IAuthService
+    ITurnstileVerifier turnstileVerifier,
+    IClock clock) : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEncryptionService _encryptionService = encryptionService;
     private readonly IConfiguration _configuration = configuration;
     private readonly AppTokenSettings _appTokenSettings = appTokenSettings.Value;
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
+    private readonly IClock _clock = clock;
 
     public async Task<Result<LoginResultDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default)
     {
@@ -75,6 +78,9 @@ public class AuthService(
         if (string.IsNullOrWhiteSpace(dto.Password))
             return Result<LoginResultDto>.Fail("Şifre boş olamaz.");
 
+        if (!dto.AcceptAgreement)
+            return Result<LoginResultDto>.Fail("Üyelik sözleşmesini onaylamadan kayıt olamazsınız.");
+
         var usernameExists = await _unitOfWork.Users.AnyAsync(x => x.Username == dto.Username, cancellationToken);
         if (usernameExists)
             return Result<LoginResultDto>.Fail("Bu kullanıcı adı zaten kullanılıyor.");
@@ -97,7 +103,9 @@ public class AuthService(
             Email = dto.Email,
             DisplayName = string.IsNullOrWhiteSpace(dto.DisplayName) ? dto.Username : dto.DisplayName,
             Password = encryptResult.Data,
-            RoleId = role.Id
+            RoleId = role.Id,
+            MembershipAgreementAcceptedAt = _clock.UtcNow,
+            MembershipAgreementVersion = AgreementDefinitions.CurrentVersion
         };
 
         await _unitOfWork.Users.AddAsync(user, cancellationToken);
@@ -120,7 +128,7 @@ public class AuthService(
         var (secret, issuer, audience, expiryMinutes) = GetJwtConfig();
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
+        var expiresAt = _clock.UtcNow.AddMinutes(expiryMinutes);
 
         var claims = new List<Claim>
         {
@@ -149,7 +157,10 @@ public class AuthService(
             Username = user.Username,
             RoleName = roleName,
             AvatarUrl = user.AvatarUrl,
-            ExpiresAt = expiresAt
+            ExpiresAt = expiresAt,
+            // Geçerli sürümü kabul etmiş mi? (Sürüm artarsa eski onay "kabul edilmemiş" sayılır.)
+            MembershipAgreementAccepted = user.MembershipAgreementAcceptedAt != null
+                && user.MembershipAgreementVersion == AgreementDefinitions.CurrentVersion
         };
     }
 
@@ -170,7 +181,7 @@ public class AuthService(
         var (secret, issuer, audience, _) = GetJwtConfig();
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiresAt = DateTime.UtcNow.AddDays(_appTokenSettings.ExpiryDays);
+        var expiresAt = _clock.UtcNow.AddDays(_appTokenSettings.ExpiryDays);
 
         var claims = new[]
         {

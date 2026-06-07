@@ -76,6 +76,7 @@ builder.Services.AddSignalR().AddJsonProtocol(o =>
 });
 builder.Services.AddScoped<IChatNotifier, ChatNotifier>();
 builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
+builder.Services.AddSingleton<IPresenceTracker, PresenceTracker>();
 builder.Services.Configure<AppTokenSettings>(builder.Configuration.GetSection("AppTokens"));
 builder.Services.AddSingleton(new FurkanTural_Application.Settings.FileStorageSettings
 {

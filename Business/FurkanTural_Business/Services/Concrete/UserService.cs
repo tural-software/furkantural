@@ -5,15 +5,17 @@ using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
 using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
+using FurkanTural_Domain.Constants;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionService, ActivityLogger activityLogger, IUserFriendService userFriendService) : IUserService
+public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionService, ActivityLogger activityLogger, IUserFriendService userFriendService, IClock clock) : IUserService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEncryptionService _encryptionService = encryptionService;
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly IUserFriendService _userFriendService = userFriendService;
+    private readonly IClock _clock = clock;
 
     public async Task<Result<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -260,5 +262,36 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
         await _activityLogger.LogAsync($"Kullanıcı avatarı güncellendi. Id: {userId}", cancellationToken);
 
         return Result<UserDto>.Ok(entity.ToDto());
+    }
+
+    public async Task<DateTime> UpdateLastSeenAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var now = _clock.UtcNow;
+        var entity = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
+        if (entity is null)
+            return now;
+
+        entity.LastSeenAt = now;
+        await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        // Aktiflik sık değişir → ActivityLogger çağrılmaz (gürültü olmasın).
+        return now;
+    }
+
+    public async Task<Result> AcceptAgreementAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
+        if (entity is null)
+            return Result.Fail("Kullanıcı bulunamadı.", statusCode: 404);
+
+        entity.MembershipAgreementAcceptedAt = _clock.UtcNow;
+        entity.MembershipAgreementVersion = AgreementDefinitions.CurrentVersion;
+        entity.UpdatedBy = userId;
+
+        await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Üyelik sözleşmesi kabul edildi. Id: {userId}, Sürüm: {AgreementDefinitions.CurrentVersion}", cancellationToken);
+
+        return Result.Ok();
     }
 }

@@ -167,6 +167,18 @@ public class UserController : JwtBaseController
         return await SaveAvatarAsync(userId.Value, request, cancellationToken);
     }
 
+    /// <summary>
+    /// Giriş yapan kullanıcı üyelik sözleşmesini kabul eder (eski üyeler için tek seferlik onay).
+    /// </summary>
+    [HttpPost("me/accept-agreement")]
+    [Authorize(Policy = "UserOrAdmin")]
+    public async Task<IActionResult> AcceptAgreement(CancellationToken cancellationToken)
+    {
+        var userId = SortUserId();
+        if (userId is null) return Unauthorized();
+        return ToActionResult(await _userService.AcceptAgreementAsync(userId.Value, cancellationToken));
+    }
+
     private async Task<IActionResult> SaveAvatarAsync(int targetUserId, UserAvatarRequest request, CancellationToken cancellationToken)
     {
         if (request.ImageData is null || request.ImageData.Length == 0)

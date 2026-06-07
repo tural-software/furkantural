@@ -52,6 +52,7 @@ public class AuthController(IAuthService authService) : BaseApiController
             Email = request.Email,
             Password = request.Password,
             DisplayName = request.DisplayName,
-            TurnstileToken = request.TurnstileToken
+            TurnstileToken = request.TurnstileToken,
+            AcceptAgreement = request.AcceptAgreement
         }, cancellationToken));
 }

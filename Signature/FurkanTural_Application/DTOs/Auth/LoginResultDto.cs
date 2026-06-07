@@ -8,4 +8,7 @@ public class LoginResultDto
     public string? RoleName { get; set; }
     public string? AvatarUrl { get; set; }
     public DateTime ExpiresAt { get; set; }
+
+    /// <summary>Kullanıcı güncel üyelik sözleşmesini kabul etmiş mi? (Eski üyeler için tek seferlik onay modalını tetikler.)</summary>
+    public bool MembershipAgreementAccepted { get; set; }
 }

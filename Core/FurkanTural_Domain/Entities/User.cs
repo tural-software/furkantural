@@ -12,4 +12,11 @@ public class User : BaseEntity
     public string? Email { get; set; }
     public string? DisplayName { get; set; }
     public string? AvatarUrl { get; set; }
+
+    // Aktiflik: kullanıcının en son çevrimdışı olduğu an ("son görülme").
+    public DateTime? LastSeenAt { get; set; }
+
+    // Üyelik sözleşmesi onayı (KVKK / hizmet şartları): kabul anı ve kabul edilen sürüm.
+    public DateTime? MembershipAgreementAcceptedAt { get; set; }
+    public string? MembershipAgreementVersion { get; set; }
 }
