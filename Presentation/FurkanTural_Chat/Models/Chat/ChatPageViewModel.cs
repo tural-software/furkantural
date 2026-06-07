@@ -2,7 +2,7 @@ namespace FurkanTural_Chat.Models.Chat;
 
 public class ChatPageViewModel
 {
-    public string Token { get; set; } = string.Empty;
+    // Not: Kullanıcı JWT'si artık tarayıcıya gönderilmez (BFF/YARP proxy ekler). Token view'e taşınmaz.
     public string ApiBaseUrl { get; set; } = string.Empty;
     public int UserId { get; set; }
     public string Username { get; set; } = string.Empty;

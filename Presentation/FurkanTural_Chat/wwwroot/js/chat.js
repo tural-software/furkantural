@@ -76,15 +76,17 @@
         return 'çevrimdışı';
     }
 
+    // BFF: same-origin '/bff/*' proxy'sine gider; JWT'yi sunucu (YARP) ekler, tarayıcı sadece
+    // HttpOnly session cookie'siyle kimliklenir (Authorization header'ı burada YOK).
     async function api(path, opts) {
         opts = opts || {};
-        opts.headers = Object.assign({ 'Authorization': 'Bearer ' + cfg.token }, opts.headers || {});
+        opts.headers = opts.headers || {};
         if (opts.body && typeof opts.body !== 'string') {
             opts.headers['Content-Type'] = 'application/json';
             opts.body = JSON.stringify(opts.body);
         }
         let res;
-        try { res = await fetch(API + path, opts); }
+        try { res = await fetch('/bff' + path, opts); }
         catch (e) { return null; }
         if (res.status === 401) { window.location.href = '/Account/Login'; return null; }
         try { return await res.json(); } catch (e) { return null; }
@@ -518,7 +520,7 @@
 
     // ───────── SignalR ─────────
     const connection = new signalR.HubConnectionBuilder()
-        .withUrl(API + '/hubs/chat', { accessTokenFactory: () => cfg.token })
+        .withUrl('/bff/hubs/chat')   // BFF proxy; JWT'yi YARP ekler, WS URL'inde token yok
         .withAutomaticReconnect()
         .build();
 

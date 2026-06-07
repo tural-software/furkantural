@@ -19,7 +19,6 @@ public class ChatController(IOptions<ApiOptions> apiOptions) : Controller
 
         var model = new ChatPageViewModel
         {
-            Token = token,
             ApiBaseUrl = _apiOptions.BaseUrl.TrimEnd('/'),
             UserId = HttpContext.Session.GetInt32("userId") ?? 0,
             Username = username,
