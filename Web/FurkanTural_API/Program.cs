@@ -6,6 +6,7 @@ using FurkanTural_Persistence.Registration;
 using FurkanTural_Persistence.Contexts;
 using FurkanTural_API.Middlewares;
 using FurkanTural_API.Hubs;
+using FurkanTural_API.Json;
 using FurkanTural_API.Realtime;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Settings;
@@ -67,8 +68,12 @@ builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddBusinessServices();
 builder.Services.AddHttpContextAccessor();
 
-// SignalR (gerçek zamanlı sohbet + bildirimler)
-builder.Services.AddSignalR();
+// SignalR (gerçek zamanlı sohbet + bildirimler) — tarihler UTC 'Z' olarak serileştirilir.
+builder.Services.AddSignalR().AddJsonProtocol(o =>
+{
+    o.PayloadSerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
+    o.PayloadSerializerOptions.Converters.Add(new NullableUtcDateTimeJsonConverter());
+});
 builder.Services.AddScoped<IChatNotifier, ChatNotifier>();
 builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 builder.Services.Configure<AppTokenSettings>(builder.Configuration.GetSection("AppTokens"));
@@ -78,7 +83,12 @@ builder.Services.AddSingleton(new FurkanTural_Application.Settings.FileStorageSe
     WebRootPath = builder.Environment.WebRootPath
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(o =>
+{
+    // Tüm API tarihleri UTC 'Z' olarak çıkar (kanonik kontrat).
+    o.JsonSerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
+    o.JsonSerializerOptions.Converters.Add(new NullableUtcDateTimeJsonConverter());
+});
 
 // API Versioning
 builder.Services.AddApiVersioning(options =>

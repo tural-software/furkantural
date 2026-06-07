@@ -1,5 +1,6 @@
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Persistence.Contexts;
+using FurkanTural_Persistence.Interceptors;
 using FurkanTural_Persistence.Repositories.Concrete;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,8 +15,10 @@ public static class PersistenceServiceRegistration
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection yapılandırılmamış.");
 
-        services.AddDbContext<FurkanTuralDbContext>(options =>
-            options.UseSqlServer(connectionString));
+        services.AddSingleton<AuditSaveChangesInterceptor>();
+        services.AddDbContext<FurkanTuralDbContext>((sp, options) =>
+            options.UseSqlServer(connectionString)
+                   .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>()));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

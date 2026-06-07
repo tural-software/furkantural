@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace FurkanTural_Business.Helpers;
 
-public sealed class ActivityLogger(ILogService logService, IHttpContextAccessor httpContextAccessor)
+public sealed class ActivityLogger(ILogService logService, IHttpContextAccessor httpContextAccessor, IClock clock)
 {
     public async Task LogAsync(string message, CancellationToken cancellationToken = default)
     {
@@ -13,7 +13,7 @@ public sealed class ActivityLogger(ILogService logService, IHttpContextAccessor 
             await logService.CreateAsync(new CreateLogDto
             {
                 Project = "FurkanTural_API",
-                Date = DateTime.UtcNow,
+                Date = clock.UtcNow,
                 Level = "Information",
                 Message = message,
                 IpAddress = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),

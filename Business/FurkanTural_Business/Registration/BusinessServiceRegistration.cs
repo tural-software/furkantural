@@ -9,6 +9,7 @@ public static class BusinessServiceRegistration
 {
     public static IServiceCollection AddBusinessServices(this IServiceCollection services)
     {
+        services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<ActivityLogger>();
         services.AddScoped<IBlogService, BlogService>();
         services.AddScoped<IBlogImageService, BlogImageService>();

@@ -1,6 +1,6 @@
-using FurkanTural_Domain.Entities.Common;
 using FurkanTural_Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace FurkanTural_Persistence.Contexts;
 
@@ -28,29 +28,31 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<CallPolicy> CallPolicies => Set<CallPolicy>();
 
+    // Tüm DateTime'ları DB'den UTC olarak materyalize et (Kind=Utc) → System.Text.Json daima 'Z' ile yazar.
+    // Yazarken değer korunur (kanonik kural: her zaman UTC saklanır).
+    private static readonly ValueConverter<DateTime, DateTime> UtcConverter =
+        new(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+    private static readonly ValueConverter<DateTime?, DateTime?> NullableUtcConverter =
+        new(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(FurkanTuralDbContext).Assembly);
-        base.OnModelCreating(modelBuilder);
-    }
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        // Audit zaman damgaları (CreatedAt/UpdatedAt/DeletedAt) AuditSaveChangesInterceptor'da set edilir.
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            switch (entry.State)
+            foreach (var property in entityType.GetProperties())
             {
-                case EntityState.Added:
-                    entry.Entity.CreatedAt = DateTime.UtcNow;
-                    entry.Entity.IsActive = true;
-                    entry.Entity.IsDeleted = false;
-                    break;
-                case EntityState.Modified:
-                    entry.Entity.UpdatedAt = DateTime.UtcNow;
-                    break;
+                if (property.GetValueConverter() is not null) continue; // mevcut converter'ı ezme
+                if (property.ClrType == typeof(DateTime))
+                    property.SetValueConverter(UtcConverter);
+                else if (property.ClrType == typeof(DateTime?))
+                    property.SetValueConverter(NullableUtcConverter);
             }
         }
 
-        return await base.SaveChangesAsync(cancellationToken);
+        base.OnModelCreating(modelBuilder);
     }
 }

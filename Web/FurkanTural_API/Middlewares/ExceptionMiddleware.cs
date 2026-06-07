@@ -32,10 +32,11 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
             var logService = context.RequestServices.GetService<ILogService>();
             if (logService is not null)
             {
+                var clock = context.RequestServices.GetService<IClock>();
                 await logService.CreateAsync(new CreateLogDto
                 {
                     Project = "FurkanTural_API",
-                    Date = DateTime.UtcNow,
+                    Date = clock?.UtcNow ?? DateTime.UtcNow,
                     Level = "Error",
                     Message = ex.Message,
                     Detail = ex.ToString(),

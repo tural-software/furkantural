@@ -150,7 +150,7 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
     {
         entity.IsDeleted = true;
         entity.IsActive = false;
-        entity.DeletedAt = DateTime.UtcNow;
+        // DeletedAt, AuditSaveChangesInterceptor tarafından kanonik saatten damgalanır.
         _dbSet.Update(entity);
         return Task.CompletedTask;
     }
