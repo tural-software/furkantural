@@ -29,7 +29,7 @@
                     { label: 'Şikayetçi', icon: 'user', value: function (r) { return (r.reporterName || '#' + r.reporterId); } },
                     { label: 'Hedef Kullanıcı', icon: 'user', value: function (r) { return r.reportedUserName || (r.reportedUserId ? '#' + r.reportedUserId : '—'); } },
                     { label: 'Tür', icon: 'field-text', value: function (r) { return r.targetType || '—'; } },
-                    { label: 'Hedef Id', icon: 'field-text', value: function (r) { return r.targetId != null ? r.targetId : '—'; } },
+                    { label: 'Hedef Id', icon: 'hash-icon', value: function (r) { return r.targetId != null ? r.targetId : '—'; } },
                     { label: 'Durum', icon: 'field-text', value: function (r) { return r.status || '—'; } },
                     { label: 'Oluşturulma Tarihi', icon: 'calendar', value: function (r) { return DmFmt.date(r.createdAt); } }
                 ]

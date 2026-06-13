@@ -13,13 +13,19 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
 
     private static ChatMessageIndexViewModel BuildViewModel(
         IReadOnlyList<ChatMessageAdminDto> all,
-        string? search, string? typeFilter, string? activeFilter, string? deletedFilter,
+        string? search, string? usernameFilter, string? typeFilter, string? activeFilter, string? deletedFilter,
         string? dateFrom, string? dateTo, int pageNumber, int pageSize)
     {
         var filtered = all.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(search))
             filtered = filtered.Where(r => r.Content != null && r.Content.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        // Kullanıcı adı filtresi: gönderen VEYA alıcı kullanıcı adında eşleşme.
+        if (!string.IsNullOrWhiteSpace(usernameFilter))
+            filtered = filtered.Where(r =>
+                (r.SenderUsername != null && r.SenderUsername.Contains(usernameFilter, StringComparison.OrdinalIgnoreCase)) ||
+                (r.ReceiverUsername != null && r.ReceiverUsername.Contains(usernameFilter, StringComparison.OrdinalIgnoreCase)));
 
         if (!string.IsNullOrWhiteSpace(typeFilter))
             filtered = filtered.Where(r => string.Equals(r.MessageType ?? "Text", typeFilter, StringComparison.OrdinalIgnoreCase));
@@ -55,6 +61,7 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
             PassiveCount = all.Count(r => !r.IsActive && !r.IsDeleted),
             DeletedCount = all.Count(r => r.IsDeleted),
             SearchContent = search,
+            UsernameFilter = usernameFilter,
             TypeFilter = typeFilter,
             ActiveFilter = activeFilter,
             DeletedFilter = deletedFilter,
@@ -66,7 +73,7 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
         };
     }
 
-    public async Task<IActionResult> Index(string? search = null, string? typeFilter = null, string? activeFilter = null,
+    public async Task<IActionResult> Index(string? search = null, string? usernameFilter = null, string? typeFilter = null, string? activeFilter = null,
         string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
         int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
     {
@@ -75,11 +82,19 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
 
         ViewData["ApiBaseUrl"] = _apiOptions.BaseUrl;
         var all = await _chatMessageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        return View(BuildViewModel(all, search, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
+        return View(BuildViewModel(all, search, usernameFilter, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
+    }
+
+    public IActionResult TableDetail()
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+        return View();
     }
 
     [HttpGet]
-    public async Task<IActionResult> TablePartial(string? search = null, string? typeFilter = null, string? activeFilter = null,
+    public async Task<IActionResult> TablePartial(string? search = null, string? usernameFilter = null, string? typeFilter = null, string? activeFilter = null,
         string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
         int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
     {
@@ -88,7 +103,7 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
 
         ViewData["ApiBaseUrl"] = _apiOptions.BaseUrl;
         var all = await _chatMessageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        return PartialView("_ChatMessageTable", BuildViewModel(all, search, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
+        return PartialView("_ChatMessageTable", BuildViewModel(all, search, usernameFilter, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
     /// <summary>

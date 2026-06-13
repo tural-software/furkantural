@@ -9,6 +9,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - FurkanTural Admin</title>
 
+    <link rel="icon" href="~/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/icons/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="~/icons/apple-touch-icon.png" />
+
     @* FOUC engelleyici inline tema seti — link'lerden önce *@
     <script>
         (function () {
@@ -59,6 +64,9 @@
         <div id="toastMsg"></div>
     </div>
 
+    @* Tek kaynak ikon sözlüğü — detail-modal.js (ve diğer istemci modülleri) buradan okur.
+       IconLibrary tek doğruluk kaynağı; _Icons.cshtml ile aynı SVG'leri paylaşır. *@
+    <script>window.__ICONS = @Html.Raw(FurkanTural_Admin.Helpers.IconLibrary.Json);</script>
     <script src="~/js/ft-time.js" asp-append-version="true"></script>
     <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/toast.js" asp-append-version="true"></script>

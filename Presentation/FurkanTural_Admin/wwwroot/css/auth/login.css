@@ -7,6 +7,8 @@
     z-index: var(--z-content);
 }
 
+.auth-logo { display: block; width: 72px; height: 72px; object-fit: contain; margin: 0 auto .75rem; }
+
 .auth-card {
     width: min(380px, 100%);
     padding: 2rem 1.75rem;

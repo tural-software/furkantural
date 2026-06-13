@@ -97,6 +97,14 @@ public class CallLogController(ICallLogApiClient callLogApiClient, ICallPolicyAp
         return ok ? Ok() : StatusCode(500, new { message = "Ayar kaydedilemedi." });
     }
 
+    public IActionResult TableDetail()
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+        return View();
+    }
+
     [HttpGet]
     public async Task<IActionResult> TablePartial(string? search = null, string? typeFilter = null, string? statusFilter = null,
         string? activeFilter = null, string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,

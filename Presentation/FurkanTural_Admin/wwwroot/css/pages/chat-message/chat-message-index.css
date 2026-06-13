@@ -240,5 +240,11 @@
 /* ── Empty row ────────────────────────────────────────────── */
 .empty-row td { text-align: center; color: var(--text-dim); padding: 2.5rem 1rem; font-size: .875rem; }
 
-/* ── Detay modalı: ses oynatıcı ───────────────────────────── */
+/* ── İçerik sütunu: medya türü etiketi (mic/görsel ikonu + yazı) ── */
+.content-media { display: inline-flex; align-items: center; gap: 6px; color: var(--text-dim); }
+.content-media svg { width: 15px; height: 15px; flex: 0 0 auto; }
+
+/* ── Detay modalı: medya başlığı (ikon + tür) + ses oynatıcı ── */
+.dm-media-cap { display: inline-flex; align-items: center; gap: 6px; margin-bottom: .5rem; font-weight: 600; color: var(--text-dim); }
+.dm-media-cap svg { width: 16px; height: 16px; flex: 0 0 auto; }
 .dm audio { width: 100%; margin-top: .25rem; }

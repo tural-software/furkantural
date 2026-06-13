@@ -10,11 +10,12 @@
 
     let _overlay = null;
 
-    /* ── Eye icon ─────────────────────────────────────────── */
-    const EYE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-    const COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-    const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
-    const CLOSE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    /* ── İkonlar tek kaynaktan (window.__ICONS / IconLibrary.cs) ── */
+    const _ic = (window.__ICONS || {});
+    const EYE_ICON = _ic['eye'] || '';
+    const COPY_ICON = _ic['copy'] || '';
+    const CHECK_ICON = _ic['check'] || '';
+    const CLOSE_ICON = _ic['close'] || '';
 
     /* ── HTML escape helper ───────────────────────────────── */
     function escapeHtml(str) {

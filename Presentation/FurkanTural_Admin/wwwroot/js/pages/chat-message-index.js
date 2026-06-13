@@ -12,6 +12,15 @@
         return '/ChatMessage/Attachment?file=' + encodeURIComponent(rel);
     }
 
+    // Panel ikonlarıyla tutarlı SVG'ler tek kaynaktan (window.__ICONS / IconLibrary.cs).
+    var MIC_SVG = (window.__ICONS || {})['mic'] || '';
+    var IMG_SVG = (window.__ICONS || {})['image'] || '';
+    function typeLabel(t) {
+        t = (t || '').toLowerCase();
+        return t === 'audio' ? 'Ses Kaydı' : t === 'image' ? 'Görsel' : t === 'video' ? 'Video' : 'Metin';
+    }
+    function userLabel(name, id) { return name ? esc(name) : ('#' + id); }
+
     var MessageDetailConfig = {
         title: 'Mesaj Detayı',
         description: 'Seçilen mesaj kaydına ait detaylar',
@@ -28,9 +37,9 @@
             {
                 columns: 2,
                 fields: [
-                    { label: 'Gönderen', icon: 'user', value: function (r) { return '#' + r.senderId; } },
-                    { label: 'Alıcı', icon: 'user', value: function (r) { return '#' + r.receiverId; } },
-                    { label: 'Tür', icon: 'field-text', value: function (r) { return (r.messageType || 'Text'); } },
+                    { label: 'Gönderen', icon: 'user', html: true, value: function (r) { return userLabel(r.senderUsername, r.senderId); } },
+                    { label: 'Alıcı', icon: 'user', html: true, value: function (r) { return userLabel(r.receiverUsername, r.receiverId); } },
+                    { label: 'Tür', icon: 'field-text', value: function (r) { return typeLabel(r.messageType); } },
                     { label: 'Okundu', icon: 'check-circle', value: function (r) { return r.isRead ? 'Evet' : 'Hayır'; } },
                     { label: 'Okunma Tarihi', icon: 'calendar', value: function (r) { return r.readAt ? DmFmt.date(r.readAt) : '—'; } },
                     { label: 'Oluşturulma Tarihi', icon: 'calendar', value: function (r) { return DmFmt.date(r.createdAt); } }
@@ -47,14 +56,17 @@
                         html: true,
                         value: function (r) {
                             var type = (r.messageType || '').toLowerCase();
-                            if (type === 'audio' && r.attachmentUrl) {
-                                return '<audio controls preload="metadata" src="' + attachmentSrc(r) + '" style="max-width:100%"></audio>';
+                            if (type === 'audio') {
+                                var cap = '<div class="dm-media-cap">' + MIC_SVG + ' Ses Kaydı</div>';
+                                return cap + (r.attachmentUrl ? '<audio controls preload="metadata" src="' + attachmentSrc(r) + '" style="max-width:100%"></audio>' : '');
                             }
-                            if (type === 'image' && r.attachmentUrl) {
-                                return '<img src="' + attachmentSrc(r) + '" alt="Görsel" loading="lazy" style="max-width:100%;max-height:320px;border-radius:8px">';
+                            if (type === 'image') {
+                                var capI = '<div class="dm-media-cap">' + IMG_SVG + ' Görsel</div>';
+                                return capI + (r.attachmentUrl ? '<img src="' + attachmentSrc(r) + '" alt="Görsel" loading="lazy" style="max-width:100%;max-height:320px;border-radius:8px">' : '');
                             }
-                            if (type === 'video' && r.attachmentUrl) {
-                                return '<video controls preload="metadata" src="' + attachmentSrc(r) + '" style="max-width:100%;max-height:320px;border-radius:8px"></video>';
+                            if (type === 'video') {
+                                var capV = '<div class="dm-media-cap">' + IMG_SVG + ' Video</div>';
+                                return capV + (r.attachmentUrl ? '<video controls preload="metadata" src="' + attachmentSrc(r) + '" style="max-width:100%;max-height:320px;border-radius:8px"></video>' : '');
                             }
                             return r.content ? esc(r.content) : '—';
                         }
@@ -76,7 +88,7 @@
     function reloadTable() {
         var meta = window.__messageMeta || {};
         var params = new URLSearchParams({
-            search: meta.search || '', typeFilter: meta.typeFilter || '',
+            search: meta.search || '', usernameFilter: meta.usernameFilter || '', typeFilter: meta.typeFilter || '',
             activeFilter: meta.activeFilter || '', deletedFilter: meta.deletedFilter || '',
             dateFrom: meta.dateFrom || '', dateTo: meta.dateTo || '',
             pageNumber: meta.pageNumber || 1, pageSize: meta.pageSize || 10

@@ -8,6 +8,7 @@
     string PageUrl(int p) => Url.Action("Index", new
     {
         search = Model.SearchContent,
+        usernameFilter = Model.UsernameFilter,
         typeFilter = Model.TypeFilter,
         activeFilter = Model.ActiveFilter,
         deletedFilter = Model.DeletedFilter,
@@ -19,12 +20,19 @@
 
     var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    string Preview(ChatMessageAdminDto r)
+    // Mesaj türü etiketi (Metin / Ses Kaydı / Görsel / Video).
+    string TypeLabel(string? t) =>
+        string.Equals(t, "Audio", StringComparison.OrdinalIgnoreCase) ? "Ses Kaydı" :
+        string.Equals(t, "Image", StringComparison.OrdinalIgnoreCase) ? "Görsel" :
+        string.Equals(t, "Video", StringComparison.OrdinalIgnoreCase) ? "Video" : "Metin";
+
+    // Gönderen/alıcı: kullanıcı adı, yoksa #id (silinmiş kullanıcı vb.).
+    string UserCell(string? username, int id) => string.IsNullOrWhiteSpace(username) ? $"#{id}" : username;
+
+    string TextPreview(string? content)
     {
-        if (string.Equals(r.MessageType, "Audio", StringComparison.OrdinalIgnoreCase))
-            return $"🔊 Ses mesajı ({r.DurationSeconds ?? 0}sn)";
-        var c = r.Content ?? "";
-        return c.Length > 60 ? c.Substring(0, 60) + "…" : (c.Length == 0 ? "—" : c);
+        var c = content ?? "";
+        return c.Length == 0 ? "—" : (c.Length > 60 ? c.Substring(0, 60) + "…" : c);
     }
 }
 
@@ -50,10 +58,27 @@
             {
                 <tr>
                     <td>@row.Id</td>
-                    <td>#@row.SenderId</td>
-                    <td>#@row.ReceiverId</td>
-                    <td>@(string.Equals(row.MessageType, "Audio", StringComparison.OrdinalIgnoreCase) ? "Ses" : "Metin")</td>
-                    <td>@Preview(row)</td>
+                    <td>@UserCell(row.SenderUsername, row.SenderId)</td>
+                    <td>@UserCell(row.ReceiverUsername, row.ReceiverId)</td>
+                    <td>@TypeLabel(row.MessageType)</td>
+                    <td>
+                        @if (string.Equals(row.MessageType, "Audio", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="content-media">@await Html.PartialAsync("_Icons", "mic") Ses Kaydı</span>
+                        }
+                        else if (string.Equals(row.MessageType, "Image", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="content-media">@await Html.PartialAsync("_Icons", "image") Görsel</span>
+                        }
+                        else if (string.Equals(row.MessageType, "Video", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="content-media">@await Html.PartialAsync("_Icons", "image") Video</span>
+                        }
+                        else
+                        {
+                            @TextPreview(row.Content)
+                        }
+                    </td>
                     <td>
                         @if (row.IsRead)
                         {
@@ -130,6 +155,7 @@
     <div class="tbl-footer__left">
         <form method="get" action="@Url.Action("Index")" id="pageSizeForm">
             <input type="hidden" name="search" value="@Model.SearchContent" />
+            <input type="hidden" name="usernameFilter" value="@Model.UsernameFilter" />
             <input type="hidden" name="typeFilter" value="@Model.TypeFilter" />
             <input type="hidden" name="activeFilter" value="@Model.ActiveFilter" />
             <input type="hidden" name="deletedFilter" value="@Model.DeletedFilter" />

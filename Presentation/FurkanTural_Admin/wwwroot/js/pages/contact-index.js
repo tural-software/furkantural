@@ -77,7 +77,7 @@
                 fields: [
                     {
                         label: 'Mesaj',
-                        icon: 'text',
+                        icon: 'field-text',
                         value: function (r) { return r.message || '—'; },
                         isCode: true
                     }

@@ -9,6 +9,7 @@ public sealed class ChatMessageIndexViewModel
     public int DeletedCount { get; init; }
 
     public string? SearchContent { get; init; }
+    public string? UsernameFilter { get; init; }
     public string? TypeFilter { get; init; }
     public string? ActiveFilter { get; init; }
     public string? DeletedFilter { get; init; }

@@ -13,6 +13,7 @@
         window.__apiBaseUrl = '@Html.Raw(ViewData["ApiBaseUrl"] ?? "")';
         window.__messageMeta = {
             search:        '@Html.Raw(Model.SearchContent ?? "")',
+            usernameFilter:'@Html.Raw(Model.UsernameFilter ?? "")',
             typeFilter:    '@Html.Raw(Model.TypeFilter ?? "")',
             activeFilter:  '@Html.Raw(Model.ActiveFilter ?? "")',
             deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
@@ -43,6 +44,7 @@
         </div>
         <div class="pg-header__actions">
             <a href="@Url.Action("Index")" class="btn-outline">@await Html.PartialAsync("_Icons", "refresh") Yenile</a>
+            <a href="@Url.Action("TableDetail")" class="btn-outline">@await Html.PartialAsync("_Icons", "table-icon") Tablo Detayları</a>
         </div>
     </div>
 
@@ -76,11 +78,20 @@
                     </div>
                 </div>
                 <div class="filter-group">
+                    <label>Kullanıcı adı</label>
+                    <div class="filter-input-wrap">
+                        @await Html.PartialAsync("_Icons", "user")
+                        <input type="text" name="usernameFilter" value="@Model.UsernameFilter" class="filter-input filter-input--search" placeholder="Gönderen/alıcı kullanıcı adı..." />
+                    </div>
+                </div>
+                <div class="filter-group">
                     <label>Tür</label>
                     <select name="typeFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.TypeFilter))">Tümü</option>
                         <option value="Text" selected="@(Model.TypeFilter == "Text")">Metin</option>
-                        <option value="Audio" selected="@(Model.TypeFilter == "Audio")">Ses</option>
+                        <option value="Audio" selected="@(Model.TypeFilter == "Audio")">Ses Kaydı</option>
+                        <option value="Image" selected="@(Model.TypeFilter == "Image")">Görsel</option>
+                        <option value="Video" selected="@(Model.TypeFilter == "Video")">Video</option>
                     </select>
                 </div>
                 <div class="filter-group">

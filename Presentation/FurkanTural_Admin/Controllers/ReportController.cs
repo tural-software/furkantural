@@ -81,6 +81,14 @@ public class ReportController(IReportApiClient reportApiClient, IOptions<ApiOpti
         return View(BuildViewModel(all, search, typeFilter, statusFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
+    public IActionResult TableDetail()
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+        return View();
+    }
+
     [HttpGet]
     public async Task<IActionResult> TablePartial(string? search = null, string? typeFilter = null, string? statusFilter = null,
         string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,

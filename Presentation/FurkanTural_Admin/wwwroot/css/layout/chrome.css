@@ -24,8 +24,11 @@
     color: var(--text-main);
     letter-spacing: -0.03em;
     transition: transform 0.2s ease;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
 }
+.brand-logo { width: 30px; height: 30px; object-fit: contain; flex: 0 0 auto; }
 
 .brand:hover {
     transform: scale(1.05);

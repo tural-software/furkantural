@@ -76,6 +76,14 @@ public class StatusController(IStatusApiClient statusApiClient) : Controller
         return View(BuildViewModel(all, name, groupFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
+    public IActionResult TableDetail()
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+        return View();
+    }
+
     [HttpGet]
     public async Task<IActionResult> TablePartial(string? name, string? groupFilter = null, string? activeFilter = null,
         string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,

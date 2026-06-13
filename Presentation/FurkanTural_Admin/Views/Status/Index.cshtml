@@ -46,6 +46,10 @@
                 @await Html.PartialAsync("_Icons", "refresh")
                 Yenile
             </a>
+            <a href="@Url.Action("TableDetail")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "table-icon")
+                Tablo Detayları
+            </a>
             <button type="button" id="status-add-btn" class="btn-primary">
                 @await Html.PartialAsync("_Icons", "plus")
                 Yeni Kayıt Ekle
