@@ -34,15 +34,27 @@
     let typingThrottle = null;
     let typingClearTimer = null;
 
+    const INITIAL_TAKE = 60;           // konuşma açılışında yüklenen mesaj sayısı
+    const convTake = new Map();        // friendUserId -> o sohbet için geçerli take
+    const convSummaries = new Map();   // friendUserId -> { text, type, at } (kenar çubuğu önizlemesi)
+    const baseTitle = document.title;  // okunmamış rozeti için temel sekme başlığı
+    let lastDayKey = null;             // mesaj listesinde son çizilen günün anahtarı (tarih ayracı)
+
     // ───────── helpers ─────────
     function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
     function initial(name) { return ((name || '?').trim().charAt(0) || '?').toUpperCase(); }
     function fmtTime(iso) { return window.FtTime ? FtTime.time(iso) : (function () { try { return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }); } catch (e) { return ''; } })(); }
     function toast(msg, type) { if (window.showToast) window.showToast(type === 'error' ? 'error' : 'info', type === 'error' ? 'Hata' : 'Bilgi', msg); }
-    // Yeni kayıtlar göreli yol ('chats/images/..') taşır → apiBase + '/' + value; eski kayıtlar düz dosya adı → images/uploads.
+    // Avatarlar (users/images/..) API'den statik sunulur: apiBase + '/' + value; eski kayıtlar düz dosya adı → images/uploads.
     function mediaUrl(value) {
         if (!value) return '';
         return value.indexOf('/') >= 0 ? API + '/' + value : API + '/images/uploads/' + value;
+    }
+    // Sohbet ekleri (ses/foto/video) gizlidir; statik sunulmaz. BFF üzerinden yetkili uçtan akar
+    // (oturum cookie'si ile same-origin istek → YARP JWT ekler → API katılımcı doğrular).
+    function attachmentSrc(value) {
+        if (!value) return '';
+        return '/bff/api/v1/message/attachment?file=' + encodeURIComponent(value);
     }
     function avatarMarkup(name, avatarUrl, cls) {
         cls = cls || 'avatar sm';
@@ -74,6 +86,27 @@
         if (f.isOnline) return 'çevrimiçi';
         if (f.lastSeenAt) return 'son görülme ' + relTime(f.lastSeenAt);
         return 'çevrimdışı';
+    }
+
+    // ── tarih ayraçları (Bugün / Dün / 13 Haziran 2026) — Istanbul gününe göre ──
+    function dayKey(iso) {
+        if (!iso) return '';
+        if (window.FtTime) return FtTime.dateInput(iso);
+        try { return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' }); } catch (e) { return ''; }
+    }
+    function dayLabel(iso) {
+        const key = dayKey(iso);
+        if (!key) return '';
+        const now = Date.now();
+        if (key === dayKey(new Date(now).toISOString())) return 'Bugün';
+        if (key === dayKey(new Date(now - 86400000).toISOString())) return 'Dün';
+        return window.FtTime ? FtTime.date(iso) : key;
+    }
+    function daySepEl(iso) {
+        const div = document.createElement('div');
+        div.className = 'day-sep';
+        div.innerHTML = '<span>' + esc(dayLabel(iso)) + '</span>';
+        return div;
     }
 
     // BFF: same-origin '/bff/*' proxy'sine gider; JWT'yi sunucu (YARP) ekler, tarayıcı sadece
@@ -124,14 +157,72 @@
             friendsList.appendChild(div);
         });
         refreshUnreadDots();
+        updateFriendPreviews();
     }
 
-    // Okunmamış sayılarını sunucudan tohumla (sayfa yüklendiğinde / yenilendiğinde)
+    // Okunmamış sayılarını ve son mesaj önizlemelerini sunucudan tazele.
+    // Sunucu anlık görüntüsü yetkilidir: silme/düzenleme sonrası eski yerel değer kalmasın diye temizlenir.
     async function loadUnread() {
         const r = await api('/api/v1/message/conversations');
         if (!(r && r.success)) return;
-        (r.data || []).forEach(c => { if (c.unreadCount > 0) unread.set(c.friendUserId, c.unreadCount); });
+        unread.clear();
+        convSummaries.clear();
+        (r.data || []).forEach(c => {
+            if (c.unreadCount > 0) unread.set(c.friendUserId, c.unreadCount);
+            if (c.lastMessageAt) convSummaries.set(c.friendUserId, { text: c.lastMessage, type: c.lastMessageType, at: c.lastMessageAt });
+        });
         refreshUnreadDots();
+        updateFriendPreviews();
+    }
+
+    // ── kenar çubuğu: son mesaj önizlemesi + son konuşmaya göre sıralama ──
+    function previewText(s) {
+        const t = (s.type || 'text').toLowerCase();
+        if (t === 'audio') return '🎤 Sesli mesaj';
+        if (t === 'image') return '📷 Fotoğraf';
+        if (t === 'video') return '🎬 Video';
+        return s.text || '';
+    }
+
+    // Konuşması olan arkadaşta aktiflik satırı yerine son mesaj önizlemesi gösterilir
+    // (aktiflik avatardaki yeşil nokta + sohbet başlığında zaten görünür).
+    function updateFriendPreviews() {
+        document.querySelectorAll('.friend-item').forEach(el => {
+            const id = +el.dataset.id;
+            const st = el.querySelector('.friend-status');
+            if (!st) return;
+            const s = convSummaries.get(id);
+            if (s) {
+                st.textContent = previewText(s);
+                st.classList.add('is-preview');
+                st.classList.remove('online');
+            } else {
+                const f = friends.get(id);
+                st.textContent = presenceText(f);
+                st.classList.toggle('online', !!(f && f.isOnline));
+                st.classList.remove('is-preview');
+            }
+        });
+        sortFriendList();
+    }
+
+    function sortFriendList() {
+        const items = Array.from(friendsList.querySelectorAll('.friend-item'));
+        items.sort((a, b) => {
+            const sa = convSummaries.get(+a.dataset.id), sb = convSummaries.get(+b.dataset.id);
+            const ta = sa ? (Date.parse(sa.at) || 0) : 0, tb = sb ? (Date.parse(sb.at) || 0) : 0;
+            if (ta !== tb) return tb - ta;   // en son konuşulan en üstte
+            const na = a.querySelector('.friend-name'), nb = b.querySelector('.friend-name');
+            return (na ? na.textContent : '').localeCompare(nb ? nb.textContent : '', 'tr');
+        });
+        items.forEach(el => friendsList.appendChild(el));
+    }
+
+    // Yeni mesajda (gelen/giden) önizlemeyi ve sırayı güncelle.
+    function noteSummary(friendId, m) {
+        if (!friendId || !m) return;
+        convSummaries.set(friendId, { text: m.content, type: m.messageType, at: m.createdAt });
+        updateFriendPreviews();
     }
 
     // ───────── search ─────────
@@ -255,8 +346,10 @@
         composer.hidden = false;
         messagesEl.innerHTML = '<div class="empty-hint">Yükleniyor…</div>';
 
-        const r = await api('/api/v1/message/conversation/' + friendId);
-        if (r && r.success) renderMessages(r.data || []);
+        // Tüm geçmiş yerine son N mesaj yüklenir; "daha eski" butonu kapsamı genişletir.
+        const take = convTake.get(friendId) || INITIAL_TAKE;
+        const r = await api('/api/v1/message/conversation/' + friendId + '?take=' + take);
+        if (r && r.success) renderMessages(r.data || [], friendId, take, true);
         else messagesEl.innerHTML = '<div class="empty-hint">Mesajlar yüklenemedi.</div>';
 
         unread.set(friendId, 0);
@@ -267,39 +360,165 @@
         document.dispatchEvent(new CustomEvent('chat:conversationchanged', { detail: { friendId: friendId } }));
     }
 
-    function renderMessages(list) {
+    function renderMessages(list, friendId, take, scrollBottom) {
         messagesEl.innerHTML = '';
+        lastDayKey = null;
         if (!list.length) { messagesEl.innerHTML = '<div class="empty-hint">Henüz mesaj yok. İlk mesajı sen gönder!</div>'; return; }
-        list.forEach(m => messagesEl.appendChild(messageEl(m)));
-        scrollToBottom();
+        // Sunucu son `take` mesajı döndürür; liste dolu geldiyse daha eskisi olabilir.
+        if (friendId && take && list.length >= take) {
+            const older = document.createElement('button');
+            older.type = 'button';
+            older.className = 'load-older';
+            older.textContent = 'Daha eski mesajları göster';
+            older.addEventListener('click', async () => {
+                older.disabled = true; older.textContent = 'Yükleniyor…';
+                const newTake = (convTake.get(friendId) || INITIAL_TAKE) * 3;
+                convTake.set(friendId, newTake);
+                const r = await api('/api/v1/message/conversation/' + friendId + '?take=' + newTake);
+                if (r && r.success) renderMessages(r.data || [], friendId, newTake, false); // konum: en üstte kal
+                else { older.disabled = false; older.textContent = 'Daha eski mesajları göster'; }
+            });
+            messagesEl.appendChild(older);
+        }
+        list.forEach(m => appendWithDaySep(m));
+        if (scrollBottom !== false) scrollToBottom();
+    }
+
+    // Gün değiştiyse önce tarih ayracı, sonra mesajı ekler. ("Henüz mesaj yok" ipucunu temizler.)
+    function appendWithDaySep(m) {
+        const hint = messagesEl.querySelector('.empty-hint');
+        if (hint) { hint.remove(); lastDayKey = null; }
+        const key = dayKey(m.createdAt);
+        if (key && key !== lastDayKey) {
+            messagesEl.appendChild(daySepEl(m.createdAt));
+            lastDayKey = key;
+        }
+        messagesEl.appendChild(messageEl(m));
     }
 
     function messageEl(m) {
         const out = m.senderId === me;
         const div = document.createElement('div');
         div.className = 'msg ' + (out ? 'out' : 'in');
+        div.dataset.id = m.id;
+        div.dataset.type = (m.messageType || 'text').toLowerCase();
+        div.dataset.created = m.createdAt || '';
 
         const type = (m.messageType || 'text').toLowerCase();
         let bubble;
         if (type === 'audio' && m.attachmentUrl) {
-            bubble = '<div class="bubble audio"><audio controls preload="metadata" src="' + mediaUrl(m.attachmentUrl) + '"></audio></div>';
+            bubble = '<div class="bubble audio"><audio controls preload="metadata" src="' + attachmentSrc(m.attachmentUrl) + '"></audio></div>';
         } else if (type === 'image' && m.attachmentUrl) {
-            const iurl = mediaUrl(m.attachmentUrl);
+            const iurl = attachmentSrc(m.attachmentUrl);
             bubble = '<div class="bubble media"><img class="msg-img" src="' + iurl + '" alt="Görsel" loading="lazy" data-full="' + iurl + '"></div>';
         } else if (type === 'video' && m.attachmentUrl) {
-            bubble = '<div class="bubble media"><video class="msg-video" controls preload="metadata" src="' + mediaUrl(m.attachmentUrl) + '"></video></div>';
+            bubble = '<div class="bubble media"><video class="msg-video" controls preload="metadata" src="' + attachmentSrc(m.attachmentUrl) + '"></video></div>';
         } else {
             bubble = '<div class="bubble">' + esc(m.content) + '</div>';
         }
 
-        let meta = '<span>' + esc(fmtTime(m.createdAt)) + '</span>';
+        let meta = '';
+        if (m.editedAt) meta += '<span class="edited">düzenlendi</span> ';
+        meta += '<span>' + esc(fmtTime(m.createdAt)) + '</span>';
         if (out) meta += ' <span class="ticks' + (m.isRead ? ' read' : '') + '">' + (m.isRead ? '✓✓' : '✓') + '</span>';
 
         div.innerHTML = bubble + '<div class="msg-meta">' + meta + '</div>';
+
+        // Kendi mesajında işlem menüsü (düzenle / sil).
+        if (out) {
+            const act = document.createElement('button');
+            act.type = 'button';
+            act.className = 'msg-act';
+            act.title = 'Mesaj işlemleri';
+            act.setAttribute('aria-label', 'Mesaj işlemleri');
+            act.textContent = '⋯';
+            act.addEventListener('click', (e) => { e.stopPropagation(); openMsgMenu(div, act); });
+            div.appendChild(act);
+        }
         return div;
     }
 
-    function appendMessage(m) { messagesEl.appendChild(messageEl(m)); scrollToBottom(); }
+    // ── mesaj işlemleri (kendi mesajını düzenle / sil) ──
+    const EDIT_WINDOW_MS = 15 * 60 * 1000;   // sunucudaki düzenleme penceresiyle aynı
+    let msgMenu = null, msgMenuTarget = null;
+
+    function ensureMsgMenu() {
+        if (msgMenu) return msgMenu;
+        msgMenu = document.createElement('div');
+        msgMenu.className = 'conv-menu msg-menu';
+        msgMenu.hidden = true;
+        msgMenu.innerHTML =
+            '<button type="button" data-msg-act="edit"><span>Düzenle</span></button>' +
+            '<button type="button" data-msg-act="delete" class="danger"><span>Sil</span></button>';
+        document.body.appendChild(msgMenu);
+        msgMenu.addEventListener('click', (e) => e.stopPropagation());
+        document.addEventListener('click', () => { msgMenu.hidden = true; });
+        msgMenu.querySelector('[data-msg-act="edit"]').addEventListener('click', () => { msgMenu.hidden = true; editTargetMessage(); });
+        msgMenu.querySelector('[data-msg-act="delete"]').addEventListener('click', () => { msgMenu.hidden = true; deleteTargetMessage(); });
+        return msgMenu;
+    }
+
+    function openMsgMenu(div, anchor) {
+        const menu = ensureMsgMenu();
+        msgMenuTarget = div;
+        // Düzenle: yalnızca metin mesajı ve düzenleme penceresi içindeyse.
+        const isText = (div.dataset.type || 'text') === 'text';
+        const created = Date.parse(div.dataset.created || '') || 0;
+        menu.querySelector('[data-msg-act="edit"]').hidden = !(isText && (Date.now() - created) <= EDIT_WINDOW_MS);
+        menu.hidden = false;
+        const r = anchor.getBoundingClientRect();
+        const mw = menu.offsetWidth || 140, mh = menu.offsetHeight || 80;
+        menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - mw - 8)) + 'px';
+        menu.style.top = (r.bottom + mh > window.innerHeight - 8 ? r.top - mh - 4 : r.bottom + 4) + 'px';
+    }
+
+    async function deleteTargetMessage() {
+        const div = msgMenuTarget;
+        if (!div) return;
+        if (!window.confirm('Bu mesaj silinsin mi? Her iki taraftan da kaldırılır.')) return;
+        const r = await api('/api/v1/message/' + div.dataset.id, { method: 'DELETE' });
+        if (r && r.success) removeMessageEl(+div.dataset.id);   // sayaç/önizleme MessageDeleted olayıyla tazelenir
+        else toast(errOf(r, 'Mesaj silinemedi.'), 'error');
+    }
+
+    async function editTargetMessage() {
+        const div = msgMenuTarget;
+        if (!div) return;
+        const bubble = div.querySelector('.bubble');
+        const current = bubble ? bubble.textContent : '';
+        const text = window.prompt('Mesajı düzenle:', current);
+        if (text === null) return;   // iptal
+        const trimmed = text.trim();
+        if (!trimmed || trimmed === current) return;
+        const r = await api('/api/v1/message/' + div.dataset.id, { method: 'PUT', body: { content: trimmed } });
+        if (r && r.success && r.data) applyEditedMessage(r.data);
+        else toast(errOf(r, 'Mesaj düzenlenemedi.'), 'error');
+    }
+
+    function removeMessageEl(id) {
+        const el = messagesEl.querySelector('.msg[data-id="' + id + '"]');
+        if (!el) return;
+        // Günün tek mesajıysa öksüz tarih ayracı bırakma.
+        const prev = el.previousElementSibling, next = el.nextElementSibling;
+        if (prev && prev.classList.contains('day-sep') && (!next || next.classList.contains('day-sep'))) prev.remove();
+        el.remove();
+    }
+
+    function applyEditedMessage(m) {
+        const el = messagesEl.querySelector('.msg[data-id="' + m.id + '"]');
+        if (!el) return;
+        const bubble = el.querySelector('.bubble');
+        if (bubble) bubble.textContent = m.content || '';
+        const metaEl = el.querySelector('.msg-meta');
+        if (metaEl && !metaEl.querySelector('.edited')) {
+            const span = document.createElement('span');
+            span.className = 'edited';
+            span.textContent = 'düzenlendi';
+            metaEl.insertBefore(span, metaEl.firstChild);
+        }
+    }
+
+    function appendMessage(m) { appendWithDaySep(m); scrollToBottom(); }
     function scrollToBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
 
     function markOutgoingRead() {
@@ -314,6 +533,10 @@
             if (dot) { if (c > 0) { dot.hidden = false; dot.textContent = c > 9 ? '9+' : c; } else { dot.hidden = true; dot.textContent = ''; } }
             el.classList.toggle('has-unread', c > 0);
         });
+        // Sekme başlığında toplam okunmamış rozeti — başka sekmedeyken de fark edilsin.
+        let total = 0;
+        unread.forEach(c => { total += c; });
+        document.title = total > 0 ? '(' + (total > 99 ? '99+' : total) + ') ' + baseTitle : baseTitle;
     }
 
     // ───────── aktiflik (çevrimiçi / son görülme) ─────────
@@ -327,7 +550,8 @@
             const sdot = el.querySelector('.status-dot');
             if (sdot) sdot.classList.toggle('online', f.isOnline);
             const st = el.querySelector('.friend-status');
-            if (st) { st.textContent = presenceText(f); st.classList.toggle('online', f.isOnline); }
+            // Önizleme gösteriliyorsa aktiflik metniyle ezme (yeşil nokta zaten günceleniyor).
+            if (st && !st.classList.contains('is-preview')) { st.textContent = presenceText(f); st.classList.toggle('online', f.isOnline); }
         }
         if (currentFriend && currentFriend.id === id) updateConvPresence(f);
     }
@@ -437,7 +661,7 @@
             method: 'POST',
             body: { receiverId: friendId, audioData: b64, audioName: 'voice.webm', durationSeconds: duration }
         });
-        if (r && r.success && r.data) appendMessage(r.data);
+        if (r && r.success && r.data) { appendMessage(r.data); noteSummary(friendId, r.data); }
         else toast(errOf(r, 'Ses mesajı gönderilemedi.'), 'error');
     }
 
@@ -483,7 +707,7 @@
             method: 'POST',
             body: { receiverId: friendId, data: b64, fileName: file.name, mediaType: mediaType, durationSeconds: duration }
         });
-        if (r && r.success && r.data) appendMessage(r.data);
+        if (r && r.success && r.data) { appendMessage(r.data); noteSummary(friendId, r.data); }
         else toast(errOf(r, 'Medya gönderilemedi.'), 'error');
     }
 
@@ -533,10 +757,12 @@
             if (!friends.has(m.senderId)) loadFriends().then(refreshUnreadDots);
             else refreshUnreadDots();
         }
+        noteSummary(m.senderId, m);
     });
 
     connection.on('MessageSent', (m) => {
         if (currentFriend && m.receiverId === currentFriend.id) appendMessage(m);
+        noteSummary(m.receiverId, m);
     });
 
     connection.on('MessageError', (msg) => toast(msg, 'error'));
@@ -560,6 +786,19 @@
     // Karşı taraf mesajlarımı okuduğunda -> çift mavi tik
     connection.on('MessagesRead', (byId) => {
         if (currentFriend && byId === currentFriend.id) markOutgoingRead();
+    });
+
+    // Mesaj silindi/düzenlendi (iki tarafa da gelir; gönderenin diğer sekmeleri de eşitlenir).
+    connection.on('MessageDeleted', (m) => {
+        const other = m.senderId === me ? m.receiverId : m.senderId;
+        if (currentFriend && other === currentFriend.id) removeMessageEl(m.id);
+        loadUnread();   // okunmamış sayacı + son mesaj önizlemesi sunucudan tazelenir
+    });
+
+    connection.on('MessageEdited', (m) => {
+        const other = m.senderId === me ? m.receiverId : m.senderId;
+        if (currentFriend && other === currentFriend.id) applyEditedMessage(m);
+        loadUnread();   // son mesaj düzenlendiyse kenar çubuğu önizlemesi de değişir
     });
 
     // ───────── aktiflik bildirimleri ─────────
@@ -593,7 +832,8 @@
 
     connection.onreconnecting(() => setConn('Yeniden bağlanılıyor…', true));
     connection.onreconnected(() => setConn('', false));
-    connection.onclose(() => setConn('Bağlantı kesildi. Sayfayı yenileyin.', true));
+    // Otomatik reconnect denemeleri tükenince pes etme; kendimiz baştan bağlanmayı sürdür.
+    connection.onclose(() => { setConn('Bağlantı kesildi. Yeniden bağlanılıyor…', true); setTimeout(start, 3000); });
 
     async function start() {
         try { await connection.start(); setConn('', false); }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>@ViewData["Title"] - Tural Chat</title>
+    <title>@ViewData["Title"] - Chatural</title>
     <script>
         (function () {
             try {
@@ -22,11 +22,13 @@
     <link rel="manifest" href="~/site.webmanifest" />
     <meta name="theme-color" content="#0f1117" />
     <link rel="icon" href="~/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/icons/favicon-16x16.png" />
     <link rel="apple-touch-icon" href="~/icons/apple-touch-icon.png" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Tural Chat" />
+    <meta name="apple-mobile-web-app-title" content="Chatural" />
 </head>
 <body>
     @RenderBody()
@@ -41,12 +43,18 @@
         <button type="button" id="pwaInstallClose" class="pwa-install-close" aria-label="Kapat" title="Kapat">✕</button>
     </div>
 
+    @* PWA — yeni sürüm hazır olduğunda kullanıcı onaylı güncelleme *@
+    <div id="pwaUpdateBar" class="pwa-install-bar pwa-update-bar" hidden>
+        <button type="button" id="pwaUpdateBtn" class="pwa-install-btn">⟳ Yeni sürümü yükle</button>
+        <button type="button" id="pwaUpdateClose" class="pwa-install-close" aria-label="Şimdi değil" title="Şimdi değil">✕</button>
+    </div>
+
     @* Çerez bilgilendirme / onay modalı — tüm sayfalarda görünür *@
     <div id="consentOverlay" class="consent-overlay">
         <div class="consent-modal" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
             <div class="consent-title" id="consentTitle">Çerez Bilgilendirmesi</div>
             <div class="consent-text">
-                Tural Chat'i kullanarak, hizmetin düzgün çalışması için gerekli tüm çerezleri kabul etmiş
+                Chatural'ı kullanarak, hizmetin düzgün çalışması için gerekli tüm çerezleri kabul etmiş
                 olursunuz. Ayrıntılar için <a asp-controller="Home" asp-action="Privacy">gizlilik politikamıza</a> bakabilirsiniz.
             </div>
             <div class="consent-actions">

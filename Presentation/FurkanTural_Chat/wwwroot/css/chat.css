@@ -72,6 +72,8 @@ input, button, .friend-item, .msg .bubble, #toastBox {
     box-shadow: 0 8px 24px rgba(0,0,0,.35);
 }
 .pwa-install-bar[hidden] { display: none; }
+/* Güncelleme çubuğu yükle çubuğunun üstünde durur (ikisi aynı anda görünebilir). */
+.pwa-update-bar { bottom: 124px; }
 .pwa-install-btn {
     display: inline-flex;
     align-items: center;
@@ -124,8 +126,10 @@ input, button, .friend-item, .msg .bubble, #toastBox {
     box-shadow: 0 20px 60px -10px rgba(0,0,0,.45);
 }
 
-.auth-brand { font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
-.auth-brand span { color: var(--accent); }
+.auth-brand { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 4px; }
+.auth-logo { width: 76px; height: 76px; object-fit: contain; }
+.auth-name { font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
+.auth-name span { color: var(--accent); }
 .auth-sub { color: var(--text-dim); margin: 6px 0 22px; font-size: 14px; }
 
 .auth-form { display: flex; flex-direction: column; gap: 6px; }
@@ -288,6 +292,24 @@ input, button, .friend-item, .msg .bubble, #toastBox {
 
 .empty-hint { color: var(--text-dim); text-align: center; padding: 24px 16px; font-size: 14px; }
 .empty-hint.small { padding: 12px; font-size: 13px; }
+
+/* Konuşmanın en üstünde "Daha eski mesajları göster" */
+.load-older {
+    display: block; margin: 4px auto 12px; padding: 6px 16px;
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--border-color); border-radius: 999px;
+    font-size: 13px; cursor: pointer;
+}
+.load-older:hover:not(:disabled) { color: var(--text-main); border-color: var(--text-dim); }
+.load-older:disabled { opacity: .6; cursor: default; }
+
+/* Konuşmada gün ayracı (Bugün / Dün / 13 Haziran 2026) */
+.day-sep { display: flex; justify-content: center; margin: 10px 0 6px; }
+.day-sep span {
+    font-size: 12px; font-weight: 600; color: var(--text-dim);
+    background: var(--bg-main); border: 1px solid var(--border-color);
+    border-radius: 999px; padding: 3px 12px;
+}
 
 /* Profil — sidebar'ın EN ALTINDA sabit */
 .me {
@@ -472,9 +494,29 @@ input, button, .friend-item, .msg .bubble, #toastBox {
 /* Gizli scrollbar (fare tekeri/touchpad ile kaydırma çalışır) */
 .friends, .messages, .search-results { scrollbar-width: none; -ms-overflow-style: none; }
 .friends::-webkit-scrollbar, .messages::-webkit-scrollbar, .search-results::-webkit-scrollbar { display: none; }
-.msg { display: flex; flex-direction: column; max-width: 68%; }
+.msg { display: flex; flex-direction: column; max-width: 68%; position: relative; }
 .msg.in { align-self: flex-start; align-items: flex-start; }
 .msg.out { align-self: flex-end; align-items: flex-end; }
+
+/* Kendi mesajında işlemler (⋯ → düzenle/sil) — masaüstünde hover'da, dokunmatikte soluk görünür */
+.msg-act {
+    position: absolute; top: 4px; left: -28px;
+    width: 24px; height: 24px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-card-solid); color: var(--text-dim);
+    border: 1px solid var(--border-color); border-radius: 50%;
+    font-size: 14px; line-height: 1; cursor: pointer;
+    opacity: 0; transition: opacity .15s ease;
+}
+.msg.out:hover .msg-act, .msg-act:focus-visible { opacity: 1; }
+@media (hover: none) { .msg.out .msg-act { opacity: .55; } }
+.msg-act:hover { color: var(--text-main); }
+
+/* Mesaj işlemleri menüsü — conv-menu görünümünü sabit konumla kullanır (left/top JS'ten gelir) */
+.msg-menu { position: fixed; right: auto; top: auto; z-index: 1001; }
+
+/* "düzenlendi" etiketi */
+.msg-meta .edited { font-style: italic; opacity: .8; }
 .bubble {
     padding: 9px 13px; border-radius: var(--radius-md); font-size: 14px; line-height: 1.4;
     word-wrap: break-word; white-space: pre-wrap;
@@ -710,6 +752,7 @@ input, button, .friend-item, .msg .bubble, #toastBox {
     .search { padding-top: max(14px, env(safe-area-inset-top)); }
     .me { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
     .pwa-install-bar { bottom: max(72px, calc(env(safe-area-inset-bottom) + 64px)); }
+    .pwa-update-bar { bottom: max(124px, calc(env(safe-area-inset-bottom) + 116px)); }
     #toastBox { bottom: max(1.5rem, env(safe-area-inset-bottom)); }
 
     /* iOS odak zoom'unu engelle (input font-size ≥ 16px) */

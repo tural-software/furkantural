@@ -1,5 +1,5 @@
-/* Tural Chat — Service Worker (PWA shell + offline) */
-const CACHE = 'tural-chat-v7';
+/* Chatural — Service Worker (PWA shell + offline) */
+const CACHE = 'chatural-v10';
 
 // App shell — sade path'ler (sürümsüz). Runtime cache ?v'li istekleri ayrıca yakalar.
 const SHELL = [
@@ -22,12 +22,19 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
+    // skipWaiting() BİLİNÇLİ olarak çağrılmaz: güncellemede yeni SW "waiting" durumunda bekler.
+    // Kullanıcı "Yeni sürümü yükle" deyince pwa.js SKIP_WAITING mesajı gönderir → o an etkinleşir.
+    // (İlk kurulumda zaten bekleyecek bir SW yok; doğrudan etkinleşir.)
     event.waitUntil(
         caches.open(CACHE)
             // Tek tek ekle; biri 404 olsa bile install patlamasın.
             .then((cache) => Promise.allSettled(SHELL.map((url) => cache.add(url))))
-            .then(() => self.skipWaiting())
     );
+});
+
+// Prompt'lu güncelleme: kullanıcı onaylayınca bekleyen SW'yi etkinleştir.
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -44,7 +51,9 @@ self.addEventListener('fetch', (event) => {
 
     // Sadece aynı-origin GET. API/SignalR ve cross-origin'e karışma.
     if (req.method !== 'GET' || url.origin !== self.location.origin) return;
-    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/hubs/')) return;
+    // /bff/* kimlikli kullanıcı verisidir (mesajlar, ekler): ASLA önbelleğe alınmaz —
+    // aksi halde çıkış sonrası / kullanıcı değişiminde eski verinin önbellekten dönme riski doğar.
+    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/hubs/') || url.pathname.startsWith('/bff/')) return;
 
     // Gezinmeler: network-first → çevrimdışı yedeği offline.html
     if (req.mode === 'navigate') {
