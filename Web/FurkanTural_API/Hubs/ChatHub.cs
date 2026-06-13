@@ -104,11 +104,15 @@ public class ChatHub(
         }
     }
 
-    /// <summary>"Yazıyor..." göstergesi için alıcıya bildirim gönderir.</summary>
+    /// <summary>"Yazıyor..." göstergesi için alıcıya bildirim gönderir (yalnızca arkadaşlar arası).</summary>
     public async Task Typing(int receiverId)
     {
         var senderId = CurrentUserId();
         if (senderId is null)
+            return;
+
+        // Arkadaş olmayan/engellenen kullanıcıya "yazıyor" gürültüsü ve varlık sızıntısı olmasın.
+        if (!await _userFriendService.AreFriendsAsync(senderId.Value, receiverId, Context.ConnectionAborted))
             return;
 
         await Clients.User(receiverId.ToString()).SendAsync("UserTyping", senderId.Value);
@@ -161,7 +165,7 @@ public class ChatHub(
         return callId;
     }
 
-    /// <summary>Aramayı yanıtlar (answer). Yalnızca alıcı çağırabilir.</summary>
+    /// <summary>Aramayı yanıtlar (answer). Yalnızca alıcı ve yalnızca hâlâ çalan arama için.</summary>
     public async Task AnswerCall(int callId, string answer)
     {
         var userId = CurrentUserId();
@@ -169,6 +173,9 @@ public class ChatHub(
 
         var call = await _callLogService.GetParticipantsAsync(callId, Context.ConnectionAborted);
         if (call is null || call.CalleeId != userId.Value) return;
+
+        // İptal/reddedilmiş/bitmiş arama yeniden yanıtlanamaz (yarış ve yeniden oynatma koruması).
+        if (!string.Equals(call.Status, CallDefinitions.Statuses.Ringing, StringComparison.OrdinalIgnoreCase)) return;
 
         await _callLogService.MarkAnsweredAsync(callId, Context.ConnectionAborted);
         await Clients.User(call.CallerId.ToString()).SendAsync("CallAnswered", new { callId, answer });

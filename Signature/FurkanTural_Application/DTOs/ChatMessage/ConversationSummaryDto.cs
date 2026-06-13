@@ -10,6 +10,8 @@ public class ConversationSummaryDto
     public string? DisplayName { get; set; }
     public string? AvatarUrl { get; set; }
     public string? LastMessage { get; set; }
+    /// <summary>Son mesajın türü ("Text" | "Audio" | "Image" | "Video") — medya mesajlarında içerik boş olduğundan önizleme etiketi için.</summary>
+    public string? LastMessageType { get; set; }
     public DateTime? LastMessageAt { get; set; }
     public int UnreadCount { get; set; }
 }

@@ -19,4 +19,10 @@ public interface IFileService
     /// </summary>
     /// <exception cref="IOException">Dosya silme hatası (dosya mevcutsa fakat silinemediyse).</exception>
     Task DeleteAsync(string? fileName);
+
+    /// <summary>
+    /// Göreli dosya değerini (ör. <c>chats/voices/x.webm</c> veya eski düz dosya adı) fiziksel yola çözer.
+    /// Dosya yoksa veya yol web kökünün dışına çıkıyorsa <c>null</c> döner.
+    /// </summary>
+    string? GetPhysicalPath(string? fileName);
 }

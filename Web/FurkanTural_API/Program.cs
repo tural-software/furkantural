@@ -255,6 +255,26 @@ if (swaggerEnabled)
 }
 
 app.UseHttpsRedirection();
+
+// Chat ekleri gizlidir: statik sunulmaz, yalnızca /api/v1/message/attachment
+// ucundan yetki doğrulamasıyla servis edilir. Yeni kayıtlar wwwroot/chats/* altında;
+// eski (legacy) kayıtlar paylaşılan images/uploads klasöründe "ChatMessage-" önekiyle durur.
+app.Use(async (ctx, next) =>
+{
+    var path = ctx.Request.Path;
+    var isChatMedia = path.StartsWithSegments("/chats")
+        || (path.StartsWithSegments("/images/uploads", out var rest)
+            && rest.Value is not null
+            && rest.Value.TrimStart('/').StartsWith("ChatMessage-", StringComparison.OrdinalIgnoreCase));
+
+    if (isChatMedia)
+    {
+        ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+    await next();
+});
+
 app.UseStaticFiles();
 app.UseCors("DefaultPolicy");
 app.UseAuthentication();

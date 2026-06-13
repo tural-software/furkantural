@@ -179,13 +179,24 @@ public class UserController : JwtBaseController
         return ToActionResult(await _userService.AcceptAgreementAsync(userId.Value, cancellationToken));
     }
 
+    private const long AvatarMaxBytes = 5L * 1024 * 1024; // avatar ≤5MB
+
     private async Task<IActionResult> SaveAvatarAsync(int targetUserId, UserAvatarRequest request, CancellationToken cancellationToken)
     {
         if (request.ImageData is null || request.ImageData.Length == 0)
             return BadRequest("Avatar verisi boş olamaz.");
 
         var actingUserId = SortUserId() ?? 0;
-        var fileName = await _fileService.SaveAsync(request.ImageData, request.ImageName ?? "avatar.png", "User", targetUserId, actingUserId);
+        string fileName;
+        try
+        {
+            fileName = await _fileService.SaveAsync(request.ImageData, request.ImageName ?? "avatar.png", "User", targetUserId, actingUserId, AvatarMaxBytes);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message); // desteklenmeyen uzantı veya boyut aşımı
+        }
+
         return ToActionResult(await _userService.UpdateAvatarAsync(targetUserId, fileName, SortUserId(), cancellationToken));
     }
 

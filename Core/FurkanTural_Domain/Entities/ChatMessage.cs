@@ -18,4 +18,10 @@ public class ChatMessage : BaseEntity
     /// <summary>Ses mesajı için yüklenen dosyanın adı (/images/uploads altında).</summary>
     public string? AttachmentUrl { get; set; }
     public int? DurationSeconds { get; set; }
+
+    /// <summary>
+    /// Gönderenin mesajı son düzenlediği an (yalnızca Text). Null = hiç düzenlenmedi.
+    /// BaseEntity.UpdatedAt kullanılamaz çünkü okundu işaretleme de onu damgalar.
+    /// </summary>
+    public DateTime? EditedAt { get; set; }
 }

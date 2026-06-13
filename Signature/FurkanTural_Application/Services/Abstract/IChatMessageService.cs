@@ -15,6 +15,15 @@ public interface IChatMessageService
     Task<Result> MarkConversationReadAsync(int currentUserId, int otherUserId, CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<ConversationSummaryDto>>> GetConversationsAsync(int currentUserId, CancellationToken cancellationToken = default);
 
+    /// <summary>Ekin (ses/foto/video) kullanıcının taraf olduğu bir mesaja ait olduğunu doğrular (chat ekleri statik sunulmaz).</summary>
+    Task<Result> ValidateAttachmentAccessAsync(int userId, string file, CancellationToken cancellationToken = default);
+
+    /// <summary>Gönderenin kendi mesajını silmesi (soft delete; her iki taraftan kalkar, admin geri yükleyebilir).</summary>
+    Task<Result<ChatMessageDto>> DeleteOwnAsync(int userId, int messageId, CancellationToken cancellationToken = default);
+
+    /// <summary>Gönderenin kendi Text mesajını düzenlemesi (gönderimden sonraki 15 dakika içinde).</summary>
+    Task<Result<ChatMessageDto>> EditOwnAsync(int userId, int messageId, string? newContent, CancellationToken cancellationToken = default);
+
     // ── Admin ──
     Task<Result<IEnumerable<AdminChatMessageDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<PagedResult<AdminChatMessageDto>> GetAllPagedForAdminAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
@@ -22,4 +31,10 @@ public interface IChatMessageService
     Task<Result<AdminChatMessageDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminChatMessageDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// At-rest şifreleme öncesinden kalan düz metin mesajları toplu olarak şifreler (idempotent, tek seferlik).
+    /// Şifrelenen kayıt sayısını döner. Operatör tetikler; başlangıçta otomatik çalışmaz.
+    /// </summary>
+    Task<Result<int>> EncryptLegacyContentAsync(CancellationToken cancellationToken = default);
 }

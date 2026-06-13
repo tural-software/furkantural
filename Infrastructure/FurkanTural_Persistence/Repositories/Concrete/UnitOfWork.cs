@@ -11,6 +11,7 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     private IRepository<Blog>? _blogs;
     private IRepository<BlogImage>? _blogImages;
     private ILogRepository? _logs;
+    private IChatMessageRepository? _chatMessages;
 
     public IRepository<T> GetRepository<T>() where T : BaseEntity
     {
@@ -36,7 +37,7 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     public IRepository<ContactTemplate> ContactTemplates => GetRepository<ContactTemplate>();
     public IRepository<Status> Statuses => GetRepository<Status>();
     public IRepository<UserFriend> UserFriends => GetRepository<UserFriend>();
-    public IRepository<ChatMessage> ChatMessages => GetRepository<ChatMessage>();
+    public IChatMessageRepository ChatMessages => _chatMessages ??= new ChatMessageRepository(context);
     public IRepository<CallLog> CallLogs => GetRepository<CallLog>();
     public IRepository<Report> Reports => GetRepository<Report>();
     public IRepository<CallPolicy> CallPolicies => GetRepository<CallPolicy>();

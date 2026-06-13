@@ -4,6 +4,7 @@ using FurkanTural_API.Controllers.Base;
 using FurkanTural_API.Models.Message;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace FurkanTural_API.Controllers;
 
@@ -11,6 +12,10 @@ namespace FurkanTural_API.Controllers;
 [ApiVersion("1.0")]
 public class MessageController(IChatMessageService chatMessageService, IChatNotifier chatNotifier, IFileService fileService) : JwtBaseController
 {
+    private const long AudioMaxBytes = 10L * 1024 * 1024; // sesli mesaj ≤10MB
+
+    private static readonly FileExtensionContentTypeProvider _contentTypes = new();
+
     private readonly IChatMessageService _chatMessageService = chatMessageService;
     private readonly IChatNotifier _chatNotifier = chatNotifier;
     private readonly IFileService _fileService = fileService;
@@ -29,8 +34,9 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
         return ToActionResult(result);
     }
 
-    /// <summary>Sesli mesaj (voice note) gönder</summary>
+    /// <summary>Sesli mesaj (voice note) gönder (≤10MB)</summary>
     [HttpPost("audio")]
+    [RequestSizeLimit(16_000_000)] // base64(10MB) ≈ 13.4MB + JSON payı; gerçek sınır FileService maxBytes
     public async Task<IActionResult> SendAudio([FromBody] SendAudioRequest request, CancellationToken cancellationToken)
     {
         var userId = SortUserId();
@@ -38,7 +44,15 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
         if (request.AudioData is null || request.AudioData.Length == 0)
             return BadRequest("Ses verisi boş olamaz.");
 
-        var fileName = await _fileService.SaveAsync(request.AudioData, request.AudioName ?? "voice.webm", "ChatMessage", request.ReceiverId, userId.Value);
+        string fileName;
+        try
+        {
+            fileName = await _fileService.SaveAsync(request.AudioData, request.AudioName ?? "voice.webm", "ChatMessage", request.ReceiverId, userId.Value, AudioMaxBytes);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message); // desteklenmeyen uzantı veya boyut aşımı
+        }
 
         var result = await _chatMessageService.SendAudioAsync(userId.Value, request.ReceiverId, fileName, request.DurationSeconds, cancellationToken);
         if (result.Success && result.Data is not null)
@@ -99,6 +113,74 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
         return ToActionResult(await _chatMessageService.GetConversationsAsync(userId.Value, cancellationToken));
     }
 
+    /// <summary>
+    /// Sohbet ekini (ses/foto/video) yetki doğrulayarak servis eder.
+    /// Chat ekleri statik dosya olarak sunulmaz; üye yalnızca taraf olduğu mesajların eklerine,
+    /// admin tüm eklere erişebilir. Range desteklidir (ses/video oynatma için).
+    /// </summary>
+    [HttpGet("attachment")]
+    public async Task<IActionResult> GetAttachment([FromQuery] string file, CancellationToken cancellationToken)
+    {
+        var userId = SortUserId();
+        if (userId is null) return Unauthorized();
+
+        if (string.IsNullOrWhiteSpace(file) || file.Contains("..") || Path.IsPathRooted(file))
+            return BadRequest("Geçersiz dosya yolu.");
+
+        if (!string.Equals(SortUserRole(), "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            var access = await _chatMessageService.ValidateAttachmentAccessAsync(userId.Value, file, cancellationToken);
+            if (access.IsFailure)
+                return ToActionResult(access);
+        }
+
+        var physicalPath = _fileService.GetPhysicalPath(file);
+        if (physicalPath is null)
+            return NotFound();
+
+        if (!_contentTypes.TryGetContentType(physicalPath, out var contentType))
+            contentType = "application/octet-stream";
+
+        // Kişisel içerik: yalnızca istemcinin kendi tarayıcısı önbellekleyebilir (paylaşımlı proxy'ler asla).
+        Response.Headers.CacheControl = "private, max-age=3600";
+        return PhysicalFile(physicalPath, contentType, enableRangeProcessing: true);
+    }
+
+    /// <summary>Kendi mesajını sil (soft delete; iki taraftan da kalkar)</summary>
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteOwn(int id, CancellationToken cancellationToken)
+    {
+        var userId = SortUserId();
+        if (userId is null) return Unauthorized();
+
+        var result = await _chatMessageService.DeleteOwnAsync(userId.Value, id, cancellationToken);
+        if (result.Success && result.Data is not null)
+        {
+            // Alıcının açık istemcileri balonu kaldırsın; gönderenin diğer sekmeleri de eşitlensin.
+            await _chatNotifier.NotifyMessageDeletedAsync(result.Data.ReceiverId, result.Data);
+            await _chatNotifier.NotifyMessageDeletedAsync(result.Data.SenderId, result.Data);
+        }
+
+        return ToActionResult(result);
+    }
+
+    /// <summary>Kendi Text mesajını düzenle (gönderimden sonraki 15 dakika içinde)</summary>
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> EditOwn(int id, [FromBody] EditMessageRequest request, CancellationToken cancellationToken)
+    {
+        var userId = SortUserId();
+        if (userId is null) return Unauthorized();
+
+        var result = await _chatMessageService.EditOwnAsync(userId.Value, id, request.Content, cancellationToken);
+        if (result.Success && result.Data is not null)
+        {
+            await _chatNotifier.NotifyMessageEditedAsync(result.Data.ReceiverId, result.Data);
+            await _chatNotifier.NotifyMessageEditedAsync(result.Data.SenderId, result.Data);
+        }
+
+        return ToActionResult(result);
+    }
+
     /// <summary>Bir arkadaşla olan konuşmayı okundu işaretle</summary>
     [HttpPost("{otherUserId:int}/read")]
     public async Task<IActionResult> MarkRead(int otherUserId, CancellationToken cancellationToken)
@@ -144,4 +226,12 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _chatMessageService.GetAdminSummaryAsync(cancellationToken));
+
+    /// <summary>
+    /// At-rest şifreleme öncesinden kalan düz metin mesajları toplu şifreler (tek seferlik, idempotent).
+    /// </summary>
+    [HttpPost("admin/encrypt-legacy")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> EncryptLegacy(CancellationToken cancellationToken)
+        => ToActionResult(await _chatMessageService.EncryptLegacyContentAsync(cancellationToken));
 }

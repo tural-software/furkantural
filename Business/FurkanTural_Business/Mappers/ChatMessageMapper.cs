@@ -16,7 +16,8 @@ public static class ChatMessageMapper
         ReadAt = entity.ReadAt,
         MessageType = entity.MessageType,
         AttachmentUrl = entity.AttachmentUrl,
-        DurationSeconds = entity.DurationSeconds
+        DurationSeconds = entity.DurationSeconds,
+        EditedAt = entity.EditedAt
     };
 
     public static AdminChatMessageDto ToAdminDto(this ChatMessage entity) => new()

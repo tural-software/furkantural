@@ -25,4 +25,10 @@ public class ChatNotifier(IHubContext<ChatHub> hubContext) : IChatNotifier
 
     public Task NotifyMessageReadAsync(int senderUserId, int byUserId)
         => _hubContext.Clients.User(senderUserId.ToString()).SendAsync("MessagesRead", byUserId);
+
+    public Task NotifyMessageDeletedAsync(int targetUserId, ChatMessageDto message)
+        => _hubContext.Clients.User(targetUserId.ToString()).SendAsync("MessageDeleted", message);
+
+    public Task NotifyMessageEditedAsync(int targetUserId, ChatMessageDto message)
+        => _hubContext.Clients.User(targetUserId.ToString()).SendAsync("MessageEdited", message);
 }

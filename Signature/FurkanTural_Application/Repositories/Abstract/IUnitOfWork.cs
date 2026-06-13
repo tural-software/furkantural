@@ -23,7 +23,7 @@ public interface IUnitOfWork
     IRepository<ContactTemplate> ContactTemplates { get; }
     IRepository<Status> Statuses { get; }
     IRepository<UserFriend> UserFriends { get; }
-    IRepository<ChatMessage> ChatMessages { get; }
+    IChatMessageRepository ChatMessages { get; }
     IRepository<CallLog> CallLogs { get; }
     IRepository<Report> Reports { get; }
     IRepository<CallPolicy> CallPolicies { get; }

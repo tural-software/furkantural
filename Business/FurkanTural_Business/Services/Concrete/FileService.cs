@@ -83,4 +83,21 @@ public sealed class FileService : IFileService
         File.Delete(filePath);
         return Task.CompletedTask;
     }
+
+    public string? GetPhysicalPath(string? fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            return null;
+
+        // Yeni kayıtlar göreli yol ('chats/images/..') taşır; eski kayıtlar düz dosya adı → images/uploads.
+        var relative = fileName.Contains('/') ? fileName : $"{LegacyFolder}/{fileName}";
+        var filePath = Path.GetFullPath(Path.Combine(_webRootPath, relative.Replace('/', Path.DirectorySeparatorChar)));
+
+        // Klasör kaçışına (../) karşı: çözülen yol web kökü altında kalmalı.
+        var root = Path.GetFullPath(_webRootPath);
+        if (!filePath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return File.Exists(filePath) ? filePath : null;
+    }
 }

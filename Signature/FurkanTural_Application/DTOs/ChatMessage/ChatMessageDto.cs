@@ -12,4 +12,6 @@ public class ChatMessageDto
     public string? MessageType { get; set; }
     public string? AttachmentUrl { get; set; }
     public int? DurationSeconds { get; set; }
+    /// <summary>Mesajın son düzenlenme anı (yalnızca Text); null = düzenlenmedi.</summary>
+    public DateTime? EditedAt { get; set; }
 }

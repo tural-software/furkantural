@@ -39,7 +39,9 @@ public static class BusinessServiceRegistration
         services.AddScoped<ITurnCredentialProvider, TurnCredentialProvider>();
         services.AddScoped<ICallPolicyService, CallPolicyService>();
         services.AddSingleton<ICallRateLimiter, CallRateLimiter>();
+        services.AddSingleton<IMessageRateLimiter, MessageRateLimiter>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton<IMessageProtector, MessageProtector>();
 
         return services;
     }
