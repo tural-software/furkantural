@@ -181,16 +181,19 @@ public class UserFriendService(
         if (acceptedId is null)
             return Result<IEnumerable<FriendDto>>.Ok([]);
 
-        var relations = await _unitOfWork.UserFriends.GetAllAsync(
+        var relations = (await _unitOfWork.UserFriends.GetAllAsync(
             x => x.StatusId == acceptedId.Value && (x.RequesterId == currentUserId || x.AddresseeId == currentUserId),
+            cancellationToken)).ToList();
+
+        var users = await GetUsersByIdAsync(
+            relations.Select(r => r.RequesterId == currentUserId ? r.AddresseeId : r.RequesterId),
             cancellationToken);
 
         var list = new List<FriendDto>();
         foreach (var relation in relations)
         {
             var otherId = relation.RequesterId == currentUserId ? relation.AddresseeId : relation.RequesterId;
-            var user = await _unitOfWork.Users.GetByIdAsync(otherId, cancellationToken);
-            if (user is null)
+            if (!users.TryGetValue(otherId, out var user))
                 continue;
 
             list.Add(new FriendDto
@@ -215,15 +218,16 @@ public class UserFriendService(
         if (pendingId is null)
             return Result<IEnumerable<FriendRequestDto>>.Ok([]);
 
-        var relations = await _unitOfWork.UserFriends.GetAllAsync(
+        var relations = (await _unitOfWork.UserFriends.GetAllAsync(
             x => x.StatusId == pendingId.Value && x.AddresseeId == currentUserId,
-            cancellationToken);
+            cancellationToken)).ToList();
+
+        var users = await GetUsersByIdAsync(relations.Select(r => r.RequesterId), cancellationToken);
 
         var list = new List<FriendRequestDto>();
         foreach (var relation in relations)
         {
-            var user = await _unitOfWork.Users.GetByIdAsync(relation.RequesterId, cancellationToken);
-            if (user is null)
+            if (!users.TryGetValue(relation.RequesterId, out var user))
                 continue;
 
             list.Add(new FriendRequestDto
@@ -246,15 +250,16 @@ public class UserFriendService(
         if (pendingId is null)
             return Result<IEnumerable<FriendRequestDto>>.Ok([]);
 
-        var relations = await _unitOfWork.UserFriends.GetAllAsync(
+        var relations = (await _unitOfWork.UserFriends.GetAllAsync(
             x => x.StatusId == pendingId.Value && x.RequesterId == currentUserId,
-            cancellationToken);
+            cancellationToken)).ToList();
+
+        var users = await GetUsersByIdAsync(relations.Select(r => r.AddresseeId), cancellationToken);
 
         var list = new List<FriendRequestDto>();
         foreach (var relation in relations)
         {
-            var user = await _unitOfWork.Users.GetByIdAsync(relation.AddresseeId, cancellationToken);
-            if (user is null)
+            if (!users.TryGetValue(relation.AddresseeId, out var user))
                 continue;
 
             list.Add(new FriendRequestDto
@@ -386,16 +391,19 @@ public class UserFriendService(
         if (blockedId is null)
             return Result<IEnumerable<FriendDto>>.Ok([]);
 
-        var relations = await _unitOfWork.UserFriends.GetAllAsync(
+        var relations = (await _unitOfWork.UserFriends.GetAllAsync(
             x => x.StatusId == blockedId.Value && x.BlockedByUserId == currentUserId,
+            cancellationToken)).ToList();
+
+        var users = await GetUsersByIdAsync(
+            relations.Select(r => r.RequesterId == currentUserId ? r.AddresseeId : r.RequesterId),
             cancellationToken);
 
         var list = new List<FriendDto>();
         foreach (var relation in relations)
         {
             var otherId = relation.RequesterId == currentUserId ? relation.AddresseeId : relation.RequesterId;
-            var user = await _unitOfWork.Users.GetByIdAsync(otherId, cancellationToken);
-            if (user is null)
+            if (!users.TryGetValue(otherId, out var user))
                 continue;
 
             list.Add(new FriendDto
@@ -484,6 +492,17 @@ public class UserFriendService(
     }
 
     // ── Yardımcılar ──
+
+    /// <summary>Verilen kullanıcı kimliklerini tek sorguda yükler (liste başına N+1 lookup yerine).</summary>
+    private async Task<Dictionary<int, User>> GetUsersByIdAsync(IEnumerable<int> userIds, CancellationToken cancellationToken)
+    {
+        var ids = userIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return [];
+
+        var users = await _unitOfWork.Users.GetAllAsync(u => ids.Contains(u.Id), cancellationToken);
+        return users.ToDictionary(u => u.Id);
+    }
 
     private async Task NotifyRequestAsync(int requesterId, int addresseeId, int requestId, DateTime requestedAt, CancellationToken cancellationToken)
     {
