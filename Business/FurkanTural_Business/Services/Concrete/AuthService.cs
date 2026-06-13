@@ -18,6 +18,7 @@ namespace FurkanTural_Business.Services.Concrete;
 public class AuthService(
     IUnitOfWork unitOfWork,
     IEncryptionService encryptionService,
+    IPasswordHasher passwordHasher,
     IConfiguration configuration,
     IOptions<AppTokenSettings> appTokenSettings,
     ITurnstileVerifier turnstileVerifier,
@@ -25,6 +26,7 @@ public class AuthService(
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEncryptionService _encryptionService = encryptionService;
+    private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly IConfiguration _configuration = configuration;
     private readonly AppTokenSettings _appTokenSettings = appTokenSettings.Value;
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
@@ -51,11 +53,27 @@ public class AuthService(
         if (string.IsNullOrWhiteSpace(user.Password))
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
 
-        var decryptResult = _encryptionService.Decrypt(user.Password);
-        if (decryptResult.IsFailure)
-            return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
+        bool passwordValid;
+        if (_passwordHasher.IsHashed(user.Password))
+        {
+            passwordValid = _passwordHasher.Verify(dto.Password, user.Password);
+        }
+        else
+        {
+            // Legacy kayıt: geri çözülebilir AES. Doğruysa şeffaf olarak PBKDF2'ye taşı —
+            // böylece parola havuzu zamanla tek yönlü hash'e döner, ek migration gerekmez.
+            var decryptResult = _encryptionService.Decrypt(user.Password);
+            passwordValid = !decryptResult.IsFailure && decryptResult.Data == dto.Password;
 
-        if (decryptResult.Data != dto.Password)
+            if (passwordValid)
+            {
+                user.Password = _passwordHasher.Hash(dto.Password);
+                await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        if (!passwordValid)
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
 
         var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId, cancellationToken);
@@ -93,16 +111,12 @@ public class AuthService(
         if (role is null)
             return Result<LoginResultDto>.Fail("Üyelik rolü yapılandırılmamış.", statusCode: 500);
 
-        var encryptResult = _encryptionService.Encrypt(dto.Password);
-        if (encryptResult.IsFailure)
-            return Result<LoginResultDto>.Fail(encryptResult.Errors, encryptResult.InternalMessage);
-
         var user = new User
         {
             Username = dto.Username,
             Email = dto.Email,
             DisplayName = string.IsNullOrWhiteSpace(dto.DisplayName) ? dto.Username : dto.DisplayName,
-            Password = encryptResult.Data,
+            Password = _passwordHasher.Hash(dto.Password),
             RoleId = role.Id,
             MembershipAgreementAcceptedAt = _clock.UtcNow,
             MembershipAgreementVersion = AgreementDefinitions.CurrentVersion
@@ -112,6 +126,19 @@ public class AuthService(
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<LoginResultDto>.Ok(BuildLoginResult(user, role.Name ?? "User"));
+    }
+
+    public async Task<Result<LoginResultDto>> RefreshAsync(int userId, string? appSource, CancellationToken cancellationToken = default)
+    {
+        // Kullanıcı hâlâ mevcut/aktif mi? (Silinen/pasifleştirilen hesap token yenileyemez.)
+        var user = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
+        if (user is null)
+            return Result<LoginResultDto>.Fail("Kullanıcı bulunamadı.", statusCode: 401);
+
+        var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId, cancellationToken);
+        var roleName = role?.Name ?? "User";
+
+        return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, appSource));
     }
 
     // Turnstile, config'deki Turnstile:RequiredApps listesindeki AppSource'lar için zorunludur.

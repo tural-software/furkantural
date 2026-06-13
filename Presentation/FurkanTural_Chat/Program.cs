@@ -67,9 +67,23 @@ builder.Services.AddReverseProxy()
         {
             // Session, pipeline'da UseSession ile yüklenmiş olur; garantilemek için LoadAsync.
             await ctx.HttpContext.Session.LoadAsync();
-            var token = ctx.HttpContext.Session.GetString("token");
-            if (!string.IsNullOrEmpty(token))
-                ctx.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var session = ctx.HttpContext.Session;
+            var token = session.GetString("token");
+            if (string.IsNullOrEmpty(token))
+                return;
+
+            // Token'ın süresi dolmak üzereyse (≤10 dk) proaktif yenile: oturum 8 saat sürerken
+            // 60 dakikalık JWT yüzünden kullanıcı saatte bir login'e düşmesin.
+            var expiresRaw = session.GetString("expiresAt");
+            if (DateTimeOffset.TryParse(expiresRaw, null, System.Globalization.DateTimeStyles.RoundtripKind, out var expiresAt)
+                && expiresAt - DateTimeOffset.UtcNow <= TimeSpan.FromMinutes(10))
+            {
+                var refreshed = await TryRefreshTokenAsync(ctx.HttpContext, token);
+                if (refreshed is not null)
+                    token = refreshed;
+            }
+
+            ctx.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         });
     });
 
@@ -115,3 +129,44 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
+
+// Mevcut (hâlâ geçerli) kullanıcı token'ı ile API'den yeni token alır; başarılıysa session'ı günceller.
+// Başarısızlıkta null döner ve eldeki token'la devam edilir (401 olursa istemci login'e yönlenir).
+static async Task<string?> TryRefreshTokenAsync(HttpContext httpContext, string currentToken)
+{
+    try
+    {
+        var factory = httpContext.RequestServices.GetRequiredService<IHttpClientFactory>();
+        var client = factory.CreateClient("AppTokenClient"); // BaseAddress = Api:BaseUrl, ek handler yok
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/Auth/refresh");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", currentToken);
+        using var response = await client.SendAsync(request, httpContext.RequestAborted);
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var payload = await response.Content.ReadFromJsonAsync<TokenRefreshResponse>(cancellationToken: httpContext.RequestAborted);
+        var data = payload?.Data;
+        if (data?.Token is null)
+            return null;
+
+        httpContext.Session.SetString("token", data.Token);
+        httpContext.Session.SetString("expiresAt", data.ExpiresAt.ToString("O"));
+        return data.Token;
+    }
+    catch
+    {
+        return null;
+    }
+}
+
+internal sealed class TokenRefreshResponse
+{
+    public TokenRefreshData? Data { get; set; }
+}
+
+internal sealed class TokenRefreshData
+{
+    public string? Token { get; set; }
+    public DateTime ExpiresAt { get; set; }
+}

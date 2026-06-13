@@ -9,10 +9,10 @@ using FurkanTural_Domain.Constants;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionService, ActivityLogger activityLogger, IUserFriendService userFriendService, IClock clock) : IUserService
+public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, ActivityLogger activityLogger, IUserFriendService userFriendService, IClock clock) : IUserService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly IEncryptionService _encryptionService = encryptionService;
+    private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly IUserFriendService _userFriendService = userFriendService;
     private readonly IClock _clock = clock;
@@ -63,12 +63,8 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
         if (usernameExists)
             return Result<UserDto>.Fail("Bu kullanıcı adı zaten kullanılıyor.");
 
-        var encryptResult = _encryptionService.Encrypt(dto.Password);
-        if (encryptResult.IsFailure)
-            return Result<UserDto>.Fail(encryptResult.Errors, encryptResult.InternalMessage);
-
         var entity = dto.ToEntity();
-        entity.Password = encryptResult.Data;
+        entity.Password = _passwordHasher.Hash(dto.Password);
 
         await _unitOfWork.Users.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -98,13 +94,7 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
         entity.UpdatedBy = dto.UpdatedBy;
 
         if (!string.IsNullOrWhiteSpace(dto.Password))
-        {
-            var encryptResult = _encryptionService.Encrypt(dto.Password);
-            if (encryptResult.IsFailure)
-                return Result<UserDto>.Fail(encryptResult.Errors, encryptResult.InternalMessage);
-
-            entity.Password = encryptResult.Data;
-        }
+            entity.Password = _passwordHasher.Hash(dto.Password);
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -195,13 +185,9 @@ public class UserService(IUnitOfWork unitOfWork, IEncryptionService encryptionSe
         if (anyUser)
             return Result<UserDto>.Fail("Sistemde zaten kullanıcı mevcut. Seed işlemi yapılamaz.", statusCode: 409);
 
-        var encryptResult = _encryptionService.Encrypt(password);
-        if (encryptResult.IsFailure)
-            return Result<UserDto>.Fail(encryptResult.Errors, encryptResult.InternalMessage);
-
         var dto = new CreateUserDto { Username = username, Password = password, RoleId = 1 };
         var entity = dto.ToEntity();
-        entity.Password = encryptResult.Data;
+        entity.Password = _passwordHasher.Hash(password);
 
         await _unitOfWork.Users.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

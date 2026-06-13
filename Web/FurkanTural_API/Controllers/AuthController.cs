@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Asp.Versioning;
 using FurkanTural_Application.DTOs.Auth;
 using FurkanTural_Application.DTOs.User;
@@ -6,6 +7,7 @@ using FurkanTural_API.Controllers.Base;
 using FurkanTural_API.Models.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace FurkanTural_API.Controllers;
 
@@ -39,6 +41,23 @@ public class AuthController(IAuthService authService) : BaseApiController
             AppKey = request.AppKey,
             AppName = request.AppName
         }, cancellationToken));
+
+    /// <summary>
+    /// Geçerli kullanıcı token'ını aynı kimlik ve app_source ile yenile
+    /// (BFF oturumu sürerken kısa ömürlü JWT yüzünden kullanıcı düşmesin)
+    /// </summary>
+    [HttpPost("refresh")]
+    [Authorize(Policy = "UserOrAdmin")]
+    public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
+    {
+        var sub = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+               ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (!int.TryParse(sub, out var userId))
+            return Unauthorized();
+
+        var appSource = User.FindFirst("app_source")?.Value;
+        return ToActionResult(await _authService.RefreshAsync(userId, appSource, cancellationToken));
+    }
 
     /// <summary>
     /// Yeni üye kaydı oluştur ve giriş token'ı al
