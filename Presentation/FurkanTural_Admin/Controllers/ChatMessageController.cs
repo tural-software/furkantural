@@ -91,6 +91,23 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
         return PartialView("_ChatMessageTable", BuildViewModel(all, search, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
+    /// <summary>
+    /// Sohbet ekini (ses/foto/video) API'nin yetkili ucundan akış olarak sunar.
+    /// Ekler API'de statik sunulmadığından admin önizlemesi bu proxy üzerinden çalışır.
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> Attachment(string file, CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token)) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(file)) return BadRequest();
+
+        var (stream, contentType) = await _chatMessageApiClient.GetAttachmentAsync(file, token, cancellationToken);
+        if (stream is null) return NotFound();
+
+        return File(stream, contentType ?? "application/octet-stream", enableRangeProcessing: true);
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken = default)

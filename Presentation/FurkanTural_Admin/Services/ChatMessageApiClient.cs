@@ -52,6 +52,31 @@ public class ChatMessageApiClient(HttpClient httpClient, ILogger<ChatMessageApiC
         }
     }
 
+    public async Task<(Stream? Stream, string? ContentType)> GetAttachmentAsync(string file, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/message/attachment?file=" + Uri.EscapeDataString(file));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            // Response dispose edilmez: stream tüketildiğinde bağlantı havuza döner (ResponseHeadersRead).
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                response.Dispose();
+                _logger.LogWarning("Ek dosyası alınamadı: {File}, Status: {Status}", file, (int)response.StatusCode);
+                return (null, null);
+            }
+
+            var stream = await response.Content.ReadAsStreamAsync(ct);
+            return (stream, response.Content.Headers.ContentType?.ToString());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ek dosyası alınırken hata oluştu: {File}", file);
+            return (null, null);
+        }
+    }
+
     public async Task<bool> RestoreAsync(int id, string token, CancellationToken ct = default)
     {
         try

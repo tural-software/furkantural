@@ -6,10 +6,10 @@
     'use strict';
 
     function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
-    function audioSrc(r) {
-        var base = (window.__apiBaseUrl || '').replace(/\/$/, '');
+    function attachmentSrc(r) {
+        // Chat ekleri API'de statik sunulmaz; admin oturum token'ıyla sunucu taraflı proxy'den akar.
         var rel = (r.attachmentUrl || '').replace(/^\//, '');
-        return rel.indexOf('/') >= 0 ? base + '/' + rel : base + '/images/uploads/' + rel;
+        return '/ChatMessage/Attachment?file=' + encodeURIComponent(rel);
     }
 
     var MessageDetailConfig = {
@@ -46,8 +46,15 @@
                         icon: 'field-text',
                         html: true,
                         value: function (r) {
-                            if ((r.messageType || '').toLowerCase() === 'audio' && r.attachmentUrl) {
-                                return '<audio controls preload="metadata" src="' + audioSrc(r) + '" style="max-width:100%"></audio>';
+                            var type = (r.messageType || '').toLowerCase();
+                            if (type === 'audio' && r.attachmentUrl) {
+                                return '<audio controls preload="metadata" src="' + attachmentSrc(r) + '" style="max-width:100%"></audio>';
+                            }
+                            if (type === 'image' && r.attachmentUrl) {
+                                return '<img src="' + attachmentSrc(r) + '" alt="Görsel" loading="lazy" style="max-width:100%;max-height:320px;border-radius:8px">';
+                            }
+                            if (type === 'video' && r.attachmentUrl) {
+                                return '<video controls preload="metadata" src="' + attachmentSrc(r) + '" style="max-width:100%;max-height:320px;border-radius:8px"></video>';
                             }
                             return r.content ? esc(r.content) : '—';
                         }
