@@ -41,6 +41,7 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     public IRepository<CallLog> CallLogs => GetRepository<CallLog>();
     public IRepository<Report> Reports => GetRepository<Report>();
     public IRepository<CallPolicy> CallPolicies => GetRepository<CallPolicy>();
+    public IRepository<PushSubscription> PushSubscriptions => GetRepository<PushSubscription>();
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => context.SaveChangesAsync(cancellationToken);

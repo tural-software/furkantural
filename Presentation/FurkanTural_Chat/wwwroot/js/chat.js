@@ -742,6 +742,23 @@
         ov.classList.add('open');
     }
 
+    // Sayfa GİZLİYKEN (başka sekme/uygulama ama hâlâ açık) gelen mesaj için bildirim göster.
+    // Odaktayken in-app yeterli; sayfa tamamen kapalıyken zaten sunucu Web Push atar (çift bildirim olmaz).
+    function maybeNotifyForeground(m) {
+        if (!document.hidden) return;
+        if (!('Notification' in window) || Notification.permission !== 'granted' || !navigator.serviceWorker) return;
+        const f = friends.get(m.senderId);
+        const name = f ? (f.displayName || f.username) : 'Biri';
+        navigator.serviceWorker.ready.then(function (reg) {
+            reg.showNotification('Chatural', {
+                body: name + ' sana mesaj gönderdi',
+                tag: 'chat-message', renotify: true,
+                icon: '/icons/icon-192.png', badge: '/icons/icon-192.png',
+                data: { url: '/Chat' }
+            });
+        }).catch(function () { });
+    }
+
     // ───────── SignalR ─────────
     const connection = new signalR.HubConnectionBuilder()
         .withUrl('/bff/hubs/chat')   // BFF proxy; JWT'yi YARP ekler, WS URL'inde token yok
@@ -758,6 +775,7 @@
             else refreshUnreadDots();
         }
         noteSummary(m.senderId, m);
+        maybeNotifyForeground(m);
     });
 
     connection.on('MessageSent', (m) => {

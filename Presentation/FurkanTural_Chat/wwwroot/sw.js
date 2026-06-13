@@ -1,5 +1,5 @@
-/* Chatural — Service Worker (PWA shell + offline) */
-const CACHE = 'chatural-v10';
+/* Chatural — Service Worker (PWA shell + offline + push) */
+const CACHE = 'chatural-v11';
 
 // App shell — sade path'ler (sürümsüz). Runtime cache ?v'li istekleri ayrıca yakalar.
 const SHELL = [
@@ -15,6 +15,7 @@ const SHELL = [
     '/js/profile.js',
     '/js/consent.js',
     '/js/pwa.js',
+    '/js/notifications.js',
     '/site.webmanifest',
     '/icons/icon-192.png',
     '/icons/icon-512.png',
@@ -35,6 +36,36 @@ self.addEventListener('install', (event) => {
 // Prompt'lu güncelleme: kullanıcı onaylayınca bekleyen SW'yi etkinleştir.
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// ───────── Web Push (uygulama kapalıyken bile bildirim) ─────────
+self.addEventListener('push', (event) => {
+    let data = {};
+    try { data = event.data ? event.data.json() : {}; } catch (e) { data = {}; }
+    const title = data.title || 'Chatural';
+    const options = {
+        body: data.body || 'Yeni bir mesajın var',
+        tag: data.tag || 'chat-message',     // aynı tag → bildirimler üst üste yığılmaz
+        renotify: true,
+        icon: '/icons/icon-192.png',
+        badge: '/icons/icon-192.png',
+        data: { url: data.url || '/Chat' }
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Bildirime tıklayınca açık pencereyi öne getir; yoksa uygulamayı aç.
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const url = (event.notification.data && event.notification.data.url) || '/Chat';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+            for (const c of wins) {
+                if ('focus' in c) { c.focus(); return; }
+            }
+            if (clients.openWindow) return clients.openWindow(url);
+        })
+    );
 });
 
 self.addEventListener('activate', (event) => {

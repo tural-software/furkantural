@@ -24,11 +24,13 @@ public sealed class MessageProtector : IMessageProtector
         var configured = configuration["ChatEncryption:Key"];
 
         // Fail-fast: anahtar yoksa veya hâlâ git'teki public placeholder ise BAŞLATMA.
-        // Aksi halde herkese açık bir string'den türetilmiş zayıf anahtarla şifreleme yapılır ki
-        // bu hiç şifrelememekten beterdir (yanlış güvenlik hissi).
-        if (string.IsNullOrWhiteSpace(configured) || configured.StartsWith("CHANGE_ME", StringComparison.OrdinalIgnoreCase))
+        // ("CHANGE_ME..." ya da "####:base64:####" konvansiyonu.) Aksi halde herkese açık bir
+        // string'den türetilmiş zayıf anahtarla şifreleme yapılır ki bu hiç şifrelememekten beterdir.
+        if (string.IsNullOrWhiteSpace(configured)
+            || configured.StartsWith("CHANGE_ME", StringComparison.OrdinalIgnoreCase)
+            || configured.Contains("####"))
             throw new InvalidOperationException(
-                "ChatEncryption:Key yapılandırılmamış. Mesaj at-rest şifrelemesi için 32+ karakterlik gizli bir anahtar gerekir.");
+                "ChatEncryption:Key yapılandırılmamış (placeholder). Mesaj at-rest şifrelemesi için gerçek bir gizli anahtar gerekir.");
 
         // Anahtar herhangi bir uzunlukta string olabilir → SHA-256 ile sabit 32 baytlık AES-256 anahtarına türet.
         _key = SHA256.HashData(Encoding.UTF8.GetBytes(configured));

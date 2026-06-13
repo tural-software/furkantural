@@ -15,6 +15,8 @@ public class ChatMessageService(
     IUserFriendService userFriendService,
     IMessageRateLimiter messageRateLimiter,
     IMessageProtector messageProtector,
+    IPresenceTracker presenceTracker,
+    IPushSender pushSender,
     ActivityLogger activityLogger,
     IClock clock) : IChatMessageService
 {
@@ -22,8 +24,25 @@ public class ChatMessageService(
     private readonly IUserFriendService _userFriendService = userFriendService;
     private readonly IMessageRateLimiter _messageRateLimiter = messageRateLimiter;
     private readonly IMessageProtector _messageProtector = messageProtector;
+    private readonly IPresenceTracker _presenceTracker = presenceTracker;
+    private readonly IPushSender _pushSender = pushSender;
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly IClock _clock = clock;
+
+    /// <summary>
+    /// Alıcı çevrimdışıysa (açık SignalR bağlantısı yok) Web Push bildirimi gönderir.
+    /// Çevrimiçiyse SignalR zaten ulaştırır; açık-odaksız sekmede istemci kendi Notification'ını gösterir.
+    /// "En iyi çaba": push hatası mesaj gönderimini etkilemez.
+    /// </summary>
+    private async Task PushIfReceiverOfflineAsync(int senderId, int receiverId, CancellationToken cancellationToken)
+    {
+        if (_presenceTracker.IsOnline(receiverId))
+            return;
+
+        var sender = await _unitOfWork.Users.GetByIdAsync(senderId, cancellationToken);
+        var name = sender?.DisplayName ?? sender?.Username ?? "Biri";
+        await _pushSender.SendMessageNotificationAsync(receiverId, name, cancellationToken);
+    }
 
     /// <summary>İstemcideki maxlength ile aynı; sunucu tarafı kontrat olarak da uygulanır.</summary>
     private const int MaxContentLength = 4000;
@@ -66,6 +85,8 @@ public class ChatMessageService(
         await _unitOfWork.ChatMessages.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        await PushIfReceiverOfflineAsync(senderId, receiverId, cancellationToken);
+
         // İstemciye/SignalR'a düz metin döner (elimizde zaten var; tekrar çözmeye gerek yok).
         var dto = entity.ToDto();
         dto.Content = plaintext;
@@ -101,6 +122,8 @@ public class ChatMessageService(
         };
         await _unitOfWork.ChatMessages.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await PushIfReceiverOfflineAsync(senderId, receiverId, cancellationToken);
 
         return Result<ChatMessageDto>.Ok(entity.ToDto());
     }
@@ -140,6 +163,8 @@ public class ChatMessageService(
         await _unitOfWork.ChatMessages.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        await PushIfReceiverOfflineAsync(senderId, receiverId, cancellationToken);
+
         return Result<ChatMessageDto>.Ok(entity.ToDto());
     }
 
@@ -169,12 +194,34 @@ public class ChatMessageService(
         return dto;
     }
 
-    // Admin görünümleri de içeriği çözülmüş görür (panel araması düz metin üzerinde çalışır).
-    private AdminChatMessageDto ToDecryptedAdminDto(ChatMessage entity)
+    // Admin görünümleri de içeriği çözülmüş görür (panel araması düz metin üzerinde çalışır)
+    // ve gönderen/alıcı kullanıcı adlarıyla zenginleştirilir.
+    private AdminChatMessageDto ToDecryptedAdminDto(ChatMessage entity, IReadOnlyDictionary<int, string?> usernames)
     {
         var dto = entity.ToAdminDto();
         dto.Content = _messageProtector.Unprotect(dto.Content);
+        dto.SenderUsername = usernames.GetValueOrDefault(entity.SenderId);
+        dto.ReceiverUsername = usernames.GetValueOrDefault(entity.ReceiverId);
         return dto;
+    }
+
+    /// <summary>Tüm kullanıcıların id→kullanıcı adı eşlemesi (silinmişler dahil; admin tüm mesajları görür).</summary>
+    private async Task<Dictionary<int, string?>> LoadAllUsernamesAsync(CancellationToken cancellationToken)
+    {
+        var users = await _unitOfWork.Users.GetAllForAdminAsync(cancellationToken);
+        return users.ToDictionary(u => u.Id, u => (string?)u.Username);
+    }
+
+    /// <summary>Tek bir mesajın gönderen+alıcısı için kullanıcı adı eşlemesi (silinmişler dahil).</summary>
+    private async Task<Dictionary<int, string?>> LoadUsernamesForAsync(ChatMessage entity, CancellationToken cancellationToken)
+    {
+        var dict = new Dictionary<int, string?>();
+        foreach (var id in new[] { entity.SenderId, entity.ReceiverId }.Distinct())
+        {
+            var user = await _unitOfWork.Users.GetByIdForAdminAsync(id, cancellationToken);
+            if (user is not null) dict[id] = user.Username;
+        }
+        return dict;
     }
 
     public async Task<Result> MarkConversationReadAsync(int currentUserId, int otherUserId, CancellationToken cancellationToken = default)
@@ -298,7 +345,8 @@ public class ChatMessageService(
     public async Task<Result<IEnumerable<AdminChatMessageDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _unitOfWork.ChatMessages.GetAllForAdminAsync(cancellationToken);
-        return Result<IEnumerable<AdminChatMessageDto>>.Ok(entities.OrderByDescending(e => e.CreatedAt).Select(ToDecryptedAdminDto));
+        var usernames = await LoadAllUsernamesAsync(cancellationToken);
+        return Result<IEnumerable<AdminChatMessageDto>>.Ok(entities.OrderByDescending(e => e.CreatedAt).Select(e => ToDecryptedAdminDto(e, usernames)));
     }
 
     public async Task<PagedResult<AdminChatMessageDto>> GetAllPagedForAdminAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
@@ -307,7 +355,8 @@ public class ChatMessageService(
             .OrderByDescending(e => e.CreatedAt)
             .ToList();
 
-        var page = all.Skip((pageNumber - 1) * pageSize).Take(pageSize).Select(ToDecryptedAdminDto);
+        var usernames = await LoadAllUsernamesAsync(cancellationToken);
+        var page = all.Skip((pageNumber - 1) * pageSize).Take(pageSize).Select(e => ToDecryptedAdminDto(e, usernames));
         return PagedResult<AdminChatMessageDto>.Ok(page, all.Count, pageNumber, pageSize);
     }
 
@@ -317,7 +366,7 @@ public class ChatMessageService(
         if (entity is null)
             return Result<AdminChatMessageDto>.Fail("Mesaj bulunamadı.", statusCode: 404);
 
-        return Result<AdminChatMessageDto>.Ok(ToDecryptedAdminDto(entity));
+        return Result<AdminChatMessageDto>.Ok(ToDecryptedAdminDto(entity, await LoadUsernamesForAsync(entity, cancellationToken)));
     }
 
     public async Task<Result<AdminChatMessageDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
@@ -334,7 +383,7 @@ public class ChatMessageService(
         await _unitOfWork.ChatMessages.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<AdminChatMessageDto>.Ok(ToDecryptedAdminDto(entity));
+        return Result<AdminChatMessageDto>.Ok(ToDecryptedAdminDto(entity, await LoadUsernamesForAsync(entity, cancellationToken)));
     }
 
     public async Task<Result<AdminChatMessageDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
@@ -350,7 +399,7 @@ public class ChatMessageService(
         await _unitOfWork.ChatMessages.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<AdminChatMessageDto>.Ok(ToDecryptedAdminDto(entity));
+        return Result<AdminChatMessageDto>.Ok(ToDecryptedAdminDto(entity, await LoadUsernamesForAsync(entity, cancellationToken)));
     }
 
     public async Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default)

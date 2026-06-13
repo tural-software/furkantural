@@ -5,6 +5,10 @@ public class AdminChatMessageDto
     public int Id { get; set; }
     public int SenderId { get; set; }
     public int ReceiverId { get; set; }
+    /// <summary>Gönderenin kullanıcı adı (admin görünümü için zenginleştirilir).</summary>
+    public string? SenderUsername { get; set; }
+    /// <summary>Alıcının kullanıcı adı (admin görünümü için zenginleştirilir).</summary>
+    public string? ReceiverUsername { get; set; }
     public string? Content { get; set; }
     public bool IsRead { get; set; }
     public DateTime? ReadAt { get; set; }

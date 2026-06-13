@@ -41,6 +41,9 @@ input, button, .friend-item, .msg .bubble, #toastBox {
     background-color: var(--bg-card-solid);
     border-color: var(--accent);
 }
+/* Bildirim zili açıkken vurgulu; engelliyken soluk. */
+#notifyToggleBtn.active { color: var(--accent); border-color: var(--accent); }
+#notifyToggleBtn[data-state="blocked"] { opacity: .5; }
 .theme-toggle-btn:hover [data-theme-icon] {
     animation: spin 0.5s ease-in-out;
 }

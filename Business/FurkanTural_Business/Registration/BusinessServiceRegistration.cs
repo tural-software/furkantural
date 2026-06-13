@@ -42,6 +42,8 @@ public static class BusinessServiceRegistration
         services.AddSingleton<IMessageRateLimiter, MessageRateLimiter>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IMessageProtector, MessageProtector>();
+        services.AddScoped<IPushSubscriptionService, PushSubscriptionService>();
+        services.AddScoped<IPushSender, PushSender>();
 
         return services;
     }

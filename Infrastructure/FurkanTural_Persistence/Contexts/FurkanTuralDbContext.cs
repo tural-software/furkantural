@@ -27,6 +27,7 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     public DbSet<CallLog> CallLogs => Set<CallLog>();
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<CallPolicy> CallPolicies => Set<CallPolicy>();
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
 
     // Tüm DateTime'ları DB'den UTC olarak materyalize et (Kind=Utc) → System.Text.Json daima 'Z' ile yazar.
     // Yazarken değer korunur (kanonik kural: her zaman UTC saklanır).

@@ -44,6 +44,7 @@
             }
             <input type="file" id="avatarFileInput" accept="image/*" hidden />
             <div class="me-name">@Model.DisplayName</div>
+            <button type="button" id="notifyToggleBtn" class="theme-toggle-btn" aria-label="Bildirimler" title="Bildirimleri aç" hidden>🔔</button>
             <button type="button" id="audioSettingsBtn" class="theme-toggle-btn" aria-label="Ses ve cihaz ayarları" title="Ses ve cihaz ayarları">⚙️</button>
             <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Temayı değiştir" title="Temayı değiştir">
                 <span data-theme-icon>🌙</span>
@@ -162,4 +163,5 @@
     <script src="~/js/chat.js" asp-append-version="true"></script>
     <script src="~/js/call.js" asp-append-version="true"></script>
     <script src="~/js/profile.js" asp-append-version="true"></script>
+    <script src="~/js/notifications.js" asp-append-version="true"></script>
 }
