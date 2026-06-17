@@ -18,6 +18,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @* Scroll-reveal'in boyanmadan önce gizlenebilmesi için .js işaretini erken ekle (FOUC önleme). *@
+    <script>document.documentElement.classList.add('js');</script>
     <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | Furkan Tural" : "Furkan Tural")</title>
     <meta name="description" content="@(ViewData["MetaDescription"] ?? SharedLocalizer["Seo_Description"])" />
     <meta name="author" content="Furkan Tural" />
@@ -98,6 +100,7 @@
 
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/pwa.js" asp-append-version="true"></script>
+    <script src="~/js/reveal.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

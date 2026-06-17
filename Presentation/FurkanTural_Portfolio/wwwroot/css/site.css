@@ -420,8 +420,16 @@ a:hover { color: var(--color-accent-hover); }
   text-align: start;
 }
 
+/* ---- Scroll-reveal ---- */
+/* Gizleme YALNIZCA JS aktifken (.js) uygulanır → JS yoksa içerik tam görünür.
+   Sadece opacity/transform kullanılır (ekran okuyucu içeriği görmeye devam eder). */
+.js .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.js .reveal.is-visible { opacity: 1; transform: none; }
+
 /* Erişilebilirlik: hareketi azaltma tercihine saygı göster. */
 @media (prefers-reduced-motion: reduce) {
+  /* Reveal öğeleri asla gizli kalmasın (IO tetiklenmese bile görünür). */
+  .js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
