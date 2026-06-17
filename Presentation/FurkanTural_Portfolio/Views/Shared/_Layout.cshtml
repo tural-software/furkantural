@@ -1,4 +1,19 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var canonical = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var seoTitle = (ViewData["Title"] as string) ?? "Furkan Tural";
+    var seoDescription = (ViewData["MetaDescription"] as string) ?? SharedLocalizer["Seo_Description"].Value;
+    var personJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
+    {
+        ["@context"] = "https://schema.org",
+        ["@type"] = "Person",
+        ["name"] = "Furkan Tural",
+        ["url"] = siteUrl,
+        ["jobTitle"] = "Full-stack Geliştirici",
+        ["description"] = seoDescription
+    });
+}
+<!DOCTYPE html>
 <html lang="tr" data-theme="dark">
 <head>
     <meta charset="utf-8" />
@@ -6,9 +21,18 @@
     <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | Furkan Tural" : "Furkan Tural")</title>
     <meta name="description" content="@(ViewData["MetaDescription"] ?? SharedLocalizer["Seo_Description"])" />
     <meta name="author" content="Furkan Tural" />
+    <meta name="theme-color" content="#0d1117" />
+    <link rel="canonical" href="@canonical" />
+    <meta property="og:site_name" content="Furkan Tural" />
     <meta property="og:title" content="@(ViewData["Title"] ?? "Furkan Tural")" />
     <meta property="og:description" content="@(ViewData["MetaDescription"] ?? SharedLocalizer["Seo_Description"])" />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:url" content="@canonical" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@seoTitle" />
+    <meta name="twitter:description" content="@seoDescription" />
+    @Html.Raw("<script type=\"application/ld+json\">" + personJsonLd + "</script>")
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
