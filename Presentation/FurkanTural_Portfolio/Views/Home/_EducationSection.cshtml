@@ -1,0 +1,40 @@
+@model IReadOnlyList<EducationViewModel>
+<section class="section education-section" id="education">
+    <div class="section-container">
+        <div class="section-header">
+            <span class="section-eyebrow">@SharedLocalizer["Education_Eyebrow"]</span>
+            <h2 class="section-title">@SharedLocalizer["Education_Title"]</h2>
+            <p class="section-desc">@SharedLocalizer["Education_Desc"]</p>
+        </div>
+        @if (Model != null && Model.Count > 0)
+        {
+            <div class="timeline">
+                @foreach (var edu in Model)
+                {
+                    var start = edu.StartDate?.ToString("MMMM yyyy");
+                    var end = edu.EndDate?.ToString("MMMM yyyy") ?? SharedLocalizer["Experience_Present"].Value;
+                    var detail = string.Join(" • ", new[] { edu.Degree, edu.FieldOfStudy }
+                        .Where(s => !string.IsNullOrWhiteSpace(s)));
+                    <div class="timeline-item">
+                        <span class="timeline-marker" aria-hidden="true"></span>
+                        <div class="timeline-content">
+                            <h3 class="timeline-title">@edu.Institution</h3>
+                            @if (!string.IsNullOrWhiteSpace(detail))
+                            {
+                                <span class="timeline-org">@detail</span>
+                            }
+                            @if (start != null)
+                            {
+                                <span class="timeline-date">@start – @end</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="section-empty">@SharedLocalizer["Education_Empty"]</p>
+        }
+    </div>
+</section>

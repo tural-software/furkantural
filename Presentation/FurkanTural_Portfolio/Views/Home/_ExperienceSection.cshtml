@@ -1,0 +1,38 @@
+@model IReadOnlyList<ExperienceViewModel>
+<section class="section experience-section" id="experience">
+    <div class="section-container">
+        <div class="section-header">
+            <span class="section-eyebrow">@SharedLocalizer["Experience_Eyebrow"]</span>
+            <h2 class="section-title">@SharedLocalizer["Experience_Title"]</h2>
+            <p class="section-desc">@SharedLocalizer["Experience_Desc"]</p>
+        </div>
+        @if (Model != null && Model.Count > 0)
+        {
+            <div class="timeline">
+                @foreach (var exp in Model)
+                {
+                    var start = exp.StartDate?.ToString("MMMM yyyy");
+                    var end = exp.EndDate?.ToString("MMMM yyyy") ?? SharedLocalizer["Experience_Present"].Value;
+                    <div class="timeline-item">
+                        <span class="timeline-marker" aria-hidden="true"></span>
+                        <div class="timeline-content">
+                            <h3 class="timeline-title">@exp.Position</h3>
+                            @if (!string.IsNullOrWhiteSpace(exp.CompanyName))
+                            {
+                                <span class="timeline-org">@exp.CompanyName</span>
+                            }
+                            @if (start != null)
+                            {
+                                <span class="timeline-date">@start – @end</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="section-empty">@SharedLocalizer["Experience_Empty"]</p>
+        }
+    </div>
+</section>

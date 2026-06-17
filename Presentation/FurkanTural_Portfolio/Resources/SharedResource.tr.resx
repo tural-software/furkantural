@@ -20,6 +20,8 @@
   <!-- Navbar -->
   <data name="Nav_About" xml:space="preserve"><value>Hakkımda</value></data>
   <data name="Nav_Skills" xml:space="preserve"><value>Yetenekler</value></data>
+  <data name="Nav_Experience" xml:space="preserve"><value>Deneyim</value></data>
+  <data name="Nav_Education" xml:space="preserve"><value>Eğitim</value></data>
   <data name="Nav_Projects" xml:space="preserve"><value>Projeler</value></data>
   <data name="Nav_Music" xml:space="preserve"><value>Müzik</value></data>
   <data name="Nav_Pricing" xml:space="preserve"><value>Fiyatlandırma</value></data>
@@ -53,6 +55,19 @@
   <data name="Skill_Level_Advanced" xml:space="preserve"><value>Uzman</value></data>
   <data name="Skill_Level_Intermediate" xml:space="preserve"><value>İleri</value></data>
   <data name="Skill_Level_Beginner" xml:space="preserve"><value>Partner</value></data>
+
+  <!-- Experience -->
+  <data name="Experience_Eyebrow" xml:space="preserve"><value>Deneyim</value></data>
+  <data name="Experience_Title" xml:space="preserve"><value>İş Deneyimlerim</value></data>
+  <data name="Experience_Desc" xml:space="preserve"><value>Profesyonel kariyerimde görev aldığım pozisyonlar.</value></data>
+  <data name="Experience_Present" xml:space="preserve"><value>Halen</value></data>
+  <data name="Experience_Empty" xml:space="preserve"><value>Deneyim bilgileri yakında eklenecek.</value></data>
+
+  <!-- Education -->
+  <data name="Education_Eyebrow" xml:space="preserve"><value>Eğitim</value></data>
+  <data name="Education_Title" xml:space="preserve"><value>Eğitim Geçmişim</value></data>
+  <data name="Education_Desc" xml:space="preserve"><value>Akademik geçmişim ve aldığım eğitimler.</value></data>
+  <data name="Education_Empty" xml:space="preserve"><value>Eğitim bilgileri yakında eklenecek.</value></data>
 
   <!-- Projects -->
   <data name="Projects_Eyebrow" xml:space="preserve"><value>Projeler</value></data>

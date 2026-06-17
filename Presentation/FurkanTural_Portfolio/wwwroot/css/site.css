@@ -255,6 +255,33 @@ a:hover { color: var(--color-accent-hover); }
 .skill-bar__fill { height: 100%; background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover)); border-radius: 3px; transition: width 1s ease; }
 .skill-card__pct { font-size: 0.75rem; color: var(--color-text-muted); }
 
+/* ---- Experience & Education (timeline) ---- */
+.experience-section { background: var(--color-bg-secondary); }
+.timeline { max-width: 760px; margin: 0 auto; position: relative; padding-left: 1.75rem; }
+.timeline::before {
+    content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px;
+    width: 2px; background: var(--color-border);
+}
+.timeline-item { position: relative; padding-bottom: 1.75rem; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-marker {
+    position: absolute; left: -1.75rem; top: 4px;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--color-bg); border: 2px solid var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-accent-glow);
+}
+.timeline-content {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.4rem;
+    transition: border-color var(--transition);
+}
+.timeline-content:hover { border-color: var(--color-accent); }
+.timeline-title { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.2rem; }
+.timeline-org { display: block; color: var(--color-accent); font-size: 0.9rem; font-weight: 500; }
+.timeline-date { display: block; color: var(--color-text-muted); font-size: 0.8rem; margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
+
 /* ---- Projects ---- */
 .projects-section { background: var(--color-bg-secondary); }
 .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
