@@ -62,7 +62,33 @@
       depthWrite: false
     });
     var points = new THREE.Points(geometry, material);
-    scene.add(points);
+
+    // Parçacıkları ve bağlantı çizgilerini tek grupta döndür; böylece çizgiler
+    // statik (yerel) konumlardan BİR KEZ hesaplanır → kare-başına ek maliyet yok.
+    var group = new THREE.Group();
+    group.add(points);
+
+    // Constellation: yakın parçacıkları ince çizgilerle bağla (seyrek, zarif).
+    var THRESH = 72, THRESH2 = THRESH * THRESH, MAX_SEG = 320;
+    var linePos = [];
+    for (var a = 0; a < count; a++) {
+      var ax = positions[a * 3], ay = positions[a * 3 + 1], az = positions[a * 3 + 2];
+      for (var b = a + 1; b < count; b++) {
+        var dx = ax - positions[b * 3], dy = ay - positions[b * 3 + 1], dz = az - positions[b * 3 + 2];
+        if (dx * dx + dy * dy + dz * dz < THRESH2) {
+          linePos.push(ax, ay, az, positions[b * 3], positions[b * 3 + 1], positions[b * 3 + 2]);
+        }
+      }
+      if (linePos.length >= MAX_SEG * 6) break;
+    }
+    if (linePos.length) {
+      var lineGeo = new THREE.BufferGeometry();
+      lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(linePos), 3));
+      var lineMat = new THREE.LineBasicMaterial({ color: 0x58a6ff, transparent: true, opacity: 0.12, depthWrite: false });
+      group.add(new THREE.LineSegments(lineGeo, lineMat));
+    }
+
+    scene.add(group);
 
     var raf = null;
     var mouseX = 0, mouseY = 0;
@@ -78,8 +104,8 @@
 
     function frame(now) {
       var t = (now - t0) * 0.0001;
-      points.rotation.y = t;
-      points.rotation.x = t * 0.4;
+      group.rotation.y = t;
+      group.rotation.x = t * 0.4;
       // Hafif fare parallax'ı yumuşatarak uygula.
       camera.position.x += (mouseX * 40 - camera.position.x) * 0.04;
       camera.position.y += (-mouseY * 40 - camera.position.y) * 0.04;
