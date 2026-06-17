@@ -58,43 +58,44 @@
     return r;
   }
 
-  // === FİKİR 1: Hero imza objesi — nabız atan wireframe ikosahedron =========
-  // Geometri (yazılım) + ritim (müzik). İmlece döner, sahte "beat" ile nefes alır.
+  // === FİKİR 1: Hero imza objesi — gerçek dokulu Dünya + yörüngede dönen Ay ===
+  // NASA blue-marble dokusu (self-host: /img/earth_atmos_2048.jpg), eksen eğikliği
+  // ~23.5°, yönlü güneş ışığı → gerçek gezegen gündüz/gece terminatörü. Ay ayrı bir
+  // pivot grubunda dünyanın yörüngesinde dolanır. İmlece göre tüm sistem hafif eğilir.
   function initHero(THREE) {
     var c = document.getElementById('ftHero'); if (!c) return;
     var r = makeRenderer(THREE, c);
     var scene = new THREE.Scene();
-    var cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100); cam.position.z = 4.2;
+    var cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100); cam.position.z = 5.9;
 
-    // Mini globe — küre üzerine dağılmış yuvarlak BONCUKLAR (nokta). İç dolu küre
-    // ve wireframe çizgileri YOK; yalnız boncuklar görünür. Geodezik (icosahedron)
-    // dağılım eşit aralıklı düğümler verir → globe hissi.
-    var geo = new THREE.IcosahedronGeometry(1.4, 3);
-    var base = geo.attributes.position.array.slice();
-    var pa = geo.attributes.position;
-    var beadMat = new THREE.ShaderMaterial({
-      transparent: true, depthWrite: false,
-      uniforms: { u_color: { value: new THREE.Color(0x38bdf8) }, u_size: { value: 16.0 } },
-      vertexShader: [
-        'uniform float u_size;',
-        'void main(){',
-        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
-        '  gl_Position = projectionMatrix * mv;',
-        '  gl_PointSize = u_size * (2.2 / -mv.z);',   // perspektif boyut → derinlik hissi
-        '}'
-      ].join('\n'),
-      fragmentShader: [
-        'uniform vec3 u_color;',
-        'void main(){',
-        '  float d = distance(gl_PointCoord, vec2(0.5));',
-        '  if (d > 0.5) discard;',                    // yuvarlak boncuk
-        '  float a = smoothstep(0.5, 0.12, d);',
-        '  gl_FragColor = vec4(u_color, a);',
-        '}'
-      ].join('\n')
-    });
-    var globe = new THREE.Points(geo, beadMat);
-    scene.add(globe);
+    // Işık: yönlü "güneş" (gündüz yarımküresini aydınlatır → terminatör) + hafif mavi
+    // ortam dolgusu (gece tarafı tamamen siyah kalmasın, uzayda okunur dursun).
+    var sun = new THREE.DirectionalLight(0xffffff, 2.4);
+    sun.position.set(-3, 1.4, 2.2); scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x223a52, 0.55));
+
+    var loader = new THREE.TextureLoader();
+    function tex(url) { var t = loader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+
+    // Tüm sistem (dünya + ay yörüngesi) cursor parallax için tek grupta.
+    var system = new THREE.Group(); scene.add(system);
+
+    // Dünya — gerçek doku, mat yüzey (PBR). Eksen eğikliği gerçekçi görünüm verir.
+    var earth = new THREE.Mesh(
+      new THREE.SphereGeometry(1.2, 48, 48),
+      new THREE.MeshStandardMaterial({ map: tex('/img/earth_atmos_2048.jpg'), roughness: 1, metalness: 0 })
+    );
+    earth.rotation.z = 0.41; // ~23.5°
+    system.add(earth);
+
+    // Ay — pivot grubu döndürülerek dünyanın çevresinde yörüngeye sokulur; yörünge
+    // düzlemi hafif eğik (görsel derinlik). Ay yüzü ayrıca yavaşça döner.
+    var moonPivot = new THREE.Group(); moonPivot.rotation.x = 0.42; system.add(moonPivot);
+    var moon = new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 32, 32),
+      new THREE.MeshStandardMaterial({ map: tex('/img/moon_1024.jpg'), roughness: 1, metalness: 0 })
+    );
+    moon.position.x = 1.9; moonPivot.add(moon);
 
     var mx = 0, my = 0;
     c.addEventListener('pointermove', function (e) {
@@ -106,22 +107,13 @@
     function resize() { var w = c.clientWidth, h = c.clientHeight; if (!w || !h) return; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
     window.addEventListener('resize', resize); resize();
 
-    var t0 = performance.now();
-    runLoop(c, function (now) {
-      var t = (now - t0) * 0.001;
-      var beat = 0.5 + 0.5 * Math.sin(t * 2.2);
-      var kick = Math.pow(0.5 + 0.5 * Math.sin(t * 4.4), 4);
-      var amp = 0.03 + beat * 0.025 + kick * 0.07;   // boncuklar hafifçe nefes alır
-      for (var i = 0; i < pa.count; i++) {
-        var ix = i * 3, bx = base[ix], by = base[ix + 1], bz = base[ix + 2];
-        var n = Math.sin(bx * 3 + t * 1.5) + Math.sin(by * 3 + t * 1.3) + Math.sin(bz * 3 + t * 1.1);
-        var d = 1 + amp * n * 0.3;
-        pa.array[ix] = bx * d; pa.array[ix + 1] = by * d; pa.array[ix + 2] = bz * d;
-      }
-      pa.needsUpdate = true;
-      globe.rotation.y += 0.004; globe.rotation.x = my * 0.6; globe.rotation.z = mx * 0.4;
-      globe.scale.setScalar(1 + kick * 0.05);
-      cam.position.x += (mx * 1.0 - cam.position.x) * 0.05; cam.lookAt(0, 0, 0);
+    runLoop(c, function () {
+      earth.rotation.y += 0.0016;       // dünya kendi ekseninde döner
+      moonPivot.rotation.y += 0.0068;   // ay yörüngede dolanır
+      moon.rotation.y += 0.002;         // ay yüzü yavaşça döner
+      // cursor parallax — sistem imlece göre yumuşakça eğilir
+      system.rotation.x += (my * 0.5 - system.rotation.x) * 0.05;
+      system.rotation.y += (mx * 0.5 - system.rotation.y) * 0.05;
       r.render(scene, cam);
     });
   }
