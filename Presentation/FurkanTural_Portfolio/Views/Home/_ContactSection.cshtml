@@ -1,30 +1,30 @@
 <section class="section contact-section" id="contact">
     <div class="section-container">
         <div class="section-header">
-            <span class="section-eyebrow">@L["Contact_Eyebrow"]</span>
-            <h2 class="section-title">@L["Contact_Title"]</h2>
-            <p class="section-desc">@L["Contact_Desc"]</p>
+            <span class="section-eyebrow">@SharedLocalizer["Contact_Eyebrow"]</span>
+            <h2 class="section-title">@SharedLocalizer["Contact_Title"]</h2>
+            <p class="section-desc">@SharedLocalizer["Contact_Desc"]</p>
         </div>
         <div class="contact-form-wrapper">
             <form id="contactForm" class="contact-form" novalidate>
                 @Html.AntiForgeryToken()
                 <div class="form-group">
-                    <label for="contactName">@L["Contact_Form_Name"]</label>
+                    <label for="contactName">@SharedLocalizer["Contact_Form_Name"]</label>
                     <input type="text" id="contactName" name="Name" class="form-input" maxlength="200" required />
                 </div>
                 <div class="form-group">
-                    <label for="contactEmail">@L["Contact_Form_Email"]</label>
+                    <label for="contactEmail">@SharedLocalizer["Contact_Form_Email"]</label>
                     <input type="email" id="contactEmail" name="Email" class="form-input" maxlength="256" required />
                 </div>
                 <div class="form-group">
-                    <label for="contactMessage">@L["Contact_Form_Message"]</label>
+                    <label for="contactMessage">@SharedLocalizer["Contact_Form_Message"]</label>
                     <textarea id="contactMessage" name="Message" class="form-input form-textarea" maxlength="2000" required rows="5"></textarea>
                 </div>
                 <div class="cf-turnstile" data-sitekey="__TURNSTILE_SITE_KEY__" data-callback="onTurnstileSuccess"></div>
                 <input type="hidden" id="turnstileToken" name="TurnstileToken" />
                 <button type="submit" id="contactSubmitBtn" class="btn btn-primary btn-block">
-                    <span id="contactSubmitText">@L["Contact_Form_Submit"]</span>
-                    <span id="contactSendingText" style="display:none">@L["Contact_Form_Sending"]</span>
+                    <span id="contactSubmitText">@SharedLocalizer["Contact_Form_Submit"]</span>
+                    <span id="contactSendingText" style="display:none">@SharedLocalizer["Contact_Form_Sending"]</span>
                 </button>
             </form>
         </div>

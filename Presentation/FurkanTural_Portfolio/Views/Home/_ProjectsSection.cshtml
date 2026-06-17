@@ -2,9 +2,9 @@
 <section class="section projects-section" id="projects">
     <div class="section-container">
         <div class="section-header">
-            <span class="section-eyebrow">@L["Projects_Eyebrow"]</span>
-            <h2 class="section-title">@L["Projects_Title"]</h2>
-            <p class="section-desc">@L["Projects_Desc"]</p>
+            <span class="section-eyebrow">@SharedLocalizer["Projects_Eyebrow"]</span>
+            <h2 class="section-title">@SharedLocalizer["Projects_Title"]</h2>
+            <p class="section-desc">@SharedLocalizer["Projects_Desc"]</p>
         </div>
         @if (Model != null && Model.Count > 0)
         {
@@ -28,11 +28,11 @@
                         <div class="project-card__footer">
                             @if (!string.IsNullOrWhiteSpace(project.DemoUrl))
                             {
-                                <a href="@project.DemoUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">@L["Project_View_Demo"]</a>
+                                <a href="@project.DemoUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">@SharedLocalizer["Project_View_Demo"]</a>
                             }
                             @if (!string.IsNullOrWhiteSpace(project.GitHubUrl))
                             {
-                                <a href="@project.GitHubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">@L["Project_View_Source"]</a>
+                                <a href="@project.GitHubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">@SharedLocalizer["Project_View_Source"]</a>
                             }
                         </div>
                     </div>
