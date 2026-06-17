@@ -13,19 +13,22 @@ public class HomeController(IPortfolioApiService apiService, IPortfolioContactCl
 
     public async Task<IActionResult> Index(CancellationToken ct)
     {
-        var skills = await _apiService.GetSkillsAsync(ct);
-        var projects = await _apiService.GetProjectsAsync(ct);
-        var songs = await _apiService.GetSongsAsync(ct);
-        var experiences = await _apiService.GetExperiencesAsync(ct);
-        var educations = await _apiService.GetEducationsAsync(ct);
+        // Bağımsız okumalar; sıralı beklemek yerine paralel çalıştırılır.
+        var skillsTask = _apiService.GetSkillsAsync(ct);
+        var projectsTask = _apiService.GetProjectsAsync(ct);
+        var songsTask = _apiService.GetSongsAsync(ct);
+        var experiencesTask = _apiService.GetExperiencesAsync(ct);
+        var educationsTask = _apiService.GetEducationsAsync(ct);
+
+        await Task.WhenAll(skillsTask, projectsTask, songsTask, experiencesTask, educationsTask);
 
         var vm = new IndexViewModel
         {
-            Skills = skills,
-            Projects = projects,
-            Songs = songs,
-            Experiences = experiences,
-            Educations = educations
+            Skills = await skillsTask,
+            Projects = await projectsTask,
+            Songs = await songsTask,
+            Experiences = await experiencesTask,
+            Educations = await educationsTask
         };
 
         ViewBag.TurnstileSiteKey = await _appConfigService.GetTurnstileSiteKeyAsync(ct);
