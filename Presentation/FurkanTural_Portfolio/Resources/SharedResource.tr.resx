@@ -85,6 +85,11 @@
   <data name="Contact_Toast_Success" xml:space="preserve"><value>Mesajınız başarıyla gönderildi!</value></data>
   <data name="Contact_Toast_Error" xml:space="preserve"><value>Mesaj gönderilemedi. Lütfen tekrar deneyin.</value></data>
 
+  <!-- Boş durum mesajları -->
+  <data name="Skills_Empty" xml:space="preserve"><value>Yetenekler yakında eklenecek.</value></data>
+  <data name="Projects_Empty" xml:space="preserve"><value>Projeler yakında eklenecek.</value></data>
+  <data name="Songs_Empty" xml:space="preserve"><value>Müzik çalışmaları yakında eklenecek.</value></data>
+
   <!-- Consent -->
   <data name="Consent_Title" xml:space="preserve"><value>Çerez Bildirimi</value></data>
   <data name="Consent_Message" xml:space="preserve"><value>Bu site deneyimi iyileştirmek için çerezler kullanmaktadır.</value></data>

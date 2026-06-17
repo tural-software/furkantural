@@ -11,10 +11,10 @@
             <div class="skills-grid">
                 @foreach (var skill in Model)
                 {
-                    var level = skill.Proficiency >= 91 ? L["Skill_Level_Expert"].Value
-                              : skill.Proficiency >= 76 ? L["Skill_Level_Advanced"].Value
-                              : skill.Proficiency >= 51 ? L["Skill_Level_Intermediate"].Value
-                              : L["Skill_Level_Beginner"].Value;
+                    var level = skill.Proficiency >= 91 ? SharedLocalizer["Skill_Level_Expert"].Value
+                              : skill.Proficiency >= 76 ? SharedLocalizer["Skill_Level_Advanced"].Value
+                              : skill.Proficiency >= 51 ? SharedLocalizer["Skill_Level_Intermediate"].Value
+                              : SharedLocalizer["Skill_Level_Beginner"].Value;
                     <div class="skill-card">
                         <div class="skill-card__header">
                             <span class="skill-card__name">@skill.Name</span>
@@ -27,6 +27,10 @@
                     </div>
                 }
             </div>
+        }
+        else
+        {
+            <p class="section-empty">@SharedLocalizer["Skills_Empty"]</p>
         }
     </div>
 </section>
