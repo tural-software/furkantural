@@ -6,6 +6,10 @@
             <h2 class="section-title">@SharedLocalizer["Songs_Title"]</h2>
             <p class="section-desc">@SharedLocalizer["Songs_Desc"]</p>
         </div>
+
+        @* 3D müzik visualizer — portfolio-3d.js bu canvas'a bağlanır (#ftMusic). *@
+        <canvas id="ftMusic" class="music-visualizer" aria-hidden="true"></canvas>
+
         @if (Model != null && Model.Count > 0)
         {
             <div class="songs-list">
