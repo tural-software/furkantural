@@ -58,42 +58,63 @@
     return r;
   }
 
-  // === FİKİR 1: Hero imza objesi — gerçek dokulu Dünya + yörüngede dönen Ay ===
-  // NASA blue-marble dokusu (self-host: /img/earth_atmos_2048.jpg), eksen eğikliği
-  // ~23.5°, yönlü güneş ışığı → gerçek gezegen gündüz/gece terminatörü. Ay ayrı bir
-  // pivot grubunda dünyanın yörüngesinde dolanır. İmlece göre tüm sistem hafif eğilir.
+  // === FİKİR 1: Hero imza objesi — siber tel-küre Dünya + yörüngede Ay =========
+  // Fotogerçekçi karasal doku KALDIRILDI; daha "siber" dursun diye Dünya artık accent
+  // (cyan) enlem/boylam tel-küresi (graticule) + limb'de parlayan fresnel atmosfer
+  // hâlesi + içte koyu çekirdek (arka çizgileri okült eder). Ay küçük bir mor tel-küre
+  // olarak yörüngede dolanır. Işık/doku gerekmez. İmlece göre tüm sistem hafif eğilir.
   function initHero(THREE) {
     var c = document.getElementById('ftHero'); if (!c) return;
     var r = makeRenderer(THREE, c);
     var scene = new THREE.Scene();
     var cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100); cam.position.z = 5.9;
 
-    // Işık: yönlü "güneş" (gündüz yarımküresini aydınlatır → terminatör) + hafif mavi
-    // ortam dolgusu (gece tarafı tamamen siyah kalmasın, uzayda okunur dursun).
-    var sun = new THREE.DirectionalLight(0xffffff, 2.4);
-    sun.position.set(-3, 1.4, 2.2); scene.add(sun);
-    scene.add(new THREE.AmbientLight(0x223a52, 0.55));
-
-    var loader = new THREE.TextureLoader();
-    function tex(url) { var t = loader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
-
-    // Tüm sistem (dünya + ay yörüngesi) cursor parallax için tek grupta.
+    var CYAN = 0x38bdf8, PURPLE = 0xa78bfa, R = 1.2;
     var system = new THREE.Group(); scene.add(system);
 
-    // Dünya — gerçek doku, mat yüzey (PBR). Eksen eğikliği gerçekçi görünüm verir.
-    var earth = new THREE.Mesh(
-      new THREE.SphereGeometry(1.2, 48, 48),
-      new THREE.MeshStandardMaterial({ map: tex('/img/earth_atmos_2048.jpg'), roughness: 1, metalness: 0 })
-    );
-    earth.rotation.z = 0.41; // ~23.5°
+    // Enlem çemberleri + boylam meridyenlerinden tel-küre (additive → cyber parlama).
+    function graticule(radius, color) {
+      var g = new THREE.Group();
+      var mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false });
+      var i, j, pts, lat, lon, rl, y, a, t, lr;
+      for (lat = -75; lat <= 75; lat += 15) {
+        rl = radius * Math.cos(lat * Math.PI / 180); y = radius * Math.sin(lat * Math.PI / 180); pts = [];
+        for (i = 0; i <= 64; i++) { a = i / 64 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * rl, y, Math.sin(a) * rl)); }
+        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+      }
+      for (lon = 0; lon < 360; lon += 30) {
+        lr = lon * Math.PI / 180; pts = [];
+        for (j = 0; j <= 48; j++) { t = -Math.PI / 2 + j / 48 * Math.PI; pts.push(new THREE.Vector3(Math.cos(t) * Math.cos(lr) * radius, Math.sin(t) * radius, Math.cos(t) * Math.sin(lr) * radius)); }
+        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+      }
+      return g;
+    }
+
+    // Fresnel atmosfer hâlesi — büyükçe kürenin iç yüzü (BackSide); limb'de parlar.
+    function atmosphere(radius, color) {
+      return new THREE.Mesh(
+        new THREE.SphereGeometry(radius, 48, 32),
+        new THREE.ShaderMaterial({
+          transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.BackSide,
+          uniforms: { u_color: { value: new THREE.Color(color) } },
+          vertexShader: ['varying vec3 vN; varying vec3 vP;', 'void main(){', '  vN = normalize(normalMatrix * normal);', '  vec4 mv = modelViewMatrix * vec4(position, 1.0); vP = mv.xyz;', '  gl_Position = projectionMatrix * mv;', '}'].join('\n'),
+          fragmentShader: ['uniform vec3 u_color; varying vec3 vN; varying vec3 vP;', 'void main(){', '  vec3 v = normalize(-vP);', '  float f = pow(1.0 - abs(dot(vN, v)), 3.0);', '  gl_FragColor = vec4(u_color, f * 0.85);', '}'].join('\n')
+        })
+      );
+    }
+
+    var earth = new THREE.Group();
+    earth.add(new THREE.Mesh(new THREE.SphereGeometry(R * 0.99, 40, 28), new THREE.MeshBasicMaterial({ color: 0x0a1a2e }))); // koyu çekirdek (arka çizgileri gizler)
+    earth.add(graticule(R, CYAN));
+    earth.add(atmosphere(R * 1.14, CYAN));
+    earth.rotation.z = 0.41; // ~23.5° eksen eğikliği
     system.add(earth);
 
-    // Ay — pivot grubu döndürülerek dünyanın çevresinde yörüngeye sokulur; yörünge
-    // düzlemi hafif eğik (görsel derinlik). Ay yüzü ayrıca yavaşça döner.
+    // Ay — küçük mor tel-küre, ayrı pivot grubunda yörüngede dolanır.
     var moonPivot = new THREE.Group(); moonPivot.rotation.x = 0.42; system.add(moonPivot);
-    var moon = new THREE.Mesh(
-      new THREE.SphereGeometry(0.28, 32, 32),
-      new THREE.MeshStandardMaterial({ map: tex('/img/moon_1024.jpg'), roughness: 1, metalness: 0 })
+    var moon = new THREE.LineSegments(
+      new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(0.28, 1)),
+      new THREE.LineBasicMaterial({ color: PURPLE, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false })
     );
     moon.position.x = 1.9; moonPivot.add(moon);
 
@@ -108,9 +129,9 @@
     window.addEventListener('resize', resize); resize();
 
     runLoop(c, function () {
-      earth.rotation.y += 0.0016;       // dünya kendi ekseninde döner
-      moonPivot.rotation.y += 0.0068;   // ay yörüngede dolanır
-      moon.rotation.y += 0.002;         // ay yüzü yavaşça döner
+      earth.rotation.y += 0.0018;        // tel-küre kendi ekseninde döner
+      moonPivot.rotation.y += 0.0068;    // ay yörüngede dolanır
+      moon.rotation.y += 0.004; moon.rotation.x += 0.002;
       // cursor parallax — sistem imlece göre yumuşakça eğilir
       system.rotation.x += (my * 0.5 - system.rotation.x) * 0.05;
       system.rotation.y += (mx * 0.5 - system.rotation.y) * 0.05;
