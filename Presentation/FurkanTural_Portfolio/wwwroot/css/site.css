@@ -162,6 +162,23 @@ a:hover { color: var(--color-accent-hover); }
 .section-desc { color: var(--color-text-muted); max-width: 600px; margin: 0 auto; }
 .section-empty { color: var(--color-text-muted); text-align: center; padding: 2rem 0; }
 
+/* Error / 404 */
+.error-section { min-height: 70vh; display: flex; align-items: center; }
+.error-page { text-align: center; max-width: 560px; margin: 0 auto; }
+.error-page__code {
+  font-size: clamp(3rem, 12vw, 6rem);
+  font-weight: 800;
+  line-height: 1;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, #4f9cf9, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.error-page h1 { margin: 0 0 1rem; }
+.error-page .btn { margin-top: 1.5rem; }
+.error-page__req { margin-top: 2rem; opacity: 0.6; }
+
 /* ---- Hero ---- */
 .hero {
     min-height: 100vh;

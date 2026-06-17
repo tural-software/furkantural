@@ -61,6 +61,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// 404 vb. durum kodlarını markalı hata sayfasına yönlendir.
+app.UseStatusCodePagesWithReExecute("/Home/Error", "?code={0}");
+
 app.UseHttpsRedirection();
 app.UseRouting();
 
