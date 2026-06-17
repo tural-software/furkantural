@@ -53,13 +53,41 @@
     var geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-    var material = new THREE.PointsMaterial({
-      color: 0x38bdf8,           // site accent (Admin paleti)
-      size: 2.4,
+    // Animasyon B: cursor-reaktif parçacıklar — imlece yakın noktalar parlar + büyür.
+    // Konumlar STATİK kalır → constellation çizgileri geçerli (statik-çizgi optimizasyonu korunur).
+    var pointsUniforms = {
+      u_size:  { value: 2.4 },
+      u_color: { value: new THREE.Color(0x38bdf8) },
+      u_mouse: { value: new THREE.Vector2(99, 99) }   // başlangıçta uzak → parlama yok
+    };
+    var material = new THREE.ShaderMaterial({
+      uniforms: pointsUniforms,
       transparent: true,
-      opacity: 0.7,
-      sizeAttenuation: true,
-      depthWrite: false
+      depthWrite: false,
+      vertexShader: [
+        'uniform float u_size; uniform vec2 u_mouse;',
+        'varying float vGlow;',
+        'void main(){',
+        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+        '  gl_Position = projectionMatrix * mv;',
+        '  vec2 ndc = gl_Position.xy / gl_Position.w;',
+        '  float glow = 1.0 - smoothstep(0.0, 0.45, distance(ndc, u_mouse));',
+        '  vGlow = glow;',
+        '  gl_PointSize = u_size * (300.0 / -mv.z) * (1.0 + glow * 1.8);',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform vec3 u_color;',
+        'varying float vGlow;',
+        'void main(){',
+        '  float dd = distance(gl_PointCoord, vec2(0.5));',
+        '  if (dd > 0.5) discard;',
+        '  float soft = smoothstep(0.5, 0.0, dd);',
+        '  vec3 col = mix(u_color, vec3(1.0), vGlow * 0.5);',  // imlece yakın → beyaza doğru parla
+        '  float alpha = soft * (0.55 + vGlow * 0.45);',
+        '  gl_FragColor = vec4(col, alpha);',
+        '}'
+      ].join('\n')
     });
     var points = new THREE.Points(geometry, material);
 
@@ -177,6 +205,8 @@
     window.addEventListener('pointermove', function (e) {
       mouseX = (e.clientX / window.innerWidth) - 0.5;
       mouseY = (e.clientY / window.innerHeight) - 0.5;
+      // NDC'ye çevir (x: [-1,1], y yukarı pozitif) → cursor-reaktif parlama.
+      pointsUniforms.u_mouse.value.set(mouseX * 2.0, -mouseY * 2.0);
     }, { passive: true });
 
     // Sekme gizliyken duraklat (pil/CPU tasarrufu).
