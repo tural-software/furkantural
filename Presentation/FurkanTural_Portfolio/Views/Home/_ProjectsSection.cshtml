@@ -11,7 +11,7 @@
             <div class="projects-grid">
                 @foreach (var project in Model)
                 {
-                    <div class="project-card">
+                    <div class="project-card" data-tilt="1">
                         <div class="project-card__body">
                             <span class="project-card__status @(project.IsCompleted ? "is-done" : "is-progress")">
                                 @(project.IsCompleted ? SharedLocalizer["Project_Status_Completed"] : SharedLocalizer["Project_Status_InProgress"])
