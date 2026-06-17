@@ -13,6 +13,9 @@
                 {
                     <div class="project-card">
                         <div class="project-card__body">
+                            <span class="project-card__status @(project.IsCompleted ? "is-done" : "is-progress")">
+                                @(project.IsCompleted ? SharedLocalizer["Project_Status_Completed"] : SharedLocalizer["Project_Status_InProgress"])
+                            </span>
                             <h3 class="project-card__title">@project.Title</h3>
                             <p class="project-card__desc">@project.ShortDescription</p>
                             @if (!string.IsNullOrWhiteSpace(project.TechStack))

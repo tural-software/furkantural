@@ -11,12 +11,27 @@
             <div class="songs-list">
                 @foreach (var song in Model)
                 {
+                    var songMeta = string.Join(" • ", new[]
+                    {
+                        song.Artist,
+                        song.Album,
+                        song.ReleaseDate?.Year.ToString()
+                    }.Where(s => !string.IsNullOrWhiteSpace(s)));
                     <div class="song-card">
                         <div class="song-card__info">
                             <span class="song-card__name">@song.Name</span>
-                            @if (!string.IsNullOrWhiteSpace(song.Genre))
+                            @if (!string.IsNullOrWhiteSpace(songMeta) || !string.IsNullOrWhiteSpace(song.Genre))
                             {
-                                <span class="song-card__genre">@song.Genre</span>
+                                <span class="song-card__sub">
+                                    @if (!string.IsNullOrWhiteSpace(songMeta))
+                                    {
+                                        <span class="song-card__meta">@songMeta</span>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(song.Genre))
+                                    {
+                                        <span class="song-card__genre">@song.Genre</span>
+                                    }
+                                </span>
                             }
                         </div>
                         @if (song.Duration.HasValue)

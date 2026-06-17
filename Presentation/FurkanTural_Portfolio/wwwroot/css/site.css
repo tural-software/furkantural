@@ -307,6 +307,13 @@ a:hover { color: var(--color-accent-hover); }
 }
 .project-card:hover { border-color: var(--color-accent); transform: translateY(-3px); }
 .project-card__body { padding: 1.5rem; flex: 1; }
+.project-card__status {
+    display: inline-block; font-size: 0.7rem; font-weight: 600;
+    padding: 0.18rem 0.6rem; border-radius: 20px; margin-bottom: 0.75rem;
+    letter-spacing: 0.02em;
+}
+.project-card__status.is-done { background: rgba(63,185,80,0.14); color: var(--color-success); border: 1px solid rgba(63,185,80,0.3); }
+.project-card__status.is-progress { background: rgba(210,153,34,0.14); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
 .project-card__title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
 .project-card__desc { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.6; }
 .project-card__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
@@ -330,8 +337,10 @@ a:hover { color: var(--color-accent-hover); }
     transition: border-color var(--transition);
 }
 .song-card:hover { border-color: var(--color-accent); }
-.song-card__info { display: flex; align-items: center; gap: 1rem; }
+.song-card__info { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; min-width: 0; }
 .song-card__name { font-weight: 600; }
+.song-card__sub { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 0.6rem; }
+.song-card__meta { font-size: 0.8rem; color: var(--color-text-muted); }
 .song-card__genre { font-size: 0.8rem; color: var(--color-accent); }
 .song-card__duration { color: var(--color-text-muted); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
 

@@ -75,6 +75,8 @@
   <data name="Projects_Desc" xml:space="preserve"><value>Geliştirdiğim seçili projeler ve çözümler.</value></data>
   <data name="Project_View_Demo" xml:space="preserve"><value>Demo</value></data>
   <data name="Project_View_Source" xml:space="preserve"><value>Kaynak Kod</value></data>
+  <data name="Project_Status_Completed" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="Project_Status_InProgress" xml:space="preserve"><value>Devam ediyor</value></data>
 
   <!-- Music -->
   <data name="Songs_Eyebrow" xml:space="preserve"><value>Müzik</value></data>
