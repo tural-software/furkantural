@@ -1,11 +1,36 @@
+@model IndexViewModel
+@* About — asimetrik .section-split (başlık sol / metin+istatistik sağ). İstatistikler
+   DİNAMİK count'lardan (uydurma sayı YOK); yalnız verisi olan (count > 0) gösterilir. *@
 <section class="section reveal about-section" id="about">
     <div class="section-container">
-        <div class="section-header">
-            <span class="section-eyebrow">@SharedLocalizer["About_Eyebrow"]</span>
-            <h2 class="section-title">@SharedLocalizer["About_Title"]</h2>
-        </div>
-        <div class="about-content">
-            <p class="about-desc">@SharedLocalizer["About_Desc"]</p>
+        <div class="section-split">
+            <div class="section-header">
+                <span class="section-eyebrow">@SharedLocalizer["About_Eyebrow"]</span>
+                <h2 class="section-title">@SharedLocalizer["About_Title"]</h2>
+            </div>
+            <div class="about-body">
+                <p class="about-desc">@SharedLocalizer["About_Desc"]</p>
+                @{
+                    var stats = new[]
+                    {
+                        (Count: Model.Skills.Count,   Label: SharedLocalizer["About_Stat_Skills"].Value),
+                        (Count: Model.Projects.Count, Label: SharedLocalizer["About_Stat_Projects"].Value),
+                        (Count: Model.Songs.Count,    Label: SharedLocalizer["About_Stat_Songs"].Value)
+                    }.Where(s => s.Count > 0).ToList();
+                }
+                @if (stats.Count > 0)
+                {
+                    <div class="about-stats">
+                        @foreach (var stat in stats)
+                        {
+                            <div class="about-stat">
+                                <span class="about-stat__num">@stat.Count</span>
+                                <span class="about-stat__label">@stat.Label</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </section>

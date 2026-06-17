@@ -4,7 +4,7 @@
 }
 
 @await Html.PartialAsync("_HeroSection")
-@await Html.PartialAsync("_AboutSection")
+@await Html.PartialAsync("_AboutSection", Model)
 @await Html.PartialAsync("_SkillsSection", Model.Skills)
 @await Html.PartialAsync("_ExperienceSection", Model.Experiences)
 @await Html.PartialAsync("_EducationSection", Model.Educations)

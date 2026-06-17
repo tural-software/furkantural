@@ -269,6 +269,11 @@ a:hover { color: var(--color-accent-hover); }
 .about-section { background: transparent; }
 .about-content { max-width: 700px; margin: 0 auto; text-align: center; }
 .about-desc { font-size: 1.1rem; color: var(--color-text-muted); line-height: 1.8; }
+.about-body { max-width: 640px; }
+.about-stats { display: flex; flex-wrap: wrap; gap: 2.5rem; margin-top: 1.75rem; }
+.about-stat { display: flex; flex-direction: column; }
+.about-stat__num { font-size: 1.9rem; font-weight: 800; color: var(--color-accent); line-height: 1; letter-spacing: -0.02em; }
+.about-stat__label { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.3rem; }
 
 /* ---- Skills ---- */
 .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }

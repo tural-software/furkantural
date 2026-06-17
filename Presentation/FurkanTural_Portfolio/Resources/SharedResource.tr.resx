@@ -47,7 +47,10 @@
   <!-- About -->
   <data name="About_Eyebrow" xml:space="preserve"><value>Hakkımda</value></data>
   <data name="About_Title" xml:space="preserve"><value>Merhaba! Ben Furkan</value></data>
-  <data name="About_Desc" xml:space="preserve"><value>Yazılım ve müziğin kesişim noktasında yaşayan bir geliştirici. Modern web teknolojileriyle yüksek kaliteli uygulamalar geliştiriyorum.</value></data>
+  <data name="About_Desc" xml:space="preserve"><value>Yazılım ve müziğin kesişim noktasında yaşayan bir geliştirici ve müzisyenim. Modern web teknolojileriyle uçtan uca, performanslı ve ölçeklenebilir uygulamalar geliştiriyor; aynı titizliği beste ve ses tasarımına taşıyorum. Teknik derinliği yaratıcı bir bakışla birleştirerek fikirleri çalışan ürünlere dönüştürmeyi seviyorum.</value></data>
+  <data name="About_Stat_Skills" xml:space="preserve"><value>Yetenek</value></data>
+  <data name="About_Stat_Projects" xml:space="preserve"><value>Proje</value></data>
+  <data name="About_Stat_Songs" xml:space="preserve"><value>Beste</value></data>
 
   <!-- Skills -->
   <data name="Skills_Eyebrow" xml:space="preserve"><value>Yetenekler</value></data>
