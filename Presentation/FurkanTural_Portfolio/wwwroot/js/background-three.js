@@ -90,6 +90,50 @@
 
     scene.add(group);
 
+    // --- Animasyon A: shader aurora katmanı (parçacıkların ARKASINDA) ---
+    // Tek fullscreen quad; vertex matrisi yok-sayar (doğrudan NDC) → daima tam ekran.
+    // Perf için yalnız geniş ekranlarda; mobil/zayıf GPU'da atlanır (parçacıklar kalır).
+    var aurora = null;
+    if (window.innerWidth >= 768) {
+      var auroraUniforms = {
+        u_time: { value: 0 },
+        u_res:  { value: new THREE.Vector2(1, 1) },
+        u_c1:   { value: new THREE.Color(0x38bdf8) },
+        u_c2:   { value: new THREE.Color(0x4f46e5) }
+      };
+      var auroraMat = new THREE.ShaderMaterial({
+        uniforms: auroraUniforms,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        vertexShader:
+          'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+        fragmentShader: [
+          'varying vec2 vUv;',
+          'uniform float u_time; uniform vec2 u_res; uniform vec3 u_c1; uniform vec3 u_c2;',
+          'float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+          'float noise(vec2 p){ vec2 i = floor(p), f = fract(p);',
+          '  float a = hash(i), b = hash(i + vec2(1.,0.)), c = hash(i + vec2(0.,1.)), d = hash(i + vec2(1.,1.));',
+          '  vec2 u = f * f * (3. - 2. * f); return mix(mix(a,b,u.x), mix(c,d,u.x), u.y); }',
+          'float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++){ v += a * noise(p); p *= 2.0; a *= 0.5; } return v; }',
+          'void main(){',
+          '  vec2 uv = vUv; uv.x *= u_res.x / max(u_res.y, 1.0);',
+          '  float t = u_time * 0.03;',
+          '  vec2 q = vec2(fbm(uv * 1.5 + t), fbm(uv * 1.5 - t + 3.0));',
+          '  float f = fbm(uv * 2.0 + q * 1.4 + vec2(t * 0.4, -t * 0.4));',
+          '  vec3 col = mix(u_c1, u_c2, smoothstep(0.2, 0.85, f));',
+          '  float alpha = smoothstep(0.4, 0.95, f) * 0.32;',  // çok düşük → zarif
+          '  gl_FragColor = vec4(col, alpha);',
+          '}'
+        ].join('\n')
+      });
+      var auroraMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), auroraMat);
+      auroraMesh.frustumCulled = false;
+      var auroraScene = new THREE.Scene();
+      auroraScene.add(auroraMesh);
+      aurora = { scene: auroraScene, cam: new THREE.Camera(), uniforms: auroraUniforms };
+    }
+
     var raf = null;
     var mouseX = 0, mouseY = 0;
     var t0 = performance.now();
@@ -100,6 +144,7 @@
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      if (aurora) aurora.uniforms.u_res.value.set(w, h);
     }
 
     function frame(now) {
@@ -110,7 +155,17 @@
       camera.position.x += (mouseX * 40 - camera.position.x) * 0.04;
       camera.position.y += (-mouseY * 40 - camera.position.y) * 0.04;
       camera.lookAt(scene.position);
-      renderer.render(scene, camera);
+
+      if (aurora) {
+        // İki geçiş: önce aurora (arka), sonra parçacıklar (ön) — tek temizleme.
+        aurora.uniforms.u_time.value = (now - t0) * 0.001;
+        renderer.autoClear = false;
+        renderer.clear();
+        renderer.render(aurora.scene, aurora.cam);
+        renderer.render(scene, camera);
+      } else {
+        renderer.render(scene, camera);
+      }
       raf = requestAnimationFrame(frame);
     }
 
