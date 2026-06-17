@@ -61,6 +61,16 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Temel güvenlik başlıkları (her yanıta uygulanır).
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    headers["X-Frame-Options"] = "SAMEORIGIN";
+    await next();
+});
+
 // 404 vb. durum kodlarını markalı hata sayfasına yönlendir.
 app.UseStatusCodePagesWithReExecute("/Home/Error", "?code={0}");
 
