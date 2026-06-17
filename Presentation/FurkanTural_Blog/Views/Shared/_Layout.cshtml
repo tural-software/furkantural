@@ -32,6 +32,13 @@
     <meta name="theme-color" content="#0d1117" />
     <link rel="canonical" href="@canonical" />
 
+    @* PWA — kurulabilir uygulama *@
+    <link rel="manifest" href="~/site.webmanifest" />
+    <link rel="apple-touch-icon" href="~/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="FT Blog" />
+
     <meta property="og:site_name" content="Furkan Tural Blog" />
     <meta property="og:title" content="@(title ?? "Furkan Tural Blog")" />
     <meta property="og:description" content="@metaDescription" />
@@ -86,6 +93,7 @@
     </footer>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/pwa.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
