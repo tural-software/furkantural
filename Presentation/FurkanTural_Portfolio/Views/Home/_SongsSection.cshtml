@@ -18,7 +18,9 @@
                         song.ReleaseDate?.Year.ToString()
                     }.Where(s => !string.IsNullOrWhiteSpace(s)));
                     <div class="song-card">
-                        <div class="song-card__info">
+                        <div class="song-card__main">
+                            <span class="equalizer" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+                            <div class="song-card__info">
                             <span class="song-card__name">@song.Name</span>
                             @if (!string.IsNullOrWhiteSpace(songMeta) || !string.IsNullOrWhiteSpace(song.Genre))
                             {
@@ -33,6 +35,7 @@
                                     }
                                 </span>
                             }
+                            </div>
                         </div>
                         @if (song.Duration.HasValue)
                         {
