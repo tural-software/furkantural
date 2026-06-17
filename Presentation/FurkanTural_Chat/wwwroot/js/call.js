@@ -459,7 +459,9 @@
                 if (!pc) return;
                 console.log('[call] conn:', pc.connectionState);
                 if (pc.connectionState === 'connected') refreshRemoteVideo();
-                if (pc.connectionState === 'failed') endCall('Bağlantı kurulamadı.');
+                // Bağlantı kurulamadı/koptu: yalnız yerelde kapatma; HangUp ile eşe de CallEnded gönder
+                // (aksi halde karşı taraf aramada asılı kalır).
+                if (pc.connectionState === 'failed') hangup('Bağlantı kurulamadı.');
             };
         }
 
@@ -593,7 +595,7 @@
                 await drainCandidates();
                 showOverlay('in-call', peerId, callType);
                 sendVideoState();
-            } catch (e) { endCall('Bağlantı hatası.'); }
+            } catch (e) { hangup('Bağlantı hatası.'); } // eşe de bildir, asılı kalmasın
         });
 
         conn.on('ReceiveIceCandidate', async function (data) {
@@ -624,9 +626,9 @@
         });
 
         // ── sonlandırma ──
-        function hangup() {
+        function hangup(msg) {
             if (callId) conn.invoke('HangUp', callId).catch(function () {});
-            endCall();
+            endCall(msg);
         }
         // Kapat butonu mantığı: gelen aramayı reddet / çalan giden aramayı iptal et / görüşmeyi sonlandır.
         function terminate() {
