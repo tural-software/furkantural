@@ -6,8 +6,11 @@
 @await Html.PartialAsync("_HeroSection")
 @await Html.PartialAsync("_AboutSection", Model)
 @await Html.PartialAsync("_SkillsSection", Model.Skills)
-@await Html.PartialAsync("_ExperienceSection", Model.Experiences)
-@await Html.PartialAsync("_EducationSection", Model.Educations)
+@* Deneyim + Eğitim yan yana (timeline-2col rhythm); mobilde tek sütuna iner. *@
+<div class="timeline-2col">
+    @await Html.PartialAsync("_ExperienceSection", Model.Experiences)
+    @await Html.PartialAsync("_EducationSection", Model.Educations)
+</div>
 @await Html.PartialAsync("_ProjectsSection", Model.Projects)
 @await Html.PartialAsync("_SongsSection", Model.Songs)
 @await Html.PartialAsync("_ServicesSection")
