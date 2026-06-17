@@ -30,6 +30,7 @@
   <!-- Theme toggle -->
   <data name="Theme_Toggle_Light" xml:space="preserve"><value>Açık Tema</value></data>
   <data name="Theme_Toggle_Dark" xml:space="preserve"><value>Koyu Tema</value></data>
+  <data name="Nav_Theme" xml:space="preserve"><value>Tema</value></data>
 
   <!-- SEO defaults -->
   <data name="Seo_Site_Name" xml:space="preserve"><value>Furkan Tural</value></data>

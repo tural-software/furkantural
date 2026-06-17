@@ -54,7 +54,7 @@
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     var material = new THREE.PointsMaterial({
-      color: 0x58a6ff,           // site accent
+      color: 0x38bdf8,           // site accent (Admin paleti)
       size: 2.4,
       transparent: true,
       opacity: 0.7,
@@ -84,7 +84,7 @@
     if (linePos.length) {
       var lineGeo = new THREE.BufferGeometry();
       lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(linePos), 3));
-      var lineMat = new THREE.LineBasicMaterial({ color: 0x58a6ff, transparent: true, opacity: 0.12, depthWrite: false });
+      var lineMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.12, depthWrite: false });
       group.add(new THREE.LineSegments(lineGeo, lineMat));
     }
 
