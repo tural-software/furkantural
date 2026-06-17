@@ -1,4 +1,8 @@
 @model IReadOnlyList<SkillViewModel>
+@* Skills — çubuk yerine KATEGORİ etiketleri (handoff). DİNAMİK: @Model üzerinden.
+   ŞEMASIZ gruplama: SkillViewModel.Category alanı OLMADAN, mevcut Proficiency'ye
+   göre seviye bucket'ına grupla (model/DB değişmez). Seviye adları SharedLocalizer'dan
+   (Step 1'de standartlaştırıldı: Uzman/İleri/Orta/Başlangıç). *@
 <section class="section reveal skills-section" id="skills">
     <div class="section-container">
         <div class="section-header">
@@ -9,21 +13,24 @@
         @if (Model != null && Model.Count > 0)
         {
             <div class="skills-grid">
-                @foreach (var skill in Model)
+                @foreach (var group in Model
+                    .GroupBy(s => s.Proficiency >= 91 ? SharedLocalizer["Skill_Level_Expert"].Value
+                                : s.Proficiency >= 76 ? SharedLocalizer["Skill_Level_Advanced"].Value
+                                : s.Proficiency >= 51 ? SharedLocalizer["Skill_Level_Intermediate"].Value
+                                : SharedLocalizer["Skill_Level_Beginner"].Value)
+                    .OrderByDescending(g => g.Max(s => s.Proficiency)))
                 {
-                    var level = skill.Proficiency >= 91 ? SharedLocalizer["Skill_Level_Expert"].Value
-                              : skill.Proficiency >= 76 ? SharedLocalizer["Skill_Level_Advanced"].Value
-                              : skill.Proficiency >= 51 ? SharedLocalizer["Skill_Level_Intermediate"].Value
-                              : SharedLocalizer["Skill_Level_Beginner"].Value;
-                    <div class="skill-card">
-                        <div class="skill-card__header">
-                            <span class="skill-card__name">@skill.Name</span>
-                            <span class="skill-card__level">@level</span>
+                    <div class="skill-group" data-tilt="1">
+                        <div class="skill-group__title">
+                            <span class="skill-group__dot" aria-hidden="true"></span>
+                            @group.Key
                         </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar__fill" style="width: @skill.Proficiency%"></div>
+                        <div class="skill-chips">
+                            @foreach (var skill in group.OrderByDescending(s => s.Proficiency))
+                            {
+                                <span class="skill-chip">@skill.Name</span>
+                            }
                         </div>
-                        <span class="skill-card__pct">@skill.Proficiency%</span>
                     </div>
                 }
             </div>
