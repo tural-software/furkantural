@@ -166,6 +166,16 @@
     var mouseX = 0, mouseY = 0;
     var t0 = performance.now();
 
+    // FİKİR 3: scroll'a bağlı kamera dolly — sayfa ilerleme oranını izle.
+    var scrollProg = 0;
+    function onScroll() {
+      var h = document.documentElement;
+      var max = h.scrollHeight - h.clientHeight;
+      scrollProg = max > 0 ? (window.scrollY || h.scrollTop) / max : 0;
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
     function resize() {
       var w = canvas.clientWidth, h = canvas.clientHeight;
       if (!w || !h) return;
@@ -177,11 +187,12 @@
 
     function frame(now) {
       var t = (now - t0) * 0.0001;
-      group.rotation.y = t;
-      group.rotation.x = t * 0.4;
+      group.rotation.y = t + scrollProg * 1.4;          // scroll'la ekstra dönüş
+      group.rotation.x = t * 0.4 + scrollProg * 0.3;
       // Hafif fare parallax'ı yumuşatarak uygula.
       camera.position.x += (mouseX * 40 - camera.position.x) * 0.04;
       camera.position.y += (-mouseY * 40 - camera.position.y) * 0.04;
+      camera.position.z = 320 - scrollProg * 150;        // aşağı kaydırınca yaklaş (dolly)
       camera.lookAt(scene.position);
 
       if (aurora) {
