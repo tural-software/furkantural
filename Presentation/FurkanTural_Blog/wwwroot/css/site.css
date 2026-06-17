@@ -207,3 +207,13 @@ a:hover { color: var(--accent-hover); }
   .brand__text { font-size: 0.95rem; }
   .hero { padding: 3.5rem 0 2.5rem; }
 }
+
+/* Erişilebilirlik: hareketi azaltma tercihine saygı göster. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
