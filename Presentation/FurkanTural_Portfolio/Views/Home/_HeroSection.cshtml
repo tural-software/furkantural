@@ -1,6 +1,10 @@
+@* Hero — 3D imza objesi + durum rozeti. Tüm metinler SharedLocalizer'dan (dinamik).
+   Avatar <img> yerine #ftHero canvas (portfolio-3d.js bağlanır). WebGL/reduced-motion
+   yoksa .hero-3d karosu gradyan fallback olarak kalır. *@
 <section class="hero" id="hero">
     <div class="hero-container">
         <div class="hero-content">
+            <p class="hero-status">@SharedLocalizer["Hero_Status"]</p>
             <p class="hero-greeting">@SharedLocalizer["Hero_Greeting"]</p>
             <h1 class="hero-name">@SharedLocalizer["Hero_Name"]</h1>
             <p class="hero-tagline">@SharedLocalizer["Hero_Tagline"]</p>
@@ -10,8 +14,9 @@
             </div>
         </div>
         <div class="hero-visual">
-            <div class="hero-avatar">
-                <img src="~/img/avatar.webp" alt="Furkan Tural" width="320" height="320" loading="eager" onerror="this.style.display='none'" />
+            @* 3D imza objesi — portfolio-3d.js bu canvas'a bağlanır (#ftHero). *@
+            <div class="hero-3d">
+                <canvas id="ftHero" aria-hidden="true"></canvas>
             </div>
         </div>
     </div>
