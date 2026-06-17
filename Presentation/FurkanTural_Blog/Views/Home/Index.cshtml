@@ -1,8 +1,26 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = null;
+    ViewData["MetaDescription"] = "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notları. Yakında yeni yazılarla burada.";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero">
+    <div class="container">
+        <p class="hero__eyebrow">Furkan Tural Blog</p>
+        <h1 class="hero__title">Yazılım, teknoloji ve geliştirme üzerine notlar</h1>
+        <p class="hero__lead">
+            Üzerinde çalıştığım projeler, öğrendiklerim ve geliştirme sürecine dair düşüncelerimi
+            burada paylaşıyorum. İlk yazılar çok yakında.
+        </p>
+        <div class="hero__actions">
+            <a class="btn btn--primary" asp-controller="Home" asp-action="Index">Yazıları Gör</a>
+            <a class="btn btn--ghost" href="https://furkantural.com" rel="noopener">Portfolyo</a>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="placeholder-card">
+        <h2>Yakında</h2>
+        <p>Blog yazıları hazırlanıyor. İçerik yayınlandığında bu alanda listelenecek.</p>
+    </div>
+</section>
