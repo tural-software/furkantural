@@ -1,0 +1,27 @@
+@* Services — eski boş "_PricingSection" yerine. "Birlikte Çalışalım" altında 3
+   hizmet kartı + tek CTA. İçerik SharedLocalizer ile lokalize (eski pricing de
+   statik-lokalizeydi; yapı korunuyor). Kartlar tilt-li (data-tilt + ikon lift). *@
+<section class="section reveal pricing-section" id="pricing">
+    <div class="section-container">
+        <div class="section-header">
+            <span class="section-eyebrow">@SharedLocalizer["Pricing_Eyebrow"]</span>
+            <h2 class="section-title">@SharedLocalizer["Pricing_Title"]</h2>
+            <p class="section-desc">@SharedLocalizer["Pricing_Desc"]</p>
+        </div>
+
+        <div class="services-grid">
+            @for (var i = 1; i <= 3; i++)
+            {
+                <div class="service-card" data-tilt="1">
+                    <div class="service-card__icon" data-tilt-lift="1">@SharedLocalizer[$"Service_{i}_Icon"]</div>
+                    <h3 class="service-card__title">@SharedLocalizer[$"Service_{i}_Title"]</h3>
+                    <p class="service-card__desc">@SharedLocalizer[$"Service_{i}_Desc"]</p>
+                </div>
+            }
+        </div>
+
+        <div class="pricing-cta">
+            <a href="#contact" class="btn btn-primary btn-lg">@SharedLocalizer["Pricing_CTA"]</a>
+        </div>
+    </div>
+</section>
