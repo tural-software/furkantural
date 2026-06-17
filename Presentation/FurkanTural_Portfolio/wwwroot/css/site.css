@@ -481,6 +481,108 @@ a:hover { color: var(--color-accent-hover); }
 .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
 .js .reveal.is-visible { opacity: 1; transform: none; }
 
+/* =============================================================================
+   site-additions (handoff: design_handoff_portfolio_3d) — 3D + yeni bölüm stilleri.
+   Mevcut token'lar korunur; YENİ: ikincil mor aksan + 3D/yeni-bölüm kuralları.
+============================================================================= */
+:root {
+  /* İkincil aksan: müzisyen kimliği (mor). */
+  --color-accent-2: #a78bfa;
+  --color-accent-2-glow: rgba(167, 139, 250, 0.16);
+}
+[data-theme="light"] {
+  --color-accent-2: #7c5cfc;
+  --color-accent-2-glow: rgba(124, 92, 252, 0.12);
+}
+
+/* Hero imza objesi — avatar karosunun yerini alır */
+.hero-3d {
+  width: 300px; height: 300px;
+  border-radius: 32px;
+  background: linear-gradient(160deg, #1c2030, #14161d);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+[data-theme="light"] .hero-3d { background: linear-gradient(160deg, #ffffff, #eef2f7); }
+.hero-3d canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+@media (max-width: 768px) { .hero-3d { width: 220px; height: 220px; } }
+
+/* Müzik 3D visualizer şeridi */
+.music-visualizer {
+  width: 100%; height: 96px; display: block; margin-bottom: 18px;
+}
+
+/* "Yeni projelere açık" durum rozeti (hero) */
+.hero-status {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 13px; border-radius: 999px;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  background: rgba(74, 222, 128, 0.08);
+  font-size: 0.78rem; font-weight: 600; color: var(--color-success);
+  margin-bottom: 24px;
+}
+.hero-status::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--color-success); box-shadow: 0 0 8px var(--color-success);
+}
+
+/* Perspektif tilt (data-tilt) — transform/box-shadow/border JS (portfolio-3d.js) ile inline atanır */
+[data-tilt] { will-change: transform; }
+[data-tilt-lift] { will-change: transform; }
+
+/* Kategori bazlı yetenekler (çubuk yerine etiket) */
+.skill-group {
+  background: var(--color-bg-card-translucent);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+.skill-group__title {
+  display: flex; align-items: center; gap: 0.6rem;
+  font-weight: 700; font-size: 0.95rem; margin-bottom: 1rem;
+}
+.skill-group__dot { width: 9px; height: 9px; border-radius: 3px; background: var(--color-accent); }
+.skill-group:nth-child(3n) .skill-group__dot { background: var(--color-accent-2); }
+.skill-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.skill-chip {
+  font-size: 0.82rem; font-weight: 500; color: var(--color-text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  padding: 0.38rem 0.75rem; border-radius: var(--radius-sm);
+}
+[data-theme="light"] .skill-chip { background: rgba(0, 0, 0, 0.03); }
+
+/* Hizmet kartları ("Birlikte Çalışalım" — eski boş pricing yerine) */
+.services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; }
+.service-card {
+  background: var(--color-bg-card-translucent);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.5rem; text-align: left;
+}
+.service-card__icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; margin-bottom: 1.1rem;
+  background: var(--color-accent-glow);
+}
+.service-card:nth-child(3n) .service-card__icon { background: var(--color-accent-2-glow); }
+.service-card__title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+.service-card__desc { color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.7; }
+
+/* Asimetrik bölüm başlıkları (ritim için) */
+.section-split { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 3rem; align-items: start; }
+.section-split .section-eyebrow { margin-bottom: 0.75rem; }
+.timeline-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+@media (max-width: 768px) {
+  .section-split, .timeline-2col { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+/* İkinci timeline sütununu (Eğitim) mor markerla ayır */
+.timeline--alt .timeline-marker { border-color: var(--color-accent-2); box-shadow: 0 0 0 4px var(--color-accent-2-glow); }
+.timeline--alt .timeline-org { color: var(--color-accent-2); }
+
 /* Erişilebilirlik: hareketi azaltma tercihine saygı göster. */
 @media (prefers-reduced-motion: reduce) {
   /* Reveal öğeleri asla gizli kalmasın (IO tetiklenmese bile görünür). */
