@@ -4,6 +4,22 @@
     var pageTitle = string.IsNullOrEmpty(title) ? "Furkan Tural Blog" : $"{title} | Furkan Tural Blog";
     var metaDescription = ViewData["MetaDescription"] as string
         ?? "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notlarını paylaştığı kişisel blog.";
+    var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    // Varsayılan WebSite yapısal verisi; sayfa "JsonLd" section'ı tanımlarsa (örn. yazı için Article) o kullanılır.
+    var defaultJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
+    {
+        ["@context"] = "https://schema.org",
+        ["@type"] = "WebSite",
+        ["name"] = "Furkan Tural Blog",
+        ["url"] = siteUrl,
+        ["description"] = metaDescription,
+        ["inLanguage"] = "tr-TR",
+        ["publisher"] = new Dictionary<string, object?>
+        {
+            ["@type"] = "Person",
+            ["name"] = "Furkan Tural"
+        }
+    });
 }
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark">
@@ -26,6 +42,15 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="@(title ?? "Furkan Tural Blog")" />
     <meta name="twitter:description" content="@metaDescription" />
+
+    @if (IsSectionDefined("JsonLd"))
+    {
+        @await RenderSectionAsync("JsonLd")
+    }
+    else
+    {
+        @Html.Raw("<script type=\"application/ld+json\">" + defaultJsonLd + "</script>")
+    }
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
