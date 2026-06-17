@@ -13,6 +13,10 @@ public class AppTokenService : IAppTokenService
 
     private string? _cachedToken;
     private DateTime _tokenExpiry = DateTime.MinValue;
+    // Token alımı başarısız olduğunda, ölü uca her istek için tekrar tekrar gitmemek
+    // için kısa süre yeniden denemeyi durdururuz (negatif önbellek).
+    private DateTime _retryBlockedUntil = DateTime.MinValue;
+    private static readonly TimeSpan FailureBackoff = TimeSpan.FromSeconds(15);
     private readonly SemaphoreSlim _lock = new(1, 1);
 
     public AppTokenService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<AppTokenService> logger)
@@ -27,11 +31,18 @@ public class AppTokenService : IAppTokenService
         if (!string.IsNullOrWhiteSpace(_cachedToken) && DateTime.UtcNow < _tokenExpiry)
             return _cachedToken;
 
+        // Yakın zamanda başarısız olduysak, backoff süresi dolana kadar yeniden deneme.
+        if (DateTime.UtcNow < _retryBlockedUntil)
+            return _cachedToken ?? string.Empty;
+
         await _lock.WaitAsync(cancellationToken);
         try
         {
             if (!string.IsNullOrWhiteSpace(_cachedToken) && DateTime.UtcNow < _tokenExpiry)
                 return _cachedToken;
+
+            if (DateTime.UtcNow < _retryBlockedUntil)
+                return _cachedToken ?? string.Empty;
 
             var appKey = _configuration["Api:AppKey"];
             var appName = _configuration["Api:AppName"];
@@ -42,6 +53,7 @@ public class AppTokenService : IAppTokenService
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning("App token alınamadı. Status: {Status}", response.StatusCode);
+                _retryBlockedUntil = DateTime.UtcNow + FailureBackoff;
                 return _cachedToken ?? string.Empty;
             }
 
@@ -59,6 +71,7 @@ public class AppTokenService : IAppTokenService
         catch (Exception ex)
         {
             _logger.LogError(ex, "App token alınırken hata oluştu.");
+            _retryBlockedUntil = DateTime.UtcNow + FailureBackoff;
             return _cachedToken ?? string.Empty;
         }
         finally
