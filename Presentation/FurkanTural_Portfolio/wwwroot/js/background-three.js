@@ -1,10 +1,10 @@
-// Portfolio hero — hafif three.js parçacık alanı (dekoratif arkaplan).
+// Portfolio — tüm-sayfa sabit three.js parçacık/constellation arkaplanı (#canvas-container).
 // Guard'lar: prefers-reduced-motion, WebGL yokluğu ve modül yükleme hatası →
-// hepsinde sessizce çık; statik hero (avatar + metin) bozulmadan kalır.
+// hepsinde sessizce çık; statik içerik (solid bg) bozulmadan kalır.
 (function () {
   'use strict';
 
-  var canvas = document.getElementById('heroCanvas');
+  var canvas = document.getElementById('canvas-container');
   if (!canvas) return;
 
   // 1) Hareket azaltma tercihi → sahneyi hiç başlatma (a11y).
