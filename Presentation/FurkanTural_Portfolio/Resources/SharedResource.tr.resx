@@ -37,6 +37,7 @@
   <data name="Seo_Description" xml:space="preserve"><value>Furkan Tural'ın kişisel portföy sitesi. Full-stack geliştirici, müzisyen ve yaratıcı problem çözücü.</value></data>
 
   <!-- Hero -->
+  <data name="Hero_Status" xml:space="preserve"><value>Yeni projelere açık</value></data>
   <data name="Hero_Greeting" xml:space="preserve"><value>Merhaba, Ben</value></data>
   <data name="Hero_Name" xml:space="preserve"><value>Furkan Tural</value></data>
   <data name="Hero_Tagline" xml:space="preserve"><value>Full-Stack Geliştirici &amp; Müzisyen</value></data>
@@ -52,10 +53,10 @@
   <data name="Skills_Eyebrow" xml:space="preserve"><value>Yetenekler</value></data>
   <data name="Skills_Title" xml:space="preserve"><value>Teknik Becerilerim</value></data>
   <data name="Skills_Desc" xml:space="preserve"><value>Yıllar içinde edindiğim teknik beceriler ve uzmanlık alanlarım.</value></data>
-  <data name="Skill_Level_Expert" xml:space="preserve"><value>Cerrah</value></data>
-  <data name="Skill_Level_Advanced" xml:space="preserve"><value>Uzman</value></data>
-  <data name="Skill_Level_Intermediate" xml:space="preserve"><value>İleri</value></data>
-  <data name="Skill_Level_Beginner" xml:space="preserve"><value>Partner</value></data>
+  <data name="Skill_Level_Expert" xml:space="preserve"><value>Uzman</value></data>
+  <data name="Skill_Level_Advanced" xml:space="preserve"><value>İleri</value></data>
+  <data name="Skill_Level_Intermediate" xml:space="preserve"><value>Orta</value></data>
+  <data name="Skill_Level_Beginner" xml:space="preserve"><value>Başlangıç</value></data>
 
   <!-- Experience -->
   <data name="Experience_Eyebrow" xml:space="preserve"><value>Deneyim</value></data>
@@ -90,6 +91,17 @@
   <data name="Pricing_Title" xml:space="preserve"><value>Birlikte Çalışalım</value></data>
   <data name="Pricing_Desc" xml:space="preserve"><value>Projeniz için en uygun çözümü birlikte belirleyelim.</value></data>
   <data name="Pricing_CTA" xml:space="preserve"><value>Teklif Al</value></data>
+
+  <!-- Hizmetler (Birlikte Çalışalım — eski boş pricing yerine) -->
+  <data name="Service_1_Icon" xml:space="preserve"><value>🖥️</value></data>
+  <data name="Service_1_Title" xml:space="preserve"><value>Web Uygulaması</value></data>
+  <data name="Service_1_Desc" xml:space="preserve"><value>Fikirden yayına; modern, hızlı ve ölçeklenebilir full-stack uygulamalar geliştiriyorum.</value></data>
+  <data name="Service_2_Icon" xml:space="preserve"><value>⚙️</value></data>
+  <data name="Service_2_Title" xml:space="preserve"><value>API &amp; Backend</value></data>
+  <data name="Service_2_Desc" xml:space="preserve"><value>Güvenli, performanslı .NET API'leri ve sağlam veri mimarisi kuruyorum.</value></data>
+  <data name="Service_3_Icon" xml:space="preserve"><value>🎚️</value></data>
+  <data name="Service_3_Title" xml:space="preserve"><value>Müzik &amp; Ses Tasarımı</value></data>
+  <data name="Service_3_Desc" xml:space="preserve"><value>Projeniz için özgün besteler ve ayırt edici bir ses kimliği üretiyorum.</value></data>
 
   <!-- Contact -->
   <data name="Contact_Eyebrow" xml:space="preserve"><value>İletişim</value></data>
