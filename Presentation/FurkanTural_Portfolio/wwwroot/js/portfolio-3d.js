@@ -66,12 +66,35 @@
     var scene = new THREE.Scene();
     var cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100); cam.position.z = 4.2;
 
-    var geo = new THREE.IcosahedronGeometry(1.3, 3);
+    // Mini globe — küre üzerine dağılmış yuvarlak BONCUKLAR (nokta). İç dolu küre
+    // ve wireframe çizgileri YOK; yalnız boncuklar görünür. Geodezik (icosahedron)
+    // dağılım eşit aralıklı düğümler verir → globe hissi.
+    var geo = new THREE.IcosahedronGeometry(1.4, 3);
     var base = geo.attributes.position.array.slice();
     var pa = geo.attributes.position;
-    var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.92 }));
-    var inner = new THREE.Mesh(new THREE.IcosahedronGeometry(1.08, 1), new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.14 }));
-    scene.add(mesh); scene.add(inner);
+    var beadMat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false,
+      uniforms: { u_color: { value: new THREE.Color(0x38bdf8) }, u_size: { value: 16.0 } },
+      vertexShader: [
+        'uniform float u_size;',
+        'void main(){',
+        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+        '  gl_Position = projectionMatrix * mv;',
+        '  gl_PointSize = u_size * (2.2 / -mv.z);',   // perspektif boyut → derinlik hissi
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform vec3 u_color;',
+        'void main(){',
+        '  float d = distance(gl_PointCoord, vec2(0.5));',
+        '  if (d > 0.5) discard;',                    // yuvarlak boncuk
+        '  float a = smoothstep(0.5, 0.12, d);',
+        '  gl_FragColor = vec4(u_color, a);',
+        '}'
+      ].join('\n')
+    });
+    var globe = new THREE.Points(geo, beadMat);
+    scene.add(globe);
 
     var mx = 0, my = 0;
     c.addEventListener('pointermove', function (e) {
@@ -88,17 +111,16 @@
       var t = (now - t0) * 0.001;
       var beat = 0.5 + 0.5 * Math.sin(t * 2.2);
       var kick = Math.pow(0.5 + 0.5 * Math.sin(t * 4.4), 4);
-      var amp = 0.05 + beat * 0.04 + kick * 0.12;
+      var amp = 0.03 + beat * 0.025 + kick * 0.07;   // boncuklar hafifçe nefes alır
       for (var i = 0; i < pa.count; i++) {
         var ix = i * 3, bx = base[ix], by = base[ix + 1], bz = base[ix + 2];
         var n = Math.sin(bx * 3 + t * 1.5) + Math.sin(by * 3 + t * 1.3) + Math.sin(bz * 3 + t * 1.1);
-        var d = 1 + amp * n * 0.4;
+        var d = 1 + amp * n * 0.3;
         pa.array[ix] = bx * d; pa.array[ix + 1] = by * d; pa.array[ix + 2] = bz * d;
       }
       pa.needsUpdate = true;
-      mesh.rotation.y += 0.004; mesh.rotation.x = my * 0.6; mesh.rotation.z = mx * 0.4;
-      inner.rotation.copy(mesh.rotation);
-      var s = 1 + kick * 0.07; mesh.scale.setScalar(s); inner.scale.setScalar(s);
+      globe.rotation.y += 0.004; globe.rotation.x = my * 0.6; globe.rotation.z = mx * 0.4;
+      globe.scale.setScalar(1 + kick * 0.05);
       cam.position.x += (mx * 1.0 - cam.position.x) * 0.05; cam.lookAt(0, 0, 0);
       r.render(scene, cam);
     });

@@ -500,16 +500,16 @@ a:hover { color: var(--color-accent-hover); }
   --color-accent-2-glow: rgba(124, 92, 252, 0.12);
 }
 
-/* Hero imza objesi — avatar karosunun yerini alır */
+/* Hero imza objesi (mini globe boncukları) — SOYUT karo: arka plan/kenarlık/gölge
+   YOK; boncuklar doğrudan sayfa 3D arkaplanı üzerinde yüzer → aydınlık/karanlık
+   fark etmeksizin güzel durur. overflow: visible → kenardaki boncuklar kırpılmaz. */
 .hero-3d {
   width: 300px; height: 300px;
-  border-radius: 32px;
-  background: linear-gradient(160deg, #1c2030, #14161d);
-  border: 1px solid var(--color-border);
-  overflow: hidden;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  background: none;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
 }
-[data-theme="light"] .hero-3d { background: linear-gradient(160deg, #ffffff, #eef2f7); }
 .hero-3d canvas { width: 100%; height: 100%; display: block; cursor: grab; }
 @media (max-width: 768px) { .hero-3d { width: 220px; height: 220px; } }
 
