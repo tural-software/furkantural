@@ -140,6 +140,36 @@ a:hover { color: var(--accent-hover); }
 .content-page h1 { margin-top: 0; }
 .content-page p { color: var(--text-muted); }
 
+/* Post list */
+.post-list {
+  display: grid;
+  gap: 1.25rem;
+  margin: 1rem auto 4rem;
+  max-width: 760px;
+}
+.post-card {
+  padding: 1.5rem 1.75rem;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.18s ease;
+}
+.post-card:hover { border-color: var(--accent); }
+.post-card__title { margin: 0 0 0.5rem; font-size: 1.3rem; }
+.post-card__title a { color: var(--text); }
+.post-card__title a:hover { color: var(--accent); }
+.post-card__excerpt { color: var(--text-muted); margin: 0 0 0.85rem; }
+.post-card__more { font-weight: 600; font-size: 0.9rem; }
+
+/* Post detail */
+.back-link { display: inline-block; margin-bottom: 1.25rem; font-size: 0.9rem; }
+.post-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text);
+  line-height: 1.75;
+}
+
 /* Footer */
 .site-footer {
   border-top: 1px solid var(--border);

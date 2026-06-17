@@ -1,0 +1,37 @@
+@model BlogPostViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["MetaDescription"] = string.IsNullOrEmpty(Model.Excerpt)
+        ? $"{Model.Title} — Furkan Tural Blog"
+        : Model.Excerpt;
+
+    var canonical = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    var articleJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
+    {
+        ["@context"] = "https://schema.org",
+        ["@type"] = "Article",
+        ["headline"] = Model.Title,
+        ["inLanguage"] = "tr-TR",
+        ["mainEntityOfPage"] = canonical,
+        ["author"] = new Dictionary<string, object?>
+        {
+            ["@type"] = "Person",
+            ["name"] = "Furkan Tural"
+        },
+        ["publisher"] = new Dictionary<string, object?>
+        {
+            ["@type"] = "Organization",
+            ["name"] = "Furkan Tural Blog"
+        }
+    });
+}
+
+<article class="container content-page">
+    <a class="back-link" asp-controller="Home" asp-action="Index">← Tüm yazılar</a>
+    <h1>@Model.Title</h1>
+    <div class="post-content">@Model.Content</div>
+</article>
+
+@section JsonLd {
+    @Html.Raw("<script type=\"application/ld+json\">" + articleJsonLd + "</script>")
+}

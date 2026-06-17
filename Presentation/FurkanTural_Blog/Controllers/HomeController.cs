@@ -1,14 +1,26 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using FurkanTural_Blog.Models;
+using FurkanTural_Blog.Services;
 
 namespace FurkanTural_Blog.Controllers;
 
-public class HomeController : Controller
+public class HomeController(IBlogApiService blogApi) : Controller
 {
-    public IActionResult Index()
+    private readonly IBlogApiService _blogApi = blogApi;
+
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
-        return View();
+        var posts = await _blogApi.GetPostsAsync(cancellationToken);
+        return View(posts);
+    }
+
+    public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
+    {
+        var post = await _blogApi.GetPostAsync(id, cancellationToken);
+        if (post is null)
+            return NotFound();
+        return View(post);
     }
 
     public IActionResult Privacy()

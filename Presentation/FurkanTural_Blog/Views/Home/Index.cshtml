@@ -1,6 +1,7 @@
+@model IReadOnlyList<BlogPostViewModel>
 @{
     ViewData["Title"] = null;
-    ViewData["MetaDescription"] = "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notları. Yakında yeni yazılarla burada.";
+    ViewData["MetaDescription"] = "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notları ve blog yazıları.";
 }
 
 <section class="hero">
@@ -8,19 +9,35 @@
         <p class="hero__eyebrow">Furkan Tural Blog</p>
         <h1 class="hero__title">Yazılım, teknoloji ve geliştirme üzerine notlar</h1>
         <p class="hero__lead">
-            Üzerinde çalıştığım projeler, öğrendiklerim ve geliştirme sürecine dair düşüncelerimi
-            burada paylaşıyorum. İlk yazılar çok yakında.
+            Üzerinde çalıştığım projeler, öğrendiklerim ve geliştirme sürecine dair düşüncelerim.
         </p>
-        <div class="hero__actions">
-            <a class="btn btn--primary" asp-controller="Home" asp-action="Index">Yazıları Gör</a>
-            <a class="btn btn--ghost" href="https://furkantural.com" rel="noopener">Portfolyo</a>
-        </div>
     </div>
 </section>
 
 <section class="container">
-    <div class="placeholder-card">
-        <h2>Yakında</h2>
-        <p>Blog yazıları hazırlanıyor. İçerik yayınlandığında bu alanda listelenecek.</p>
-    </div>
+    @if (Model.Count == 0)
+    {
+        <div class="placeholder-card">
+            <h2>Yakında</h2>
+            <p>Blog yazıları hazırlanıyor. İçerik yayınlandığında bu alanda listelenecek.</p>
+        </div>
+    }
+    else
+    {
+        <div class="post-list">
+            @foreach (var post in Model)
+            {
+                <article class="post-card">
+                    <h2 class="post-card__title">
+                        <a asp-controller="Home" asp-action="Post" asp-route-id="@post.Id">@post.Title</a>
+                    </h2>
+                    @if (!string.IsNullOrEmpty(post.Excerpt))
+                    {
+                        <p class="post-card__excerpt">@post.Excerpt</p>
+                    }
+                    <a class="post-card__more" asp-controller="Home" asp-action="Post" asp-route-id="@post.Id">Devamını oku →</a>
+                </article>
+            }
+        </div>
+    }
 </section>
