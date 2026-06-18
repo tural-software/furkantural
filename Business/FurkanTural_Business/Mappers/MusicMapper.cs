@@ -15,7 +15,8 @@ public static class MusicMapper
         Genre = entity.Genre,
         Lyrics = entity.Lyrics,
         Duration = entity.Duration,
-        ReleaseDate = entity.ReleaseDate
+        ReleaseDate = entity.ReleaseDate,
+        YouTubeMusicUrl = entity.YouTubeMusicUrl
     };
 
     public static AdminMusicDto ToAdminDto(this Music entity) => new()
@@ -29,6 +30,7 @@ public static class MusicMapper
         Lyrics = entity.Lyrics,
         Duration = entity.Duration,
         ReleaseDate = entity.ReleaseDate,
+        YouTubeMusicUrl = entity.YouTubeMusicUrl,
         IsActive = entity.IsActive,
         IsDeleted = entity.IsDeleted,
         CreatedAt = entity.CreatedAt,
@@ -48,6 +50,7 @@ public static class MusicMapper
         Lyrics = dto.Lyrics,
         Duration = dto.Duration,
         ReleaseDate = dto.ReleaseDate,
+        YouTubeMusicUrl = dto.YouTubeMusicUrl,
         CreatedBy = dto.CreatedBy
     };
 
@@ -61,6 +64,7 @@ public static class MusicMapper
         entity.Lyrics = dto.Lyrics;
         entity.Duration = dto.Duration;
         entity.ReleaseDate = dto.ReleaseDate;
+        entity.YouTubeMusicUrl = dto.YouTubeMusicUrl;
         entity.UpdatedBy = dto.UpdatedBy;
     }
 }

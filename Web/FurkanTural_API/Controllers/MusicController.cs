@@ -67,6 +67,7 @@ public class MusicController(IMusicService musicService) : JwtBaseController
             Lyrics = request.Lyrics,
             Duration = request.Duration,
             ReleaseDate = request.ReleaseDate,
+            YouTubeMusicUrl = request.YouTubeMusicUrl,
             CreatedBy = SortUserId()
         }, cancellationToken));
 
@@ -87,6 +88,7 @@ public class MusicController(IMusicService musicService) : JwtBaseController
             Lyrics = request.Lyrics,
             Duration = request.Duration,
             ReleaseDate = request.ReleaseDate,
+            YouTubeMusicUrl = request.YouTubeMusicUrl,
             UpdatedBy = SortUserId()
         }, cancellationToken));
 

@@ -11,6 +11,7 @@ public class AdminMusicDto
     public string? Lyrics { get; set; }
     public TimeSpan? Duration { get; set; }
     public DateTime? ReleaseDate { get; set; }
+    public string? YouTubeMusicUrl { get; set; }
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime CreatedAt { get; set; }

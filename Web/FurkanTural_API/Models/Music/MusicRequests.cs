@@ -10,6 +10,7 @@ public class CreateMusicRequest
     public string? Lyrics { get; set; }
     public TimeSpan? Duration { get; set; }
     public DateTime? ReleaseDate { get; set; }
+    public string? YouTubeMusicUrl { get; set; }
 }
 
 public class UpdateMusicRequest
@@ -23,4 +24,5 @@ public class UpdateMusicRequest
     public string? Lyrics { get; set; }
     public TimeSpan? Duration { get; set; }
     public DateTime? ReleaseDate { get; set; }
+    public string? YouTubeMusicUrl { get; set; }
 }

@@ -11,4 +11,5 @@ public class MusicDto
     public string? Lyrics { get; set; }
     public TimeSpan? Duration { get; set; }
     public DateTime? ReleaseDate { get; set; }
+    public string? YouTubeMusicUrl { get; set; }
 }

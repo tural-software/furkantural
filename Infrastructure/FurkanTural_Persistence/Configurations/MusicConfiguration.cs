@@ -16,5 +16,6 @@ public class MusicConfiguration : BaseEntityConfiguration<Music>
         builder.Property(e => e.Album).HasMaxLength(200);
         builder.Property(e => e.Genre).HasMaxLength(200);
         builder.Property(e => e.Lyrics).HasColumnType("nvarchar(max)");
+        builder.Property(e => e.YouTubeMusicUrl).HasMaxLength(500);
     }
 }
