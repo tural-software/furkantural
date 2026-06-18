@@ -6,7 +6,7 @@
         : Model.Excerpt;
 
     var canonical = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
-    var articleJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
+    var articleData = new Dictionary<string, object?>
     {
         ["@context"] = "https://schema.org",
         ["@type"] = "Article",
@@ -23,12 +23,25 @@
             ["@type"] = "Organization",
             ["name"] = "Furkan Tural Blog"
         }
-    });
+    };
+    if (!string.IsNullOrEmpty(Model.PublishedIso))
+    {
+        articleData["datePublished"] = Model.PublishedIso;
+    }
+    var articleJsonLd = System.Text.Json.JsonSerializer.Serialize(articleData);
 }
 
 <article class="container content-page">
     <a class="back-link" asp-controller="Home" asp-action="Index">Tüm yazılar</a>
     <h1>@Model.Title</h1>
+    <div class="post-meta post-meta--detail">
+        @if (!string.IsNullOrEmpty(Model.PublishedDisplay))
+        {
+            <time datetime="@Model.PublishedIso">@Model.PublishedDisplay</time>
+            <span class="post-meta__sep" aria-hidden="true">•</span>
+        }
+        <span>@Model.ReadingMinutes dk okuma</span>
+    </div>
     <div class="post-content">@Model.Content</div>
 </article>
 

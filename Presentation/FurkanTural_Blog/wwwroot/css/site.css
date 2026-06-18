@@ -288,6 +288,19 @@ a:hover { color: var(--accent-hover); }
 }
 .post-card:hover .post-card__more::after { transform: translateX(4px); }
 
+/* Yazı meta bilgisi (yayın tarihi + okuma süresi) */
+.post-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0 0 0.85rem;
+}
+.post-meta__sep { opacity: 0.5; }
+.post-meta--detail { margin: 0.9rem 0 0; }
+
 /* Post detail */
 .back-link {
   display: inline-flex;
