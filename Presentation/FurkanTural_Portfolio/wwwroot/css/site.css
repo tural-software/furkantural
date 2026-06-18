@@ -117,6 +117,23 @@ a:hover { color: var(--color-accent-hover); }
 
 .nav-actions { display: flex; align-items: center; gap: 0.5rem; }
 
+/* Erişilebilirlik: klavye kullanıcısı için içeriğe atlama linki (WCAG 2.4.1).
+   Normalde ekran dışında; yalnız odaklanınca belirir. */
+.skip-link {
+    position: fixed;
+    left: 1rem;
+    top: -4rem;
+    z-index: 5000;
+    background: var(--color-accent);
+    color: #0f172a;
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    transition: top 0.2s ease;
+}
+.skip-link:focus { top: 1rem; }
+main:focus { outline: none; }
+
 /* Theme toggle — Admin (.theme-toggle-btn) stiliyle hizalı */
 .theme-toggle-btn {
     background-color: transparent;
