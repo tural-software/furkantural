@@ -368,8 +368,20 @@ a:hover { color: var(--accent-hover); }
   .toggle-text { display: none; }
 }
 
+/* Scroll-reveal — gizleme YALNIZCA JS aktifken (.js); JS yoksa içerik tam görünür.
+   Sadece opacity/transform kullanılır → ekran okuyucu içeriği görmeye devam eder. */
+.js .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.js .reveal.is-visible { opacity: 1; transform: none; }
+/* Kart listesinde hafif kademeli giriş. */
+.js .post-list .post-card.reveal { transition-delay: 0.05s; }
+.js .post-list .post-card.reveal:nth-child(2) { transition-delay: 0.12s; }
+.js .post-list .post-card.reveal:nth-child(3) { transition-delay: 0.19s; }
+.js .post-list .post-card.reveal:nth-child(4) { transition-delay: 0.26s; }
+
 /* Erişilebilirlik: hareketi azaltma tercihine saygı göster. */
 @media (prefers-reduced-motion: reduce) {
+  /* Reveal öğeleri asla gizli kalmasın (IO tetiklenmese bile görünür). */
+  .js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

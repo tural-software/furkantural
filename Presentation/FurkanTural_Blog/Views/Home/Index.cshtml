@@ -4,7 +4,7 @@
     ViewData["MetaDescription"] = "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notları ve blog yazıları.";
 }
 
-<section class="hero">
+<section class="hero reveal">
     <div class="container">
         <p class="hero__eyebrow">Furkan Tural Blog</p>
         <h1 class="hero__title">Yazılım, teknoloji ve geliştirme üzerine notlar</h1>
@@ -17,7 +17,7 @@
 <section class="container">
     @if (Model.Count == 0)
     {
-        <div class="placeholder-card">
+        <div class="placeholder-card reveal">
             <h2>Yakında</h2>
             <p>Blog yazıları hazırlanıyor. İçerik yayınlandığında bu alanda listelenecek.</p>
         </div>
@@ -27,7 +27,7 @@
         <div class="post-list">
             @foreach (var post in Model)
             {
-                <article class="post-card">
+                <article class="post-card reveal">
                     <h2 class="post-card__title">
                         <a asp-controller="Home" asp-action="Post" asp-route-id="@post.Id">@post.Title</a>
                     </h2>
