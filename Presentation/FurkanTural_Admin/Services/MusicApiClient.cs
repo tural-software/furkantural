@@ -70,7 +70,8 @@ public class MusicApiClient(HttpClient httpClient, ILogger<MusicApiClient> logge
                 genre       = dto.Genre,
                 lyrics      = dto.Lyrics,
                 duration    = string.IsNullOrWhiteSpace(dto.Duration) ? (TimeSpan?)null : TimeSpan.TryParse(dto.Duration, out var ts) ? ts : (TimeSpan?)null,
-                releaseDate = dto.ReleaseDate
+                releaseDate = dto.ReleaseDate,
+                youTubeMusicUrl = dto.YouTubeMusicUrl
             };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
@@ -100,7 +101,8 @@ public class MusicApiClient(HttpClient httpClient, ILogger<MusicApiClient> logge
                 genre       = dto.Genre,
                 lyrics      = dto.Lyrics,
                 duration    = string.IsNullOrWhiteSpace(dto.Duration) ? (TimeSpan?)null : TimeSpan.TryParse(dto.Duration, out var ts) ? ts : (TimeSpan?)null,
-                releaseDate = dto.ReleaseDate
+                releaseDate = dto.ReleaseDate,
+                youTubeMusicUrl = dto.YouTubeMusicUrl
             };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 

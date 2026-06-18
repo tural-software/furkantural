@@ -10,4 +10,5 @@ public sealed class MusicFormDto
     public string? Lyrics { get; set; }
     public string? Duration { get; set; }
     public DateTime? ReleaseDate { get; set; }
+    public string? YouTubeMusicUrl { get; set; }
 }

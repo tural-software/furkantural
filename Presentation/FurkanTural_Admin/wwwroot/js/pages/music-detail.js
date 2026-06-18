@@ -78,6 +78,11 @@
                         label: 'Yayın Tarihi',
                         icon: 'calendar',
                         value: function (r) { return r.releaseDate ? DmFmt.date(r.releaseDate) : '—'; }
+                    },
+                    {
+                        label: 'YouTube Music',
+                        icon: 'link',
+                        value: function (r) { return r.youTubeMusicUrl || '—'; }
                     }
                 ]
             },
@@ -168,7 +173,8 @@
         { name: 'genre',      label: 'Tür',        type: 'text',     required: false, maxLength: 200, placeholder: 'Müzik türünü girin...' },
         { name: 'lyrics',     label: 'Sözler',     type: 'textarea', required: false, rows: 5, placeholder: 'Şarkı sözlerini girin...' },
         { name: 'duration',   label: 'Süre',       type: 'text',     required: false, maxLength: 12,  placeholder: 'SS:DD:SN (ör: 00:04:10)' },
-        { name: 'releaseDate', label: 'Yayın Tarihi', type: 'date',  required: false }
+        { name: 'releaseDate', label: 'Yayın Tarihi', type: 'date',  required: false },
+        { name: 'youTubeMusicUrl', label: 'YouTube Music URL', type: 'text', required: false, maxLength: 500, placeholder: 'https://music.youtube.com/watch?v=...' }
     ];
 
     function buildCreateConfig(onSuccess) {
@@ -303,7 +309,8 @@
                 genre:       record.genre       || '',
                 lyrics:      record.lyrics      || '',
                 duration:    record.duration    || '',
-                releaseDate: toDateInput(record.releaseDate)
+                releaseDate: toDateInput(record.releaseDate),
+                youTubeMusicUrl: record.youTubeMusicUrl || ''
             }
         );
     }
