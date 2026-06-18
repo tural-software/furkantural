@@ -79,6 +79,11 @@ a:hover { color: var(--accent-hover); }
 .skip-link:focus { top: 1rem; }
 .site-main:focus { outline: none; }
 
+/* Görünür klavye-odak göstergesi (WCAG 2.4.7). :focus-visible → yalnız klavye/
+   programatik odakta belirir, fare tıklamasında değil. outline-offset sayesinde
+   accent-zeminli butonlarda bile halka sayfa arkaplanında görünür kalır. */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* Header */
 .site-header {
   position: sticky;

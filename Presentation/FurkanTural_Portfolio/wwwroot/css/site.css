@@ -134,6 +134,11 @@ a:hover { color: var(--color-accent-hover); }
 .skip-link:focus { top: 1rem; }
 main:focus { outline: none; }
 
+/* Görünür klavye-odak göstergesi (WCAG 2.4.7). :focus-visible → yalnız klavye/
+   programatik odakta belirir, fare tıklamasında değil. outline-offset sayesinde
+   accent-zeminli butonlarda bile halka sayfa arkaplanında görünür kalır. */
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
 /* Theme toggle — Admin (.theme-toggle-btn) stiliyle hizalı */
 .theme-toggle-btn {
     background-color: transparent;
