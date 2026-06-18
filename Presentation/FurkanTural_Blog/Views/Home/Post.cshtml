@@ -34,7 +34,23 @@
     {
         articleData["datePublished"] = Model.PublishedIso;
     }
+    if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+    {
+        articleData["image"] = Model.CoverImageUrl;
+    }
     var articleJsonLd = System.Text.Json.JsonSerializer.Serialize(articleData);
+
+    var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var breadcrumbJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
+    {
+        ["@context"] = "https://schema.org",
+        ["@type"] = "BreadcrumbList",
+        ["itemListElement"] = new object[]
+        {
+            new Dictionary<string, object?> { ["@type"] = "ListItem", ["position"] = 1, ["name"] = "Anasayfa", ["item"] = $"{siteUrl}/" },
+            new Dictionary<string, object?> { ["@type"] = "ListItem", ["position"] = 2, ["name"] = Model.Title, ["item"] = canonical }
+        }
+    });
 }
 
 <article class="container content-page">
@@ -57,4 +73,5 @@
 
 @section JsonLd {
     @Html.Raw("<script type=\"application/ld+json\">" + articleJsonLd + "</script>")
+    @Html.Raw("<script type=\"application/ld+json\">" + breadcrumbJsonLd + "</script>")
 }
