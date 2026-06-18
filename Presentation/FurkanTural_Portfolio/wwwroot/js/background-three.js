@@ -163,6 +163,7 @@
     }
 
     var raf = null;
+    var exploreActive = false;   // Keşif Modu açıkken bu sahne duraklatılır (GPU boşalır)
     var mouseX = 0, mouseY = 0;
     var t0 = performance.now();
 
@@ -208,8 +209,12 @@
       raf = requestAnimationFrame(frame);
     }
 
-    function start() { if (raf === null) raf = requestAnimationFrame(frame); }
+    function start() { if (raf === null && !exploreActive) raf = requestAnimationFrame(frame); }
     function stop()  { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } }
+
+    // Keşif Modu (exploreMode.js) açılınca duraklat, kapanınca devam et.
+    window.addEventListener('explore:enter', function () { exploreActive = true; stop(); });
+    window.addEventListener('explore:exit',  function () { exploreActive = false; start(); });
 
     resize();
     window.addEventListener('resize', resize);

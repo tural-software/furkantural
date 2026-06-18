@@ -175,6 +175,7 @@
     resize();
 
     var raf = null, t0 = performance.now();
+    var exploreActive = false;   // Keşif Modu açıkken bu sahne duraklatılır
 
     function frame(now) {
       var t = (now - t0) * 0.001;
@@ -214,13 +215,17 @@
       raf = requestAnimationFrame(frame);
     }
 
-    function start() { if (raf === null) raf = requestAnimationFrame(frame); }
+    function start() { if (raf === null && !exploreActive) raf = requestAnimationFrame(frame); }
     function stop() { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } }
 
     // Sekme gizliyken duraklat (pil/CPU). Sahne tüm-sayfa sabit → IO gerekmez.
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) stop(); else start();
     });
+
+    // Keşif Modu (exploreMode.js) açılınca duraklat, kapanınca devam et.
+    window.addEventListener('explore:enter', function () { exploreActive = true; stop(); });
+    window.addEventListener('explore:exit',  function () { exploreActive = false; start(); });
 
     canvas.style.opacity = '1';
     start();
