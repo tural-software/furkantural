@@ -109,9 +109,10 @@
     group.add(points);
     scene.add(group);
 
-    // --- Arka planda kendi kendine dolaşan "ay benzeri" uydular ---------------
-    // Dünya etrafında DEĞİL; tıpkı parçacıklar gibi arka plan hacminde serbest
-    // sürüklenirler. Yumuşak yönlü ışık + ay dokusu → gündüz/gece terminatörü.
+    // --- Arka planda "ay benzeri" uydular — merkez (origin) etrafında yörünge ---
+    // Her uydu FARKLI uzaklıkta (orbitR) + farklı eğim/düğüm/hızda dairesel yörüngede
+    // döner (görünür Dünya yok; merkez sahnenin odağı). Yumuşak yönlü ışık + ay dokusu
+    // → gündüz/gece terminatörü.
     scene.add(new THREE.AmbientLight(0x8090b0, 0.55));
     var sun = new THREE.DirectionalLight(0xffffff, 1.15);
     sun.position.set(-0.6, 0.85, 1.0);
@@ -129,8 +130,8 @@
 
     var sats = [];
     var satReady = false, satFade = 0;
-    var BX = 380, BY = 210, BZ = 150;   // dolaşma sınırları (yarı-genişlik)
-    for (var s = 0; s < SAT_URLS.length; s++) {
+    var SAT_N = SAT_URLS.length;
+    for (var s = 0; s < SAT_N; s++) {
       var tex = satLoader.load(SAT_URLS[s]); tex.colorSpace = THREE.SRGBColorSpace;
       var rad = 9 + Math.random() * 13;
       var sat = new THREE.Mesh(
@@ -142,12 +143,15 @@
         })
       );
       sat.visible = false;                         // tüm dokular yüklenene kadar gizli
-      sat.position.set((Math.random() - 0.5) * 2 * BX,
-                       (Math.random() - 0.5) * 2 * BY,
-                       (Math.random() - 0.5) * 2 * BZ);
       sat.rotation.set(Math.random() * 6.28, Math.random() * 6.28, 0);
+      // Yörünge parametreleri: her uydu farklı uzaklık (orbitR) + farklı düzlem (inc/rot) + hız.
+      var orbitR = 85 + s * 55;                    // farklı uzaklıklar: 85,140,195,250
       sat.userData = {
-        vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.32, vz: (Math.random() - 0.5) * 0.3,
+        orbitR: orbitR,
+        ang: Math.random() * Math.PI * 2,                              // başlangıç açısı
+        spd: 0.0052 * Math.sqrt(85 / orbitR),                          // dış yörünge daha yavaş
+        inc: (s - (SAT_N - 1) / 2) * 0.5 + (Math.random() - 0.5) * 0.2, // yörünge eğimi
+        rot: Math.random() * Math.PI * 2,                              // yörünge düzlemi Y-dönüşü
         rx: (Math.random() - 0.5) * 0.004, ry: 0.002 + Math.random() * 0.004
       };
       scene.add(sat);
@@ -236,17 +240,24 @@
       camera.position.z = 320 - scrollProg * 150;        // aşağı kaydırınca yaklaş (dolly)
       camera.lookAt(scene.position);
 
-      // Uydular: tüm dokular yüklendiyse fade-in + serbest sürüklenme (sınırda karşı
-      // kenardan sar) + kendi ekseninde dönüş. Yüklenmeden gizli → drift de başlamaz.
+      // Uydular: tüm dokular yüklendiyse fade-in + merkez etrafında dairesel yörünge
+      // (farklı uzaklık/eğim/hız) + kendi ekseninde dönüş. Yüklenmeden gizli.
       if (satReady) {
         if (satFade < 1) satFade = Math.min(1, satFade + 0.012);   // ~1.4s yumuşak fade-in
         for (var si = 0; si < sats.length; si++) {
           var st = sats[si], u = st.userData;
-          st.position.x += u.vx; st.position.y += u.vy; st.position.z += u.vz;
-          if (st.position.x > BX) st.position.x = -BX; else if (st.position.x < -BX) st.position.x = BX;
-          if (st.position.y > BY) st.position.y = -BY; else if (st.position.y < -BY) st.position.y = BY;
-          if (st.position.z > BZ) st.position.z = -BZ; else if (st.position.z < -BZ) st.position.z = BZ;
-          st.rotation.x += u.rx; st.rotation.y += u.ry;
+          u.ang += u.spd;                                    // yörüngede ilerle
+          // XZ düzleminde daire → X ekseninde 'inc' kadar eğ → Y ekseninde 'rot' kadar döndür.
+          var cx = Math.cos(u.ang) * u.orbitR;
+          var cz = Math.sin(u.ang) * u.orbitR;
+          var yt = -cz * Math.sin(u.inc);
+          var zt = cz * Math.cos(u.inc);
+          st.position.set(
+            cx * Math.cos(u.rot) - zt * Math.sin(u.rot),
+            yt,
+            cx * Math.sin(u.rot) + zt * Math.cos(u.rot)
+          );
+          st.rotation.x += u.rx; st.rotation.y += u.ry;      // kendi ekseninde dönüş
           if (satFade < 1) st.material.opacity = satFade;
         }
       }
