@@ -10,11 +10,16 @@
 //   - [data-no-lightbox] (öğenin kendisi ya da bir atası)
 //   - doğal genişliği < 48px olan küçük ikonlar
 // Büyük kaynak için isteğe bağlı `data-full` özniteliği desteklenir.
+//
+// Erişilebilirlik (WCAG 2.1.1 Klavye): uygun görseller focusable yapılır
+// (tabindex/role/aria-label); Enter/Space ile açılır; modal açılınca odak kapat
+// butonuna taşınır ve Tab ile modal içinde kalır (focus-trap); kapanışta odak
+// tetikleyen görsele geri verilir.
 // =============================================================================
 (function () {
   'use strict';
 
-  var overlay = null, imgEl = null, isOpen = false;
+  var overlay = null, imgEl = null, closeBtn = null, isOpen = false, lastFocused = null;
 
   function build() {
     overlay = document.createElement('div');
@@ -26,6 +31,7 @@
       '<button type="button" class="lightbox__close" aria-label="Kapat">✕</button>' +
       '<img class="lightbox__img" alt="" />';
     imgEl = overlay.querySelector('.lightbox__img');
+    closeBtn = overlay.querySelector('.lightbox__close');
     document.body.appendChild(overlay);
 
     // Arka plana (görsel dışına) tıklama kapatır; görsele tıklama kapatmaz.
@@ -33,18 +39,20 @@
       if (e.target === imgEl) return;
       close();
     });
-    overlay.querySelector('.lightbox__close').addEventListener('click', close);
+    closeBtn.addEventListener('click', close);
   }
 
-  function open(src, alt) {
+  function open(src, alt, trigger) {
     if (!src) return;
     if (!overlay) build();
+    lastFocused = trigger || (document.activeElement !== document.body ? document.activeElement : null);
     imgEl.setAttribute('src', src);
     imgEl.setAttribute('alt', alt || '');
     overlay.classList.add('is-open');
     overlay.setAttribute('aria-hidden', 'false');
     document.documentElement.classList.add('lightbox-open'); // sayfa kaydırmasını kilitle
     isOpen = true;
+    closeBtn.focus(); // odağı modala taşı
   }
 
   function close() {
@@ -53,6 +61,10 @@
     overlay.setAttribute('aria-hidden', 'true');
     document.documentElement.classList.remove('lightbox-open');
     isOpen = false;
+    if (lastFocused && typeof lastFocused.focus === 'function') {
+      lastFocused.focus(); // odağı tetikleyen öğeye geri ver
+    }
+    lastFocused = null;
   }
 
   function eligible(img) {
@@ -65,6 +77,10 @@
     return true;
   }
 
+  function openFromImg(img) {
+    open(img.getAttribute('data-full') || img.currentSrc || img.src, img.alt, img);
+  }
+
   // Tıklama — event delegation (tüm görseller, gelecekte eklenenler dahil).
   document.addEventListener('click', function (e) {
     var t = e.target;
@@ -72,17 +88,39 @@
     var img = t.closest('img');
     if (!eligible(img)) return;
     e.preventDefault();
-    open(img.getAttribute('data-full') || img.currentSrc || img.src, img.alt);
+    openFromImg(img);
   });
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && isOpen) close();
+    if (isOpen) {
+      // Modal açık: ESC kapatır; Tab odağı modal içinde tutar (tek öğe = kapat).
+      if (e.key === 'Escape') { close(); return; }
+      if (e.key === 'Tab') { e.preventDefault(); closeBtn.focus(); }
+      return;
+    }
+    // Modal kapalı: odaklı zoomable görselde Enter/Space açar.
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+      var el = document.activeElement;
+      if (el && el.classList && el.classList.contains('lightbox-zoomable') && eligible(el)) {
+        e.preventDefault();
+        openFromImg(el);
+      }
+    }
   });
 
-  // Uygun görsellere zoom-in imleci işaretle (görsel-içi ipucu).
+  // Uygun görselleri zoom-in imleci + klavye erişimi için işaretle.
+  function markZoomable(img) {
+    img.classList.add('lightbox-zoomable');
+    img.setAttribute('tabindex', '0');
+    img.setAttribute('role', 'button');
+    if (!img.getAttribute('aria-label')) {
+      img.setAttribute('aria-label', (img.alt ? img.alt + ', ' : '') + 'görseli büyüt');
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     Array.prototype.forEach.call(document.images, function (img) {
-      if (eligible(img)) img.classList.add('lightbox-zoomable');
+      if (eligible(img)) markZoomable(img);
     });
   });
 })();
