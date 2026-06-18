@@ -186,7 +186,10 @@ a:hover { color: var(--color-accent-hover); }
     flex-direction: column;
     justify-content: center;
 }
-.section-container { max-width: 1100px; margin: 0 auto; }
+/* width:100% şart: .section flex-column + container'da yatay auto-margin olunca
+   stretch iptal olup container içeriğe büzülüyor, grid'ler tek/dar sütuna çöküyordu.
+   Genişlik 1280 → geniş ekranda kartlar daha ferah yayılır. */
+.section-container { width: 100%; max-width: 1280px; margin: 0 auto; }
 .section-header { text-align: center; margin-bottom: 3rem; }
 .section-eyebrow {
     display: inline-block;
@@ -374,7 +377,8 @@ a:hover { color: var(--color-accent-hover); }
 .project-card__footer { padding: 1rem 1.5rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.75rem; }
 
 /* ---- Songs ---- */
-.songs-list { display: flex; flex-direction: column; gap: 0.75rem; max-width: 700px; margin: 0 auto; }
+/* Şarkılar tek dar sütun yerine kart-grid: geniş ekranda yan yana yayılır. */
+.songs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 0.75rem; }
 .song-card {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
@@ -599,7 +603,7 @@ a:hover { color: var(--color-accent-hover); }
 /* Asimetrik bölüm başlıkları (ritim için) */
 .section-split { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 3rem; align-items: start; }
 .section-split .section-eyebrow { margin-bottom: 0.75rem; }
-.timeline-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+.timeline-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; width: 100%; max-width: 1280px; margin: 0 auto; }
 @media (max-width: 768px) {
   .section-split, .timeline-2col { grid-template-columns: 1fr; gap: 2rem; }
 }
