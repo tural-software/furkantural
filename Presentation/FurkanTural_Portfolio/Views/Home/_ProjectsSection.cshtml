@@ -16,7 +16,9 @@
                             <span class="project-card__status @(project.IsCompleted ? "is-done" : "is-progress")">
                                 @(project.IsCompleted ? SharedLocalizer["Project_Status_Completed"] : SharedLocalizer["Project_Status_InProgress"])
                             </span>
-                            <h3 class="project-card__title">@project.Title</h3>
+                            <h3 class="project-card__title">
+                                <a class="project-card__link" href="@Url.Action("Detail", "Projects", new { id = project.Id })">@project.Title</a>
+                            </h3>
                             <p class="project-card__desc">@project.ShortDescription</p>
                             @if (!string.IsNullOrWhiteSpace(project.TechStack))
                             {
@@ -29,14 +31,7 @@
                             }
                         </div>
                         <div class="project-card__footer">
-                            @if (!string.IsNullOrWhiteSpace(project.DemoUrl))
-                            {
-                                <a href="@project.DemoUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">@SharedLocalizer["Project_View_Demo"]</a>
-                            }
-                            @if (!string.IsNullOrWhiteSpace(project.GitHubUrl))
-                            {
-                                <a href="@project.GitHubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">@SharedLocalizer["Project_View_Source"]</a>
-                            }
+                            <a href="@Url.Action("Detail", "Projects", new { id = project.Id })" class="btn btn-sm btn-primary">Detayları Gör →</a>
                         </div>
                     </div>
                 }

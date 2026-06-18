@@ -3,6 +3,7 @@
     var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
     var seoTitle = (ViewData["Title"] as string) ?? "Furkan Tural";
     var seoDescription = (ViewData["MetaDescription"] as string) ?? SharedLocalizer["Seo_Description"].Value;
+    var ogImage = (ViewData["OgImage"] as string) ?? (siteUrl + "/img/og-image.png");
     var personJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
     {
         ["@context"] = "https://schema.org",
@@ -40,11 +41,11 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="tr_TR" />
     <meta property="og:url" content="@canonical" />
-    <meta property="og:image" content="@(siteUrl + "/img/og-image.png")" />
+    <meta property="og:image" content="@ogImage" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="@seoTitle" />
     <meta name="twitter:description" content="@seoDescription" />
-    <meta name="twitter:image" content="@(siteUrl + "/img/og-image.png")" />
+    <meta name="twitter:image" content="@ogImage" />
     @Html.Raw("<script type=\"application/ld+json\">" + personJsonLd + "</script>")
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

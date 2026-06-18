@@ -1,0 +1,95 @@
+@model ProjectDetailViewModel
+@{
+    var p = Model.Project;
+    var apiBase = Model.ApiBaseUrl;
+    string Src(RemoteImageViewModel img) => $"{apiBase}/{img.Url}";
+    var cover = Model.Images.FirstOrDefault(i => i.IsCover) ?? Model.Images.FirstOrDefault();
+    var gallery = Model.Images.Where(i => i != cover).ToList();
+    var tags = (p.TechStack ?? string.Empty)
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+
+<section class="section detail">
+    <div class="section-container detail-container">
+        <a class="detail-back" href="~/#projects"><span aria-hidden="true">←</span> Projelere dön</a>
+
+        <div class="detail-head">
+            <span class="project-card__status @(p.IsCompleted ? "is-done" : "is-progress")">
+                @(p.IsCompleted ? SharedLocalizer["Project_Status_Completed"] : SharedLocalizer["Project_Status_InProgress"])
+            </span>
+            <h1 class="detail-title">@p.Title</h1>
+            @if (!string.IsNullOrWhiteSpace(p.ShortDescription))
+            {
+                <p class="detail-lead">@p.ShortDescription</p>
+            }
+        </div>
+
+        @if (cover is not null)
+        {
+            <img class="detail-cover" src="@Src(cover)" alt="@(cover.AltText ?? p.Title)" loading="lazy" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(p.Description))
+        {
+            <div class="detail-body">
+                @foreach (var para in p.Description.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    <p>@para.Trim()</p>
+                }
+            </div>
+        }
+
+        @if (tags.Length > 0)
+        {
+            <div class="detail-block">
+                <h2 class="detail-subtitle">Teknolojiler</h2>
+                <div class="project-card__tags">
+                    @foreach (var tag in tags)
+                    {
+                        <span class="tag">@tag</span>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(p.DemoUrl) || !string.IsNullOrWhiteSpace(p.GitHubUrl))
+        {
+            <div class="detail-actions">
+                @if (!string.IsNullOrWhiteSpace(p.DemoUrl))
+                {
+                    <a href="@p.DemoUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">@SharedLocalizer["Project_View_Demo"]</a>
+                }
+                @if (!string.IsNullOrWhiteSpace(p.GitHubUrl))
+                {
+                    <a href="@p.GitHubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-outline">@SharedLocalizer["Project_View_Source"]</a>
+                }
+            </div>
+        }
+
+        @if (gallery.Count > 0)
+        {
+            <div class="detail-block">
+                <h2 class="detail-subtitle">Galeri</h2>
+                <div class="detail-gallery">
+                    @foreach (var img in gallery)
+                    {
+                        <img src="@Src(img)" alt="@(img.AltText ?? p.Title)" loading="lazy" />
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script type="application/ld+json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
+    {
+        ["@context"] = "https://schema.org",
+        ["@type"] = "CreativeWork",
+        ["name"] = p.Title,
+        ["description"] = p.ShortDescription,
+        ["author"] = new Dictionary<string, object?> { ["@type"] = "Person", ["name"] = "Furkan Tural" }
+    }))
+    </script>
+}

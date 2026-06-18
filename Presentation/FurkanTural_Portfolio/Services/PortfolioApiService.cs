@@ -84,4 +84,32 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
             return [];
         }
     }
+
+    public async Task<ProjectViewModel?> GetProjectByIdAsync(int id, CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<ProjectViewModel>>($"/api/v1/project/{id}", JsonOptions, ct);
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Proje alınamadı: {Id}", id);
+            return null;
+        }
+    }
+
+    public async Task<IReadOnlyList<RemoteImageViewModel>> GetProjectImagesAsync(int projectId, CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<IEnumerable<RemoteImageViewModel>>>($"/api/v1/projectimage/by-project/{projectId}", JsonOptions, ct);
+            return result?.Data?.ToList().AsReadOnly() ?? (IReadOnlyList<RemoteImageViewModel>)[];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Proje görselleri alınamadı: {Id}", projectId);
+            return [];
+        }
+    }
 }

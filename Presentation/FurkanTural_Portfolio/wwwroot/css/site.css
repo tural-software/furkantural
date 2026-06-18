@@ -612,6 +612,45 @@ a:hover { color: var(--color-accent-hover); }
 .timeline--alt .timeline-marker { border-color: var(--color-accent-2); box-shadow: 0 0 0 4px var(--color-accent-2-glow); }
 .timeline--alt .timeline-org { color: var(--color-accent-2); }
 
+/* ---- Detay sayfaları (Proje / Müzik) — generic .detail-* ---- */
+.detail { justify-content: flex-start; padding-top: calc(var(--nav-height) + 3rem); }
+.detail-container { max-width: 900px; }
+.detail-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    color: var(--color-text-muted); font-size: 0.9rem; font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+.detail-back:hover { color: var(--color-accent); }
+.detail-head { margin-bottom: 1.5rem; }
+.detail-title { font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 800; line-height: 1.15; margin: 0.75rem 0 0.5rem; }
+.detail-lead { color: var(--color-text-muted); font-size: 1.15rem; line-height: 1.6; }
+.detail-cover {
+    width: 100%; max-height: 460px; object-fit: cover;
+    border-radius: var(--radius-lg); border: 1px solid var(--color-border);
+    margin: 1rem 0 1.5rem;
+}
+.detail-body { color: var(--color-text); line-height: 1.8; }
+.detail-body p { margin-bottom: 1rem; }
+.detail-block { margin-top: 2.5rem; }
+.detail-subtitle {
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--color-accent); margin-bottom: 1rem;
+}
+.detail-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; }
+.detail-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.detail-gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--color-border); }
+.project-card__link { color: inherit; }
+.project-card__link:hover { color: var(--color-accent); }
+
+/* Müzik detayı — meta liste + sözler + YouTube Music butonu */
+.detail-meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.detail-meta__item { display: flex; flex-direction: column; gap: 0.2rem; }
+.detail-meta__label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.detail-meta__value { font-weight: 600; }
+.detail-lyrics { white-space: pre-wrap; color: var(--color-text-muted); line-height: 1.9; }
+.btn-youtube { background: #ff0033; color: #fff; border: 1px solid #ff0033; }
+.btn-youtube:hover { background: #d4002b; border-color: #d4002b; color: #fff; }
+
 /* Erişilebilirlik: hareketi azaltma tercihine saygı göster. */
 @media (prefers-reduced-motion: reduce) {
   /* Reveal öğeleri asla gizli kalmasın (IO tetiklenmese bile görünür). */

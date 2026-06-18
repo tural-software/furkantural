@@ -9,4 +9,7 @@ public interface IPortfolioApiService
     Task<IReadOnlyList<SongViewModel>> GetSongsAsync(CancellationToken ct = default);
     Task<IReadOnlyList<ExperienceViewModel>> GetExperiencesAsync(CancellationToken ct = default);
     Task<IReadOnlyList<EducationViewModel>> GetEducationsAsync(CancellationToken ct = default);
+
+    Task<ProjectViewModel?> GetProjectByIdAsync(int id, CancellationToken ct = default);
+    Task<IReadOnlyList<RemoteImageViewModel>> GetProjectImagesAsync(int projectId, CancellationToken ct = default);
 }
