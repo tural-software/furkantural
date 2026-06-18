@@ -51,7 +51,14 @@
 /* ---- Reset & Base ---- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; font-size: 16px; }
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+    /* Her section tam ekran → bir section'dayken komşusu görünmez. Snap, kayma
+       dinince section başına oturtur; nav yüksekliği kadar üstten boşluk bırakır. */
+    scroll-snap-type: y proximity;
+    scroll-padding-top: var(--nav-height);
+}
 
 body {
     font-family: var(--font-sans);
@@ -166,7 +173,18 @@ a:hover { color: var(--color-accent-hover); }
 }
 
 /* ---- Section base ---- */
-.section { padding: 5rem 1.5rem; }
+/* Her section en az tam viewport yüksekliği + içerik dikey ortalı → bir section'da
+   iken komşu section görünmez. min-height (sabit height değil) → içerik taşarsa
+   normal akar/kaydırılır, kırpılmaz. svh mobil tarayıcı çubuğu için. */
+.section {
+    padding: 5rem 1.5rem;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    scroll-snap-align: start;
+}
 .section-container { max-width: 1100px; margin: 0 auto; }
 .section-header { text-align: center; margin-bottom: 3rem; }
 .section-eyebrow {
@@ -211,9 +229,11 @@ a:hover { color: var(--color-accent-hover); }
 /* ---- Hero ---- */
 .hero {
     min-height: 100vh;
+    min-height: 100svh;
     padding: calc(var(--nav-height) + 2rem) 1.5rem 4rem;
     display: flex; align-items: center;
     position: relative;
+    scroll-snap-align: start;
 }
 .hero-container {
     max-width: 1100px; margin: 0 auto; width: 100%;
