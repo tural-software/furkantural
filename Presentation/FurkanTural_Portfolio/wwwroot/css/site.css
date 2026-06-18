@@ -226,6 +226,11 @@ a:hover { color: var(--color-accent-hover); }
 }
 #canvas-container.is-ready { opacity: 0.6; }
 
+/* Scroll-driven 3D sahne (#scroll-scene) z-index:0'da, parçacık arkaplanının (-1)
+   ÜSTÜNDE ama içeriğin ALTINDA durur. İçeriği tek hamlede üste almak için <main> ve
+   footer'ı konumlandırılmış z-index:1 yap (HTML'e dokunmadan tüm section'ları kapsar). */
+main, .footer { position: relative; z-index: 1; }
+
 /* ---- Hero ---- */
 .hero {
     min-height: 100vh;

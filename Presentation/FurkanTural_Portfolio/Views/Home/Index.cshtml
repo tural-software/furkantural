@@ -23,4 +23,6 @@
             turnstileSiteKey: '@Html.Raw(ViewBag.TurnstileSiteKey ?? "")'
         };
     </script>
+    @* Scroll-driven 3D sahne katmanı — canvas'ı kendi oluşturur (body), z-index:0. *@
+    <script src="~/js/scrollScene.js" asp-append-version="true" defer></script>
 }
