@@ -54,9 +54,11 @@
 html {
     scroll-behavior: smooth;
     font-size: 16px;
-    /* Her section tam ekran → bir section'dayken komşusu görünmez. Snap, kayma
-       dinince section başına oturtur; nav yüksekliği kadar üstten boşluk bırakır. */
-    scroll-snap-type: y proximity;
+    /* scroll-padding-top: anchor link'ler (#about vb.) sabit navbar'ın ALTINA otursun.
+       NOT: scroll-snap KALDIRILDI — tam-ekran (≥100vh) section'larda içerik viewport'u
+       aştığında snap, kullanıcının kaydırmasıyla çekişip "takılma/geçiş zorlaştı"
+       hissi yaratıyordu. min-height:100vh tek başına "bir section'dayken komşu
+       görünmez"i zaten sağlıyor; serbest+akıcı scroll için snap'e gerek yok. */
     scroll-padding-top: var(--nav-height);
 }
 
@@ -183,7 +185,6 @@ a:hover { color: var(--color-accent-hover); }
     display: flex;
     flex-direction: column;
     justify-content: center;
-    scroll-snap-align: start;
 }
 .section-container { max-width: 1100px; margin: 0 auto; }
 .section-header { text-align: center; margin-bottom: 3rem; }
@@ -238,7 +239,6 @@ main, .footer { position: relative; z-index: 1; }
     padding: calc(var(--nav-height) + 2rem) 1.5rem 4rem;
     display: flex; align-items: center;
     position: relative;
-    scroll-snap-align: start;
 }
 .hero-container {
     max-width: 1100px; margin: 0 auto; width: 100%;
