@@ -44,7 +44,7 @@
 
     // Parçacık sayısı ekran genişliğine göre (mobilde düşük tut). Yoğunluk artırıldı
     // + dağılım hacmi büyütüldü (daha çok nokta, tıkanmadan).
-    var count = window.innerWidth < 768 ? 170 : 440;
+    var count = window.innerWidth < 768 ? 360 : 900;
     var positions = new Float32Array(count * 3);
     var pcolors = new Float32Array(count * 3);   // her parçacığa kendi rengi (çok-renkli)
     var pc = new THREE.Color();
@@ -66,7 +66,7 @@
     // Konumlar STATİK kalır → constellation çizgileri geçerli (statik-çizgi optimizasyonu korunur).
     // Renk artık per-parçacık (aColor); imlece yakın noktalar beyaza doğru parlar.
     var pointsUniforms = {
-      u_size:  { value: 2.2 },
+      u_size:  { value: 3.6 },
       u_mouse: { value: new THREE.Vector2(99, 99) }   // başlangıçta uzak → parlama yok
     };
     var material = new THREE.ShaderMaterial({
@@ -96,39 +96,61 @@
         '  if (dd > 0.5) discard;',
         '  float soft = smoothstep(0.5, 0.0, dd);',
         '  vec3 col = mix(vColor, vec3(1.0), vGlow * 0.5);',  // imlece yakın → beyaza doğru parla
-        '  float alpha = soft * (0.6 + vGlow * 0.4);',
+        '  float alpha = soft * (0.9 + vGlow * 0.1);',         // belirgin → neredeyse tam opak
         '  gl_FragColor = vec4(col, alpha);',
         '}'
       ].join('\n')
     });
     var points = new THREE.Points(geometry, material);
 
-    // Parçacıkları ve bağlantı çizgilerini tek grupta döndür; böylece çizgiler
-    // statik (yerel) konumlardan BİR KEZ hesaplanır → kare-başına ek maliyet yok.
+    // Parçacıkları bir grupta yavaşça döndür. (Constellation bağlantı çizgileri
+    // kaldırıldı — yalnız serbest parçacıklar.)
     var group = new THREE.Group();
     group.add(points);
-
-    // Constellation: yakın parçacıkları ince çizgilerle bağla (seyrek, zarif).
-    var THRESH = 72, THRESH2 = THRESH * THRESH, MAX_SEG = 320;
-    var linePos = [];
-    for (var a = 0; a < count; a++) {
-      var ax = positions[a * 3], ay = positions[a * 3 + 1], az = positions[a * 3 + 2];
-      for (var b = a + 1; b < count; b++) {
-        var dx = ax - positions[b * 3], dy = ay - positions[b * 3 + 1], dz = az - positions[b * 3 + 2];
-        if (dx * dx + dy * dy + dz * dz < THRESH2) {
-          linePos.push(ax, ay, az, positions[b * 3], positions[b * 3 + 1], positions[b * 3 + 2]);
-        }
-      }
-      if (linePos.length >= MAX_SEG * 6) break;
-    }
-    if (linePos.length) {
-      var lineGeo = new THREE.BufferGeometry();
-      lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(linePos), 3));
-      var lineMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.12, depthWrite: false });
-      group.add(new THREE.LineSegments(lineGeo, lineMat));
-    }
-
     scene.add(group);
+
+    // --- Arka planda kendi kendine dolaşan "ay benzeri" uydular ---------------
+    // Dünya etrafında DEĞİL; tıpkı parçacıklar gibi arka plan hacminde serbest
+    // sürüklenirler. Yumuşak yönlü ışık + ay dokusu → gündüz/gece terminatörü.
+    scene.add(new THREE.AmbientLight(0x8090b0, 0.55));
+    var sun = new THREE.DirectionalLight(0xffffff, 1.15);
+    sun.position.set(-0.6, 0.85, 1.0);
+    scene.add(sun);
+
+    // Kullanıcının sağladığı 4 uydu dokusu (wwwroot/img). Boşluk %20 ile encode'lu.
+    var satLoader = new THREE.TextureLoader();
+    var SAT_URLS = [
+      '/img/globe-satellite%20(1).webp', '/img/globe-satellite%20(2).webp',
+      '/img/globe-satellite%20(3).webp', '/img/globe-satellite%20(4).webp'
+    ];
+    var satTextures = SAT_URLS.map(function (u) {
+      var t = satLoader.load(u); t.colorSpace = THREE.SRGBColorSpace; return t;
+    });
+
+    var sats = [];
+    var SAT_N = window.innerWidth < 768 ? 3 : 5;
+    var BX = 380, BY = 210, BZ = 150;   // dolaşma sınırları (yarı-genişlik)
+    for (var s = 0; s < SAT_N; s++) {
+      var rad = 9 + Math.random() * 13;
+      var tex = satTextures[s % satTextures.length];
+      var sat = new THREE.Mesh(
+        new THREE.SphereGeometry(rad, 28, 28),
+        new THREE.MeshStandardMaterial({
+          map: tex, roughness: 1.0, metalness: 0.0,
+          emissive: 0x0a0e18, emissiveMap: tex, emissiveIntensity: 0.4
+        })
+      );
+      sat.position.set((Math.random() - 0.5) * 2 * BX,
+                       (Math.random() - 0.5) * 2 * BY,
+                       (Math.random() - 0.5) * 2 * BZ);
+      sat.rotation.set(Math.random() * 6.28, Math.random() * 6.28, 0);
+      sat.userData = {
+        vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.32, vz: (Math.random() - 0.5) * 0.3,
+        rx: (Math.random() - 0.5) * 0.004, ry: 0.002 + Math.random() * 0.004
+      };
+      scene.add(sat);
+      sats.push(sat);
+    }
 
     // --- Animasyon A: shader aurora katmanı (parçacıkların ARKASINDA) ---
     // Tek fullscreen quad; vertex matrisi yok-sayar (doğrudan NDC) → daima tam ekran.
@@ -206,6 +228,16 @@
       camera.position.y += (-mouseY * 40 - camera.position.y) * 0.04;
       camera.position.z = 320 - scrollProg * 150;        // aşağı kaydırınca yaklaş (dolly)
       camera.lookAt(scene.position);
+
+      // Uydular: serbest sürüklenme (sınıra varınca karşı kenardan sar) + kendi ekseninde dönüş.
+      for (var si = 0; si < sats.length; si++) {
+        var st = sats[si], u = st.userData;
+        st.position.x += u.vx; st.position.y += u.vy; st.position.z += u.vz;
+        if (st.position.x > BX) st.position.x = -BX; else if (st.position.x < -BX) st.position.x = BX;
+        if (st.position.y > BY) st.position.y = -BY; else if (st.position.y < -BY) st.position.y = BY;
+        if (st.position.z > BZ) st.position.z = -BZ; else if (st.position.z < -BZ) st.position.z = BZ;
+        st.rotation.x += u.rx; st.rotation.y += u.ry;
+      }
 
       if (aurora) {
         // İki geçiş: önce aurora (arka), sonra parçacıklar (ön) — tek temizleme.

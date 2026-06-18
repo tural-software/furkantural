@@ -225,7 +225,7 @@ a:hover { color: var(--color-accent-hover); }
     opacity: 0;
     transition: opacity 1.4s ease;
 }
-#canvas-container.is-ready { opacity: 0.6; }
+#canvas-container.is-ready { opacity: 0.85; }
 
 /* ---- Hero ---- */
 .hero {
