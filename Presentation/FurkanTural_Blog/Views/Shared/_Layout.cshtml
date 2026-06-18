@@ -5,6 +5,7 @@
     var metaDescription = ViewData["MetaDescription"] as string
         ?? "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notlarını paylaştığı kişisel blog.";
     var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var ogImage = (ViewData["OgImage"] as string) ?? (siteUrl + "/img/og-image.png");
     // Varsayılan WebSite yapısal verisi; sayfa "JsonLd" section'ı tanımlarsa (örn. yazı için Article) o kullanılır.
     var defaultJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
     {
@@ -49,10 +50,10 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="tr_TR" />
     <meta property="og:url" content="@canonical" />
-    <meta property="og:image" content="@(siteUrl + "/img/og-image.png")" />
+    <meta property="og:image" content="@ogImage" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="@(siteUrl + "/img/og-image.png")" />
+    <meta name="twitter:image" content="@ogImage" />
     <meta name="twitter:title" content="@(title ?? "Furkan Tural Blog")" />
     <meta name="twitter:description" content="@metaDescription" />
 

@@ -28,6 +28,12 @@
             @foreach (var post in Model)
             {
                 <article class="post-card reveal">
+                    @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+                    {
+                        <a class="post-card__cover" asp-controller="Home" asp-action="Post" asp-route-id="@post.Id" tabindex="-1" aria-hidden="true">
+                            <img src="@post.CoverImageUrl" alt="@(post.CoverAltText ?? post.Title)" loading="lazy" decoding="async" />
+                        </a>
+                    }
                     <h2 class="post-card__title">
                         <a asp-controller="Home" asp-action="Post" asp-route-id="@post.Id">@post.Title</a>
                     </h2>

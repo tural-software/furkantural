@@ -5,6 +5,12 @@
         ? $"{Model.Title} — Furkan Tural Blog"
         : Model.Excerpt;
 
+    // Kapak varsa sosyal paylaşım kartı (OG/Twitter) bu yazının kapağını kullansın.
+    if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+    {
+        ViewData["OgImage"] = Model.CoverImageUrl;
+    }
+
     var canonical = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
     var articleData = new Dictionary<string, object?>
     {
@@ -42,6 +48,10 @@
         }
         <span>@Model.ReadingMinutes dk okuma</span>
     </div>
+    @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+    {
+        <img class="post-cover reveal" src="@Model.CoverImageUrl" alt="@(Model.CoverAltText ?? Model.Title)" loading="lazy" decoding="async" />
+    }
     <div class="post-content reveal">@Model.Content</div>
 </article>
 

@@ -42,4 +42,32 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
             return null;
         }
     }
+
+    public async Task<IReadOnlyList<BlogImageViewModel>> GetAllImagesAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<IEnumerable<BlogImageViewModel>>>("/api/v1/blogimage", JsonOptions, ct);
+            return result?.Data?.ToList().AsReadOnly() ?? (IReadOnlyList<BlogImageViewModel>)[];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Blog görselleri alınamadı.");
+            return [];
+        }
+    }
+
+    public async Task<IReadOnlyList<BlogImageViewModel>> GetImagesByBlogAsync(int blogId, CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<IEnumerable<BlogImageViewModel>>>($"/api/v1/blogimage/by-blog/{blogId}", JsonOptions, ct);
+            return result?.Data?.ToList().AsReadOnly() ?? (IReadOnlyList<BlogImageViewModel>)[];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Blog görselleri alınamadı. BlogId={BlogId}", blogId);
+            return [];
+        }
+    }
 }

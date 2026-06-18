@@ -11,6 +11,12 @@ public class BlogPostViewModel
     public string? Content { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    /// <summary>Kapak görselinin tam adresi (ApiBaseUrl + Url); yoksa null.</summary>
+    public string? CoverImageUrl { get; set; }
+
+    /// <summary>Kapak görseli alt metni (erişilebilirlik); yoksa null.</summary>
+    public string? CoverAltText { get; set; }
+
     /// <summary>Yayın tarihi, Türkçe uzun biçim (örn. "18 Haziran 2026"); tarih yoksa boş.</summary>
     public string PublishedDisplay =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("d MMMM yyyy", Tr);
