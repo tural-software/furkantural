@@ -42,22 +42,31 @@
     var camera = new THREE.PerspectiveCamera(70, 1, 1, 1000);
     camera.position.z = 320;
 
-    // Parçacık sayısı ekran genişliğine göre (mobilde düşük tut).
-    var count = window.innerWidth < 768 ? 70 : 150;
+    // Parçacık sayısı ekran genişliğine göre (mobilde düşük tut). Yoğunluk artırıldı
+    // + dağılım hacmi büyütüldü (daha çok nokta, tıkanmadan).
+    var count = window.innerWidth < 768 ? 170 : 440;
     var positions = new Float32Array(count * 3);
+    var pcolors = new Float32Array(count * 3);   // her parçacığa kendi rengi (çok-renkli)
+    var pc = new THREE.Color();
     for (var i = 0; i < count; i++) {
-      positions[i * 3]     = (Math.random() - 0.5) * 600;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 400;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+      positions[i * 3]     = (Math.random() - 0.5) * 820;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 520;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 520;
+      // Renk çarkı boyunca rastgele canlı ton (yüksek doygunluk → koyu fonda okunur).
+      pc.setHSL(Math.random(), 0.65 + Math.random() * 0.3, 0.52 + Math.random() * 0.16);
+      pcolors[i * 3]     = pc.r;
+      pcolors[i * 3 + 1] = pc.g;
+      pcolors[i * 3 + 2] = pc.b;
     }
     var geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('aColor', new THREE.BufferAttribute(pcolors, 3));
 
     // Animasyon B: cursor-reaktif parçacıklar — imlece yakın noktalar parlar + büyür.
     // Konumlar STATİK kalır → constellation çizgileri geçerli (statik-çizgi optimizasyonu korunur).
+    // Renk artık per-parçacık (aColor); imlece yakın noktalar beyaza doğru parlar.
     var pointsUniforms = {
-      u_size:  { value: 2.4 },
-      u_color: { value: new THREE.Color(0x38bdf8) },
+      u_size:  { value: 2.2 },
       u_mouse: { value: new THREE.Vector2(99, 99) }   // başlangıçta uzak → parlama yok
     };
     var material = new THREE.ShaderMaterial({
@@ -65,9 +74,12 @@
       transparent: true,
       depthWrite: false,
       vertexShader: [
+        'attribute vec3 aColor;',
         'uniform float u_size; uniform vec2 u_mouse;',
         'varying float vGlow;',
+        'varying vec3 vColor;',
         'void main(){',
+        '  vColor = aColor;',
         '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
         '  gl_Position = projectionMatrix * mv;',
         '  vec2 ndc = gl_Position.xy / gl_Position.w;',
@@ -77,14 +89,14 @@
         '}'
       ].join('\n'),
       fragmentShader: [
-        'uniform vec3 u_color;',
         'varying float vGlow;',
+        'varying vec3 vColor;',
         'void main(){',
         '  float dd = distance(gl_PointCoord, vec2(0.5));',
         '  if (dd > 0.5) discard;',
         '  float soft = smoothstep(0.5, 0.0, dd);',
-        '  vec3 col = mix(u_color, vec3(1.0), vGlow * 0.5);',  // imlece yakın → beyaza doğru parla
-        '  float alpha = soft * (0.55 + vGlow * 0.45);',
+        '  vec3 col = mix(vColor, vec3(1.0), vGlow * 0.5);',  // imlece yakın → beyaza doğru parla
+        '  float alpha = soft * (0.6 + vGlow * 0.4);',
         '  gl_FragColor = vec4(col, alpha);',
         '}'
       ].join('\n')
@@ -163,7 +175,6 @@
     }
 
     var raf = null;
-    var exploreActive = false;   // Keşif Modu açıkken bu sahne duraklatılır (GPU boşalır)
     var mouseX = 0, mouseY = 0;
     var t0 = performance.now();
 
@@ -209,12 +220,8 @@
       raf = requestAnimationFrame(frame);
     }
 
-    function start() { if (raf === null && !exploreActive) raf = requestAnimationFrame(frame); }
+    function start() { if (raf === null) raf = requestAnimationFrame(frame); }
     function stop()  { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } }
-
-    // Keşif Modu (exploreMode.js) açılınca duraklat, kapanınca devam et.
-    window.addEventListener('explore:enter', function () { exploreActive = true; stop(); });
-    window.addEventListener('explore:exit',  function () { exploreActive = false; start(); });
 
     resize();
     window.addEventListener('resize', resize);

@@ -39,14 +39,11 @@
   // --- ortak: sekme gizliyken duraklat + ekran dışında duraklat (IO) ----------
   function runLoop(canvas, render) {
     var raf = null;
-    var visible = true, onscreen = true, explore = false;
-    function tick(now) { render(now); raf = (onscreen && visible && !explore) ? requestAnimationFrame(tick) : null; }
-    function start() { if (raf === null && onscreen && visible && !explore) raf = requestAnimationFrame(tick); }
+    var visible = true, onscreen = true;
+    function tick(now) { render(now); raf = onscreen && visible ? requestAnimationFrame(tick) : null; }
+    function start() { if (raf === null && onscreen && visible) raf = requestAnimationFrame(tick); }
     function stop() { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } }
     document.addEventListener('visibilitychange', function () { visible = !document.hidden; if (visible) start(); else stop(); });
-    // Keşif Modu (exploreMode.js) açılınca duraklat, kapanınca devam et.
-    window.addEventListener('explore:enter', function () { explore = true; stop(); });
-    window.addEventListener('explore:exit',  function () { explore = false; start(); });
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (es) {
         es.forEach(function (e) { onscreen = e.isIntersecting; if (onscreen) start(); else stop(); });
