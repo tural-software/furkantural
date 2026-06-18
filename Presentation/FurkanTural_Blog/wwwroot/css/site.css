@@ -318,10 +318,12 @@ a:hover { color: var(--accent-hover); }
 }
 .post-card:hover .post-card__cover img { transform: scale(1.04); }
 
-/* Detay sayfası kapak görseli. */
+/* Detay sayfası kapak görseli. aspect-ratio ile yer ayrılır → görsel yüklenince
+   layout kaymaz (CLS / Core Web Vitals). */
 .post-cover {
   display: block;
   width: 100%;
+  aspect-ratio: 16 / 9;
   max-height: 440px;
   object-fit: cover;
   border-radius: var(--radius);
