@@ -1,6 +1,7 @@
 using System.Text;
 using System.Xml;
 using Microsoft.AspNetCore.Mvc;
+using FurkanTural_Portfolio.Services;
 
 namespace FurkanTural_Portfolio.Controllers;
 
@@ -8,8 +9,10 @@ namespace FurkanTural_Portfolio.Controllers;
 /// Arama motorları için robots.txt ve sitemap.xml üretir.
 /// URL'ler isteğin host'una göre mutlak olarak oluşturulur.
 /// </summary>
-public class SeoController : Controller
+public class SeoController(IPortfolioApiService apiService) : Controller
 {
+    private readonly IPortfolioApiService _apiService = apiService;
+
     [HttpGet("robots.txt")]
     [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
     public IActionResult Robots()
@@ -24,18 +27,34 @@ public class SeoController : Controller
         return Content(sb.ToString(), "text/plain", Encoding.UTF8);
     }
 
+    // İçerik dinamik (detay sayfaları API'den) → cache 24s yerine 1s.
     [HttpGet("sitemap.xml")]
-    [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
-    public IActionResult Sitemap()
+    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
+    public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
     {
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
         var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
-        var urls = new (string Loc, string Priority, string ChangeFreq)[]
+        var urls = new List<(string Loc, string Priority, string ChangeFreq)>
         {
             ($"{baseUrl}/", "1.0", "monthly"),
             ($"{baseUrl}/Home/Privacy", "0.3", "yearly"),
         };
+
+        // Dinamik detay sayfaları (proje + müzik) — arama motorları keşfedebilsin.
+        // API erişilemezse servis boş döndürür → sitemap statik sayfalara düşer (hata yok).
+        var projectsTask = _apiService.GetProjectsAsync(cancellationToken);
+        var songsTask = _apiService.GetSongsAsync(cancellationToken);
+        await Task.WhenAll(projectsTask, songsTask);
+
+        foreach (var project in projectsTask.Result)
+        {
+            urls.Add(($"{baseUrl}/Projects/Detail/{project.Id}", "0.7", "monthly"));
+        }
+        foreach (var song in songsTask.Result)
+        {
+            urls.Add(($"{baseUrl}/Music/Detail/{song.Id}", "0.7", "monthly"));
+        }
 
         // XmlWriter bir StringBuilder'a yazınca bildirimi daima utf-16 olur;
         // doğru "encoding=utf-8" bildirimi için UTF-8 stream'e yazıp byte döndürüyoruz.
