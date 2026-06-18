@@ -112,4 +112,32 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
             return [];
         }
     }
+
+    public async Task<SongViewModel?> GetSongByIdAsync(int id, CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<SongViewModel>>($"/api/v1/music/{id}", JsonOptions, ct);
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Müzik alınamadı: {Id}", id);
+            return null;
+        }
+    }
+
+    public async Task<IReadOnlyList<RemoteImageViewModel>> GetSongImagesAsync(int musicId, CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<IEnumerable<RemoteImageViewModel>>>($"/api/v1/musicimage/by-music/{musicId}", JsonOptions, ct);
+            return result?.Data?.ToList().AsReadOnly() ?? (IReadOnlyList<RemoteImageViewModel>)[];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Müzik görselleri alınamadı: {Id}", musicId);
+            return [];
+        }
+    }
 }

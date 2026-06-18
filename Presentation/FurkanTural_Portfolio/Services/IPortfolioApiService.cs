@@ -12,4 +12,7 @@ public interface IPortfolioApiService
 
     Task<ProjectViewModel?> GetProjectByIdAsync(int id, CancellationToken ct = default);
     Task<IReadOnlyList<RemoteImageViewModel>> GetProjectImagesAsync(int projectId, CancellationToken ct = default);
+
+    Task<SongViewModel?> GetSongByIdAsync(int id, CancellationToken ct = default);
+    Task<IReadOnlyList<RemoteImageViewModel>> GetSongImagesAsync(int musicId, CancellationToken ct = default);
 }

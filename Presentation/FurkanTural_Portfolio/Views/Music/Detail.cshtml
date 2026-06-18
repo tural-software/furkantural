@@ -1,0 +1,92 @@
+@model SongDetailViewModel
+@{
+    var s = Model.Song;
+    var apiBase = Model.ApiBaseUrl;
+    string Src(RemoteImageViewModel img) => $"{apiBase}/{img.Url}";
+    var cover = Model.Images.FirstOrDefault(i => i.IsCover) ?? Model.Images.FirstOrDefault();
+    var gallery = Model.Images.Where(i => i != cover).ToList();
+
+    var meta = new (string Label, string? Value)[]
+    {
+        ("Sanatçı",  s.Artist),
+        ("Prodüktör", s.Productor),
+        ("Albüm",    s.Album),
+        ("Tür",      s.Genre),
+        ("Süre",     s.Duration?.ToString(@"mm\:ss")),
+        ("Yayın",    s.ReleaseDate?.Year.ToString())
+    }.Where(m => !string.IsNullOrWhiteSpace(m.Value)).ToArray();
+}
+
+<section class="section detail">
+    <div class="section-container detail-container">
+        <a class="detail-back" href="~/#music"><span aria-hidden="true">←</span> Müziklere dön</a>
+
+        <div class="detail-head">
+            <h1 class="detail-title">@s.Name</h1>
+            @if (!string.IsNullOrWhiteSpace(s.Artist))
+            {
+                <p class="detail-lead">@s.Artist</p>
+            }
+        </div>
+
+        @if (cover is not null)
+        {
+            <img class="detail-cover" src="@Src(cover)" alt="@(cover.AltText ?? s.Name)" loading="lazy" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(s.YouTubeMusicUrl))
+        {
+            <div class="detail-actions">
+                <a href="@s.YouTubeMusicUrl" target="_blank" rel="noopener noreferrer" class="btn btn-youtube">▶ YouTube Music'te Dinle</a>
+            </div>
+        }
+
+        @if (meta.Length > 0)
+        {
+            <div class="detail-meta">
+                @foreach (var m in meta)
+                {
+                    <div class="detail-meta__item">
+                        <span class="detail-meta__label">@m.Label</span>
+                        <span class="detail-meta__value">@m.Value</span>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(s.Lyrics))
+        {
+            <div class="detail-block">
+                <h2 class="detail-subtitle">Sözler</h2>
+                <div class="detail-lyrics">@s.Lyrics</div>
+            </div>
+        }
+
+        @if (gallery.Count > 0)
+        {
+            <div class="detail-block">
+                <h2 class="detail-subtitle">Galeri</h2>
+                <div class="detail-gallery">
+                    @foreach (var img in gallery)
+                    {
+                        <img src="@Src(img)" alt="@(img.AltText ?? s.Name)" loading="lazy" />
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script type="application/ld+json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
+    {
+        ["@context"] = "https://schema.org",
+        ["@type"] = "MusicRecording",
+        ["name"] = s.Name,
+        ["byArtist"] = new Dictionary<string, object?> { ["@type"] = "MusicGroup", ["name"] = s.Artist },
+        ["inAlbum"] = string.IsNullOrWhiteSpace(s.Album) ? null : s.Album,
+        ["genre"] = s.Genre
+    }))
+    </script>
+}

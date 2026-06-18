@@ -15,3 +15,10 @@ public sealed class ProjectDetailViewModel
     public IReadOnlyList<RemoteImageViewModel> Images { get; init; } = [];
     public string ApiBaseUrl { get; init; } = string.Empty;
 }
+
+public sealed class SongDetailViewModel
+{
+    public required SongViewModel Song { get; init; }
+    public IReadOnlyList<RemoteImageViewModel> Images { get; init; } = [];
+    public string ApiBaseUrl { get; init; } = string.Empty;
+}
