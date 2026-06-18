@@ -78,15 +78,39 @@
 </section>
 
 @section Scripts {
+    @{
+        var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+        var pageUrl = $"{siteUrl}{Context.Request.Path}";
+        var coverUrl = cover is not null ? Src(cover) : null;
+
+        var musicRecording = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "MusicRecording",
+            ["name"] = s.Name,
+            ["url"] = pageUrl,
+            ["byArtist"] = new Dictionary<string, object?> { ["@type"] = "MusicGroup", ["name"] = s.Artist },
+            ["inAlbum"] = string.IsNullOrWhiteSpace(s.Album) ? null : s.Album,
+            ["genre"] = s.Genre
+        };
+        if (!string.IsNullOrEmpty(coverUrl)) { musicRecording["image"] = coverUrl; }
+
+        var breadcrumb = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "BreadcrumbList",
+            ["itemListElement"] = new object[]
+            {
+                new Dictionary<string, object?> { ["@type"] = "ListItem", ["position"] = 1, ["name"] = "Anasayfa", ["item"] = $"{siteUrl}/" },
+                new Dictionary<string, object?> { ["@type"] = "ListItem", ["position"] = 2, ["name"] = "Müzikler", ["item"] = $"{siteUrl}/#music" },
+                new Dictionary<string, object?> { ["@type"] = "ListItem", ["position"] = 3, ["name"] = s.Name, ["item"] = pageUrl }
+            }
+        };
+    }
     <script type="application/ld+json">
-    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
-    {
-        ["@context"] = "https://schema.org",
-        ["@type"] = "MusicRecording",
-        ["name"] = s.Name,
-        ["byArtist"] = new Dictionary<string, object?> { ["@type"] = "MusicGroup", ["name"] = s.Artist },
-        ["inAlbum"] = string.IsNullOrWhiteSpace(s.Album) ? null : s.Album,
-        ["genre"] = s.Genre
-    }))
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(musicRecording))
+    </script>
+    <script type="application/ld+json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(breadcrumb))
     </script>
 }
