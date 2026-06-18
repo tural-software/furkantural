@@ -70,4 +70,67 @@ public class SeoController(IBlogApiService blogApi) : Controller
 
         return File(ms.ToArray(), "application/xml; charset=utf-8");
     }
+
+    // İçerik dinamik (yazılar API'den) → cache 1s. Okuyucuların abone olabilmesi
+    // için RSS 2.0 beslemesi; API erişilemezse boş kanal döner (graceful).
+    [HttpGet("feed.xml")]
+    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
+    public async Task<IActionResult> Feed(CancellationToken cancellationToken)
+    {
+        const string atomNs = "http://www.w3.org/2005/Atom";
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var nowR = DateTime.UtcNow.ToString("r");
+
+        // Yayınlı yazılar, en yeni önce, en fazla 20 (API erişilemezse boş kanal).
+        var posts = (await _blogApi.GetPostsAsync(cancellationToken))
+            .OrderByDescending(p => p.CreatedAt)
+            .Take(20)
+            .ToList();
+
+        using var ms = new MemoryStream();
+        var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false) };
+        using (var writer = XmlWriter.Create(ms, settings))
+        {
+            writer.WriteStartDocument();
+            writer.WriteStartElement("rss");
+            writer.WriteAttributeString("version", "2.0");
+            writer.WriteAttributeString("xmlns", "atom", null, atomNs);
+
+            writer.WriteStartElement("channel");
+            writer.WriteElementString("title", "Furkan Tural Blog");
+            writer.WriteElementString("link", $"{baseUrl}/");
+            writer.WriteElementString("description", "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notları.");
+            writer.WriteElementString("language", "tr-TR");
+            writer.WriteElementString("lastBuildDate", nowR);
+
+            // atom:link rel=self — besleme kendini tanımlar (iyi pratik).
+            writer.WriteStartElement("atom", "link", atomNs);
+            writer.WriteAttributeString("href", $"{baseUrl}/feed.xml");
+            writer.WriteAttributeString("rel", "self");
+            writer.WriteAttributeString("type", "application/rss+xml");
+            writer.WriteEndElement();
+
+            foreach (var post in posts)
+            {
+                var link = $"{baseUrl}/Home/Post/{post.Id}";
+                writer.WriteStartElement("item");
+                writer.WriteElementString("title", post.Title ?? string.Empty);
+                writer.WriteElementString("link", link);
+                if (!string.IsNullOrWhiteSpace(post.Excerpt))
+                    writer.WriteElementString("description", post.Excerpt);
+                writer.WriteElementString("pubDate", DateTime.SpecifyKind(post.CreatedAt, DateTimeKind.Utc).ToString("r"));
+                writer.WriteStartElement("guid");
+                writer.WriteAttributeString("isPermaLink", "true");
+                writer.WriteString(link);
+                writer.WriteEndElement();
+                writer.WriteEndElement(); // item
+            }
+
+            writer.WriteEndElement(); // channel
+            writer.WriteEndElement(); // rss
+            writer.WriteEndDocument();
+        }
+
+        return File(ms.ToArray(), "application/rss+xml; charset=utf-8");
+    }
 }
