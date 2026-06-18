@@ -117,29 +117,31 @@
     sun.position.set(-0.6, 0.85, 1.0);
     scene.add(sun);
 
-    // Kullanıcının sağladığı 4 uydu dokusu (wwwroot/img). Boşluk %20 ile encode'lu.
-    var satLoader = new THREE.TextureLoader();
+    // Kullanıcının sağladığı uydu dokuları (wwwroot/img). HER variant görseli için BİR
+    // uydu (1:1). LoadingManager: hepsi yüklenmeden hiçbiri görünmez → yüklenince fade-in
+    // (bir anda çıkmaz). Boşluk %20 ile encode'lu.
     var SAT_URLS = [
       '/img/globe-satellite%20(1).webp', '/img/globe-satellite%20(2).webp',
       '/img/globe-satellite%20(3).webp', '/img/globe-satellite%20(4).webp'
     ];
-    var satTextures = SAT_URLS.map(function (u) {
-      var t = satLoader.load(u); t.colorSpace = THREE.SRGBColorSpace; return t;
-    });
+    var satManager = new THREE.LoadingManager();
+    var satLoader = new THREE.TextureLoader(satManager);
 
     var sats = [];
-    var SAT_N = window.innerWidth < 768 ? 3 : 5;
+    var satReady = false, satFade = 0;
     var BX = 380, BY = 210, BZ = 150;   // dolaşma sınırları (yarı-genişlik)
-    for (var s = 0; s < SAT_N; s++) {
+    for (var s = 0; s < SAT_URLS.length; s++) {
+      var tex = satLoader.load(SAT_URLS[s]); tex.colorSpace = THREE.SRGBColorSpace;
       var rad = 9 + Math.random() * 13;
-      var tex = satTextures[s % satTextures.length];
       var sat = new THREE.Mesh(
         new THREE.SphereGeometry(rad, 28, 28),
         new THREE.MeshStandardMaterial({
           map: tex, roughness: 1.0, metalness: 0.0,
-          emissive: 0x0a0e18, emissiveMap: tex, emissiveIntensity: 0.4
+          emissive: 0x0a0e18, emissiveMap: tex, emissiveIntensity: 0.4,
+          transparent: true, opacity: 0          // fade-in için saydam başlar
         })
       );
+      sat.visible = false;                         // tüm dokular yüklenene kadar gizli
       sat.position.set((Math.random() - 0.5) * 2 * BX,
                        (Math.random() - 0.5) * 2 * BY,
                        (Math.random() - 0.5) * 2 * BZ);
@@ -151,6 +153,11 @@
       scene.add(sat);
       sats.push(sat);
     }
+    // Tüm uydu dokuları yüklendiğinde hepsini birden görünür yap → frame'de fade-in başlar.
+    satManager.onLoad = function () {
+      satReady = true;
+      for (var k = 0; k < sats.length; k++) sats[k].visible = true;
+    };
 
     // --- Animasyon A: shader aurora katmanı (parçacıkların ARKASINDA) ---
     // Tek fullscreen quad; vertex matrisi yok-sayar (doğrudan NDC) → daima tam ekran.
@@ -229,14 +236,19 @@
       camera.position.z = 320 - scrollProg * 150;        // aşağı kaydırınca yaklaş (dolly)
       camera.lookAt(scene.position);
 
-      // Uydular: serbest sürüklenme (sınıra varınca karşı kenardan sar) + kendi ekseninde dönüş.
-      for (var si = 0; si < sats.length; si++) {
-        var st = sats[si], u = st.userData;
-        st.position.x += u.vx; st.position.y += u.vy; st.position.z += u.vz;
-        if (st.position.x > BX) st.position.x = -BX; else if (st.position.x < -BX) st.position.x = BX;
-        if (st.position.y > BY) st.position.y = -BY; else if (st.position.y < -BY) st.position.y = BY;
-        if (st.position.z > BZ) st.position.z = -BZ; else if (st.position.z < -BZ) st.position.z = BZ;
-        st.rotation.x += u.rx; st.rotation.y += u.ry;
+      // Uydular: tüm dokular yüklendiyse fade-in + serbest sürüklenme (sınırda karşı
+      // kenardan sar) + kendi ekseninde dönüş. Yüklenmeden gizli → drift de başlamaz.
+      if (satReady) {
+        if (satFade < 1) satFade = Math.min(1, satFade + 0.012);   // ~1.4s yumuşak fade-in
+        for (var si = 0; si < sats.length; si++) {
+          var st = sats[si], u = st.userData;
+          st.position.x += u.vx; st.position.y += u.vy; st.position.z += u.vz;
+          if (st.position.x > BX) st.position.x = -BX; else if (st.position.x < -BX) st.position.x = BX;
+          if (st.position.y > BY) st.position.y = -BY; else if (st.position.y < -BY) st.position.y = BY;
+          if (st.position.z > BZ) st.position.z = -BZ; else if (st.position.z < -BZ) st.position.z = BZ;
+          st.rotation.x += u.rx; st.rotation.y += u.ry;
+          if (satFade < 1) st.material.opacity = satFade;
+        }
       }
 
       if (aurora) {
