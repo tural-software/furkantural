@@ -28,7 +28,12 @@
     align-items: center;
     gap: .5rem;
 }
-.brand-logo { width: 30px; height: 30px; object-fit: contain; flex: 0 0 auto; }
+/* Wordmark logosu — şeffaf zemin + site paleti; aktif temaya göre dark/light değişir. */
+.brand-logo { display: block; height: 40px; width: auto; flex: 0 0 auto; }
+.brand-logo--light { display: none; }
+[data-theme="light"] .brand-logo--dark { display: none; }
+[data-theme="light"] .brand-logo--light { display: block; }
+.brand-sub { font-size: .82rem; letter-spacing: .2px; }
 
 .brand:hover {
     transform: scale(1.05);
