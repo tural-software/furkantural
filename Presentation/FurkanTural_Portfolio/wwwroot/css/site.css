@@ -102,8 +102,11 @@ a:hover { color: var(--color-accent-hover); }
 }
 
 .nav-brand { display: flex; align-items: center; }
-/* Wordmark logosu — kendi lacivert plakasıyla geldiği için açık/koyu temada okunur. */
+/* Wordmark logosu — şeffaf zemin + site paleti; aktif temaya göre dark/light değişir. */
 .nav-brand__logo { display: block; height: 40px; width: auto; }
+.nav-brand__logo--light { display: none; }
+[data-theme="light"] .nav-brand__logo--dark { display: none; }
+[data-theme="light"] .nav-brand__logo--light { display: block; }
 
 .nav-links { display: flex; gap: 0.25rem; }
 .nav-link {
