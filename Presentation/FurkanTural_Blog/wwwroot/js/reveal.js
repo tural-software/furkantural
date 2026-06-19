@@ -20,12 +20,18 @@
 
   var io = new IntersectionObserver(function (entries, obs) {
     entries.forEach(function (en) {
-      if (en.isIntersecting) {
+      // Öğenin %12'si görünür OLDUĞUNDA göster. Ama öğe viewport'tan uzunsa
+      // (örn. uzun yazı gövdesi) intersectionRatio asla %12'ye ulaşamaz; bu
+      // durumda görünüme girer girmez (ratio 0 eşiği) göster — yoksa opacity:0'da
+      // takılı kalır. rootBounds null olabilir → window.innerHeight'a düş.
+      if (!en.isIntersecting) return;
+      var rootH = en.rootBounds ? en.rootBounds.height : window.innerHeight;
+      if (en.intersectionRatio >= 0.12 || en.boundingClientRect.height > rootH) {
         en.target.classList.add('is-visible');
         obs.unobserve(en.target);
       }
     });
-  }, { threshold: 0.12, rootMargin: '0px 0px -10% 0px' });
+  }, { threshold: [0, 0.12], rootMargin: '0px 0px -10% 0px' });
 
   els.forEach(function (el) { io.observe(el); });
 })();
