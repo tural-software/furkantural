@@ -416,11 +416,13 @@ html.lightbox-open { overflow: hidden; }
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
 }
 .post-content {
+  /* Genişlik kapağı YOK: metin, üstündeki kapak görseliyle (.post-cover, %100)
+     aynı genişliği — yani .content-page genişliğini — kaplasın. Aksi halde dar
+     metin sütunu geniş görselin altında absürt durur. */
   word-break: break-word;
   color: var(--text);
   font-size: 1.07rem;
   line-height: 1.8;
-  max-width: 68ch;
 }
 
 /* ── Markdown'dan render edilen zengin içerik tipografisi (.prose) ────────── */
@@ -497,6 +499,20 @@ html.lightbox-open { overflow: hidden; }
   .hero { padding: 3.5rem 0 2.5rem; }
   .site-nav { gap: 0.85rem; }
   .toggle-text { display: none; }
+}
+
+/* Geniş ekranlar (PC) — site genelinde sayfa daha ferah olsun: ana .container ve
+   okuma sütunları (yazı detayı + liste) kademeli genişler. .content-page genişledikçe
+   kapak görseli ve .post-content birlikte büyür → ikisi her zaman aynı genişlikte. */
+@media (min-width: 1200px) {
+  .container { max-width: 1100px; }
+  .content-page { max-width: 820px; }
+  .post-list { max-width: 840px; }
+}
+@media (min-width: 1600px) {
+  .container { max-width: 1240px; }
+  .content-page { max-width: 880px; }
+  .post-list { max-width: 900px; }
 }
 
 /* Scroll-reveal — gizleme YALNIZCA JS aktifken (.js); JS yoksa içerik tam görünür.

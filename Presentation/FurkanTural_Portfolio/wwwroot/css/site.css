@@ -736,6 +736,18 @@ html.lightbox-open { overflow: hidden; }
 }
 .lightbox__close:hover { background: rgba(0, 0, 0, 0.85); border-color: #fff; }
 
+/* Geniş ekranlar (PC) — site genelinde daha ferah yerleşim. Önce okuma yoğun
+   detay sayfası (proje/müzik) genişler; çok geniş ekranda ana kapsayıcılar da
+   birlikte büyür ki sayfa geneli geniş ekranlarda daha dolu/ferah dursun. */
+@media (min-width: 1200px) {
+  .detail-container { max-width: 1040px; }
+}
+@media (min-width: 1600px) {
+  .nav-container, .hero-container, .footer-container { max-width: 1240px; }
+  .section-container, .timeline-2col { max-width: 1360px; }
+  .detail-container { max-width: 1120px; }
+}
+
 /* Erişilebilirlik: hareketi azaltma tercihine saygı göster. */
 @media (prefers-reduced-motion: reduce) {
   /* Reveal öğeleri asla gizli kalmasın (IO tetiklenmese bile görünür). */
