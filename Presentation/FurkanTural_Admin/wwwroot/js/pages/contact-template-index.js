@@ -160,7 +160,7 @@
             label: 'HTML İçeriği',
             type: 'textarea',
             required: true,
-            rows: 10,
+            rows: 16,
             placeholder: 'E-posta HTML içeriğini buraya girin...'
         }
     ];
@@ -171,6 +171,7 @@
             description: 'Yeni bir e-posta şablonu oluşturun.',
             submitUrl: '/ContactTemplate/Create',
             submitLabel: 'Ekle',
+            size: 'large',
             fields: TEMPLATE_FORM_FIELDS,
             onSuccess: onSuccess
         };
@@ -182,6 +183,7 @@
             description: 'Mevcut e-posta şablonunu güncelleyin.',
             submitUrl: '/ContactTemplate/Update/' + id,
             submitLabel: 'Güncelle',
+            size: 'large',
             fields: TEMPLATE_FORM_FIELDS,
             onSuccess: onSuccess
         };
