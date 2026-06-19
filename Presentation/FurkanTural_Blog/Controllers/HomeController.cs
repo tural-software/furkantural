@@ -10,28 +10,42 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
     private readonly IBlogApiService _blogApi = blogApi;
     private readonly string _apiBase = (configuration["Api:BaseUrl"] ?? string.Empty).TrimEnd('/');
 
-    public async Task<IActionResult> Index(CancellationToken cancellationToken)
-    {
-        var posts = await _blogApi.GetPostsAsync(cancellationToken);
-        if (posts.Count > 0)
-        {
-            // Kapakları tek çağrıyla çek (N+1 yok); blog başına kapak (IsCover öncelikli) eşle.
-            var images = await _blogApi.GetAllImagesAsync(cancellationToken);
-            var coverByBlog = images
-                .Where(i => !string.IsNullOrWhiteSpace(i.Url))
-                .GroupBy(i => i.BlogId)
-                .ToDictionary(g => g.Key, g => g.FirstOrDefault(x => x.IsCover) ?? g.First());
+    // Liste sayfa boyutu — 1000+ yazıda bile DB yalnız bu kadar satır döndürür (API tarafı sayfalar).
+    private const int PageSize = 9;
 
-            foreach (var post in posts)
+    public async Task<IActionResult> Index(int page = 1, CancellationToken cancellationToken = default)
+    {
+        if (page < 1) page = 1;
+
+        var paged = await _blogApi.GetPostsPagedAsync(page, PageSize, cancellationToken);
+
+        // İstenen sayfa aralık dışındaysa (örn. ?page=9999) son geçerli sayfaya yönlendir.
+        if (paged.TotalPages > 0 && page > paged.TotalPages)
+            return RedirectToAction(nameof(Index), new { page = paged.TotalPages });
+
+        if (paged.Items.Count > 0)
+        {
+            // Yalnız BU sayfadaki yazıların kapaklarını paralel çek → çağrı sayısı her zaman ≤ PageSize,
+            // toplam yazı sayısından bağımsız (eski "tüm görseller" çağrısı 1000+ yazıda ölçeklenmezdi).
+            var covers = await Task.WhenAll(paged.Items.Select(async post =>
             {
-                if (coverByBlog.TryGetValue(post.Id, out var cover))
+                var images = await _blogApi.GetImagesByBlogAsync(post.Id, cancellationToken);
+                var cover = images.FirstOrDefault(i => i.IsCover) ?? images.FirstOrDefault();
+                return (post.Id, cover);
+            }));
+
+            var coverById = covers.ToDictionary(x => x.Id, x => x.cover);
+            foreach (var post in paged.Items)
+            {
+                if (coverById.TryGetValue(post.Id, out var cover) && cover is not null && !string.IsNullOrWhiteSpace(cover.Url))
                 {
-                    post.CoverImageUrl = BuildImageUrl(cover.Url!);
+                    post.CoverImageUrl = BuildImageUrl(cover.Url);
                     post.CoverAltText = cover.AltText;
                 }
             }
         }
-        return View(posts);
+
+        return View(paged);
     }
 
     public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)

@@ -5,6 +5,10 @@ namespace FurkanTural_Blog.Services;
 public interface IBlogApiService
 {
     Task<IReadOnlyList<BlogPostViewModel>> GetPostsAsync(CancellationToken ct = default);
+
+    /// <summary>Yayınlanmış yazıları en yeni en üstte olacak şekilde sayfalı getirir (1000+ yazıya ölçeklenir).</summary>
+    Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default);
+
     Task<BlogPostViewModel?> GetPostAsync(int id, CancellationToken ct = default);
 
     /// <summary>Tüm blog görselleri (liste sayfasında kapak haritası için tek çağrı).</summary>

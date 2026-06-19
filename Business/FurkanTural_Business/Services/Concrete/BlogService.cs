@@ -81,7 +81,8 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
 
     public async Task<PagedResult<BlogDto>> GetAllPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        var entities = await _unitOfWork.Blogs.GetAllPagedAsync(pageNumber, pageSize, cancellationToken: cancellationToken);
+        // Blog listesi en yeni yazı en üstte olacak şekilde sayfalanır (Id DESC).
+        var entities = await _unitOfWork.Blogs.GetAllPagedAsync(pageNumber, pageSize, descending: true, cancellationToken: cancellationToken);
         var total = await _unitOfWork.Blogs.CountAsync(cancellationToken: cancellationToken);
         return PagedResult<BlogDto>.Ok(entities.Select(e => e.ToDto()), total, pageNumber, pageSize);
     }

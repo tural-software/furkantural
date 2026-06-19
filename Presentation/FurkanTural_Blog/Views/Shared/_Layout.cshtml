@@ -1,5 +1,6 @@
 @{
-    var canonical = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    // Sayfalı liste (?page=N) gibi durumlarda görünüm kendi kanonik adresini verebilir.
+    var canonical = (ViewData["Canonical"] as string) ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
     var title = ViewData["Title"] as string;
     var pageTitle = string.IsNullOrEmpty(title) ? "Furkan Tural Blog" : $"{title} | Furkan Tural Blog";
     var metaDescription = ViewData["MetaDescription"] as string

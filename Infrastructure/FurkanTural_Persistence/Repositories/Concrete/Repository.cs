@@ -65,19 +65,24 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
     public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         => await _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<T>> GetAllPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> GetAllPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? predicate = null, bool descending = false, CancellationToken cancellationToken = default)
     {
         if (predicate != null)
-            return await _dbSet.AsNoTracking()
-                .Where(predicate)
+        {
+            var query = _dbSet.AsNoTracking().Where(predicate);
+            query = descending ? query.OrderByDescending(e => e.Id) : query.OrderBy(e => e.Id);
+            return await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
+        }
 
+        // ORDER BY yönü sabit bir literal (ASC/DESC) — kullanıcı girdisi değil, SQL injection yok.
+        var order = descending ? "DESC" : "ASC";
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.QueryAsync<T>(new CommandDefinition(
             $"SELECT * FROM [{TableName}] WHERE IsDeleted = 0 AND IsActive = 1 " +
-            $"ORDER BY Id OFFSET @Offset ROWS FETCH NEXT @Size ROWS ONLY",
+            $"ORDER BY Id {order} OFFSET @Offset ROWS FETCH NEXT @Size ROWS ONLY",
             new { Offset = (pageNumber - 1) * pageSize, Size = pageSize },
             cancellationToken: cancellationToken));
     }

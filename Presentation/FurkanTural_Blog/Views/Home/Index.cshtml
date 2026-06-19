@@ -1,7 +1,28 @@
-@model IReadOnlyList<BlogPostViewModel>
+@model PagedPostsViewModel
 @{
-    ViewData["Title"] = null;
+    var pageNo = Model.PageNumber;
+    // Sayfa 2+ için benzersiz başlık + kanonik (yinelenen içerik sinyali olmasın).
+    ViewData["Title"] = pageNo > 1 ? $"Sayfa {pageNo}" : null;
     ViewData["MetaDescription"] = "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notları ve blog yazıları.";
+    if (pageNo > 1)
+    {
+        var basePath = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+        ViewData["Canonical"] = $"{basePath}?page={pageNo}";
+    }
+
+    // Sayfalama numara penceresi: ilk + (cur±1) + son, aradaki boşluklar "…" (null) ile.
+    var cur = Model.PageNumber;
+    var tot = Model.TotalPages;
+    var tokens = new List<int?>();
+    if (tot > 1)
+    {
+        const int radius = 1;
+        int start = Math.Max(1, cur - radius);
+        int end = Math.Min(tot, cur + radius);
+        if (start > 1) { tokens.Add(1); if (start > 2) tokens.Add(null); }
+        for (int p = start; p <= end; p++) tokens.Add(p);
+        if (end < tot) { if (end < tot - 1) tokens.Add(null); tokens.Add(tot); }
+    }
 }
 
 <section class="hero reveal">
@@ -15,7 +36,7 @@
 </section>
 
 <section class="container">
-    @if (Model.Count == 0)
+    @if (Model.Items.Count == 0)
     {
         <div class="placeholder-card reveal">
             <h2>Yakında</h2>
@@ -25,7 +46,7 @@
     else
     {
         <div class="post-list">
-            @foreach (var post in Model)
+            @foreach (var post in Model.Items)
             {
                 <article class="post-card reveal">
                     @if (!string.IsNullOrEmpty(post.CoverImageUrl))
@@ -53,5 +74,46 @@
                 </article>
             }
         </div>
+
+        @if (tot > 1)
+        {
+            <nav class="pagination reveal" aria-label="Blog sayfaları">
+                @if (Model.HasPrevious)
+                {
+                    <a class="pagination__link pagination__link--nav" rel="prev"
+                       asp-action="Index" asp-route-page="@(cur - 1)" aria-label="Önceki sayfa">‹ Önceki</a>
+                }
+                else
+                {
+                    <span class="pagination__link pagination__link--nav is-disabled" aria-disabled="true">‹ Önceki</span>
+                }
+
+                @foreach (var t in tokens)
+                {
+                    if (t is null)
+                    {
+                        <span class="pagination__ellipsis" aria-hidden="true">…</span>
+                    }
+                    else if (t == cur)
+                    {
+                        <span class="pagination__link is-current" aria-current="page">@t</span>
+                    }
+                    else
+                    {
+                        <a class="pagination__link" asp-action="Index" asp-route-page="@t" aria-label="Sayfa @t">@t</a>
+                    }
+                }
+
+                @if (Model.HasNext)
+                {
+                    <a class="pagination__link pagination__link--nav" rel="next"
+                       asp-action="Index" asp-route-page="@(cur + 1)" aria-label="Sonraki sayfa">Sonraki ›</a>
+                }
+                else
+                {
+                    <span class="pagination__link pagination__link--nav is-disabled" aria-disabled="true">Sonraki ›</span>
+                }
+            </nav>
+        }
     }
 </section>
