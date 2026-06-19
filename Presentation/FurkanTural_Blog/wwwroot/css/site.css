@@ -107,19 +107,18 @@ a:hover { color: var(--accent-hover); }
   font-weight: 700;
 }
 .brand:hover { color: var(--text); }
-.brand__mark {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+/* Wordmark logosu — kendi lacivert plakasıyla geldiği için açık/koyu temada okunur. */
+.brand__logo {
+  display: block;
+  height: 40px;
+  width: auto;
 }
-.brand__sub { color: var(--accent); font-weight: 600; }
+.brand__sub {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.4px;
+}
 .site-nav { display: flex; align-items: center; gap: 1.25rem; }
 .nav-link { color: var(--text-muted); font-weight: 500; }
 .nav-link:hover { color: var(--text); }
@@ -495,7 +494,7 @@ html.lightbox-open { overflow: hidden; }
 
 @media (max-width: 560px) {
   .header-inner { height: 56px; }
-  .brand__text { font-size: 0.95rem; }
+  .brand__logo { height: 34px; }
   .hero { padding: 3.5rem 0 2.5rem; }
   .site-nav { gap: 0.85rem; }
   .toggle-text { display: none; }

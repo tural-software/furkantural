@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 260" width="960" height="260">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06091A"/>
+      <stop offset="100%" stop-color="#0E1840"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00C8FF"/>
+      <stop offset="100%" stop-color="#0055FF"/>
+    </linearGradient>
+    <linearGradient id="sepGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#00C8FF" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#00C8FF" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#00C8FF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="badge-clip">
+      <circle cx="130" cy="130" r="96"/>
+    </clipPath>
+  </defs>
+
+  <!-- ── Background ── -->
+  <rect width="960" height="260" rx="32" fill="url(#bg)"/>
+  <rect x="1.5" y="1.5" width="957" height="257" rx="31"
+        fill="none" stroke="#1E3080" stroke-width="1" opacity="0.4"/>
+
+  <!-- ── Mini FT badge ── -->
+  <circle cx="130" cy="130" r="97" fill="url(#bg)"/>
+  <g clip-path="url(#badge-clip)">
+    <!-- scale(0.3828) translates the original 512×512 design into 196×196 badge -->
+    <g transform="translate(32,32) scale(0.3828)">
+      <rect x="88" y="97"  width="336" height="36" rx="7" fill="white"/>
+      <rect x="88" y="97"  width="36"  height="290" rx="7" fill="white"/>
+      <rect x="88" y="234" width="160" height="36" rx="7" fill="white"/>
+      <rect x="282" y="97" width="36"  height="290" rx="7" fill="white"/>
+      <rect x="88" y="409" width="336" height="7"  rx="3.5" fill="url(#cyan)" opacity="0.9"/>
+      <circle cx="410" cy="115" r="22" fill="url(#cyan)" filter="url(#glow)" opacity="0.85"/>
+      <circle cx="410" cy="115" r="11" fill="white" opacity="0.98"/>
+    </g>
+  </g>
+
+  <!-- ── Vertical separator ── -->
+  <rect x="249" y="36" width="1.5" height="188" fill="url(#sepGrad)"/>
+
+  <!-- ── Wordmark: "Furkan Tural" ──
+       Open Sans Bold, 76px
+       F and T in cyan, rest in white
+       Baseline at y=163 → visual centre ≈ y=124 (≈ canvas centre 130)  -->
+  <text y="163"
+        font-family="Open Sans, Liberation Sans, Arial, sans-serif"
+        font-size="76"
+        font-weight="700"
+        letter-spacing="2">
+    <tspan x="278" fill="#00C8FF">F</tspan><tspan fill="white">urkan&#160;</tspan><tspan fill="#00C8FF">T</tspan><tspan fill="white">ural</tspan>
+  </text>
+
+  <!-- Thin cyan accent line under the text -->
+  <rect x="278" y="178" width="636" height="3" rx="1.5" fill="url(#cyan)" opacity="0.45"/>
+</svg>
