@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>FurkanTural_ImageConverter</AssemblyName>
+    <RootNamespace>FurkanTural_ImageConverter</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.14.0" />
+  </ItemGroup>
+
+</Project>
