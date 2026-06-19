@@ -127,7 +127,7 @@
             label: 'İçerik',
             type: 'textarea',
             required: false,
-            rows: 6,
+            rows: 14,
             placeholder: 'Blog içeriğini girin...'
         }
     ];
@@ -138,6 +138,7 @@
             description: 'Yeni bir blog kaydı oluşturun.',
             submitUrl: '/Blog/Create',
             submitLabel: 'Ekle',
+            size: 'large',
             fields: BLOG_FORM_FIELDS,
             onSuccess: onSuccess
         };
@@ -149,6 +150,7 @@
             description: 'Mevcut blog kaydını güncelleyin.',
             submitUrl: '/Blog/Update/' + id,
             submitLabel: 'Güncelle',
+            size: 'large',
             fields: BLOG_FORM_FIELDS,
             onSuccess: onSuccess
         };

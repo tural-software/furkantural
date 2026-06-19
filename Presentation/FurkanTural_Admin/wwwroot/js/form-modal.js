@@ -381,8 +381,10 @@
 
     function buildModal(config, initialValues) {
         var fieldsHtml = config.fields.map(function (f) { return buildField(f, initialValues); }).join('');
+        // İçerik-yoğun formlar için geniş varyant (config.size === 'large').
+        var sizeClass = config.size === 'large' ? ' fm--large' : '';
 
-        return '<div class="fm" role="dialog" aria-modal="true" aria-labelledby="fm-title">' +
+        return '<div class="fm' + sizeClass + '" role="dialog" aria-modal="true" aria-labelledby="fm-title">' +
             '<div class="fm-head">' +
             '<div>' +
             '<p class="fm-head__title" id="fm-title">' + escHtml(config.title) + '</p>' +

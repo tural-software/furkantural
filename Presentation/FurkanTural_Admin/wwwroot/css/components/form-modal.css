@@ -37,6 +37,11 @@
 .fm::-webkit-scrollbar { width: 5px; }
 .fm::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
 
+/* Geniş varyant — içerik-yoğun formlar (blog/proje ekle-güncelle) için daha
+   geniş gövde ve daha yüksek içerik alanları. */
+.fm--large { max-width: 820px; }
+.fm--large .fm-field__textarea { min-height: 11rem; }
+
 /* Head */
 .fm-head {
     display: flex;

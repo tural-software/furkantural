@@ -158,7 +158,7 @@
     /* ── Form field configs ───────────────────────────────── */
     var FORM_FIELDS_BASE = [
         { name: 'title',            label: 'Başlık',        type: 'text',     required: false, maxLength: 500,  placeholder: 'Proje başlığını girin...' },
-        { name: 'description',      label: 'Açıklama',      type: 'textarea', required: false, rows: 5,         placeholder: 'Proje açıklamasını girin...' },
+        { name: 'description',      label: 'Açıklama',      type: 'textarea', required: false, rows: 9,         placeholder: 'Proje açıklamasını girin...' },
         { name: 'shortDescription', label: 'Kısa Açıklama', type: 'text',     required: false, maxLength: 300,  placeholder: 'Kısa açıklama girin...' },
         { name: 'techStack',        label: 'Teknolojiler',  type: 'text',     required: false, maxLength: 500,  placeholder: 'Kullanılan teknolojileri girin...' },
         { name: 'gitHubUrl',        label: 'GitHub URL',    type: 'text',     required: false, maxLength: 1000, placeholder: 'GitHub URL girin...' },
@@ -172,6 +172,7 @@
             description: 'Yeni bir proje kaydı oluşturun.',
             submitUrl: '/Project/Create',
             submitLabel: 'Ekle',
+            size: 'large',
             fields: FORM_FIELDS_BASE,
             onSuccess: onSuccess
         };
@@ -183,6 +184,7 @@
             description: 'Mevcut proje kaydını güncelleyin.',
             submitUrl: '/Project/Update/' + id,
             submitLabel: 'Güncelle',
+            size: 'large',
             fields: FORM_FIELDS_BASE,
             onSuccess: onSuccess
         };
