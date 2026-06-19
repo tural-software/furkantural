@@ -171,7 +171,7 @@
         { name: 'productor',  label: 'Prodüktör',  type: 'text',     required: false, maxLength: 200, placeholder: 'Prodüktör adını girin...' },
         { name: 'album',      label: 'Albüm',      type: 'text',     required: false, maxLength: 200, placeholder: 'Albüm adını girin...' },
         { name: 'genre',      label: 'Tür',        type: 'text',     required: false, maxLength: 200, placeholder: 'Müzik türünü girin...' },
-        { name: 'lyrics',     label: 'Sözler',     type: 'textarea', required: false, rows: 5, placeholder: 'Şarkı sözlerini girin...' },
+        { name: 'lyrics',     label: 'Sözler',     type: 'textarea', required: false, rows: 12, placeholder: 'Şarkı sözlerini girin...' },
         { name: 'duration',   label: 'Süre',       type: 'text',     required: false, maxLength: 12,  placeholder: 'SS:DD:SN (ör: 00:04:10)' },
         { name: 'releaseDate', label: 'Yayın Tarihi', type: 'date',  required: false },
         { name: 'youTubeMusicUrl', label: 'YouTube Music URL', type: 'text', required: false, maxLength: 500, placeholder: 'https://music.youtube.com/watch?v=...' }
@@ -183,6 +183,7 @@
             description: 'Yeni bir müzik kaydı oluşturun.',
             submitUrl: '/Music/Create',
             submitLabel: 'Ekle',
+            size: 'large',
             fields: MUSIC_FORM_FIELDS_BASE,
             onSuccess: onSuccess
         };
@@ -194,6 +195,7 @@
             description: 'Mevcut müzik kaydını güncelleyin.',
             submitUrl: '/Music/Update/' + id,
             submitLabel: 'Güncelle',
+            size: 'large',
             fields: MUSIC_FORM_FIELDS_BASE,
             onSuccess: onSuccess
         };
