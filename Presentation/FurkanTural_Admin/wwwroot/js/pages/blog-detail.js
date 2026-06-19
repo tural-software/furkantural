@@ -128,7 +128,8 @@
             type: 'textarea',
             required: false,
             rows: 14,
-            placeholder: 'Blog içeriğini girin...'
+            placeholder: 'Blog içeriğini girin...',
+            helpText: 'Markdown desteklenir — **kalın**, *italik*, ## başlık, - liste, [bağlantı](https://…), > alıntı, `kod`.'
         }
     ];
 

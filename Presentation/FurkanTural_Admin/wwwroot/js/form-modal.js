@@ -172,9 +172,13 @@
         var maxLen = field.maxLength ? ' maxlength="' + field.maxLength + '"' : '';
         var ph = field.placeholder ? ' placeholder="' + escAttr(field.placeholder) + '"' : '';
         var rows = field.rows ? ' rows="' + field.rows + '"' : ' rows="5"';
+        var helpHtml = field.helpText
+            ? '<p class="fm-field__help">' + escHtml(field.helpText) + '</p>'
+            : '';
         return '<div class="fm-field" data-field="' + field.name + '">' +
             '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
             '<textarea class="fm-field__textarea" name="' + field.name + '"' + maxLen + ph + rows + '>' + escHtml(val) + '</textarea>' +
+            helpHtml +
             '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
             '</div>';
     }

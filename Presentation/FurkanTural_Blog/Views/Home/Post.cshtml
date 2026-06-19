@@ -68,7 +68,7 @@
     {
         <img class="post-cover reveal" src="@Model.CoverImageUrl" alt="@(Model.CoverAltText ?? Model.Title)" loading="lazy" decoding="async" />
     }
-    <div class="post-content reveal">@Model.Content</div>
+    <div class="post-content prose reveal">@Model.ContentHtml</div>
 </article>
 
 @section JsonLd {

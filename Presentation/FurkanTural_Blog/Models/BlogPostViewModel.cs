@@ -1,4 +1,6 @@
 using System.Globalization;
+using FurkanTural_Blog.Helpers;
+using Microsoft.AspNetCore.Html;
 
 namespace FurkanTural_Blog.Models;
 
@@ -25,6 +27,9 @@ public class BlogPostViewModel
     public string PublishedIso =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("yyyy-MM-dd");
 
+    /// <summary>İçeriğin Markdown'dan render edilmiş güvenli HTML hâli (yazı sayfası için).</summary>
+    public IHtmlContent ContentHtml => MarkdownRenderer.ToHtml(Content);
+
     /// <summary>Yaklaşık okuma süresi (dakika), ~200 kelime/dk; en az 1.</summary>
     public int ReadingMinutes
     {
@@ -45,7 +50,10 @@ public class BlogPostViewModel
             if (string.IsNullOrWhiteSpace(Content))
                 return string.Empty;
 
-            var text = Content.Trim();
+            // Markdown işaretlerini (##, **, - vb.) ayıkla → liste/özet temiz düz metin olsun.
+            var text = MarkdownRenderer.ToPlainText(Content);
+            if (text.Length == 0)
+                return string.Empty;
             const int max = 160;
             if (text.Length <= max)
                 return text;

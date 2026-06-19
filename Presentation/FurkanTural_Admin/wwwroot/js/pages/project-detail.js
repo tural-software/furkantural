@@ -158,7 +158,7 @@
     /* ── Form field configs ───────────────────────────────── */
     var FORM_FIELDS_BASE = [
         { name: 'title',            label: 'Başlık',        type: 'text',     required: false, maxLength: 500,  placeholder: 'Proje başlığını girin...' },
-        { name: 'description',      label: 'Açıklama',      type: 'textarea', required: false, rows: 9,         placeholder: 'Proje açıklamasını girin...' },
+        { name: 'description',      label: 'Açıklama',      type: 'textarea', required: false, rows: 9,         placeholder: 'Proje açıklamasını girin...', helpText: 'Markdown desteklenir — **kalın**, *italik*, ## başlık, - liste, [bağlantı](https://…), > alıntı, `kod`.' },
         { name: 'shortDescription', label: 'Kısa Açıklama', type: 'text',     required: false, maxLength: 300,  placeholder: 'Kısa açıklama girin...' },
         { name: 'techStack',        label: 'Teknolojiler',  type: 'text',     required: false, maxLength: 500,  placeholder: 'Kullanılan teknolojileri girin...' },
         { name: 'gitHubUrl',        label: 'GitHub URL',    type: 'text',     required: false, maxLength: 1000, placeholder: 'GitHub URL girin...' },

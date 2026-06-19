@@ -31,11 +31,8 @@
 
         @if (!string.IsNullOrWhiteSpace(p.Description))
         {
-            <div class="detail-body">
-                @foreach (var para in p.Description.Split('\n', StringSplitOptions.RemoveEmptyEntries))
-                {
-                    <p>@para.Trim()</p>
-                }
+            <div class="detail-body prose">
+                @MarkdownRenderer.ToHtml(p.Description)
             </div>
         }
 
