@@ -50,8 +50,8 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     /// </summary>
     [HttpGet("paged")]
     [Authorize(Policy = "VisitorOrAbove")]
-    public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
-        => ToActionResult(await _blogService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
+    public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] int? categoryId = null, [FromQuery] string? search = null, CancellationToken cancellationToken = default)
+        => ToActionResult(await _blogService.GetPublishedPagedAsync(pageNumber, pageSize, categoryId, search, cancellationToken));
 
     /// <summary>
     /// Blog yazısının aktiflik durumunu değiştir
@@ -87,6 +87,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
         {
             Title = request.Title,
             Content = request.Content,
+            CategoryIds = request.CategoryIds,
             CreatedBy = SortUserId()
         }, cancellationToken));
 
@@ -104,6 +105,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
             Id = request.Id,
             Title = request.Title,
             Content = request.Content,
+            CategoryIds = request.CategoryIds,
             UpdatedBy = SortUserId()
         }, cancellationToken));
     }

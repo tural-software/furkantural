@@ -13,6 +13,7 @@ public static class BusinessServiceRegistration
         services.AddScoped<ActivityLogger>();
         services.AddScoped<IBlogService, BlogService>();
         services.AddScoped<IBlogImageService, BlogImageService>();
+        services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IEducationService, EducationService>();
         services.AddScoped<IExperienceService, ExperienceService>();
         services.AddScoped<ILogService, LogService>();

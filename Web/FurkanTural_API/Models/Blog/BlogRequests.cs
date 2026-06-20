@@ -4,6 +4,7 @@ public class CreateBlogRequest
 {
     public string? Title { get; set; }
     public string? Content { get; set; }
+    public List<int>? CategoryIds { get; set; }
 }
 
 public class UpdateBlogRequest
@@ -11,4 +12,5 @@ public class UpdateBlogRequest
     public int Id { get; set; }
     public string? Title { get; set; }
     public string? Content { get; set; }
+    public List<int>? CategoryIds { get; set; }
 }

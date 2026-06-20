@@ -1,3 +1,5 @@
+using FurkanTural_Application.DTOs.Category;
+
 namespace FurkanTural_Application.DTOs.Blog;
 
 public class AdminBlogDto
@@ -12,4 +14,7 @@ public class AdminBlogDto
     public DateTime? UpdatedAt { get; set; }
     public int? UpdatedBy { get; set; }
     public DateTime? DeletedAt { get; set; }
+
+    /// <summary>Bloğa atanmış kategoriler (admin düzenlemede çoklu-seçimi ön-doldurmak için).</summary>
+    public List<CategoryDto> Categories { get; set; } = [];
 }
