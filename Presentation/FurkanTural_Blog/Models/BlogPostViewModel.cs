@@ -19,6 +19,9 @@ public class BlogPostViewModel
     /// <summary>Kapak görseli alt metni (erişilebilirlik); yoksa null.</summary>
     public string? CoverAltText { get; set; }
 
+    /// <summary>Bu yazının kategorileri (kart chip'leri için).</summary>
+    public List<CategoryViewModel> Categories { get; set; } = [];
+
     /// <summary>Yayın tarihi, Türkçe uzun biçim (örn. "18 Haziran 2026"); tarih yoksa boş.</summary>
     public string PublishedDisplay =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("d MMMM yyyy", Tr);

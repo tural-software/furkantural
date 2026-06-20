@@ -6,8 +6,11 @@ public interface IBlogApiService
 {
     Task<IReadOnlyList<BlogPostViewModel>> GetPostsAsync(CancellationToken ct = default);
 
-    /// <summary>Yayınlanmış yazıları en yeni en üstte olacak şekilde sayfalı getirir (1000+ yazıya ölçeklenir).</summary>
-    Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default);
+    /// <summary>Yayınlanmış yazıları en yeni en üstte, isteğe bağlı kategori + başlık aramasıyla sayfalı getirir (1000+ yazıya ölçeklenir).</summary>
+    Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken ct = default);
+
+    /// <summary>Filtre çubuğu için tüm aktif kategoriler.</summary>
+    Task<IReadOnlyList<CategoryViewModel>> GetCategoriesAsync(CancellationToken ct = default);
 
     Task<BlogPostViewModel?> GetPostAsync(int id, CancellationToken ct = default);
 

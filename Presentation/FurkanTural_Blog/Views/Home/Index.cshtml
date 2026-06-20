@@ -1,16 +1,21 @@
 @model PagedPostsViewModel
 @{
     var pageNo = Model.PageNumber;
-    // Sayfa 2+ için benzersiz başlık + kanonik (yinelenen içerik sinyali olmasın).
     ViewData["Title"] = pageNo > 1 ? $"Sayfa {pageNo}" : null;
     ViewData["MetaDescription"] = "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notları ve blog yazıları.";
-    if (pageNo > 1)
+
+    // Sayfa 2+ / filtreli durumlar için kendine-kanonik (yinelenen içerik sinyali olmasın).
+    if (pageNo > 1 || Model.HasActiveFilter)
     {
+        var qs = new List<string>();
+        if (pageNo > 1) qs.Add($"page={pageNo}");
+        if (Model.CategoryId is int c) qs.Add($"categoryId={c}");
+        if (!string.IsNullOrWhiteSpace(Model.Search)) qs.Add($"search={Uri.EscapeDataString(Model.Search)}");
         var basePath = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
-        ViewData["Canonical"] = $"{basePath}?page={pageNo}";
+        ViewData["Canonical"] = qs.Count > 0 ? $"{basePath}?{string.Join("&", qs)}" : basePath;
     }
 
-    // Sayfalama numara penceresi: ilk + (cur±1) + son, aradaki boşluklar "…" (null) ile.
+    // Sayfalama numara penceresi.
     var cur = Model.PageNumber;
     var tot = Model.TotalPages;
     var tokens = new List<int?>();
@@ -36,16 +41,58 @@
 </section>
 
 <section class="container">
+
+    @* ── Filtre çubuğu: başlık araması + kategori chip'leri ── *@
+    <div class="blog-filter reveal">
+        <form class="blog-search" method="get" asp-action="Index" role="search">
+            @if (Model.CategoryId is int keepCat)
+            {
+                <input type="hidden" name="categoryId" value="@keepCat" />
+            }
+            <input class="blog-search__input" type="search" name="search" value="@Model.Search"
+                   placeholder="Yazılarda ara…" aria-label="Yazılarda ara" />
+            <button class="blog-search__btn" type="submit">Ara</button>
+            @if (!string.IsNullOrWhiteSpace(Model.Search))
+            {
+                <a class="blog-search__clear" asp-action="Index" asp-route-categoryId="@Model.CategoryId">Aramayı temizle</a>
+            }
+        </form>
+
+        @if (Model.AvailableCategories.Count > 0)
+        {
+            <div class="blog-cats" role="list" aria-label="Kategoriler">
+                <a class="filter-chip @(Model.CategoryId is null ? "is-active" : "")"
+                   asp-action="Index" asp-route-search="@Model.Search" role="listitem">Tümü</a>
+                @foreach (var cat in Model.AvailableCategories)
+                {
+                    var active = Model.CategoryId == cat.Id ? "is-active" : "";
+                    <a class="filter-chip @active" style="--chip-color:@cat.DisplayColor"
+                       asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-search="@Model.Search" role="listitem">
+                        <span class="filter-chip__dot"></span>@cat.Name
+                    </a>
+                }
+            </div>
+        }
+    </div>
+
     @if (Model.Items.Count == 0)
     {
         <div class="placeholder-card reveal">
-            <h2>Yakında</h2>
-            <p>Blog yazıları hazırlanıyor. İçerik yayınlandığında bu alanda listelenecek.</p>
+            @if (Model.HasActiveFilter)
+            {
+                <h2>Sonuç bulunamadı</h2>
+                <p>Seçtiğiniz filtreyle eşleşen yazı yok. <a asp-action="Index">Tüm yazıları gör</a>.</p>
+            }
+            else
+            {
+                <h2>Yakında</h2>
+                <p>Blog yazıları hazırlanıyor. İçerik yayınlandığında bu alanda listelenecek.</p>
+            }
         </div>
     }
     else
     {
-        <div class="post-list">
+        <div class="post-grid">
             @foreach (var post in Model.Items)
             {
                 <article class="post-card reveal">
@@ -55,22 +102,36 @@
                             <img src="@post.CoverImageUrl" alt="@(post.CoverAltText ?? post.Title)" loading="lazy" decoding="async" />
                         </a>
                     }
-                    <h2 class="post-card__title">
-                        <a asp-controller="Home" asp-action="Post" asp-route-id="@post.Id">@post.Title</a>
-                    </h2>
-                    <div class="post-meta">
-                        @if (!string.IsNullOrEmpty(post.PublishedDisplay))
+                    <div class="post-card__body">
+                        @if (post.Categories.Count > 0)
                         {
-                            <time datetime="@post.PublishedIso">@post.PublishedDisplay</time>
-                            <span class="post-meta__sep" aria-hidden="true">•</span>
+                            <div class="post-card__cats">
+                                @foreach (var cat in post.Categories)
+                                {
+                                    <a class="post-cat-chip" style="--chip-color:@cat.DisplayColor"
+                                       asp-action="Index" asp-route-categoryId="@cat.Id" title="@cat.Name kategorisindeki yazılar">
+                                        <span class="post-cat-chip__dot"></span>@cat.Name
+                                    </a>
+                                }
+                            </div>
                         }
-                        <span>@post.ReadingMinutes dk okuma</span>
+                        <h2 class="post-card__title">
+                            <a asp-controller="Home" asp-action="Post" asp-route-id="@post.Id">@post.Title</a>
+                        </h2>
+                        <div class="post-meta">
+                            @if (!string.IsNullOrEmpty(post.PublishedDisplay))
+                            {
+                                <time datetime="@post.PublishedIso">@post.PublishedDisplay</time>
+                                <span class="post-meta__sep" aria-hidden="true">•</span>
+                            }
+                            <span>@post.ReadingMinutes dk okuma</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(post.Excerpt))
+                        {
+                            <p class="post-card__excerpt">@post.Excerpt</p>
+                        }
+                        <a class="post-card__more" asp-controller="Home" asp-action="Post" asp-route-id="@post.Id">Devamını oku</a>
                     </div>
-                    @if (!string.IsNullOrEmpty(post.Excerpt))
-                    {
-                        <p class="post-card__excerpt">@post.Excerpt</p>
-                    }
-                    <a class="post-card__more" asp-controller="Home" asp-action="Post" asp-route-id="@post.Id">Devamını oku</a>
                 </article>
             }
         </div>
@@ -81,7 +142,8 @@
                 @if (Model.HasPrevious)
                 {
                     <a class="pagination__link pagination__link--nav" rel="prev"
-                       asp-action="Index" asp-route-page="@(cur - 1)" aria-label="Önceki sayfa">‹ Önceki</a>
+                       asp-action="Index" asp-all-route-data="@(new Dictionary<string,string?>{ ["page"]=(cur-1).ToString(), ["categoryId"]=Model.CategoryId?.ToString(), ["search"]=Model.Search })"
+                       aria-label="Önceki sayfa">‹ Önceki</a>
                 }
                 else
                 {
@@ -100,14 +162,17 @@
                     }
                     else
                     {
-                        <a class="pagination__link" asp-action="Index" asp-route-page="@t" aria-label="Sayfa @t">@t</a>
+                        <a class="pagination__link"
+                           asp-action="Index" asp-all-route-data="@(new Dictionary<string,string?>{ ["page"]=t.ToString(), ["categoryId"]=Model.CategoryId?.ToString(), ["search"]=Model.Search })"
+                           aria-label="Sayfa @t">@t</a>
                     }
                 }
 
                 @if (Model.HasNext)
                 {
                     <a class="pagination__link pagination__link--nav" rel="next"
-                       asp-action="Index" asp-route-page="@(cur + 1)" aria-label="Sonraki sayfa">Sonraki ›</a>
+                       asp-action="Index" asp-all-route-data="@(new Dictionary<string,string?>{ ["page"]=(cur+1).ToString(), ["categoryId"]=Model.CategoryId?.ToString(), ["search"]=Model.Search })"
+                       aria-label="Sonraki sayfa">Sonraki ›</a>
                 }
                 else
                 {

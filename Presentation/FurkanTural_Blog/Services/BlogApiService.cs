@@ -29,12 +29,19 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
         }
     }
 
-    public async Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+    public async Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken ct = default)
     {
+        // Filtre seçenekleri her durumda gerekir (boş sonuçta bile filtre çubuğu görünür).
+        var categories = await GetCategoriesAsync(ct);
         try
         {
-            var result = await _httpClient.GetFromJsonAsync<PagedApiResult<IEnumerable<BlogPostViewModel>>>(
-                $"/api/v1/blog/paged?pageNumber={pageNumber}&pageSize={pageSize}", JsonOptions, ct);
+            var url = $"/api/v1/blog/paged?pageNumber={pageNumber}&pageSize={pageSize}";
+            if (categoryId is int cid)
+                url += $"&categoryId={cid}";
+            if (!string.IsNullOrWhiteSpace(search))
+                url += $"&search={Uri.EscapeDataString(search.Trim())}";
+
+            var result = await _httpClient.GetFromJsonAsync<PagedApiResult<IEnumerable<BlogPostViewModel>>>(url, JsonOptions, ct);
 
             var items = result?.Data?.ToList() ?? [];
             var size = result is { PageSize: > 0 } ? result.PageSize : pageSize;
@@ -45,13 +52,40 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
                 PageNumber = result is { PageNumber: > 0 } ? result.PageNumber : pageNumber,
                 PageSize = size,
                 TotalCount = total,
-                TotalPages = size > 0 ? (int)Math.Ceiling(total / (double)size) : 0
+                TotalPages = size > 0 ? (int)Math.Ceiling(total / (double)size) : 0,
+                CategoryId = categoryId,
+                Search = search,
+                AvailableCategories = categories
             };
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Blog yazıları (sayfalı) alınamadı. Sayfa={Page}", pageNumber);
-            return new PagedPostsViewModel { PageNumber = pageNumber, PageSize = pageSize };
+            return new PagedPostsViewModel
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                CategoryId = categoryId,
+                Search = search,
+                AvailableCategories = categories
+            };
+        }
+    }
+
+    public async Task<IReadOnlyList<CategoryViewModel>> GetCategoriesAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<IEnumerable<CategoryViewModel>>>("/api/v1/category", JsonOptions, ct);
+            return result?.Data?
+                .Where(c => !string.IsNullOrWhiteSpace(c.Name))
+                .OrderBy(c => c.Name)
+                .ToList().AsReadOnly() ?? (IReadOnlyList<CategoryViewModel>)[];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Kategoriler alınamadı.");
+            return [];
         }
     }
 

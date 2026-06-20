@@ -13,15 +13,15 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
     // Liste sayfa boyutu — 1000+ yazıda bile DB yalnız bu kadar satır döndürür (API tarafı sayfalar).
     private const int PageSize = 9;
 
-    public async Task<IActionResult> Index(int page = 1, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, CancellationToken cancellationToken = default)
     {
         if (page < 1) page = 1;
 
-        var paged = await _blogApi.GetPostsPagedAsync(page, PageSize, cancellationToken);
+        var paged = await _blogApi.GetPostsPagedAsync(page, PageSize, categoryId, search, cancellationToken);
 
-        // İstenen sayfa aralık dışındaysa (örn. ?page=9999) son geçerli sayfaya yönlendir.
+        // İstenen sayfa aralık dışındaysa (örn. ?page=9999) son geçerli sayfaya yönlendir (filtre korunur).
         if (paged.TotalPages > 0 && page > paged.TotalPages)
-            return RedirectToAction(nameof(Index), new { page = paged.TotalPages });
+            return RedirectToAction(nameof(Index), new { page = paged.TotalPages, categoryId, search });
 
         if (paged.Items.Count > 0)
         {
