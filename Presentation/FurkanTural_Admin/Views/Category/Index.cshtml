@@ -1,0 +1,160 @@
+@using FurkanTural_Admin.Models.Category
+@model CategoryIndexViewModel
+@{
+    ViewData["Title"] = "Kategoriler";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/category/category-index.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.__categoryMeta = {
+            name:          '@Html.Raw(Model.SearchName ?? "")',
+            activeFilter:  '@Html.Raw(Model.ActiveFilter ?? "")',
+            deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
+            dateFrom:      '@Html.Raw(Model.DateFrom ?? "")',
+            dateTo:        '@Html.Raw(Model.DateTo ?? "")',
+            pageNumber:    @Model.PageNumber,
+            pageSize:      @Model.PageSize
+        };
+    </script>
+    <script src="~/js/detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
+    <script src="~/js/form-modal.js" asp-append-version="true"></script>
+    <script src="~/js/pages/category-detail.js" asp-append-version="true"></script>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container">
+
+    <nav class="bc">
+        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
+        <span class="bc__sep">›</span>
+        <span>Kategoriler</span>
+    </nav>
+
+    <div class="pg-header">
+        <div>
+            <h1 class="section-title">Kategoriler Verileri</h1>
+            <p class="section-desc">Blog kategorilerini görüntüleyin, arayın ve yönetin.</p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "refresh")
+                Yenile
+            </a>
+            <a href="@Url.Action("TableDetail")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "table-icon")
+                Tablo Detayları
+            </a>
+            <button type="button" id="category-add-btn" class="btn-primary">
+                @await Html.PartialAsync("_Icons", "plus")
+                Yeni Kayıt Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--total">
+                @await Html.PartialAsync("_Icons", "categories")
+            </div>
+            <div>
+                <p class="stat-box__label">Toplam Kayıt</p>
+                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <span class="stat-box__unit">kayıt</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--active">
+                @await Html.PartialAsync("_Icons", "check-circle")
+            </div>
+            <div>
+                <p class="stat-box__label">Aktif Kayıt</p>
+                <div class="stat-box__value">@Model.ActiveCount.ToString("N0")</div>
+                <span class="stat-box__unit">kayıt</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--passive">
+                @await Html.PartialAsync("_Icons", "x-circle")
+            </div>
+            <div>
+                <p class="stat-box__label">Pasif Kayıt</p>
+                <div class="stat-box__value">@Model.PassiveCount.ToString("N0")</div>
+                <span class="stat-box__unit">kayıt</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--deleted">
+                @await Html.PartialAsync("_Icons", "trash")
+            </div>
+            <div>
+                <p class="stat-box__label">Silinmiş Kayıt</p>
+                <div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div>
+                <span class="stat-box__unit">kayıt</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+        <form method="get" action="@Url.Action("Index")">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Ad ara</label>
+                    <div class="filter-input-wrap">
+                        @await Html.PartialAsync("_Icons", "search")
+                        <input type="text" name="name" value="@Model.SearchName"
+                               class="filter-input filter-input--search"
+                               placeholder="Ad ara..." />
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Aktiflik Durumu</label>
+                    <select name="activeFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.ActiveFilter))">Tümü</option>
+                        <option value="active" selected="@(Model.ActiveFilter == "active")">Aktif</option>
+                        <option value="passive" selected="@(Model.ActiveFilter == "passive")">Pasif</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Silinme Durumu</label>
+                    <select name="deletedFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.DeletedFilter))">Tümü</option>
+                        <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
+                        <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Oluşturulma Tarihi</label>
+                    <div class="filter-date-row">
+                        <input type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
+                        <span class="filter-date-sep">→</span>
+                        <input type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
+                    </div>
+                </div>
+                <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                <div class="filter-actions">
+                    <button type="submit" class="btn-primary">
+                        @await Html.PartialAsync("_Icons", "filter-icon")
+                        Filtrele
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn-outline">
+                        @await Html.PartialAsync("_Icons", "x-mark")
+                        Temizle
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" id="category-table-card" style="padding: 0; overflow: hidden;">
+        <div id="category-table-section">
+            @await Html.PartialAsync("_CategoryTable", Model)
+        </div>
+    </div>
+
+</div>

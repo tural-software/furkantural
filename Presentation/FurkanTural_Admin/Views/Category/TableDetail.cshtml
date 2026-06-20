@@ -1,0 +1,195 @@
+@{
+    ViewData["Title"] = "Category Tablosu";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/category/category-table-detail.css" asp-append-version="true" />
+}
+
+<div class="container">
+
+    <nav class="bc">
+        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
+        <span class="bc__sep">›</span>
+        <a href="@Url.Action("Index", "Category")">Kategoriler</a>
+        <span class="bc__sep">›</span>
+        <span>Tablo Detayları</span>
+    </nav>
+
+    <div class="pg-header">
+        <div>
+            <div class="pg-header__title-row">
+                <h1 class="section-title" style="margin:0">Category Tablosu</h1>
+                <span class="page-badge">TABLO</span>
+            </div>
+            <p class="section-desc">Tablo yapısını görüntüleyin ve alan detaylarını inceleyin.</p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index", "Category")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "arrow-left")
+                Verilere Dön
+            </a>
+        </div>
+    </div>
+
+    <div class="schema-stats">
+        <div class="card schema-stat">
+            <div class="schema-stat__icon">@await Html.PartialAsync("_Icons", "database")</div>
+            <div class="schema-stat__label">Toplam Alan</div>
+            <div class="schema-stat__value">10</div>
+            <div class="schema-stat__unit">alan</div>
+        </div>
+        <div class="card schema-stat">
+            <div class="schema-stat__icon">@await Html.PartialAsync("_Icons", "field-key")</div>
+            <div class="schema-stat__label">Primary Key</div>
+            <div class="schema-stat__value">1</div>
+            <div class="schema-stat__unit">alan</div>
+        </div>
+        <div class="card schema-stat">
+            <div class="schema-stat__icon">@await Html.PartialAsync("_Icons", "hash-icon")</div>
+            <div class="schema-stat__label">Identity</div>
+            <div class="schema-stat__value">1</div>
+            <div class="schema-stat__unit">alan</div>
+        </div>
+        <div class="card schema-stat">
+            <div class="schema-stat__icon">@await Html.PartialAsync("_Icons", "lock-icon")</div>
+            <div class="schema-stat__label">Zorunlu Alan</div>
+            <div class="schema-stat__value">5</div>
+            <div class="schema-stat__unit">alan</div>
+        </div>
+        <div class="card schema-stat">
+            <div class="schema-stat__icon">@await Html.PartialAsync("_Icons", "circle-outline")</div>
+            <div class="schema-stat__label">Boş Geçilebilir</div>
+            <div class="schema-stat__value">5</div>
+            <div class="schema-stat__unit">alan</div>
+        </div>
+        <div class="card schema-stat">
+            <div class="schema-stat__icon">@await Html.PartialAsync("_Icons", "server-icon")</div>
+            <div class="schema-stat__label">Tablo Boyutu</div>
+            <div class="schema-stat__value">~ 4</div>
+            <div class="schema-stat__unit">KB tahmini</div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="col-field">Alan Adı</th>
+                        <th>Veri Tipi</th>
+                        <th>Maks. Uzunluk (Byte)</th>
+                        <th>Boş Geçilebilir</th>
+                        <th>Primary Key</th>
+                        <th>Identity</th>
+                        <th>Varsayılan</th>
+                        <th>Açıklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="field-name field-name--pk">@await Html.PartialAsync("_Icons", "field-key") Id</span></td>
+                        <td><span class="type-tag">int</span></td>
+                        <td>4</td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-yes">@await Html.PartialAsync("_Icons", "check-circle") Evet</span></td>
+                        <td><span class="bool-yes">@await Html.PartialAsync("_Icons", "check-circle") Evet</span></td>
+                        <td>Yok</td>
+                        <td>Benzersiz kategori tanımlayıcısı</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name">@await Html.PartialAsync("_Icons", "field-text") Name</span></td>
+                        <td><span class="type-tag">nvarchar</span></td>
+                        <td>240</td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td>Yok</td>
+                        <td>Kategori adı</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name">@await Html.PartialAsync("_Icons", "hash-icon") Color</span></td>
+                        <td><span class="type-tag">nvarchar</span></td>
+                        <td>40</td>
+                        <td><span class="bool-yes">@await Html.PartialAsync("_Icons", "check-circle") Evet</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td>NULL</td>
+                        <td>Chip rengi (hex)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name field-name--date">@await Html.PartialAsync("_Icons", "calendar") CreatedAt</span></td>
+                        <td><span class="type-tag">datetime2</span></td>
+                        <td>8</td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td>GETUTCDATE()</td>
+                        <td>Oluşturulma tarihi (UTC)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name">@await Html.PartialAsync("_Icons", "user") CreatedBy</span></td>
+                        <td><span class="type-tag">int</span></td>
+                        <td>4</td>
+                        <td><span class="bool-yes">@await Html.PartialAsync("_Icons", "check-circle") Evet</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td>NULL</td>
+                        <td>Kaydı oluşturan admin ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name field-name--date">@await Html.PartialAsync("_Icons", "calendar") UpdatedAt</span></td>
+                        <td><span class="type-tag">datetime2</span></td>
+                        <td>8</td>
+                        <td><span class="bool-yes">@await Html.PartialAsync("_Icons", "check-circle") Evet</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td>NULL</td>
+                        <td>Son güncellenme tarihi (UTC)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name">@await Html.PartialAsync("_Icons", "user") UpdatedBy</span></td>
+                        <td><span class="type-tag">int</span></td>
+                        <td>4</td>
+                        <td><span class="bool-yes">@await Html.PartialAsync("_Icons", "check-circle") Evet</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td>NULL</td>
+                        <td>Güncelleyen admin ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name field-name--bool">@await Html.PartialAsync("_Icons", "check-circle") IsActive</span></td>
+                        <td><span class="type-tag">bit</span></td>
+                        <td>1</td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td>1</td>
+                        <td>Aktiflik durumu</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name field-name--bool">@await Html.PartialAsync("_Icons", "trash") IsDeleted</span></td>
+                        <td><span class="type-tag">bit</span></td>
+                        <td>1</td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td>0</td>
+                        <td>Silinme durumu (soft delete)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name field-name--date">@await Html.PartialAsync("_Icons", "calendar") DeletedAt</span></td>
+                        <td><span class="type-tag">datetime2</span></td>
+                        <td>8</td>
+                        <td><span class="bool-yes">@await Html.PartialAsync("_Icons", "check-circle") Evet</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td><span class="bool-no">@await Html.PartialAsync("_Icons", "x-circle") Hayır</span></td>
+                        <td>NULL</td>
+                        <td>Silinme tarihi (UTC)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

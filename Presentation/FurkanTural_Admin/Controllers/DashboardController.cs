@@ -47,6 +47,10 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
             "Blog yazılarına bağlı görselleri görüntüleyin ve CRUD işlemlerini yönetin.",
             [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
             "görsel"),
+        new("categories", "category", "Kategoriler",
+            "Blog kategorilerini görüntüleyin ve CRUD işlemlerini yönetin.",
+            [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
+            "kategori"),
         new("logs", "log", "Kayıtlar",
             "Sistem loglarını görüntüleyin. Salt okunur kayıtlardır.",
             [EntityAction.Read],
@@ -113,11 +117,12 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
                 Actions = m.Actions,
                 TotalCount = summaries[i]?.TotalCount,
                 LastActivityAt = summaries[i]?.LastActivityAt,
-                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images" && m.Slug != "experiences" && m.Slug != "educations" && m.Slug != "logs" && m.Slug != "users" && m.Slug != "music" && m.Slug != "music-images" && m.Slug != "projects" && m.Slug != "project-images" && m.Slug != "roles" && m.Slug != "contact" && m.Slug != "contact-template" && m.Slug != "statuses" && m.Slug != "friends" && m.Slug != "messages" && m.Slug != "calls" && m.Slug != "reports",
+                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images" && m.Slug != "experiences" && m.Slug != "educations" && m.Slug != "logs" && m.Slug != "users" && m.Slug != "music" && m.Slug != "music-images" && m.Slug != "projects" && m.Slug != "project-images" && m.Slug != "roles" && m.Slug != "contact" && m.Slug != "contact-template" && m.Slug != "statuses" && m.Slug != "friends" && m.Slug != "messages" && m.Slug != "calls" && m.Slug != "reports" && m.Slug != "categories",
                 ManageUrl = m.Slug == "subscribers" ? Url.Action("Index", "Subscriber")
                           : m.Slug == "skills"       ? Url.Action("Index", "Skill")
                           : m.Slug == "blogs"        ? Url.Action("Index", "Blog")
                           : m.Slug == "blog-images"  ? Url.Action("Index", "BlogImage")
+                          : m.Slug == "categories"   ? Url.Action("Index", "Category")
                           : m.Slug == "experiences"  ? Url.Action("Index", "Experience")
                           : m.Slug == "educations"   ? Url.Action("Index", "Education")
                           : m.Slug == "logs"          ? Url.Action("Index", "Log")
