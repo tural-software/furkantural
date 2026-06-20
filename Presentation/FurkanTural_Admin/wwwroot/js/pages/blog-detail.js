@@ -133,6 +133,25 @@
         }
     ];
 
+    // Kategori çoklu-seçim alanı — seçenekler sayfadan (window.__blogCategories) gelir.
+    function categoryField() {
+        var cats = window.__blogCategories || [];
+        return {
+            name: 'categoryIds',
+            label: 'Kategoriler',
+            type: 'multiselect',
+            required: false,
+            options: cats,
+            helpText: cats.length
+                ? 'Bu yazının ait olduğu kategorileri seçin.'
+                : 'Henüz kategori yok — önce Kategoriler sayfasından ekleyin.'
+        };
+    }
+
+    function formFields() {
+        return BLOG_FORM_FIELDS.concat([categoryField()]);
+    }
+
     function buildCreateConfig(onSuccess) {
         return {
             title: 'Yeni Blog Yazısı Ekle',
@@ -140,7 +159,7 @@
             submitUrl: '/Blog/Create',
             submitLabel: 'Ekle',
             size: 'large',
-            fields: BLOG_FORM_FIELDS,
+            fields: formFields(),
             onSuccess: onSuccess
         };
     }
@@ -152,7 +171,7 @@
             submitUrl: '/Blog/Update/' + id,
             submitLabel: 'Güncelle',
             size: 'large',
-            fields: BLOG_FORM_FIELDS,
+            fields: formFields(),
             onSuccess: onSuccess
         };
     }
@@ -260,7 +279,8 @@
             reloadTable();
         }), {
             title:   record.title   || '',
-            content: record.content || ''
+            content: record.content || '',
+            categoryIds: (record.categories || []).map(function (c) { return c.id; })
         });
     }
 

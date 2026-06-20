@@ -12,4 +12,6 @@ public sealed class BlogAdminDto
     public DateTime? UpdatedAt { get; set; }
     public int? UpdatedBy { get; set; }
     public DateTime? DeletedAt { get; set; }
+
+    public List<BlogCategoryRef> Categories { get; set; } = [];
 }

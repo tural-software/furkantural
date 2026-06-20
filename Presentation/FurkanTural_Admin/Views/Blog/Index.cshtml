@@ -21,6 +21,8 @@
             pageNumber:    @Model.PageNumber,
             pageSize:      @Model.PageSize
         };
+        window.__blogCategories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.AvailableCategories.Select(c => new { value = c.Id, label = c.Name, color = c.Color })));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>

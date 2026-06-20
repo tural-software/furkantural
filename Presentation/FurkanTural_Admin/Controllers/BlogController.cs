@@ -4,9 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FurkanTural_Admin.Controllers;
 
-public class BlogController(IBlogApiClient blogApiClient) : Controller
+public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient categoryApiClient) : Controller
 {
     private readonly IBlogApiClient _blogApiClient = blogApiClient;
+    private readonly ICategoryApiClient _categoryApiClient = categoryApiClient;
 
     public async Task<IActionResult> Index(
         string? title,
@@ -24,6 +25,8 @@ public class BlogController(IBlogApiClient blogApiClient) : Controller
             return RedirectToAction("Login", "Auth");
 
         var all = await _blogApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var categories = await _categoryApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var availableCategories = categories.Where(c => c.IsActive && !c.IsDeleted).ToList();
 
         var filtered = all.AsEnumerable();
 
@@ -75,7 +78,8 @@ public class BlogController(IBlogApiClient blogApiClient) : Controller
             BlogIdFilter  = blogId,
             PageNumber    = safePageNumber,
             PageSize      = safePageSize,
-            TotalFiltered = totalFiltered
+            TotalFiltered = totalFiltered,
+            AvailableCategories = availableCategories
         };
 
         return View(vm);

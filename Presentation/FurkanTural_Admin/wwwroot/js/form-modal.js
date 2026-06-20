@@ -109,6 +109,29 @@
             '</div>';
     }
 
+    // Çoklu seçim — onay kutusu listesi (örn. blog kategorileri). value = seçili değerler dizisi.
+    function buildMultiselectField(field, value) {
+        var selected = Array.isArray(value) ? value.map(String) : [];
+        var options = field.options || [];
+        var boxes = options.map(function (o) {
+            var ov = String(o.value);
+            var checked = selected.indexOf(ov) !== -1 ? ' checked' : '';
+            var dot = o.color ? '<span class="fm-ms__dot" style="background:' + escAttr(o.color) + '"></span>' : '';
+            return '<label class="fm-ms__opt">' +
+                '<input type="checkbox" name="' + field.name + '" value="' + escAttr(ov) + '"' + checked + ' />' +
+                dot + '<span>' + escHtml(o.label || '') + '</span>' +
+                '</label>';
+        }).join('');
+        var helpHtml = field.helpText ? '<p class="fm-field__help">' + escHtml(field.helpText) + '</p>' : '';
+        var emptyHtml = options.length === 0 ? '<p class="fm-field__help">Seçilebilir kayıt yok.</p>' : '';
+        return '<div class="fm-field" data-field="' + field.name + '">' +
+            '<label class="fm-field__label">' + escHtml(field.label) + '</label>' +
+            '<div class="fm-ms">' + boxes + emptyHtml + '</div>' +
+            helpHtml +
+            '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
+            '</div>';
+    }
+
     function buildFileField(field) {
         var reqClass = field.required ? ' fm-field__label--required' : '';
         var accept = field.accept ? ' accept="' + escAttr(field.accept) + '"' : '';
@@ -191,6 +214,7 @@
         if (field.type === 'file')              return buildFileField(field);
         if (field.type === 'hidden')            return buildHiddenField(field, value);
         if (field.type === 'searchable-select') return buildSearchableSelectField(field, value);
+        if (field.type === 'multiselect')       return buildMultiselectField(field, value);
         if (field.type === 'date')              return buildDateField(field, value);
         if (field.type === 'password')          return buildPasswordField(field, value);
         return buildTextField(field, value);
@@ -282,7 +306,7 @@
     function validateAll(fields) {
         var valid = true;
         fields.forEach(function (field) {
-            if (field.type === 'checkbox' || field.type === 'hidden') return;
+            if (field.type === 'checkbox' || field.type === 'hidden' || field.type === 'multiselect') return;
             if (field.type === 'file') { if (!validateFileField(field)) valid = false; return; }
             if (field.type === 'searchable-select') { if (!validateSearchableSelectField(field)) valid = false; return; }
             var el = _overlay.querySelector('[name="' + field.name + '"]');
@@ -423,6 +447,11 @@
                 if (fileInput && fileInput.files && fileInput.files[0]) {
                     data.append(field.name, fileInput.files[0], fileInput.files[0].name);
                 }
+            } else if (field.type === 'multiselect') {
+                // Seçili tüm onay kutularını aynı ad altında ekle → List<T> model binding.
+                _overlay.querySelectorAll('input[type="checkbox"][name="' + field.name + '"]').forEach(function (b) {
+                    if (b.checked) data.append(field.name, b.value);
+                });
             } else {
                 var el = _overlay.querySelector('[name="' + field.name + '"]');
                 if (el) data.append(field.name, el.value);
