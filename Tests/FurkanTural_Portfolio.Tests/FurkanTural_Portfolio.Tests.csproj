@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- Suppress XML doc warnings inherited from Directory.Build.props -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="FluentAssertions" Version="7.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
+    <PackageReference Include="Markdig" Version="1.3.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Compile shared source files directly instead of project reference
+         to avoid the Sdk.Web host dependency pulling in full ASP.NET runtime -->
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\AppTokenService.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\AppConfigService.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Services\PortfolioApiService.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Services\IPortfolioApiService.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Services\PortfolioContactClient.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Services\IPortfolioContactClient.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Helpers\MarkdownRenderer.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Helpers\TimeHelper.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Models\ContactFormModel.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Models\IndexViewModel.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Models\DetailViewModels.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Models\Wrappers\ApiResult.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
