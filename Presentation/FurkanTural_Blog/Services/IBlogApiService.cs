@@ -14,8 +14,8 @@ public interface IBlogApiService
 
     Task<BlogPostViewModel?> GetPostAsync(int id, CancellationToken ct = default);
 
-    /// <summary>Tüm blog görselleri (liste sayfasında kapak haritası için tek çağrı).</summary>
-    Task<IReadOnlyList<BlogImageViewModel>> GetAllImagesAsync(CancellationToken ct = default);
+    /// <summary>Sitemap için yayınlı yazıların hafif listesi (Id + tarihler; içerik çekilmez).</summary>
+    Task<IReadOnlyList<BlogSitemapItem>> GetSitemapItemsAsync(CancellationToken ct = default);
 
     /// <summary>Belirli bir bloğa ait görseller (detay sayfası kapağı/galerisi için).</summary>
     Task<IReadOnlyList<BlogImageViewModel>> GetImagesByBlogAsync(int blogId, CancellationToken ct = default);

@@ -13,6 +13,9 @@ public class BlogPostViewModel
     public string? Content { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    /// <summary>Son güncelleme tarihi (hiç düzenlenmediyse null).</summary>
+    public DateTime? UpdatedAt { get; set; }
+
     /// <summary>Kapak görselinin tam adresi (ApiBaseUrl + Url); yoksa null.</summary>
     public string? CoverImageUrl { get; set; }
 
@@ -29,6 +32,16 @@ public class BlogPostViewModel
     /// <summary>Makine-okur tarih (datetime attribute / JSON-LD için), ISO 8601; tarih yoksa boş.</summary>
     public string PublishedIso =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("yyyy-MM-dd");
+
+    /// <summary>Makine-okur son güncelleme tarihi (ISO 8601); güncelleme yoksa yayın tarihine düşer.</summary>
+    public string ModifiedIso
+    {
+        get
+        {
+            var d = UpdatedAt ?? CreatedAt;
+            return d == default ? string.Empty : d.ToString("yyyy-MM-dd");
+        }
+    }
 
     /// <summary>İçeriğin Markdown'dan render edilmiş güvenli HTML hâli (yazı sayfası için).</summary>
     public IHtmlContent ContentHtml => MarkdownRenderer.ToHtml(Content);

@@ -390,7 +390,10 @@ a:hover { color: var(--accent-hover); }
   color: var(--text);
   font-size: 0.95rem;
 }
-.blog-search__input:focus { outline: none; border-color: var(--accent); }
+/* :focus-visible ile yalnız klavye/programatik odakta görünür; fare tıklamasında tetiklenmez. */
+.blog-search__input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+/* Fare odağında sadece border rengini değiştir, sistem outline'ı koru. */
+.blog-search__input:focus:not(:focus-visible) { outline: none; border-color: var(--accent); }
 .blog-search__btn {
   padding: 0.6rem 1.1rem;
   border-radius: 10px;

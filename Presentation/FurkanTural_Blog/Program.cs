@@ -49,12 +49,40 @@ if (!app.Environment.IsDevelopment())
 }
 
 // Temel güvenlik başlıkları (her yanıta uygulanır).
+// img-src: yerel varlıklar ('self') + API'den gelen kapak görselleri (Api:BaseUrl) + data URI
+// (Service Worker önbelleği için 'self' yeterli; API origin eklenmesi zorunlu çünkü
+//  kapak URL'leri BuildImageUrl() ile API sunucusundan mutlak adres olarak oluşturulur).
+// script-src: 'unsafe-inline' — head'deki FOUC-önleme inline bloğu ve JSON-LD @Html.Raw()
+//  çıktıları nedeniyle zorunlu. Nonce yaklaşımı bu projede aşırı karmaşıklık getirir;
+//  'unsafe-inline' burada kabul edilebilir çünkü tüm inline içerik sunucu tarafından
+//  üretilen sabit değerlerdir (kullanıcı girdisi inline script'e dönüşmüyor).
+// worker-src: Service Worker kaydı için ('self') gerekli.
+var apiBase = (builder.Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
 app.Use(async (context, next) =>
 {
     var headers = context.Response.Headers;
     headers["X-Content-Type-Options"] = "nosniff";
     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     headers["X-Frame-Options"] = "SAMEORIGIN";
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
+
+    // Content-Security-Policy
+    var imgSrc = string.IsNullOrWhiteSpace(apiBase)
+        ? "'self' data:"
+        : $"'self' data: {apiBase}";
+    headers["Content-Security-Policy"] =
+        "default-src 'none'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        $"img-src {imgSrc}; " +
+        "connect-src 'self'; " +
+        "manifest-src 'self'; " +
+        "worker-src 'self'; " +
+        "frame-ancestors 'self'; " +
+        "base-uri 'self'; " +
+        "form-action 'self'";
+
     await next();
 });
 

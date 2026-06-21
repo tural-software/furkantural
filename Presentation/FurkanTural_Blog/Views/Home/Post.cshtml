@@ -5,6 +5,9 @@
         ? $"{Model.Title} — Furkan Tural Blog"
         : Model.Excerpt;
 
+    // Detay sayfası Open Graph tipi her zaman article olmalı (liste/anasayfa website kalır).
+    ViewData["OgType"] = "article";
+
     // Kapak varsa sosyal paylaşım kartı (OG/Twitter) bu yazının kapağını kullansın.
     if (!string.IsNullOrEmpty(Model.CoverImageUrl))
     {
@@ -33,6 +36,8 @@
     if (!string.IsNullOrEmpty(Model.PublishedIso))
     {
         articleData["datePublished"] = Model.PublishedIso;
+        // dateModified: gerçek son-güncelleme tarihi (yazı hiç düzenlenmediyse yayın tarihine düşer).
+        articleData["dateModified"] = Model.ModifiedIso;
     }
     if (!string.IsNullOrEmpty(Model.CoverImageUrl))
     {
@@ -62,7 +67,7 @@
             <time datetime="@Model.PublishedIso">@Model.PublishedDisplay</time>
             <span class="post-meta__sep" aria-hidden="true">•</span>
         }
-        <span>@Model.ReadingMinutes dk okuma</span>
+        <span aria-label="@Model.ReadingMinutes dakika okuma">@Model.ReadingMinutes dk okuma</span>
     </div>
     @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
     {
@@ -70,6 +75,20 @@
     }
     <div class="post-content prose reveal">@Model.ContentHtml</div>
 </article>
+
+@section HeadMeta {
+    @* Open Graph Article nitelik meta'ları — og:type=article ile birlikte gelmeli. *@
+    @if (!string.IsNullOrEmpty(Model.PublishedIso))
+    {
+        <meta property="article:published_time" content="@Model.PublishedIso" />
+        <meta property="article:modified_time" content="@Model.ModifiedIso" />
+    }
+    <meta property="article:author" content="Furkan Tural" />
+    @foreach (var cat in Model.Categories)
+    {
+        <meta property="article:tag" content="@cat.Name" />
+    }
+}
 
 @section JsonLd {
     @Html.Raw("<script type=\"application/ld+json\">" + articleJsonLd + "</script>")

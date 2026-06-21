@@ -34,18 +34,27 @@ public class SeoController(IBlogApiService blogApi) : Controller
     public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
     {
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
-        var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
-        var urls = new List<(string Loc, string Priority, string ChangeFreq)>
+        // lastmod, UTC bir tarihten ISO yyyy-MM-dd üretir (sitemap için geçerli W3C biçimi).
+        static string Iso(DateTime d) => DateTime.SpecifyKind(d, DateTimeKind.Utc).ToString("yyyy-MM-dd");
+
+        // Yayınlı yazıların hafif listesi (Id + tarihler; içerik çekilmez).
+        // API erişilemezse boş liste → yalnız statik sayfalar listelenir.
+        var posts = await _blogApi.GetSitemapItemsAsync(cancellationToken);
+
+        // Anasayfa son-yazıları listelediğinden lastmod'u = en güncel yazının değişiklik tarihi
+        // (hiç yazı yoksa bugüne düşer). Statik gizlilik sayfası sabit bir tarih taşır.
+        var homeLastMod = posts.Count > 0 ? posts.Max(p => p.LastModified) : DateTime.UtcNow;
+
+        var urls = new List<(string Loc, string LastMod, string Priority, string ChangeFreq)>
         {
-            ($"{baseUrl}/", "1.0", "weekly"),
-            ($"{baseUrl}/Home/Privacy", "0.3", "yearly"),
+            ($"{baseUrl}/", Iso(homeLastMod), "1.0", "weekly"),
+            ($"{baseUrl}/Home/Privacy", "2026-01-01", "0.3", "yearly"),
         };
 
-        // Yayınlı blog yazıları (API erişilemezse boş liste → yalnız statik sayfalar).
-        var posts = await _blogApi.GetPostsAsync(cancellationToken);
+        // Her yazının gerçek son-değişiklik tarihi lastmod olur (arama motorları yeniden tarama için bunu kullanır).
         foreach (var post in posts)
-            urls.Add(($"{baseUrl}/Home/Post/{post.Id}", "0.7", "monthly"));
+            urls.Add(($"{baseUrl}/Home/Post/{post.Id}", Iso(post.LastModified), "0.7", "monthly"));
 
         // XmlWriter bir StringBuilder'a yazınca bildirimi daima utf-16 olur;
         // doğru "encoding=utf-8" bildirimi için UTF-8 stream'e yazıp byte döndürüyoruz.
@@ -55,11 +64,11 @@ public class SeoController(IBlogApiService blogApi) : Controller
         {
             writer.WriteStartDocument();
             writer.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
-            foreach (var (loc, priority, changeFreq) in urls)
+            foreach (var (loc, lastMod, priority, changeFreq) in urls)
             {
                 writer.WriteStartElement("url");
                 writer.WriteElementString("loc", loc);
-                writer.WriteElementString("lastmod", today);
+                writer.WriteElementString("lastmod", lastMod);
                 writer.WriteElementString("changefreq", changeFreq);
                 writer.WriteElementString("priority", priority);
                 writer.WriteEndElement();

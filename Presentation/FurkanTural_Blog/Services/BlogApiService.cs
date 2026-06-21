@@ -103,16 +103,16 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
         }
     }
 
-    public async Task<IReadOnlyList<BlogImageViewModel>> GetAllImagesAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<BlogSitemapItem>> GetSitemapItemsAsync(CancellationToken ct = default)
     {
         try
         {
-            var result = await _httpClient.GetFromJsonAsync<ApiResult<IEnumerable<BlogImageViewModel>>>("/api/v1/blogimage", JsonOptions, ct);
-            return result?.Data?.ToList().AsReadOnly() ?? (IReadOnlyList<BlogImageViewModel>)[];
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<IEnumerable<BlogSitemapItem>>>("/api/v1/blog/sitemap", JsonOptions, ct);
+            return result?.Data?.ToList().AsReadOnly() ?? (IReadOnlyList<BlogSitemapItem>)[];
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Blog görselleri alınamadı.");
+            _logger.LogWarning(ex, "Sitemap verisi alınamadı.");
             return [];
         }
     }

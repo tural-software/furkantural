@@ -61,15 +61,38 @@
         @if (Model.AvailableCategories.Count > 0)
         {
             <div class="blog-cats" role="list" aria-label="Kategoriler">
-                <a class="filter-chip @(Model.CategoryId is null ? "is-active" : "")"
-                   asp-action="Index" asp-route-search="@Model.Search" role="listitem">Tümü</a>
+                @{
+                    var allActive = Model.CategoryId is null;
+                }
+                @if (allActive)
+                {
+                    <a class="filter-chip is-active" aria-current="true"
+                       asp-action="Index" asp-route-search="@Model.Search" role="listitem">Tümü</a>
+                }
+                else
+                {
+                    <a class="filter-chip"
+                       asp-action="Index" asp-route-search="@Model.Search" role="listitem">Tümü</a>
+                }
                 @foreach (var cat in Model.AvailableCategories)
                 {
-                    var active = Model.CategoryId == cat.Id ? "is-active" : "";
-                    <a class="filter-chip @active" style="--chip-color:@cat.DisplayColor"
-                       asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-search="@Model.Search" role="listitem">
-                        <span class="filter-chip__dot"></span>@cat.Name
-                    </a>
+                    var catActive = Model.CategoryId == cat.Id;
+                    if (catActive)
+                    {
+                        <a class="filter-chip is-active" style="--chip-color:@cat.DisplayColor"
+                           asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-search="@Model.Search" role="listitem"
+                           aria-label="@cat.Name kategorisini filtrele" aria-current="true">
+                            <span class="filter-chip__dot" aria-hidden="true"></span>@cat.Name
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="filter-chip" style="--chip-color:@cat.DisplayColor"
+                           asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-search="@Model.Search" role="listitem"
+                           aria-label="@cat.Name kategorisini filtrele">
+                            <span class="filter-chip__dot" aria-hidden="true"></span>@cat.Name
+                        </a>
+                    }
                 }
             </div>
         }
@@ -109,8 +132,9 @@
                                 @foreach (var cat in post.Categories)
                                 {
                                     <a class="post-cat-chip" style="--chip-color:@cat.DisplayColor"
-                                       asp-action="Index" asp-route-categoryId="@cat.Id" title="@cat.Name kategorisindeki yazılar">
-                                        <span class="post-cat-chip__dot"></span>@cat.Name
+                                       asp-action="Index" asp-route-categoryId="@cat.Id"
+                                       aria-label="@cat.Name kategorisindeki yazılar">
+                                        <span class="post-cat-chip__dot" aria-hidden="true"></span>@cat.Name
                                     </a>
                                 }
                             </div>
@@ -124,13 +148,14 @@
                                 <time datetime="@post.PublishedIso">@post.PublishedDisplay</time>
                                 <span class="post-meta__sep" aria-hidden="true">•</span>
                             }
-                            <span>@post.ReadingMinutes dk okuma</span>
+                            <span aria-label="@post.ReadingMinutes dakika okuma">@post.ReadingMinutes dk okuma</span>
                         </div>
                         @if (!string.IsNullOrEmpty(post.Excerpt))
                         {
                             <p class="post-card__excerpt">@post.Excerpt</p>
                         }
-                        <a class="post-card__more" asp-controller="Home" asp-action="Post" asp-route-id="@post.Id">Devamını oku</a>
+                        <a class="post-card__more" asp-controller="Home" asp-action="Post" asp-route-id="@post.Id"
+                           aria-label="@post.Title — devamını oku">Devamını oku</a>
                     </div>
                 </article>
             }

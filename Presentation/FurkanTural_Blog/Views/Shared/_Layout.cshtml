@@ -7,6 +7,7 @@
         ?? "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notlarını paylaştığı kişisel blog.";
     var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
     var ogImage = (ViewData["OgImage"] as string) ?? (siteUrl + "/img/og-image.png");
+    var ogType = (ViewData["OgType"] as string) ?? "website";
     // Varsayılan WebSite yapısal verisi; sayfa "JsonLd" section'ı tanımlarsa (örn. yazı için Article) o kullanılır.
     var defaultJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
     {
@@ -51,7 +52,7 @@
     <meta property="og:site_name" content="Furkan Tural Blog" />
     <meta property="og:title" content="@(title ?? "Furkan Tural Blog")" />
     <meta property="og:description" content="@metaDescription" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="@ogType" />
     <meta property="og:locale" content="tr_TR" />
     <meta property="og:url" content="@canonical" />
     <meta property="og:image" content="@ogImage" />
@@ -74,6 +75,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("HeadMeta", required: false)
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
