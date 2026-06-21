@@ -1,34 +1,43 @@
 @model RegisterRequestModel
 @{
     ViewData["Title"] = "Üye Ol";
+    var nonce = Context.Items["csp-nonce"] as string;
 }
 <button type="button" class="theme-toggle-btn theme-toggle-btn--floating" data-theme-toggle aria-label="Temayı değiştir">
-    <span data-theme-icon>🌙</span>
+    <span data-theme-icon aria-hidden="true">🌙</span>
 </button>
 
 <div class="auth-wrap">
     <div class="auth-card">
         <div class="auth-brand">
             <img src="~/img/chatural-logo.png" alt="Chatural" class="auth-logo" width="76" height="76" />
-            <div class="auth-name">Cha<span>tural</span></div>
+            <div class="auth-name" aria-label="Chatural">Cha<span>tural</span></div>
         </div>
         <p class="auth-sub">Yeni bir hesap oluştur</p>
 
         <form id="registerForm" asp-action="Register" method="post" class="auth-form"
-              data-auth-form data-fail-title="Kayıt başarısız">
+              data-auth-form data-fail-title="Kayıt başarısız"
+              novalidate aria-label="Kayıt formu">
             @Html.AntiForgeryToken()
 
             <label asp-for="Username">Kullanıcı adı</label>
-            <input asp-for="Username" autocomplete="username" autofocus />
+            <input asp-for="Username" autocomplete="username" autofocus
+                   aria-required="true" aria-describedby="reg-username-err" />
+            <span asp-validation-for="Username" class="field-error" id="reg-username-err" role="alert"></span>
 
             <label asp-for="Email">E-posta</label>
-            <input asp-for="Email" type="email" autocomplete="email" />
+            <input asp-for="Email" type="email" autocomplete="email"
+                   aria-required="true" aria-describedby="reg-email-err" />
+            <span asp-validation-for="Email" class="field-error" id="reg-email-err" role="alert"></span>
 
-            <label asp-for="DisplayName">Görünen ad (opsiyonel)</label>
-            <input asp-for="DisplayName" autocomplete="nickname" />
+            <label asp-for="DisplayName">Görünen ad <span class="auth-optional">(opsiyonel)</span></label>
+            <input asp-for="DisplayName" autocomplete="nickname" aria-describedby="reg-displayname-err" />
+            <span asp-validation-for="DisplayName" class="field-error" id="reg-displayname-err" role="alert"></span>
 
             <label asp-for="Password">Şifre</label>
-            <input asp-for="Password" type="password" autocomplete="new-password" />
+            <input asp-for="Password" type="password" autocomplete="new-password"
+                   aria-required="true" aria-describedby="reg-password-err" />
+            <span asp-validation-for="Password" class="field-error" id="reg-password-err" role="alert"></span>
 
             @if (!string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string))
             {
@@ -37,15 +46,15 @@
             <input type="hidden" name="TurnstileToken" id="turnstileToken" />
 
             <label class="agreement-check">
-                <input asp-for="AcceptAgreement" />
+                <input asp-for="AcceptAgreement" aria-required="true" aria-describedby="reg-agreement-err" />
                 <span>
                     <a asp-controller="Home" asp-action="Agreement" target="_blank" rel="noopener">Üyelik sözleşmesini</a>
                     okudum ve kabul ediyorum.
                 </span>
             </label>
-            <span asp-validation-for="AcceptAgreement" class="field-error"></span>
+            <span asp-validation-for="AcceptAgreement" class="field-error" id="reg-agreement-err" role="alert"></span>
 
-            <button type="submit" class="btn-primary">Üye ol</button>
+            <button type="submit" class="btn-primary" data-loading-text="Kayıt yapılıyor…">Üye ol</button>
         </form>
 
         <p class="auth-foot">Zaten hesabın var mı? <a asp-action="Login">Giriş yap</a></p>
@@ -53,8 +62,9 @@
 </div>
 
 @section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script>
+    <script nonce="@nonce">
         function onTurnstileSuccess(token) {
             var el = document.getElementById('turnstileToken');
             if (el) el.value = token;

@@ -7,6 +7,8 @@
     // sayfası için ViewData["Robots"] = "index, follow" ile override edilebilir.
     var robots = ViewData["Robots"] as string ?? "noindex, nofollow";
     var seoTitle = ViewData["Title"] as string ?? "Chatural";
+    // CSP nonce (Program.cs middleware'inde üretilir) — inline <script> blokları bununla çalışır.
+    var nonce = Context.Items["csp-nonce"] as string;
 }
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark">
@@ -30,7 +32,7 @@
     <meta name="twitter:title" content="@seoTitle" />
     <meta name="twitter:description" content="@metaDescription" />
     <meta name="twitter:image" content="@(siteUrl + "/img/og-image.png")" />
-    <script>
+    <script nonce="@nonce">
         (function () {
             try {
                 var saved = localStorage.getItem('theme');
@@ -66,15 +68,23 @@
         <div id="toastMsg"></div>
     </div>
 
-    <div id="pwaInstallBar" class="pwa-install-bar" hidden>
-        <button type="button" id="pwaInstallBtn" class="pwa-install-btn">⬇ Uygulamayı yükle</button>
-        <button type="button" id="pwaInstallClose" class="pwa-install-close" aria-label="Kapat" title="Kapat">✕</button>
+    <div id="pwaInstallBar" class="pwa-install-bar" role="status" aria-live="polite" hidden>
+        <button type="button" id="pwaInstallBtn" class="pwa-install-btn">
+            <span aria-hidden="true">⬇</span> Uygulamayı yükle
+        </button>
+        <button type="button" id="pwaInstallClose" class="pwa-install-close" aria-label="Yükleme çubuğunu kapat" title="Kapat">
+            <span aria-hidden="true">✕</span>
+        </button>
     </div>
 
     @* PWA — yeni sürüm hazır olduğunda kullanıcı onaylı güncelleme *@
-    <div id="pwaUpdateBar" class="pwa-install-bar pwa-update-bar" hidden>
-        <button type="button" id="pwaUpdateBtn" class="pwa-install-btn">⟳ Yeni sürümü yükle</button>
-        <button type="button" id="pwaUpdateClose" class="pwa-install-close" aria-label="Şimdi değil" title="Şimdi değil">✕</button>
+    <div id="pwaUpdateBar" class="pwa-install-bar pwa-update-bar" role="status" aria-live="polite" hidden>
+        <button type="button" id="pwaUpdateBtn" class="pwa-install-btn">
+            <span aria-hidden="true">⟳</span> Yeni sürümü yükle
+        </button>
+        <button type="button" id="pwaUpdateClose" class="pwa-install-close" aria-label="Güncellemeyi şimdi değil" title="Şimdi değil">
+            <span aria-hidden="true">✕</span>
+        </button>
     </div>
 
     @* Çerez bilgilendirme / onay modalı — tüm sayfalarda görünür *@
@@ -99,7 +109,7 @@
 
     @if (TempData["ToastMsg"] != null)
     {
-        <script>
+        <script nonce="@nonce">
             document.addEventListener('DOMContentLoaded', function () {
                 if (window.showToast) {
                     showToast(

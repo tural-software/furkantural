@@ -31,6 +31,9 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         if (!result.Success || result.Data?.Token is null)
             return Json(new { ok = false, errors = ApiErrors(result.Errors, result.Message, "Giriş başarısız.") });
 
+        // Session fixation önlemi: başarılı kimlik doğrulamadan önce mevcut session verilerini temizle.
+        // Program.cs'deki AddSession/cookie config'e dokunmadan yalnız içerik sıfırlanır.
+        HttpContext.Session.Clear();
         StoreSession(result.Data);
         SetFlash("success", "Hoş geldin", result.Data.Username ?? string.Empty);
         return Json(new { ok = true, redirect = Url.Action("Index", "Chat") });
@@ -57,6 +60,8 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         if (!result.Success || result.Data?.Token is null)
             return Json(new { ok = false, errors = ApiErrors(result.Errors, result.Message, "Kayıt başarısız.") });
 
+        // Session fixation önlemi: yeni hesap oluşturma öncesi session'ı temizle.
+        HttpContext.Session.Clear();
         StoreSession(result.Data);
         SetFlash("success", "Aramıza hoş geldin", result.Data.Username ?? string.Empty);
         return Json(new { ok = true, redirect = Url.Action("Index", "Chat") });

@@ -1,8 +1,27 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Chatural";
+    ViewData["Robots"] = "index, follow";
+    ViewData["MetaDescription"] = "Chatural — arkadaşlarınızla gerçek zamanlı mesajlaşma ve görüntülü görüşme uygulaması.";
 }
+<button type="button" class="theme-toggle-btn theme-toggle-btn--floating" data-theme-toggle aria-label="Temayı değiştir">
+    <span data-theme-icon aria-hidden="true">🌙</span>
+</button>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="auth-wrap">
+    <div class="auth-card landing-card">
+        <div class="auth-brand">
+            <img src="~/img/chatural-logo.png" alt="Chatural" class="auth-logo" width="76" height="76" />
+            <div class="auth-name" aria-label="Chatural">Cha<span>tural</span></div>
+        </div>
+        <p class="auth-sub">Arkadaşlarınızla gerçek zamanlı mesajlaşın</p>
+
+        <div class="landing-actions">
+            <a asp-controller="Account" asp-action="Login" class="btn-primary landing-btn">Giriş yap</a>
+            <a asp-controller="Account" asp-action="Register" class="btn-outline landing-btn">Üye ol</a>
+        </div>
+
+        <p class="auth-foot landing-foot">
+            Sohbet başlatmak için giriş yapın veya yeni bir hesap oluşturun.
+        </p>
+    </div>
 </div>

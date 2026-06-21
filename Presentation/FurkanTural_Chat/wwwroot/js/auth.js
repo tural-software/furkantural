@@ -8,7 +8,23 @@
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (submitBtn) submitBtn.disabled = true;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                const loadingText = submitBtn.getAttribute('data-loading-text');
+                if (loadingText) {
+                    submitBtn.__origText = submitBtn.textContent;
+                    submitBtn.textContent = loadingText;
+                }
+            }
+
+            function resetBtn() {
+                if (!submitBtn) return;
+                submitBtn.disabled = false;
+                if (submitBtn.__origText !== undefined) {
+                    submitBtn.textContent = submitBtn.__origText;
+                    delete submitBtn.__origText;
+                }
+            }
 
             try {
                 const response = await fetch(form.action, {
@@ -20,7 +36,7 @@
                 if (!response.ok) {
                     const msg = `Sunucu hatası: ${response.status}`;
                     if (window.showToast) window.showToast('error', 'Sunucu hatası', msg);
-                    if (submitBtn) submitBtn.disabled = false;
+                    resetBtn();
                     if (window.turnstile) { try { window.turnstile.reset(); } catch (e) { /* yoksay */ } }
                     return;
                 }
@@ -30,7 +46,7 @@
                 if (!data.ok) {
                     const errors = (data.errors && data.errors.length) ? data.errors : ['İşlem başarısız.'];
                     if (window.showToast) window.showToast('error', failTitle, errors.join(' '));
-                    if (submitBtn) submitBtn.disabled = false;
+                    resetBtn();
                     if (window.turnstile) { try { window.turnstile.reset(); } catch (e) { /* yoksay */ } }
                     return;
                 }
@@ -39,7 +55,7 @@
             } catch (err) {
                 console.error(err);
                 if (window.showToast) window.showToast('error', 'Bağlantı hatası', 'Beklenmeyen bir hata oluştu.');
-                if (submitBtn) submitBtn.disabled = false;
+                resetBtn();
             }
         });
     });

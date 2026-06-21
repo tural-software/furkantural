@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using FurkanTural_Chat;
 using FurkanTural_Chat.Models.Common;
 using FurkanTural_Chat.Services;
@@ -95,6 +96,11 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     // Proxy sonrası state-değiştiren POST'lar cookie ile yetkilenir → CSRF'e karşı sertleştirme.
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    // SameSite=Lax (BİLİNÇLİ tercih, Strict DEĞİL): Lax zaten cross-site state-değiştiren POST'larda
+    // cookie göndermez (CSRF kapalı) + formlarda AntiForgeryToken var. Strict'e çıkmak, push bildirimine
+    // tıklayınca service worker'ın açık pencere yoksa clients.openWindow('/Chat') ile yaptığı üst-düzey
+    // gezinmede cookie'yi keserdi → kullanıcı zorla login'e düşerdi (sw.js notificationclick). Net güvenlik
+    // kazancı olmadan push UX'ini bozardı; bu yüzden Lax korunur.
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
@@ -107,6 +113,67 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ───────── Güvenlik başlıkları ─────────
+// Chat'e özgü kısıtlamalar:
+//   • SignalR: cdn.jsdelivr.net (script) + wss: (connect)
+//   • Turnstile: challenges.cloudflare.com (script + frame)
+//   • WebRTC: RTCPeerConnection — CSP kısıtlaması yok, tarayıcı API'si.
+//   • Medya: getUserMedia (mikrofon/kamera) — CSP kısıtlaması yok.
+//   • BFF: tüm /bff/* ve /hubs/* istekleri same-origin → 'self' yeterli.
+//   • Inline scriptler (tema init, TempData toast, window.CHAT, Turnstile callback) artık
+//     per-request NONCE ile çalışır; 'unsafe-inline' KALDIRILDI. Sohbet kullanıcı-üretimli
+//     içerik (mesajlar) gösterdiğinden, olası bir HTML-enjeksiyonunda script çalışmasını
+//     nonce engeller (defense-in-depth). Dış scriptler host izniyle yüklenir (nonce gerektirmez).
+var apiBase = (builder.Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    headers["X-Frame-Options"] = "SAMEORIGIN";
+    // Kamera/mikrofon: WebRTC arama özelliği için açık; ödeme/coğrafi konum kapalı.
+    headers["Permissions-Policy"] = "camera=self, microphone=self, geolocation=(), payment=()";
+
+    // Per-request CSP nonce — inline <script> blokları yalnız bu nonce ile çalışır.
+    // View'lar Context.Items["csp-nonce"] üzerinden okuyup nonce="..." olarak basar.
+    var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+    context.Items["csp-nonce"] = nonce;
+
+    // Content-Security-Policy
+    // connect-src: same-origin (/bff/* REST + WebSocket), API base, wss: (SignalR WS transport)
+    var connectSrc = string.IsNullOrWhiteSpace(apiBase)
+        ? "'self' wss: ws:"
+        : $"'self' {apiBase} {apiBase.Replace("https://", "wss://").Replace("http://", "ws:")} wss: ws:";
+
+    // img-src: avatar/ekler BFF üzerinden same-origin; API'den de doğrudan statik resimler gelebilir.
+    var imgSrc = string.IsNullOrWhiteSpace(apiBase)
+        ? "'self' data: blob:"
+        : $"'self' data: blob: {apiBase}";
+
+    headers["Content-Security-Policy"] =
+        "default-src 'none'; " +
+        // Inline scriptler yalnız 'nonce-...' ile; dış scriptler host izniyle (Turnstile, SignalR CDN).
+        // 'strict-dynamic' KULLANILMAZ → host allowlist'i ('self' + CDN'ler) geçerli kalır, dış
+        // <script src> etiketleri nonce gerektirmez. 'unsafe-inline' nonce varlığında yok sayılır.
+        $"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net https://challenges.cloudflare.com; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src " + imgSrc + "; " +
+        // Turnstile widget bir iframe içinde çalışır → frame-src gerekli.
+        "frame-src https://challenges.cloudflare.com; " +
+        "connect-src " + connectSrc + "; " +
+        // getUserMedia/WebRTC için media-src: tarayıcı API kısıtı değil ama kamera/mikrofon
+        // blob URL'leri oluşturulabilir.
+        "media-src 'self' blob:; " +
+        "worker-src 'self'; " +
+        "manifest-src 'self'; " +
+        "frame-ancestors 'self'; " +
+        "base-uri 'self'; " +
+        "form-action 'self'";
+
+    await next();
+});
+
 app.UseRouting();
 
 app.UseSession();

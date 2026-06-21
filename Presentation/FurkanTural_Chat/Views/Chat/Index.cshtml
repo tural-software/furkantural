@@ -11,19 +11,21 @@
         avatarUrl = Model.AvatarUrl,
         agreementAccepted = Model.AgreementAccepted
     });
+    var nonce = Context.Items["csp-nonce"] as string;
 }
 
 <div class="chat-app">
     <aside class="sidebar">
         <div class="search">
-            <input id="searchInput" type="search" placeholder="Kullanıcı adı veya e-posta ara…" autocomplete="off" />
-            <div id="searchResults" class="search-results" hidden></div>
+            <input id="searchInput" type="search" placeholder="Kullanıcı adı veya e-posta ara…" autocomplete="off"
+                   aria-label="Kullanıcı ara" aria-controls="searchResults" aria-autocomplete="list" role="combobox" aria-expanded="false" />
+            <div id="searchResults" class="search-results" role="listbox" aria-label="Kullanıcı arama sonuçları" hidden></div>
         </div>
 
         <div class="panel requests" id="requestsPanel">
             <div class="section-head">
                 <span>Arkadaşlık İstekleri</span>
-                <span id="requestBadge" class="badge" hidden>0</span>
+                <span id="requestBadge" class="badge" aria-label="Bekleyen arkadaşlık isteği sayısı" hidden>0</span>
             </div>
             <div id="requestsList" class="requests-list"></div>
         </div>
@@ -36,18 +38,22 @@
         <div class="me">
             @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
             {
-                <div class="avatar" id="meAvatar" title="Avatarı değiştir" style="cursor:pointer;background-image:url('@(Model.AvatarUrl.Contains('/') ? $"{Model.ApiBaseUrl}/{Model.AvatarUrl}" : $"{Model.ApiBaseUrl}/images/uploads/{Model.AvatarUrl}")');background-size:cover;background-position:center;"></div>
+                <div class="avatar" id="meAvatar" role="button" tabindex="0" title="Avatarı değiştir" aria-label="Profil avatarı — tıklayın değiştirmek için" style="cursor:pointer;background-image:url('@(Model.AvatarUrl.Contains('/') ? $"{Model.ApiBaseUrl}/{Model.AvatarUrl}" : $"{Model.ApiBaseUrl}/images/uploads/{Model.AvatarUrl}")');background-size:cover;background-position:center;"></div>
             }
             else
             {
-                <div class="avatar" id="meAvatar" title="Avatarı değiştir" style="cursor:pointer">@initial</div>
+                <div class="avatar" id="meAvatar" role="button" tabindex="0" title="Avatarı değiştir" aria-label="Profil avatarı — tıklayın değiştirmek için" style="cursor:pointer">@initial</div>
             }
             <input type="file" id="avatarFileInput" accept="image/*" hidden />
             <div class="me-name">@Model.DisplayName</div>
-            <button type="button" id="notifyToggleBtn" class="theme-toggle-btn" aria-label="Bildirimler" title="Bildirimleri aç" hidden>🔔</button>
-            <button type="button" id="audioSettingsBtn" class="theme-toggle-btn" aria-label="Ses ve cihaz ayarları" title="Ses ve cihaz ayarları">⚙️</button>
+            <button type="button" id="notifyToggleBtn" class="theme-toggle-btn" aria-label="Bildirimleri aç" title="Bildirimleri aç" hidden>
+                <span aria-hidden="true">🔔</span>
+            </button>
+            <button type="button" id="audioSettingsBtn" class="theme-toggle-btn" aria-label="Ses ve cihaz ayarları" title="Ses ve cihaz ayarları">
+                <span aria-hidden="true">⚙️</span>
+            </button>
             <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Temayı değiştir" title="Temayı değiştir">
-                <span data-theme-icon>🌙</span>
+                <span data-theme-icon aria-hidden="true">🌙</span>
             </button>
             <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
                 @Html.AntiForgeryToken()
@@ -66,7 +72,7 @@
                 <span id="convTitle">Sohbet etmek için bir arkadaş seç</span>
                 <span id="convPresence" class="conv-presence"></span>
             </div>
-            <span id="typingIndicator" class="typing" hidden>yazıyor…</span>
+            <span id="typingIndicator" class="typing" role="status" aria-live="polite" aria-atomic="true" hidden>yazıyor…</span>
             <div class="conv-actions">
                 @* Masaüstü: ayrı çağrı ikonları *@
                 <button type="button" id="callAudioBtn" class="conv-act" title="Sesli ara" aria-label="Sesli ara" hidden>
@@ -108,8 +114,8 @@
                 </div>
             </div>
         </div>
-        <div id="messages" class="messages">
-            <div class="empty-hint">Henüz bir sohbet seçilmedi.</div>
+        <div id="messages" class="messages" role="log" aria-live="polite" aria-label="Sohbet mesajları">
+            <div class="empty-hint" role="status">Henüz bir sohbet seçilmedi.</div>
         </div>
         <form id="composer" class="composer" hidden>
             <div class="composer-add-wrap">
@@ -130,7 +136,7 @@
             </div>
             <input id="attachInput" type="file" accept="image/*,video/*" hidden />
             <span id="recTimer" class="rec-timer" hidden>0:00</span>
-            <input id="messageInput" type="text" placeholder="Bir mesaj yaz…" autocomplete="off" maxlength="4000" />
+            <input id="messageInput" type="text" placeholder="Bir mesaj yaz…" autocomplete="off" maxlength="4000" aria-label="Mesaj yaz" />
             <button type="submit" id="sendBtn" class="send-btn" title="Gönder" aria-label="Gönder">
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M2 21l21-9L2 3v7l15 2-15 2z"></path></svg>
             </button>
@@ -138,30 +144,45 @@
     </main>
 </div>
 
-<div id="connStatus" class="conn-status" hidden></div>
+<div id="connStatus" class="conn-status" role="status" aria-live="assertive" aria-atomic="true" hidden></div>
 
 @* Üyelik sözleşmesi — yalnızca henüz kabul etmemiş (eski) üyeler için JS açar; kapatılamaz. *@
 <div id="agreementOverlay" class="agreement-overlay">
-    <div class="agreement-card" role="dialog" aria-modal="true" aria-labelledby="agreementHeading">
+    <div class="agreement-card" role="dialog" aria-modal="true"
+         aria-labelledby="agreementHeading" aria-describedby="agreementDesc">
         <h2 id="agreementHeading">Üyelik Sözleşmesi</h2>
-        <p>
+        <p id="agreementDesc">
             Hizmeti kullanmaya devam edebilmek için üyelik sözleşmesini onaylamanız gerekiyor.
             Sohbetlerde yazılan <strong>tüm mesajların</strong> ve gönderilen <strong>tüm ses kayıtlarının</strong>
             hizmet amaçlı saklandığını; olası bir durumda <strong>T.C. kolluk kuvvetlerine</strong> teslim
             edilebileceğini kabul edersiniz.
         </p>
-        <p><a href="/Home/Agreement" target="_blank" rel="noopener">Sözleşmenin tamamını okuyun →</a></p>
+        <p><a href="/Home/Agreement" target="_blank" rel="noopener noreferrer">Sözleşmenin tamamını okuyun <span aria-hidden="true">→</span><span class="sr-only">(yeni sekmede açılır)</span></a></p>
         <div class="agreement-actions">
             <button type="button" id="agreementAccept" class="btn-primary">Okudum, kabul ediyorum</button>
         </div>
+        <p class="agreement-note">Kabul etmeden hizmeti kullanamazsınız. Kabul etmek istemiyorsanız
+            <button type="button" id="agreementLogoutBtn" class="agreement-logout-link">hesabınızdan çıkış yapabilirsiniz</button>.</p>
     </div>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@@8.0.7/dist/browser/signalr.min.js"></script>
-    <script>window.CHAT = @Html.Raw(chatConfig);</script>
+    <script nonce="@nonce">window.CHAT = @Html.Raw(chatConfig);</script>
     <script src="~/js/chat.js" asp-append-version="true"></script>
     <script src="~/js/call.js" asp-append-version="true"></script>
     <script src="~/js/profile.js" asp-append-version="true"></script>
     <script src="~/js/notifications.js" asp-append-version="true"></script>
+    @* Sözleşme overlay: "çıkış yap" butonu mevcut logout formunu submit eder (BFF koruması korunur). *@
+    <script nonce="@nonce">
+        (function () {
+            var logoutBtn = document.getElementById('agreementLogoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function () {
+                    var logoutForm = document.querySelector('.logout-form');
+                    if (logoutForm) logoutForm.submit();
+                });
+            }
+        })();
+    </script>
 }
