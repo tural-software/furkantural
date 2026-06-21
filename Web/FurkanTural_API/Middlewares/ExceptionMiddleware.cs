@@ -38,10 +38,13 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
                     Project = "FurkanTural_API",
                     Date = clock?.UtcNow ?? DateTime.UtcNow,
                     Level = "Error",
-                    Message = ex.Message,
+                    // Message/Path, DB kolonlarını (nvarchar(1000)/(500)) aşabilir; ikincil
+                    // DbUpdateException'ı (ve sessizce yutulan kayıp logu) önlemek için kırp.
+                    // Detail nvarchar(max) olduğundan güvenli.
+                    Message = Truncate(ex.Message, 1000),
                     Detail = ex.ToString(),
                     IpAddress = context.Connection.RemoteIpAddress?.ToString(),
-                    Path = context.Request.Path
+                    Path = Truncate(context.Request.Path.Value, 500)
                 });
             }
         }
@@ -62,4 +65,7 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 
         await context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
+
+    private static string? Truncate(string? value, int max)
+        => string.IsNullOrEmpty(value) || value.Length <= max ? value : value[..max];
 }

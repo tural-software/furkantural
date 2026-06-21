@@ -10,5 +10,6 @@ namespace FurkanTural_Application.Services.Abstract;
 public interface ITurnCredentialProvider
 {
     /// <param name="customIdentifier">Cloudflare kullanım analizi için kullanıcı kimliği (opsiyonel).</param>
+    /// <param name="cancellationToken">İşlemi iptal etmek için belirteç.</param>
     Task<Result<TurnCredentialsDto>> GetIceServersAsync(int? customIdentifier = null, CancellationToken cancellationToken = default);
 }

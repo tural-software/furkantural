@@ -22,9 +22,9 @@
   </ItemGroup>
 
   <!-- NuGet References -->
+  <!-- Not: Microsoft.Extensions.Configuration/DependencyInjection.Abstractions, yukarıdaki
+       Microsoft.AspNetCore.App framework referansıyla zaten geldiği için açıkça eklenmez (NU1510). -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.9.0" />
     <PackageReference Include="WebPush" Version="1.0.13" />
   </ItemGroup>

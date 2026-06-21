@@ -8,6 +8,11 @@ public interface IFileService
     /// medya-türü (images/voices/videos) uzantıdan türetilir.
     /// Dosya adı formatı: {relatedTableName}-{relatedRecordId}-user-{userId}-{Guid}-{yyyyMMdd}{ext}
     /// </summary>
+    /// <param name="imageData">Kaydedilecek dosyanın ham bayt içeriği.</param>
+    /// <param name="imageName">Orijinal dosya adı; uzantı medya-türünü (images/voices/videos) belirler.</param>
+    /// <param name="relatedTableName">İlişkili modül/tablo adı; klasör ve dosya-adı önekini belirler.</param>
+    /// <param name="relatedRecordId">İlişkili kaydın kimliği; dosya adına gömülür.</param>
+    /// <param name="userId">İşlemi yapan kullanıcının kimliği; dosya adına gömülür.</param>
     /// <param name="maxBytes">Verilirse ve veri bu boyutu aşarsa kayıt reddedilir (null = sınırsız).</param>
     /// <exception cref="InvalidOperationException">Desteklenmeyen uzantı veya boyut sınırı aşımı.</exception>
     /// <exception cref="IOException">Dosya yazma hatası.</exception>

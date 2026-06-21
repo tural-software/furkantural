@@ -27,7 +27,7 @@ public class PushController(IPushSubscriptionService pushSubscriptionService) : 
 
     /// <summary>Giriş yapan kullanıcının bu cihaz için push aboneliğini kaydeder (varsa günceller).</summary>
     [HttpPost("subscribe")]
-    public async Task<IActionResult> Subscribe([FromBody] SubscribeRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Subscribe([FromBody] PushSubscriptionRequest request, CancellationToken cancellationToken)
     {
         var userId = SortUserId();
         if (userId is null) return Unauthorized();
