@@ -10,7 +10,8 @@ public static class BlogMapper
         Id = entity.Id,
         Title = entity.Title,
         Content = entity.Content,
-        CreatedAt = entity.CreatedAt
+        CreatedAt = entity.CreatedAt,
+        UpdatedAt = entity.UpdatedAt
     };
 
     public static AdminBlogDto ToAdminDto(this Blog entity) => new()

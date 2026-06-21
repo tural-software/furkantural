@@ -12,6 +12,13 @@ public interface IBlogRepository : IRepository<Blog>
     Task<(IReadOnlyList<Blog> Items, int Total)> GetPublishedPageAsync(
         int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Sitemap/SEO için yayınlı yazıların hafif listesi: yalnız Id + tarihler (içerik çekilmez).
+    /// En yeni en üstte. Global query filter (yayınlı = !IsDeleted &amp;&amp; IsActive) otomatik uygulanır.
+    /// </summary>
+    Task<IReadOnlyList<(int Id, DateTime CreatedAt, DateTime? UpdatedAt)>> GetSitemapDataAsync(
+        CancellationToken cancellationToken = default);
+
     /// <summary>Verilen blog Id'leri için kategoriler (blogId → kategori listesi).</summary>
     Task<Dictionary<int, List<Category>>> GetCategoriesForBlogsAsync(
         IReadOnlyCollection<int> blogIds, CancellationToken cancellationToken = default);

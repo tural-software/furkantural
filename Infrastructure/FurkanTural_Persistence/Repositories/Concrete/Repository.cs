@@ -12,7 +12,9 @@ namespace FurkanTural_Persistence.Repositories.Concrete;
 
 public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where T : BaseEntity
 {
-    private readonly FurkanTuralDbContext _context = context;
+    // protected: türetilmiş repo'lar (ör. BlogRepository) diğer entity'lerin Set'lerine
+    // erişmek için context'i tekrar yakalamak zorunda kalmasın (CS9107 önlenir).
+    protected readonly FurkanTuralDbContext _context = context;
     protected readonly DbSet<T> _dbSet = context.Set<T>();
     private string? _tableName;
     private string TableName => _tableName ??= _context.Model.FindEntityType(typeof(T))!.GetTableName()!;

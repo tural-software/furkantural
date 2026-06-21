@@ -9,6 +9,9 @@ public class BlogDto
     public string? Content { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    /// <summary>Son güncelleme tarihi (hiç düzenlenmediyse null). SEO için gerçek dateModified/lastmod kaynağı.</summary>
+    public DateTime? UpdatedAt { get; set; }
+
     /// <summary>Bloğa atanmış kategoriler (kart chip'leri için).</summary>
     public List<CategoryDto> Categories { get; set; } = [];
 }

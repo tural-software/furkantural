@@ -105,6 +105,18 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         return PagedResult<BlogDto>.Ok(dtos, total, pageNumber, pageSize);
     }
 
+    public async Task<Result<IEnumerable<BlogSitemapDto>>> GetSitemapAsync(CancellationToken cancellationToken = default)
+    {
+        var rows = await _unitOfWork.Blogs.GetSitemapDataAsync(cancellationToken);
+        var dtos = rows.Select(r => new BlogSitemapDto
+        {
+            Id = r.Id,
+            CreatedAt = r.CreatedAt,
+            UpdatedAt = r.UpdatedAt
+        }).ToList();
+        return Result<IEnumerable<BlogSitemapDto>>.Ok(dtos);
+    }
+
     public async Task<Result<BlogDto>> CreateAsync(CreateBlogDto dto, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(dto.Title))

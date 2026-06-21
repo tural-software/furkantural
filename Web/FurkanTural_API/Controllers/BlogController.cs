@@ -45,13 +45,21 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetByIdForAdminAsync(id, cancellationToken));
 
-    /// <summary>    
+    /// <summary>
     /// Blog yazılarını sayfalı listele
     /// </summary>
     [HttpGet("paged")]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] int? categoryId = null, [FromQuery] string? search = null, CancellationToken cancellationToken = default)
         => ToActionResult(await _blogService.GetPublishedPagedAsync(pageNumber, pageSize, categoryId, search, cancellationToken));
+
+    /// <summary>
+    /// Sitemap/SEO için yayınlı yazıların hafif listesi (Id + tarihler; içerik taşınmaz)
+    /// </summary>
+    [HttpGet("sitemap")]
+    [Authorize(Policy = "VisitorOrAbove")]
+    public async Task<IActionResult> GetSitemap(CancellationToken cancellationToken)
+        => ToActionResult(await _blogService.GetSitemapAsync(cancellationToken));
 
     /// <summary>
     /// Blog yazısının aktiflik durumunu değiştir

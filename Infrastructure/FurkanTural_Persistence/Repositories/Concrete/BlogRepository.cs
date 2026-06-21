@@ -1,7 +1,11 @@
+using Dapper;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Domain.Entities;
 using FurkanTural_Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Data.Common;
+using System.Text;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
@@ -15,28 +19,55 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
     public async Task<(IReadOnlyList<Blog> Items, int Total)> GetPublishedPageAsync(
         int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsNoTracking();
+        // Dapper QueryMultiple ile COUNT ve sayfa verisi tek bir DB roundtrip'te alınır.
+        // Global soft-delete filtresi (IsDeleted=0, IsActive=1) burada manuel uygulanır —
+        // Dapper EF Core global query filter'larını tanımaz.
+        const string baseWhere = "WHERE b.IsDeleted = 0 AND b.IsActive = 1";
 
+        var filterSb = new StringBuilder();
         if (!string.IsNullOrWhiteSpace(search))
-        {
-            var term = search.Trim();
-            query = query.Where(b => b.Title != null && EF.Functions.Like(b.Title, $"%{term}%"));
-        }
+            filterSb.Append(" AND b.Title LIKE @Search");
+        if (categoryId.HasValue)
+            filterSb.Append(" AND EXISTS (SELECT 1 FROM [BlogCategories] bc WHERE bc.BlogId = b.Id AND bc.CategoryId = @CategoryId)");
 
-        if (categoryId is int cid)
-        {
-            var links = context.Set<BlogCategory>();
-            query = query.Where(b => links.Any(bc => bc.BlogId == b.Id && bc.CategoryId == cid));
-        }
+        var filter = filterSb.ToString();
 
-        var total = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderByDescending(b => b.Id)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
+        var sql = $"SELECT COUNT(*) FROM [Blogs] b {baseWhere}{filter};" +
+                  $" SELECT b.* FROM [Blogs] b {baseWhere}{filter}" +
+                  " ORDER BY b.Id DESC OFFSET @Offset ROWS FETCH NEXT @Size ROWS ONLY";
+
+        var parameters = new
+        {
+            Search     = !string.IsNullOrWhiteSpace(search) ? $"%{search.Trim()}%" : (string?)null,
+            CategoryId = categoryId,
+            Offset     = (pageNumber - 1) * pageSize,
+            Size       = pageSize
+        };
+
+        var conn = (DbConnection)_context.Database.GetDbConnection();
+        if (conn.State == ConnectionState.Closed)
+            await conn.OpenAsync(cancellationToken);
+
+        using var multi = await conn.QueryMultipleAsync(
+            new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+
+        var total = await multi.ReadSingleAsync<int>();
+        var items = (await multi.ReadAsync<Blog>()).AsList();
 
         return (items, total);
+    }
+
+    public async Task<IReadOnlyList<(int Id, DateTime CreatedAt, DateTime? UpdatedAt)>> GetSitemapDataAsync(
+        CancellationToken cancellationToken = default)
+    {
+        // Yalnız Id + tarihler projekte edilir → SQL, Content (nvarchar(max)) sütununu hiç okumaz.
+        // Global query filter (!IsDeleted && IsActive) otomatik uygulanır → yalnız yayınlı yazılar.
+        var rows = await _context.Set<Blog>().AsNoTracking()
+            .OrderByDescending(b => b.Id)
+            .Select(b => new { b.Id, b.CreatedAt, b.UpdatedAt })
+            .ToListAsync(cancellationToken);
+
+        return rows.Select(r => (r.Id, r.CreatedAt, r.UpdatedAt)).ToList();
     }
 
     public async Task<Dictionary<int, List<Category>>> GetCategoriesForBlogsAsync(
@@ -45,8 +76,8 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
         if (blogIds.Count == 0)
             return [];
 
-        var links = context.Set<BlogCategory>();
-        var categories = context.Set<Category>();
+        var links = _context.Set<BlogCategory>();
+        var categories = _context.Set<Category>();
 
         var rows = await (from bc in links.AsNoTracking()
                           join c in categories.AsNoTracking() on bc.CategoryId equals c.Id
@@ -61,8 +92,8 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
 
     public async Task<List<Category>> GetCategoriesByBlogAsync(int blogId, CancellationToken cancellationToken = default)
     {
-        var links = context.Set<BlogCategory>();
-        var categories = context.Set<Category>();
+        var links = _context.Set<BlogCategory>();
+        var categories = _context.Set<Category>();
 
         return await (from bc in links.AsNoTracking()
                       join c in categories.AsNoTracking() on bc.CategoryId equals c.Id
@@ -73,7 +104,7 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
 
     public async Task<List<int>> GetCategoryIdsByBlogAsync(int blogId, CancellationToken cancellationToken = default)
     {
-        var links = context.Set<BlogCategory>();
+        var links = _context.Set<BlogCategory>();
         return await links.AsNoTracking()
             .Where(bc => bc.BlogId == blogId)
             .Select(bc => bc.CategoryId)
@@ -82,7 +113,7 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
 
     public async Task SetCategoriesAsync(int blogId, IReadOnlyCollection<int> categoryIds, int? userId, CancellationToken cancellationToken = default)
     {
-        var links = context.Set<BlogCategory>();
+        var links = _context.Set<BlogCategory>();
         var existing = await links.Where(bc => bc.BlogId == blogId).ToListAsync(cancellationToken);
         var wanted = categoryIds.Distinct().ToHashSet();
 
