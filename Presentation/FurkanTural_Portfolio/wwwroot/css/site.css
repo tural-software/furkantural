@@ -446,6 +446,7 @@ a.song-card__link:hover { color: var(--color-accent); }
 .contact-form { display: flex; flex-direction: column; gap: 1.25rem; }
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
 .form-group label { font-size: 0.875rem; font-weight: 500; color: var(--color-text-muted); }
+.form-required { color: var(--color-danger); margin-left: 0.15rem; }
 .form-input {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
@@ -508,18 +509,6 @@ a.song-card__link:hover { color: var(--color-accent); }
 ::-webkit-scrollbar-track { background: var(--color-bg); }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
-
-  margin-bottom: 60px;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
-}
 
 /* ---- Scroll-reveal ---- */
 /* Gizleme YALNIZCA JS aktifken (.js) uygulanır → JS yoksa içerik tam görünür.

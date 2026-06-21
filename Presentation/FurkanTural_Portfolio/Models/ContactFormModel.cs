@@ -17,5 +17,6 @@ public sealed class ContactFormModel
     [MaxLength(2000)]
     public string? Message { get; set; }
 
+    [Required]
     public string? TurnstileToken { get; set; }
 }

@@ -31,7 +31,8 @@
                             }
                         </div>
                         <div class="project-card__footer">
-                            <a href="@Url.Action("Detail", "Projects", new { id = project.Id })" class="btn btn-sm btn-primary">Detayları Gör →</a>
+                            <a href="@Url.Action("Detail", "Projects", new { id = project.Id })" class="btn btn-sm btn-primary"
+                               aria-label="@project.Title projesinin detaylarını gör">Detayları Gör →</a>
                         </div>
                     </div>
                 }

@@ -7,6 +7,7 @@
     var gallery = Model.Images.Where(i => i != cover).ToList();
     var tags = (p.TechStack ?? string.Empty)
         .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    ViewData["OgType"] = "article";
 }
 
 <section class="section detail">
@@ -26,7 +27,8 @@
 
         @if (cover is not null)
         {
-            <img class="detail-cover" src="@Src(cover)" alt="@(cover.AltText ?? p.Title)" loading="lazy" />
+            @* Kapak görseli sayfanın LCP adayıdır; eager yükleme ile önceliklendir. *@
+            <img class="detail-cover" src="@Src(cover)" alt="@(cover.AltText ?? p.Title)" loading="eager" fetchpriority="high" />
         }
 
         @if (!string.IsNullOrWhiteSpace(p.Description))
@@ -67,7 +69,7 @@
         {
             <div class="detail-block">
                 <h2 class="detail-subtitle">Galeri</h2>
-                <div class="detail-gallery">
+                <div class="detail-gallery" role="list">
                     @foreach (var img in gallery)
                     {
                         <img src="@Src(img)" alt="@(img.AltText ?? p.Title)" loading="lazy" />

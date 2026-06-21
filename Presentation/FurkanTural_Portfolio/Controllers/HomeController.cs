@@ -42,6 +42,11 @@ public class HomeController(IPortfolioApiService apiService, IPortfolioContactCl
         if (!ModelState.IsValid)
             return BadRequest(new { message = "Lütfen tüm alanları doldurun." });
 
+        // MVC-katmanı savunması: Turnstile token boş veya eksikse formu reddet.
+        // (API katmanı zaten Turnstile'ı doğrular; bu erken-ret spam isteklerini azaltır.)
+        if (string.IsNullOrWhiteSpace(model.TurnstileToken))
+            return BadRequest(new { message = "Bot koruması doğrulaması eksik. Lütfen tekrar deneyin." });
+
         var ok = await _contactClient.SubmitContactAsync(model, ct);
         if (ok)
             return Ok(new { message = "Mesajınız başarıyla gönderildi!" });

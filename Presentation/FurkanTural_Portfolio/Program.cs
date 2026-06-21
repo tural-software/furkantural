@@ -61,13 +61,45 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Temel güvenlik başlıkları (her yanıta uygulanır).
+// Güvenlik başlıkları (her yanıta uygulanır).
 app.Use(async (context, next) =>
 {
     var headers = context.Response.Headers;
+
+    // Mevcut başlıklar (Blog ile tutarlı).
     headers["X-Content-Type-Options"] = "nosniff";
     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     headers["X-Frame-Options"] = "SAMEORIGIN";
+
+    // Tarayıcı özellik politikası: kamera/mikrofon/konum/ödeme gereksinimi yok (Blog/Chat ile tutarlı).
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
+
+    // Content-Security-Policy
+    // script-src notu: 'unsafe-inline' gerekli — sayfada sunucu-kontrollü üç inline blok var:
+    //   (1) document.documentElement.classList.add('js')  (_Layout.cshtml, FOUC önleme)
+    //   (2) window.portfolioConfig = { turnstileSiteKey }  (Index.cshtml)
+    //   (3) <script type="application/ld+json"> JSON-LD blokları (_Layout + Detail sayfaları)
+    // Nonce tabanlı yaklaşım, bu üç ayrı inline bloğun her birine middleware nonce enjeksiyonu
+    // ve Razor tag güncellemesi gerektirir — siteyi bozma riski taşır.
+    // 'unsafe-eval' eklenmedi: hiçbir yerde eval/Function() kullanımı yok.
+    // frame-src: Turnstile doğrulama widget'ı challenges.cloudflare.com iframe'i açar.
+    // img-src https: — API sunucusu (proje/müzik görselleri) domain'i config'e göre değişir;
+    //   'self' + https: ile tüm HTTPS origin'lere izin verildi.
+    headers["Content-Security-Policy"] =
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "img-src 'self' https: data:; " +
+        "connect-src 'self'; " +
+        "frame-src https://challenges.cloudflare.com; " +
+        "manifest-src 'self'; " +
+        "worker-src 'self'; " +
+        "object-src 'none'; " +
+        "base-uri 'self'; " +
+        "frame-ancestors 'self'; " +
+        "form-action 'self';";
+
     await next();
 });
 

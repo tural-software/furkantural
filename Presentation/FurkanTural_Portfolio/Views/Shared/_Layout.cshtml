@@ -4,6 +4,7 @@
     var seoTitle = (ViewData["Title"] as string) ?? "Furkan Tural";
     var seoDescription = (ViewData["MetaDescription"] as string) ?? SharedLocalizer["Seo_Description"].Value;
     var ogImage = (ViewData["OgImage"] as string) ?? (siteUrl + "/img/og-image.png");
+    var ogType = (ViewData["OgType"] as string) ?? "website";
     var personJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
     {
         ["@context"] = "https://schema.org",
@@ -38,7 +39,7 @@
     <meta property="og:site_name" content="Furkan Tural" />
     <meta property="og:title" content="@(ViewData["Title"] ?? "Furkan Tural")" />
     <meta property="og:description" content="@(ViewData["MetaDescription"] ?? SharedLocalizer["Seo_Description"])" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="@ogType" />
     <meta property="og:locale" content="tr_TR" />
     <meta property="og:url" content="@canonical" />
     <meta property="og:image" content="@ogImage" />
@@ -57,7 +58,7 @@
     <a class="skip-link" href="#main">İçeriğe geç</a>
     @* Tüm-sayfa dekoratif 3D arkaplan (içeriğin arkasında, etkileşimsiz). *@
     <canvas id="canvas-container" aria-hidden="true"></canvas>
-    <nav class="navbar" id="navbar">
+    <nav class="navbar" id="navbar" aria-label="Ana navigasyon">
         <div class="nav-container">
             <a class="nav-brand" asp-controller="Home" asp-action="Index" aria-label="Furkan Tural">
                 <img class="nav-brand__logo nav-brand__logo--dark" src="~/img/furkan-tural-wordmark-dark.png" alt="" width="148" height="40" />
@@ -75,10 +76,10 @@
             </div>
             <div class="nav-actions">
                 <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="@SharedLocalizer["Theme_Toggle_Dark"]">
-                    <span data-theme-icon>🌙</span>
+                    <span data-theme-icon aria-hidden="true">🌙</span>
                     <span class="toggle-text">@SharedLocalizer["Nav_Theme"]</span>
                 </button>
-                <button class="nav-toggle" id="navToggle" aria-label="Menü">
+                <button class="nav-toggle" id="navToggle" aria-label="Menü" aria-expanded="false" aria-controls="navLinks">
                     <span></span><span></span><span></span>
                 </button>
             </div>

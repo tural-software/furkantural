@@ -15,6 +15,16 @@
         ("Süre",     s.Duration?.ToString(@"mm\:ss")),
         ("Yayın",    s.ReleaseDate?.Year.ToString())
     }.Where(m => !string.IsNullOrWhiteSpace(m.Value)).ToArray();
+
+    // og:type "music.song" sosyal paylaşımda müzik içeriğini açıkça işaretler.
+    ViewData["OgType"] = "music.song";
+
+    // MetaDescription controller'dan Artist+Album geliyor; şarkı adını da öne al.
+    var existingDesc = ViewData["MetaDescription"] as string;
+    if (string.IsNullOrWhiteSpace(existingDesc))
+    {
+        ViewData["MetaDescription"] = s.Name + (!string.IsNullOrWhiteSpace(s.Artist) ? " — " + s.Artist : "");
+    }
 }
 
 <section class="section detail">
@@ -31,7 +41,8 @@
 
         @if (cover is not null)
         {
-            <img class="detail-cover" src="@Src(cover)" alt="@(cover.AltText ?? s.Name)" loading="lazy" />
+            @* Kapak görseli sayfanın LCP adayıdır; eager yükleme ile önceliklendir. *@
+            <img class="detail-cover" src="@Src(cover)" alt="@(cover.AltText ?? s.Name)" loading="eager" fetchpriority="high" />
         }
 
         @if (!string.IsNullOrWhiteSpace(s.YouTubeMusicUrl))
@@ -66,7 +77,7 @@
         {
             <div class="detail-block">
                 <h2 class="detail-subtitle">Galeri</h2>
-                <div class="detail-gallery">
+                <div class="detail-gallery" role="list">
                     @foreach (var img in gallery)
                     {
                         <img src="@Src(img)" alt="@(img.AltText ?? s.Name)" loading="lazy" />

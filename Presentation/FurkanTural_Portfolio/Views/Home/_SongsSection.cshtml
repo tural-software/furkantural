@@ -45,7 +45,7 @@
                         </div>
                         @if (song.Duration.HasValue)
                         {
-                            <span class="song-card__duration">@song.Duration.Value.ToString(@"mm\:ss")</span>
+                            <span class="song-card__duration" aria-label="Süre: @song.Duration.Value.ToString(@"mm\:ss")">@song.Duration.Value.ToString(@"mm\:ss")</span>
                         }
                     </div>
                 }
