@@ -10,16 +10,16 @@
 
 @section Scripts {
     <script>
-        window.__experienceMeta = {
-            position:      '@Html.Raw(Model.SearchPosition ?? "")',
-            company:       '@Html.Raw(Model.SearchCompany ?? "")',
-            activeFilter:  '@Html.Raw(Model.ActiveFilter ?? "")',
-            deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
-            dateFrom:      '@Html.Raw(Model.DateFrom ?? "")',
-            dateTo:        '@Html.Raw(Model.DateTo ?? "")',
-            pageNumber:    @Model.PageNumber,
-            pageSize:      @Model.PageSize
-        };
+        window.__experienceMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+            position      = Model.SearchPosition ?? "",
+            company       = Model.SearchCompany ?? "",
+            activeFilter  = Model.ActiveFilter ?? "",
+            deletedFilter = Model.DeletedFilter ?? "",
+            dateFrom      = Model.DateFrom ?? "",
+            dateTo        = Model.DateTo ?? "",
+            pageNumber    = Model.PageNumber,
+            pageSize      = Model.PageSize
+        }));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>

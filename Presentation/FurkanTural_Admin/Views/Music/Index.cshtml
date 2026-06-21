@@ -11,17 +11,17 @@
 
 @section Scripts {
     <script>
-        window.__musicMeta = {
-            searchName:   '@Html.Raw(Model.SearchName ?? "")',
-            searchArtist: '@Html.Raw(Model.SearchArtist ?? "")',
-            activeFilter: '@Html.Raw(Model.ActiveFilter ?? "")',
-            deletedFilter:'@Html.Raw(Model.DeletedFilter ?? "")',
-            musicId:      '@Html.Raw(Model.MusicIdFilter?.ToString() ?? "")',
-            dateFrom:     '@Html.Raw(Model.DateFrom ?? "")',
-            dateTo:       '@Html.Raw(Model.DateTo ?? "")',
-            pageNumber:   @Model.PageNumber,
-            pageSize:     @Model.PageSize
-        };
+        window.__musicMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+            searchName    = Model.SearchName ?? "",
+            searchArtist  = Model.SearchArtist ?? "",
+            activeFilter  = Model.ActiveFilter ?? "",
+            deletedFilter = Model.DeletedFilter ?? "",
+            musicId       = Model.MusicIdFilter?.ToString() ?? "",
+            dateFrom      = Model.DateFrom ?? "",
+            dateTo        = Model.DateTo ?? "",
+            pageNumber    = Model.PageNumber,
+            pageSize      = Model.PageSize
+        }));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>

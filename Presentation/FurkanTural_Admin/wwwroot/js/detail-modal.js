@@ -36,8 +36,17 @@
     window.DmFmt = { date: fmtDate, dateUtc: fmtDate };
 
     /* ── Render helpers ───────────────────────────────────── */
+    function escHtml(v) {
+        return String(v)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
     function renderBadge(label, variant) {
-        return `<span class="dm-badge dm-badge--${variant}">${label}</span>`;
+        // label → element içeriği, variant → CSS class attribute. İkisini de escape et:
+        // paylaşılan util; gelecekte serbest-metin label gelirse stored-XSS'i önler.
+        return `<span class="dm-badge dm-badge--${escHtml(variant)}">${escHtml(label)}</span>`;
     }
 
     function renderField(field, record) {

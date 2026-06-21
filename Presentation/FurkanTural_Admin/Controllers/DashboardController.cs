@@ -9,6 +9,35 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
 {
     private readonly IAdminSummaryClient _summaryClient = summaryClient;
 
+    /// <summary>
+    /// Kullanıcı arayüzü tamamlanmış (unlock edilmiş) modüller.
+    /// Yeni bir modül hazır hale geldiğinde bu listeye slug'ını ekle.
+    /// </summary>
+    private static readonly HashSet<string> ImplementedModules =
+    [
+        "subscribers",
+        "skills",
+        "blogs",
+        "blog-images",
+        "categories",
+        "experiences",
+        "educations",
+        "logs",
+        "users",
+        "music",
+        "music-images",
+        "projects",
+        "project-images",
+        "roles",
+        "contact",
+        "contact-template",
+        "statuses",
+        "friends",
+        "messages",
+        "calls",
+        "reports",
+    ];
+
     private static readonly EntityModuleDescriptor[] Modules =
     [
         new("users", "user", "Kullanıcılar",
@@ -117,7 +146,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
                 Actions = m.Actions,
                 TotalCount = summaries[i]?.TotalCount,
                 LastActivityAt = summaries[i]?.LastActivityAt,
-                IsLocked = m.Slug != "subscribers" && m.Slug != "skills" && m.Slug != "blogs" && m.Slug != "blog-images" && m.Slug != "experiences" && m.Slug != "educations" && m.Slug != "logs" && m.Slug != "users" && m.Slug != "music" && m.Slug != "music-images" && m.Slug != "projects" && m.Slug != "project-images" && m.Slug != "roles" && m.Slug != "contact" && m.Slug != "contact-template" && m.Slug != "statuses" && m.Slug != "friends" && m.Slug != "messages" && m.Slug != "calls" && m.Slug != "reports" && m.Slug != "categories",
+                IsLocked = !ImplementedModules.Contains(m.Slug),
                 ManageUrl = m.Slug == "subscribers" ? Url.Action("Index", "Subscriber")
                           : m.Slug == "skills"       ? Url.Action("Index", "Skill")
                           : m.Slug == "blogs"        ? Url.Action("Index", "Blog")

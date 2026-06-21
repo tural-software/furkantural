@@ -11,16 +11,16 @@
 
 @section Scripts {
     <script>
-        window.__blogMeta = {
-            title:         '@Html.Raw(Model.SearchTitle ?? "")',
-            activeFilter:  '@Html.Raw(Model.ActiveFilter ?? "")',
-            deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
-            dateFrom:      '@Html.Raw(Model.DateFrom ?? "")',
-            dateTo:        '@Html.Raw(Model.DateTo ?? "")',
-            blogId:        '@(Model.BlogIdFilter.HasValue ? Model.BlogIdFilter.Value.ToString() : "")',
-            pageNumber:    @Model.PageNumber,
-            pageSize:      @Model.PageSize
-        };
+        window.__blogMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+            title         = Model.SearchTitle ?? "",
+            activeFilter  = Model.ActiveFilter ?? "",
+            deletedFilter = Model.DeletedFilter ?? "",
+            dateFrom      = Model.DateFrom ?? "",
+            dateTo        = Model.DateTo ?? "",
+            blogId        = Model.BlogIdFilter.HasValue ? Model.BlogIdFilter.Value.ToString() : "",
+            pageNumber    = Model.PageNumber,
+            pageSize      = Model.PageSize
+        }));
         window.__blogCategories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
             Model.AvailableCategories.Select(c => new { value = c.Id, label = c.Name, color = c.Color })));
     </script>

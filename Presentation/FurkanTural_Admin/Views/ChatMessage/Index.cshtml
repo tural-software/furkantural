@@ -10,18 +10,18 @@
 
 @section Scripts {
     <script>
-        window.__apiBaseUrl = '@Html.Raw(ViewData["ApiBaseUrl"] ?? "")';
-        window.__messageMeta = {
-            search:        '@Html.Raw(Model.SearchContent ?? "")',
-            usernameFilter:'@Html.Raw(Model.UsernameFilter ?? "")',
-            typeFilter:    '@Html.Raw(Model.TypeFilter ?? "")',
-            activeFilter:  '@Html.Raw(Model.ActiveFilter ?? "")',
-            deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
-            dateFrom:      '@Html.Raw(Model.DateFrom ?? "")',
-            dateTo:        '@Html.Raw(Model.DateTo ?? "")',
-            pageNumber:    @Model.PageNumber,
-            pageSize:      @Model.PageSize
-        };
+        window.__apiBaseUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewData["ApiBaseUrl"] ?? "")));
+        window.__messageMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+            search        = Model.SearchContent ?? "",
+            usernameFilter= Model.UsernameFilter ?? "",
+            typeFilter    = Model.TypeFilter ?? "",
+            activeFilter  = Model.ActiveFilter ?? "",
+            deletedFilter = Model.DeletedFilter ?? "",
+            dateFrom      = Model.DateFrom ?? "",
+            dateTo        = Model.DateTo ?? "",
+            pageNumber    = Model.PageNumber,
+            pageSize      = Model.PageSize
+        }));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>

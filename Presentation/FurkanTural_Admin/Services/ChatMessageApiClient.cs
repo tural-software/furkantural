@@ -18,6 +18,8 @@ public class ChatMessageApiClient(HttpClient httpClient, ILogger<ChatMessageApiC
         try
         {
             // /message/admin sayfalı döner; admin tarafında client-side filtre/sayfalama için büyük sayfa çekiyoruz.
+            // TODO: Teknik borç — pageSize=100000 geçici çözüm. Mesaj hacmi arttıkça bellek/süre yükü oluşur.
+            //       Uzun vadede server-side pagination + sanal kaydırma (virtual scroll) uygulanmalı.
             using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/message/admin?pageNumber=1&pageSize=100000");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             using var response = await _httpClient.SendAsync(request, ct);

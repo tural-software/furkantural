@@ -117,6 +117,18 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
         if (string.IsNullOrEmpty(token)) return Unauthorized();
         if (string.IsNullOrWhiteSpace(file)) return BadRequest();
 
+        // Path-traversal ve protokol-enjeksiyonu koruması:
+        // Dosya adı yalnızca izin verilen karakterleri içerebilir; "..", "/"  ve "\"
+        // içeren ya da izin verilmeyen uzantıya sahip değerler reddedilir.
+        if (file.Contains("..") || file.Contains('/') || file.Contains('\\'))
+            return BadRequest();
+
+        var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp3", ".ogg", ".wav", ".m4a", ".mp4", ".webm", ".mov" };
+        var ext = Path.GetExtension(file);
+        if (string.IsNullOrEmpty(ext) || !allowedExtensions.Contains(ext))
+            return BadRequest();
+
         var (stream, contentType) = await _chatMessageApiClient.GetAttachmentAsync(file, token, cancellationToken);
         if (stream is null) return NotFound();
 

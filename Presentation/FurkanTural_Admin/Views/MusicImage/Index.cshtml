@@ -11,18 +11,18 @@
 
 @section Scripts {
     <script>
-        window.__musicImageMeta = {
-            url:           '@Html.Raw(Model.SearchUrl ?? "")',
-            isCoverFilter: '@Html.Raw(Model.IsCoverFilter ?? "")',
-            activeFilter:  '@Html.Raw(Model.ActiveFilter ?? "")',
-            deletedFilter: '@Html.Raw(Model.DeletedFilter ?? "")',
-            musicId:       '@Html.Raw(Model.MusicIdFilter?.ToString() ?? "")',
-            dateFrom:      '@Html.Raw(Model.DateFrom ?? "")',
-            dateTo:        '@Html.Raw(Model.DateTo ?? "")',
-            pageNumber:    @Model.PageNumber,
-            pageSize:      @Model.PageSize
-        };
-        window.__apiBaseUrl = '@Html.Raw(ViewData["ApiBaseUrl"] ?? "")';
+        window.__musicImageMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+            url           = Model.SearchUrl ?? "",
+            isCoverFilter = Model.IsCoverFilter ?? "",
+            activeFilter  = Model.ActiveFilter ?? "",
+            deletedFilter = Model.DeletedFilter ?? "",
+            musicId       = Model.MusicIdFilter?.ToString() ?? "",
+            dateFrom      = Model.DateFrom ?? "",
+            dateTo        = Model.DateTo ?? "",
+            pageNumber    = Model.PageNumber,
+            pageSize      = Model.PageSize
+        }));
+        window.__apiBaseUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewData["ApiBaseUrl"] ?? "")));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>

@@ -161,6 +161,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
 var app = builder.Build();
@@ -172,6 +173,30 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Güvenlik response header'ları — clickjacking, MIME-sniffing ve içerik enjeksiyonu korumaları.
+// API görsel/medya kaynaklarını farklı origin'den sunduğundan CSP'ye yapılandırılmış API origin'i de dahil edilir.
+var apiOrigin = new Uri(apiBaseUrl).GetLeftPart(UriPartial.Authority);
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    headers["Content-Security-Policy"] =
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com data:; " +
+        $"img-src 'self' data: blob: {apiOrigin}; " +
+        $"media-src 'self' blob: {apiOrigin}; " +
+        $"connect-src 'self' {apiOrigin}; " +
+        "frame-ancestors 'none'; " +
+        "base-uri 'self'; " +
+        "form-action 'self';";
+    await next();
+});
+
 app.UseRouting();
 
 app.UseSession();
