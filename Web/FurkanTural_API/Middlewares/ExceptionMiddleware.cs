@@ -26,13 +26,17 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 
     private static async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
-        // Log to database via ILogService (scoped — must resolve from request scope)
+        // Logu TAZE bir DI scope'tan yaz: exception bir DbUpdateException ise request'in
+        // scoped DbContext'i "faulted" olur ve aynı context üzerinden log yazımı da patlar
+        // (ve sessizce yutulurdu → 500 olur ama hiç log kalmazdı). Yeni scope = temiz DbContext.
         try
         {
-            var logService = context.RequestServices.GetService<ILogService>();
+            using var scope = context.RequestServices
+                .GetRequiredService<IServiceScopeFactory>().CreateScope();
+            var logService = scope.ServiceProvider.GetService<ILogService>();
             if (logService is not null)
             {
-                var clock = context.RequestServices.GetService<IClock>();
+                var clock = scope.ServiceProvider.GetService<IClock>();
                 await logService.CreateAsync(new CreateLogDto
                 {
                     Project = "FurkanTural_API",
