@@ -191,12 +191,14 @@ app.Use(async (context, next) =>
     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     headers["Content-Security-Policy"] =
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline'; " +
+        // Cloudflare, site önünde Web Analytics beacon'ını (static.cloudflareinsights.com)
+        // otomatik enjekte eder; script-src + connect-src'e izin verilmezse CSP engeller.
+        "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "font-src 'self' https://fonts.gstatic.com data:; " +
         $"img-src 'self' data: blob: {apiOrigin}; " +
         $"media-src 'self' blob: {apiOrigin}; " +
-        $"connect-src 'self' {apiOrigin}; " +
+        $"connect-src 'self' {apiOrigin} https://cloudflareinsights.com; " +
         "frame-ancestors 'none'; " +
         "base-uri 'self'; " +
         "form-action 'self';";

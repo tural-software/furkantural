@@ -156,12 +156,13 @@ app.Use(async (context, next) =>
         // Inline scriptler yalnız 'nonce-...' ile; dış scriptler host izniyle (Turnstile, SignalR CDN).
         // 'strict-dynamic' KULLANILMAZ → host allowlist'i ('self' + CDN'ler) geçerli kalır, dış
         // <script src> etiketleri nonce gerektirmez. 'unsafe-inline' nonce varlığında yok sayılır.
-        $"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net https://challenges.cloudflare.com; " +
+        // Cloudflare Web Analytics beacon dış script olduğundan nonce gerektirmez; host izni yeterli.
+        $"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net https://challenges.cloudflare.com https://static.cloudflareinsights.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         "img-src " + imgSrc + "; " +
         // Turnstile widget bir iframe içinde çalışır → frame-src gerekli.
         "frame-src https://challenges.cloudflare.com; " +
-        "connect-src " + connectSrc + "; " +
+        "connect-src " + connectSrc + " https://cloudflareinsights.com; " +
         // getUserMedia/WebRTC için media-src: tarayıcı API kısıtı değil ama kamera/mikrofon
         // blob URL'leri oluşturulabilir.
         "media-src 'self' blob:; " +

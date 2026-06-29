@@ -72,11 +72,12 @@ app.Use(async (context, next) =>
         : $"'self' data: {apiBase}";
     headers["Content-Security-Policy"] =
         "default-src 'none'; " +
-        "script-src 'self' 'unsafe-inline'; " +
+        // Cloudflare Web Analytics beacon'ı (static.cloudflareinsights.com) önde enjekte edilir.
+        "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         $"img-src {imgSrc}; " +
-        "connect-src 'self'; " +
+        "connect-src 'self' https://cloudflareinsights.com; " +
         "manifest-src 'self'; " +
         "worker-src 'self'; " +
         "frame-ancestors 'self'; " +
