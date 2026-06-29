@@ -133,7 +133,7 @@
     var SAT_N = SAT_URLS.length;
     for (var s = 0; s < SAT_N; s++) {
       var tex = satLoader.load(SAT_URLS[s]); tex.colorSpace = THREE.SRGBColorSpace;
-      var rad = 9 + Math.random() * 13;
+      var rad = 6 + Math.random() * 3;             // küçük + sınırlı (≤9) → çarpışma garantisi geçerli kalsın
       var sat = new THREE.Mesh(
         new THREE.SphereGeometry(rad, 28, 28),
         new THREE.MeshStandardMaterial({
@@ -144,15 +144,19 @@
       );
       sat.visible = false;                         // tüm dokular yüklenene kadar gizli
       sat.rotation.set(Math.random() * 6.28, Math.random() * 6.28, 0);
-      // Yörünge parametreleri: her uydu farklı uzaklık (orbitR) + farklı düzlem (inc/rot) + hız.
-      var orbitR = 85 + s * 55;                    // farklı uzaklıklar: 85,140,195,250
+      // Yörünge parametreleri: her uydu KENDİ eşmerkezli (origin) yörüngesinde + farklı düzlem (inc/rot).
+      // ÇARPIŞMA GARANTİSİ: tüm yörüngeler origin merkezli → iki uydu arası minimum mesafe
+      //   daima |orbitR_dış − orbitR_iç| (ters üçgen eşitsizliği, eğim/faz fark etmez).
+      //   Komşu yörünge aralığı 28 > iki kürenin yarıçap toplamı (≤9+9=18) → birbirlerine ASLA değmezler.
+      //   İç yarıçap 40 − küre (≤9) = ≥31 → merkezdeki odak ("Dünya") boşluğunu da kesmezler.
+      var orbitR = 40 + s * 28;                    // çok daha küçük + sıkı yörüngeler: 40,68,96,124
       sat.userData = {
         orbitR: orbitR,
         ang: Math.random() * Math.PI * 2,                              // başlangıç açısı
-        spd: 0.0052 * Math.sqrt(85 / orbitR),                          // dış yörünge daha yavaş
+        spd: 0.0013 * Math.sqrt(40 / orbitR),                          // çok daha yavaş; dış yörünge daha da yavaş
         inc: (s - (SAT_N - 1) / 2) * 0.5 + (Math.random() - 0.5) * 0.2, // yörünge eğimi
         rot: Math.random() * Math.PI * 2,                              // yörünge düzlemi Y-dönüşü
-        rx: (Math.random() - 0.5) * 0.004, ry: 0.002 + Math.random() * 0.004
+        rx: (Math.random() - 0.5) * 0.0016, ry: 0.0008 + Math.random() * 0.0016 // çok daha yavaş kendi-ekseni dönüşü
       };
       scene.add(sat);
       sats.push(sat);

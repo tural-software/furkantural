@@ -12,7 +12,7 @@
 
         @if (Model != null && Model.Count > 0)
         {
-            <div class="songs-list">
+            <div class="songs-list" data-collapse="row">
                 @foreach (var song in Model)
                 {
                     var songMeta = string.Join(" • ", new[]

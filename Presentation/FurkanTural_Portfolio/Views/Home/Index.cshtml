@@ -17,10 +17,7 @@
 @await Html.PartialAsync("_ContactSection")
 
 @section Scripts {
+    @* Turnstile site key _ContactSection.cshtml'de data-sitekey ile sunucu-tarafı render edilir;
+       api.js widget'ı otomatik render eder (explicit render gerekmez). *@
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script>
-        window.portfolioConfig = {
-            turnstileSiteKey: '@Html.Raw(ViewBag.TurnstileSiteKey ?? "")'
-        };
-    </script>
 }

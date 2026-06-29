@@ -8,7 +8,7 @@
         </div>
         @if (Model != null && Model.Count > 0)
         {
-            <div class="timeline timeline--alt">
+            <div class="timeline timeline--alt" data-collapse="4">
                 @foreach (var edu in Model)
                 {
                     var start = edu.StartDate?.ToString("MMMM yyyy");

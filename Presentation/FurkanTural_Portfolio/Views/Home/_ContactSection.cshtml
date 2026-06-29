@@ -23,7 +23,12 @@
                     <textarea id="contactMessage" name="Message" class="form-input form-textarea" maxlength="2000"
                               required aria-required="true" rows="5"></textarea>
                 </div>
-                <div class="cf-turnstile" data-sitekey="__TURNSTILE_SITE_KEY__" data-callback="onTurnstileSuccess"></div>
+                @if (!string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string))
+                {
+                    @* Site key sunucu-tarafı render edilir → api.js otomatik render'ında doğru anahtar
+                       hazır olur. (Eski placeholder + JS-swap deseni race koşulu yüzünden 400020 veriyordu.) *@
+                    <div class="cf-turnstile" data-sitekey="@ViewBag.TurnstileSiteKey" data-callback="onTurnstileSuccess"></div>
+                }
                 <input type="hidden" id="turnstileToken" name="TurnstileToken" />
                 <button type="submit" id="contactSubmitBtn" class="btn btn-primary btn-block">
                     <span id="contactSubmitText">@SharedLocalizer["Contact_Form_Submit"]</span>

@@ -73,14 +73,8 @@ function onTurnstileSuccess(token) {
     const form = document.getElementById('contactForm');
     if (!form) return;
 
-    // Set Turnstile site key after page load
-    const cfg = window.portfolioConfig;
-    if (cfg && cfg.turnstileSiteKey) {
-        const widget = form.querySelector('.cf-turnstile');
-        if (widget && widget.dataset.sitekey === '__TURNSTILE_SITE_KEY__') {
-            widget.dataset.sitekey = cfg.turnstileSiteKey;
-        }
-    }
+    // Turnstile site key artık _ContactSection.cshtml'de sunucu-tarafı render ediliyor
+    // (data-sitekey="@ViewBag.TurnstileSiteKey"); istemci-tarafı swap'e gerek yok.
 
     const submitBtn = document.getElementById('contactSubmitBtn');
     const submitText = document.getElementById('contactSubmitText');

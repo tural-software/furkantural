@@ -228,6 +228,20 @@ main:focus { outline: none; }
 .section-desc { color: var(--color-text-muted); max-width: 600px; margin: 0 auto; }
 .section-empty { color: var(--color-text-muted); text-align: center; padding: 2rem 0; }
 
+/* ---- "Devamını Göster" — uzun dinamik listeleri katlama ---- */
+/* collapse.js, [data-collapse] kapsayıcısında limitten sonraki öğelere
+   .collapse-item--hidden ekler ve altına .collapse-toggle-wrap > butonu enjekte eder.
+   JS yoksa bu sınıflar hiç eklenmez → içerik tam görünür kalır (ilerlemeli geliştirme). */
+.collapse-item--hidden { display: none !important; }
+.collapse-toggle-wrap { display: flex; justify-content: center; margin-top: 2.25rem; }
+/* JS, öğe sayısı limitin altındayken wrap'i [hidden] ile gizler. Üstteki display:flex
+   kuralı UA'nın [hidden]{display:none}'ıyla aynı özgüllükte olup onu ezdiğinden, daha
+   yüksek özgüllüklü bu kural olmadan boş bir buton görünür kalırdı. */
+.collapse-toggle-wrap[hidden] { display: none; }
+@keyframes collapseItemIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.collapse-item--in { animation: collapseItemIn 0.4s ease both; }
+@media (prefers-reduced-motion: reduce) { .collapse-item--in { animation: none; } }
+
 /* Error / 404 */
 .error-section { min-height: 70vh; display: flex; align-items: center; }
 .error-page { text-align: center; max-width: 560px; margin: 0 auto; }
@@ -425,7 +439,10 @@ main:focus { outline: none; }
 .song-card__name { font-weight: 600; }
 a.song-card__link { color: inherit; }
 a.song-card__link:hover { color: var(--color-accent); }
-.song-card__sub { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 0.6rem; }
+/* Meta (sanatçı•parça•yıl) ile tür HER ZAMAN ayrı satırda (kolon dizilim) → uzun
+   isimde tür alt satıra "kayıp" kart yüksekliğini bozmasın; tüm kartlar 2-satır
+   alt-bilgiyle eşit yükseklikte kalır. */
+.song-card__sub { display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; }
 .song-card__meta { font-size: 0.8rem; color: var(--color-text-muted); }
 .song-card__genre { font-size: 0.8rem; color: var(--color-accent); }
 .song-card__main { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }

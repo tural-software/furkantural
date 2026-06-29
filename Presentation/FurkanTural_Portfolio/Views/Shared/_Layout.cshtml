@@ -86,7 +86,10 @@
         </div>
     </nav>
 
-    <main id="main" tabindex="-1">
+    @* data-collapse-*: "Devamını Göster" buton etiketleri tek kaynaktan (lokalize) → collapse.js okur. *@
+    <main id="main" tabindex="-1"
+          data-collapse-more="@SharedLocalizer["Common_ShowMore"]"
+          data-collapse-less="@SharedLocalizer["Common_ShowLess"]">
         @RenderBody()
     </main>
 
@@ -109,6 +112,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/pwa.js" asp-append-version="true"></script>
     <script src="~/js/reveal.js" asp-append-version="true" defer></script>
+    <script src="~/js/collapse.js" asp-append-version="true" defer></script>
     <script src="~/js/background-three.js" asp-append-version="true" defer></script>
     <script src="~/js/portfolio-3d.js" asp-append-version="true" defer></script>
     <script src="~/js/lightbox.js" asp-append-version="true" defer></script>

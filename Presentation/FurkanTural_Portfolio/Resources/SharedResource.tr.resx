@@ -47,7 +47,7 @@
   <!-- About -->
   <data name="About_Eyebrow" xml:space="preserve"><value>Hakkımda</value></data>
   <data name="About_Title" xml:space="preserve"><value>Merhaba! Ben Furkan</value></data>
-  <data name="About_Desc" xml:space="preserve"><value>Yazılım ve müziğin kesişim noktasında yaşayan bir geliştirici ve müzisyenim. Modern web teknolojileriyle uçtan uca, performanslı ve ölçeklenebilir uygulamalar geliştiriyor; aynı titizliği beste ve ses tasarımına taşıyorum. Teknik derinliği yaratıcı bir bakışla birleştirerek fikirleri çalışan ürünlere dönüştürmeyi seviyorum.</value></data>
+  <data name="About_Desc" xml:space="preserve"><value>Yazılım ve müziğin kesişim noktasında yaşayan bir geliştirici ve ai müzik prodüktörüyüm. Modern web teknolojileriyle uçtan uca, performanslı ve ölçeklenebilir uygulamalar geliştiriyor; aynı titizliği beste ve ses tasarımına taşıyorum. Teknik derinliği yaratıcı bir bakışla birleştirerek fikirleri çalışan ürünlere dönüştürmeyi seviyorum.</value></data>
   <data name="About_Stat_Skills" xml:space="preserve"><value>Yetenek</value></data>
   <data name="About_Stat_Projects" xml:space="preserve"><value>Proje</value></data>
   <data name="About_Stat_Songs" xml:space="preserve"><value>Beste</value></data>
@@ -122,6 +122,10 @@
   <data name="Skills_Empty" xml:space="preserve"><value>Yetenekler yakında eklenecek.</value></data>
   <data name="Projects_Empty" xml:space="preserve"><value>Projeler yakında eklenecek.</value></data>
   <data name="Songs_Empty" xml:space="preserve"><value>Müzik çalışmaları yakında eklenecek.</value></data>
+
+  <!-- Ortak UI -->
+  <data name="Common_ShowMore" xml:space="preserve"><value>Devamını Göster</value></data>
+  <data name="Common_ShowLess" xml:space="preserve"><value>Daha Az Göster</value></data>
 
   <!-- Consent -->
   <data name="Consent_Title" xml:space="preserve"><value>Çerez Bildirimi</value></data>
