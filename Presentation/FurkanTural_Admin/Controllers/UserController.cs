@@ -154,8 +154,8 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var ok = await _userApiClient.DeleteAsync(id, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Silme işlemi başarısız oldu." });
+        var result = await _userApiClient.DeleteAsync(id, token, cancellationToken);
+        return result.ToActionResult("Silme işlemi başarısız oldu.");
     }
 
     [HttpPost]
@@ -166,8 +166,8 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var ok = await _userApiClient.ToggleActiveAsync(id, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Durum değiştirme işlemi başarısız oldu." });
+        var result = await _userApiClient.ToggleActiveAsync(id, token, cancellationToken);
+        return result.ToActionResult("Durum değiştirme işlemi başarısız oldu.");
     }
 
     [HttpPost]
@@ -178,8 +178,8 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var ok = await _userApiClient.RestoreAsync(id, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Geri yükleme işlemi başarısız oldu." });
+        var result = await _userApiClient.RestoreAsync(id, token, cancellationToken);
+        return result.ToActionResult("Geri yükleme işlemi başarısız oldu.");
     }
 
     [HttpPost]
@@ -192,8 +192,8 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var ok = await _userApiClient.CreateAsync(dto, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Kayıt oluşturulurken bir hata oluştu." });
+        var result = await _userApiClient.CreateAsync(dto, token, cancellationToken);
+        return result.ToActionResult("Kayıt oluşturulurken bir hata oluştu.");
     }
 
     [HttpPost]
@@ -207,8 +207,8 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var ok = await _userApiClient.UpdateAsync(id, dto, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Kayıt güncellenirken bir hata oluştu." });
+        var result = await _userApiClient.UpdateAsync(id, dto, token, cancellationToken);
+        return result.ToActionResult("Kayıt güncellenirken bir hata oluştu.");
     }
 
     [HttpPost]
@@ -222,7 +222,7 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
         if (avatarFile is null || avatarFile.Length == 0)
             return BadRequest(new { message = "Avatar dosyası zorunludur." });
 
-        var ok = await _userApiClient.UploadAvatarAsync(id, avatarFile, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Avatar yüklenirken bir hata oluştu." });
+        var result = await _userApiClient.UploadAvatarAsync(id, avatarFile, token, cancellationToken);
+        return result.ToActionResult("Avatar yüklenirken bir hata oluştu.");
     }
 }

@@ -5,6 +5,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+// Tüm API çağrılarını saran hata-loglama handler'ı: başarısız yanıtları API'nin AdminOnly log
+// uç noktasına iletir → hatalar SQL log tablosunda görünür. ConfigureHttpClientDefaults sayesinde
+// her typed/named HttpClient'a otomatik uygulanır (tek tek eklemeye gerek yok).
+builder.Services.AddTransient<ApiFailureLoggingHandler>();
+builder.Services.ConfigureHttpClientDefaults(http => http.AddHttpMessageHandler<ApiFailureLoggingHandler>());
+
 builder.Services.Configure<ApiOptions>(builder.Configuration.GetSection("Api"));
 
 var apiBaseUrl = builder.Configuration["Api:BaseUrl"]

@@ -162,8 +162,8 @@ public class SkillController(ISkillApiClient skillApiClient) : Controller
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var ok = await _skillApiClient.DeleteAsync(id, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Silme işlemi başarısız oldu." });
+        var result = await _skillApiClient.DeleteAsync(id, token, cancellationToken);
+        return result.ToActionResult("Silme işlemi başarısız oldu.");
     }
 
     [HttpPost]
@@ -174,8 +174,8 @@ public class SkillController(ISkillApiClient skillApiClient) : Controller
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var ok = await _skillApiClient.ToggleActiveAsync(id, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Durum değiştirme işlemi başarısız oldu." });
+        var result = await _skillApiClient.ToggleActiveAsync(id, token, cancellationToken);
+        return result.ToActionResult("Durum değiştirme işlemi başarısız oldu.");
     }
 
     [HttpPost]
@@ -186,8 +186,8 @@ public class SkillController(ISkillApiClient skillApiClient) : Controller
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var ok = await _skillApiClient.RestoreAsync(id, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Geri yükleme işlemi başarısız oldu." });
+        var result = await _skillApiClient.RestoreAsync(id, token, cancellationToken);
+        return result.ToActionResult("Geri yükleme işlemi başarısız oldu.");
     }
 
     [HttpPost]
@@ -203,8 +203,8 @@ public class SkillController(ISkillApiClient skillApiClient) : Controller
         if (dto.Proficiency < 0 || dto.Proficiency > 100)
             return BadRequest(new { message = "Yetkinlik değeri 0-100 arasında olmalıdır." });
 
-        var ok = await _skillApiClient.CreateAsync(dto, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Kayıt oluşturulurken bir hata oluştu." });
+        var result = await _skillApiClient.CreateAsync(dto, token, cancellationToken);
+        return result.ToActionResult("Kayıt oluşturulurken bir hata oluştu.");
     }
 
     [HttpPost]
@@ -221,7 +221,7 @@ public class SkillController(ISkillApiClient skillApiClient) : Controller
         if (dto.Proficiency < 0 || dto.Proficiency > 100)
             return BadRequest(new { message = "Yetkinlik değeri 0-100 arasında olmalıdır." });
 
-        var ok = await _skillApiClient.UpdateAsync(id, dto, token, cancellationToken);
-        return ok ? Ok() : StatusCode(500, new { message = "Kayıt güncellenirken bir hata oluştu." });
+        var result = await _skillApiClient.UpdateAsync(id, dto, token, cancellationToken);
+        return result.ToActionResult("Kayıt güncellenirken bir hata oluştu.");
     }
 }

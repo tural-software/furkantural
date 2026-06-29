@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using FurkanTural_Admin.Models.Common;
 using FurkanTural_Admin.Models.User;
 using FurkanTural_Admin.Models.Wrappers;
 
@@ -55,7 +56,7 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
         }
     }
 
-    public async Task<bool> CreateAsync(UserFormDto dto, string token, CancellationToken ct = default)
+    public async Task<ApiCallResult> CreateAsync(UserFormDto dto, string token, CancellationToken ct = default)
     {
         try
         {
@@ -65,16 +66,16 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request, ct);
-            return response.IsSuccessStatusCode;
+            return await response.ToApiCallResultAsync(ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Kullanıcı oluşturulurken hata oluştu.");
-            return false;
+            return ApiCallResult.Fail(0, "API'ye ulaşılamadı.");
         }
     }
 
-    public async Task<bool> UpdateAsync(int id, UserFormDto dto, string token, CancellationToken ct = default)
+    public async Task<ApiCallResult> UpdateAsync(int id, UserFormDto dto, string token, CancellationToken ct = default)
     {
         try
         {
@@ -84,16 +85,16 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request, ct);
-            return response.IsSuccessStatusCode;
+            return await response.ToApiCallResultAsync(ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Kullanıcı güncellenirken hata oluştu: {Id}", id);
-            return false;
+            return ApiCallResult.Fail(0, "API'ye ulaşılamadı.");
         }
     }
 
-    public async Task<bool> UploadAvatarAsync(int id, IFormFile file, string token, CancellationToken ct = default)
+    public async Task<ApiCallResult> UploadAvatarAsync(int id, IFormFile file, string token, CancellationToken ct = default)
     {
         try
         {
@@ -107,16 +108,16 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request, ct);
-            return response.IsSuccessStatusCode;
+            return await response.ToApiCallResultAsync(ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Avatar yüklenirken hata oluştu: {Id}", id);
-            return false;
+            return ApiCallResult.Fail(0, "API'ye ulaşılamadı.");
         }
     }
 
-    public async Task<bool> DeleteAsync(int id, string token, CancellationToken ct = default)
+    public async Task<ApiCallResult> DeleteAsync(int id, string token, CancellationToken ct = default)
     {
         try
         {
@@ -124,16 +125,16 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             using var response = await _httpClient.SendAsync(request, ct);
-            return response.IsSuccessStatusCode;
+            return await response.ToApiCallResultAsync(ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Kullanıcı silinirken hata oluştu: {Id}", id);
-            return false;
+            return ApiCallResult.Fail(0, "API'ye ulaşılamadı.");
         }
     }
 
-    public async Task<bool> ToggleActiveAsync(int id, string token, CancellationToken ct = default)
+    public async Task<ApiCallResult> ToggleActiveAsync(int id, string token, CancellationToken ct = default)
     {
         try
         {
@@ -141,16 +142,16 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             using var response = await _httpClient.SendAsync(request, ct);
-            return response.IsSuccessStatusCode;
+            return await response.ToApiCallResultAsync(ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Kullanıcı aktiflik durumu değiştirilirken hata oluştu: {Id}", id);
-            return false;
+            return ApiCallResult.Fail(0, "API'ye ulaşılamadı.");
         }
     }
 
-    public async Task<bool> RestoreAsync(int id, string token, CancellationToken ct = default)
+    public async Task<ApiCallResult> RestoreAsync(int id, string token, CancellationToken ct = default)
     {
         try
         {
@@ -158,12 +159,12 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             using var response = await _httpClient.SendAsync(request, ct);
-            return response.IsSuccessStatusCode;
+            return await response.ToApiCallResultAsync(ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Kullanıcı geri yüklenirken hata oluştu: {Id}", id);
-            return false;
+            return ApiCallResult.Fail(0, "API'ye ulaşılamadı.");
         }
     }
 }
