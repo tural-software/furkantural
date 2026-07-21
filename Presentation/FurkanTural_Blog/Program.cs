@@ -1,4 +1,4 @@
-using FurkanTural_Blog;
+﻿using FurkanTural_Blog;
 using FurkanTural_Blog.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,8 +74,9 @@ app.Use(async (context, next) =>
         "default-src 'none'; " +
         // Cloudflare Web Analytics beacon'ı (static.cloudflareinsights.com) önde enjekte edilir.
         "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; " +
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-        "font-src 'self' https://fonts.gstatic.com; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
+        "font-src 'self'; " +
         $"img-src {imgSrc}; " +
         "connect-src 'self' https://cloudflareinsights.com; " +
         "manifest-src 'self'; " +

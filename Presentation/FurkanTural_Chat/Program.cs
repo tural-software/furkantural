@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using FurkanTural_Chat;
 using FurkanTural_Chat.Middlewares;
@@ -170,6 +170,9 @@ app.Use(async (context, next) =>
         // Cloudflare Web Analytics beacon dış script olduğundan nonce gerektirmez; host izni yeterli.
         $"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net https://challenges.cloudflare.com https://static.cloudflareinsights.com; " +
         "style-src 'self' 'unsafe-inline'; " +
+        // font-src ZORUNLU: default-src 'none' olduğu için bu direktif yokken
+        // kendi sunucumuzdaki Inter dosyaları da engellenirdi.
+        "font-src 'self'; " +
         "img-src " + imgSrc + "; " +
         // Turnstile widget bir iframe içinde çalışır → frame-src gerekli.
         "frame-src https://challenges.cloudflare.com; " +

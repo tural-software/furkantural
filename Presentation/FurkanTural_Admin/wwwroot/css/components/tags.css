@@ -1,5 +1,5 @@
 .tag {
-    font-size: .7rem;
+    font-size: var(--fs-2xs);
     background-color: var(--bg-card-solid);
     color: var(--text-main);
     border: 1px solid var(--border-color);

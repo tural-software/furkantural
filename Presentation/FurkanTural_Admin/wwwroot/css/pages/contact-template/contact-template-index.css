@@ -8,7 +8,7 @@
     display: flex;
     align-items: center;
     gap: .4rem;
-    font-size: .72rem;
+    font-size: var(--fs-2xs);
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: .06em;
@@ -73,9 +73,9 @@
 .stat-box__icon--active  { background: rgba(34, 197, 94, .15);  color: #4ade80; }
 .stat-box__icon--passive { background: rgba(239, 68, 68, .15);  color: #f87171; }
 .stat-box__icon--deleted { background: rgba(148, 163, 184, .12); color: #94a3b8; }
-.stat-box__label { font-size: .72rem; color: var(--text-dim); margin: 0 0 .1rem; }
-.stat-box__value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; color: var(--text-main); }
-.stat-box__unit  { font-size: .68rem; color: var(--text-dim); }
+.stat-box__label { font-size: var(--fs-2xs); color: var(--text-dim); margin: 0 0 .1rem; }
+.stat-box__value { font-size: var(--fs-2xl); font-weight: 700; line-height: 1.1; color: var(--text-main); }
+.stat-box__unit  { font-size: var(--fs-2xs); color: var(--text-dim); }
 
 /* ── Filter bar ────────────────────────────────────────────── */
 .filter-bar {
@@ -90,7 +90,7 @@
     gap: .3rem;
 }
 .filter-group label {
-    font-size: .68rem;
+    font-size: var(--fs-2xs);
     color: var(--text-dim);
     letter-spacing: .05em;
     text-transform: uppercase;
@@ -102,7 +102,7 @@
     color: var(--text-main);
     border-radius: var(--radius-md);
     padding: .6rem .875rem;
-    font-size: .875rem;
+    font-size: var(--fs-md);
     font-family: var(--font-sans);
     outline: none;
     transition: border-color .2s;
@@ -134,12 +134,12 @@
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: .875rem;
+    font-size: var(--fs-md);
 }
 .data-table th {
     padding: .75rem 1rem;
     text-align: left;
-    font-size: .68rem;
+    font-size: var(--fs-2xs);
     font-weight: 600;
     color: var(--text-dim);
     text-transform: uppercase;
@@ -214,7 +214,7 @@
     gap: .75rem;
     padding: .875rem 1rem;
     border-top: 1px solid var(--border-color);
-    font-size: .82rem;
+    font-size: var(--fs-sm);
     color: var(--text-dim);
 }
 .pagination-info { white-space: nowrap; }
@@ -228,7 +228,7 @@
     border: 1px solid var(--border-color);
     background: transparent;
     color: var(--text-main);
-    font-size: .82rem;
+    font-size: var(--fs-sm);
     cursor: pointer;
     font-family: var(--font-sans);
     transition: all .2s;
@@ -250,7 +250,7 @@
     text-align: center;
     padding: 3rem 1rem;
     color: var(--text-dim);
-    font-size: .875rem;
+    font-size: var(--fs-md);
 }
 
 /* ── Status badges ──────────────────────────────────────────── */
@@ -260,7 +260,7 @@
     gap: .3rem;
     padding: .22rem .55rem;
     border-radius: 999px;
-    font-size: .71rem;
+    font-size: var(--fs-2xs);
     font-weight: 600;
     line-height: 1;
 }

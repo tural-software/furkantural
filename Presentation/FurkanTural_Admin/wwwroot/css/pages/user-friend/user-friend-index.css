@@ -8,7 +8,7 @@
     display: flex;
     align-items: center;
     gap: .4rem;
-    font-size: .72rem;
+    font-size: var(--fs-2xs);
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: .06em;
@@ -73,9 +73,9 @@
 .stat-box__icon--active  { background: rgba(34, 197, 94, .15);  color: #4ade80; }
 .stat-box__icon--passive { background: rgba(239, 68, 68, .15);  color: #f87171; }
 .stat-box__icon--deleted { background: rgba(148, 163, 184, .12); color: #94a3b8; }
-.stat-box__label { font-size: .72rem; color: var(--text-dim); margin: 0 0 .1rem; }
-.stat-box__value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; color: var(--text-main); }
-.stat-box__unit  { font-size: .68rem; color: var(--text-dim); }
+.stat-box__label { font-size: var(--fs-2xs); color: var(--text-dim); margin: 0 0 .1rem; }
+.stat-box__value { font-size: var(--fs-2xl); font-weight: 700; line-height: 1.1; color: var(--text-main); }
+.stat-box__unit  { font-size: var(--fs-2xs); color: var(--text-dim); }
 
 /* ── Filter bar ───────────────────────────────────────────── */
 .filter-bar {
@@ -90,7 +90,7 @@
     gap: .3rem;
 }
 .filter-group label {
-    font-size: .68rem;
+    font-size: var(--fs-2xs);
     color: var(--text-dim);
     letter-spacing: .05em;
     text-transform: uppercase;
@@ -102,7 +102,7 @@
     color: var(--text-main);
     border-radius: var(--radius-md);
     padding: .6rem .875rem;
-    font-size: .875rem;
+    font-size: var(--fs-md);
     font-family: var(--font-sans);
     outline: none;
     transition: border-color .2s;
@@ -123,7 +123,7 @@
     pointer-events: none;
 }
 .filter-date-row { display: flex; align-items: center; gap: .45rem; }
-.filter-date-sep  { font-size: .75rem; color: var(--text-dim); }
+.filter-date-sep  { font-size: var(--fs-xs); color: var(--text-dim); }
 .filter-actions   { display: flex; gap: .45rem; align-items: flex-end; margin-left: auto; }
 
 /* ── Data table ───────────────────────────────────────────── */
@@ -131,12 +131,12 @@
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: .875rem;
+    font-size: var(--fs-md);
 }
 .data-table th {
     padding: .75rem 1rem;
     text-align: left;
-    font-size: .68rem;
+    font-size: var(--fs-2xs);
     font-weight: 600;
     color: var(--text-dim);
     text-transform: uppercase;
@@ -162,7 +162,7 @@
     gap: .3rem;
     padding: .22rem .55rem;
     border-radius: 999px;
-    font-size: .71rem;
+    font-size: var(--fs-2xs);
     font-weight: 600;
 }
 .sbadge svg { width: .65rem; height: .65rem; }
@@ -203,16 +203,16 @@
     flex-wrap: wrap;
     gap: .75rem;
 }
-.tbl-footer__left  { font-size: .8rem; color: var(--text-dim); display: flex; align-items: center; gap: .4rem; }
+.tbl-footer__left  { font-size: var(--fs-sm); color: var(--text-dim); display: flex; align-items: center; gap: .4rem; }
 .tbl-footer__right { display: flex; align-items: center; gap: .75rem; }
-.tbl-footer__range { font-size: .8rem; color: var(--text-dim); }
+.tbl-footer__range { font-size: var(--fs-sm); color: var(--text-dim); }
 .page-size-sel {
     background: var(--bg-card-solid);
     border: 1px solid var(--border-color);
     color: var(--text-main);
     border-radius: var(--radius-md);
     padding: .25rem .5rem;
-    font-size: .8rem;
+    font-size: var(--fs-sm);
 }
 .pagination { display: flex; gap: .25rem; align-items: center; }
 .pag-btn {
@@ -223,7 +223,7 @@
     border: 1px solid var(--border-color);
     background: transparent;
     color: var(--text-dim);
-    font-size: .8rem;
+    font-size: var(--fs-sm);
     cursor: pointer;
     display: grid;
     place-items: center;
@@ -234,7 +234,8 @@
 .pag-btn:hover      { background: rgba(var(--accent-rgb), .1); color: var(--accent); border-color: var(--accent); }
 .pag-btn--active    { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
 .pag-btn--off       { pointer-events: none; opacity: .35; }
-.pag-ellipsis       { font-size: .8rem; color: var(--text-dim); padding: 0 .2rem; }
+.pag-ellipsis       { font-size: var(--fs-sm); color: var(--text-dim); padding: 0 .2rem; }
 
 /* ── Empty row ────────────────────────────────────────────── */
-.empty-row td { text-align: center; color: var(--text-dim); padding: 2.5rem 1rem; font-size: .875rem; }
+.empty-row td { text-align: center; color: var(--text-dim); padding: 2.5rem 1rem; font-size: var(--fs-md); }
+

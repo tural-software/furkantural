@@ -1,4 +1,4 @@
-using FurkanTural_Portfolio;
+﻿using FurkanTural_Portfolio;
 using FurkanTural_Portfolio.Services;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
@@ -93,8 +93,9 @@ app.Use(async (context, next) =>
         "default-src 'self'; " +
         // static.cloudflareinsights.com → Cloudflare Web Analytics beacon (önde enjekte edilir).
         "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com https://static.cloudflareinsights.com; " +
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-        "font-src 'self' https://fonts.gstatic.com; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
+        "font-src 'self'; " +
         "img-src 'self' https: data:; " +
         "connect-src 'self' https://cloudflareinsights.com; " +
         "frame-src https://challenges.cloudflare.com; " +

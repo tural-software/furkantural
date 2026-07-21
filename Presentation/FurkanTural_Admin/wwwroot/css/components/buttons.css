@@ -2,7 +2,7 @@
     background: var(--accent);
     color: #0f172a;
     font-weight: 600;
-    font-size: .9rem;
+    font-size: var(--fs-md);
     border: 0;
     border-radius: var(--radius-md);
     padding: .75rem 1rem;
@@ -30,7 +30,7 @@
     border: 1px solid var(--border-color);
     color: var(--text-main);
     font-weight: 500;
-    font-size: .9rem;
+    font-size: var(--fs-md);
     border-radius: var(--radius-md);
     padding: .75rem 1rem;
     cursor: pointer;

@@ -1,4 +1,33 @@
 /* ================================================
+   Inter — kendi sunucumuzda barındırılıyor (SIL Open Font License 1.1).
+   Telif ve lisans metni: wwwroot/fonts/OFL.txt (dağıtımda birlikte kalmalı).
+
+   Değişken (variable) font: 300–800 arası tüm ağırlıklar TEK dosyada, bu yüzden
+   ağırlık başına ayrı istek yok.
+
+   İki alt küme de ZORUNLU — Türkçe ikiye bölünmüş durumda:
+     latin      → 'ı' (U+0131), ç ö ü ve tüm ASCII
+     latin-ext  → 'ğ Ğ ş Ş İ' (U+011E–U+015F)
+   Biri eksik kalırsa metnin yalnızca bir kısmı Inter, kalanı yedek fontla çizilir.
+================================================ */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 300 800;
+    font-display: swap;
+    src: url('../fonts/inter-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 300 800;
+    font-display: swap;
+    src: url('../fonts/inter-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ================================================
    Furkan Tural Portfolio — site.css
    Dark Navy theme (matches Admin palette)
 ================================================ */
@@ -29,7 +58,24 @@
     --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
     --nav-height: 64px;
     --transition: 0.2s ease;
-    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Inter', Roboto, 'Segoe UI', sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* Ortak tipografi ölçeği — DÖRT PROJEDE DE BİREBİR AYNI.
+       Bir değeri burada değiştirirsen diğer üç dosyada da değiştir: bu ölçeğin
+       tek amacı siteler arası eşitlik, tek dosyada sapması onu işlevsiz kılar.
+       px karşılıkları 16px kök font-size'a göredir. */
+    --fs-3xs: 0.625rem;   /* 10px — büyük harfli mikro rozet */
+    --fs-2xs: 0.6875rem;  /* 11px — etiket, meta, tablo üstbilgisi */
+    --fs-xs: 0.75rem;     /* 12px */
+    --fs-sm: 0.8125rem;   /* 13px — yoğun arayüz metni */
+    --fs-md: 0.875rem;    /* 14px — düğme, form, gezinme bağlantısı */
+    --fs-base: 1rem;      /* 16px — gövde metni */
+    --fs-lg: 1.125rem;    /* 18px — kart başlığı, giriş paragrafı, h4 */
+    --fs-xl: 1.25rem;     /* 20px — h3 */
+    --fs-2xl: 1.5rem;     /* 24px — h2, sayfa ve legal başlığı */
+    --fs-3xl: 1.875rem;   /* 30px — istatistik sayısı */
+    --fs-title: clamp(1.75rem, 4vw, 2.5rem); /* bölüm ve detay başlığı */
+    --fs-hero: clamp(2.5rem, 6vw, 4rem); /* açılış başlığı — Portfolio esas alındı */
 }
 
 [data-theme="light"] {
@@ -113,7 +159,7 @@ a:hover { color: var(--color-accent-hover); }
     padding: 0.4rem 0.75rem;
     border-radius: var(--radius-sm);
     color: var(--color-text-muted);
-    font-size: 0.875rem;
+    font-size: var(--fs-md);
     font-weight: 500;
     transition: background var(--transition), color var(--transition);
 }
@@ -149,7 +195,7 @@ main:focus { outline: none; }
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     color: var(--color-text);
-    font-size: .8rem;
+    font-size: var(--fs-sm);
     padding: .5rem .75rem;
     line-height: 1;
     cursor: pointer;
@@ -219,12 +265,12 @@ main:focus { outline: none; }
 .section-header { text-align: center; margin-bottom: 3rem; }
 .section-eyebrow {
     display: inline-block;
-    font-size: 0.75rem; font-weight: 600;
+    font-size: var(--fs-xs); font-weight: 600;
     letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--color-accent);
     margin-bottom: 0.75rem;
 }
-.section-title { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; margin-bottom: 1rem; }
+.section-title { font-size: var(--fs-title); font-weight: 800; margin-bottom: 1rem; }
 .section-desc { color: var(--color-text-muted); max-width: 600px; margin: 0 auto; }
 .section-empty { color: var(--color-text-muted); text-align: center; padding: 2rem 0; }
 
@@ -283,9 +329,9 @@ main:focus { outline: none; }
     display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;
     position: relative; z-index: 1;
 }
-.hero-greeting { color: var(--color-accent); font-size: 1rem; font-weight: 500; margin-bottom: 0.5rem; }
-.hero-name { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; line-height: 1.1; margin-bottom: 1rem; }
-.hero-tagline { font-size: 1.25rem; color: var(--color-text-muted); margin-bottom: 2rem; }
+.hero-greeting { color: var(--color-accent); font-size: var(--fs-base); font-weight: 500; margin-bottom: 0.5rem; }
+.hero-name { font-size: var(--fs-hero); font-weight: 800; line-height: 1.1; margin-bottom: 1rem; }
+.hero-tagline { font-size: var(--fs-xl); color: var(--color-text-muted); margin-bottom: 2rem; }
 .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
 .hero-visual { display: flex; justify-content: center; }
 .hero-avatar {
@@ -310,7 +356,7 @@ main:focus { outline: none; }
     display: inline-flex; align-items: center; justify-content: center;
     gap: 0.4rem;
     padding: 0.6rem 1.4rem;
-    font-family: var(--font-sans); font-size: 0.875rem; font-weight: 600;
+    font-family: var(--font-sans); font-size: var(--fs-md); font-weight: 600;
     border-radius: var(--radius-sm);
     cursor: pointer;
     border: 1px solid transparent;
@@ -323,20 +369,20 @@ main:focus { outline: none; }
 .btn-primary:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); color: #0f172a; box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.45); }
 .btn-outline { background: transparent; color: var(--color-accent); border-color: var(--color-accent); }
 .btn-outline:hover { background: var(--color-bg-card); color: var(--color-accent-hover); border-color: var(--color-accent); }
-.btn-sm { padding: 0.35rem 0.9rem; font-size: 0.8rem; }
-.btn-lg { padding: 0.85rem 2rem; font-size: 1rem; }
+.btn-sm { padding: 0.35rem 0.9rem; font-size: var(--fs-sm); }
+.btn-lg { padding: 0.85rem 2rem; font-size: var(--fs-base); }
 .btn-block { width: 100%; }
 
 /* ---- About ---- */
 /* Section'lar saydam → tüm-sayfa 3D arkaplan her bölümde eşit görünür (banding yok). */
 .about-section { background: transparent; }
 .about-content { max-width: 700px; margin: 0 auto; text-align: center; }
-.about-desc { font-size: 1.1rem; color: var(--color-text-muted); line-height: 1.8; }
+.about-desc { font-size: var(--fs-lg); color: var(--color-text-muted); line-height: 1.8; }
 .about-body { max-width: 640px; }
 .about-stats { display: flex; flex-wrap: wrap; gap: 2.5rem; margin-top: 1.75rem; }
 .about-stat { display: flex; flex-direction: column; }
-.about-stat__num { font-size: 1.9rem; font-weight: 800; color: var(--color-accent); line-height: 1; letter-spacing: -0.02em; }
-.about-stat__label { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.3rem; }
+.about-stat__num { font-size: var(--fs-3xl); font-weight: 800; color: var(--color-accent); line-height: 1; letter-spacing: -0.02em; }
+.about-stat__label { font-size: var(--fs-sm); color: var(--color-text-muted); margin-top: 0.3rem; }
 
 /* ---- Skills ---- */
 .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
@@ -350,10 +396,10 @@ main:focus { outline: none; }
 .skill-card:hover { border-color: var(--color-accent); box-shadow: 0 0 20px var(--color-accent-glow); }
 .skill-card__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
 .skill-card__name { font-weight: 600; }
-.skill-card__level { font-size: 0.75rem; color: var(--color-accent); font-weight: 500; }
+.skill-card__level { font-size: var(--fs-xs); color: var(--color-accent); font-weight: 500; }
 .skill-bar { height: 6px; background: var(--color-border); border-radius: 3px; overflow: hidden; margin-bottom: 0.4rem; }
 .skill-bar__fill { height: 100%; background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover)); border-radius: 3px; transition: width 1s ease; }
-.skill-card__pct { font-size: 0.75rem; color: var(--color-text-muted); }
+.skill-card__pct { font-size: var(--fs-xs); color: var(--color-text-muted); }
 
 /* ---- Experience & Education (timeline) ---- */
 .experience-section { background: transparent; }
@@ -378,9 +424,9 @@ main:focus { outline: none; }
     transition: border-color var(--transition);
 }
 .timeline-content:hover { border-color: var(--color-accent); }
-.timeline-title { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.2rem; }
-.timeline-org { display: block; color: var(--color-accent); font-size: 0.9rem; font-weight: 500; }
-.timeline-date { display: block; color: var(--color-text-muted); font-size: 0.8rem; margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
+.timeline-title { font-size: var(--fs-lg); font-weight: 700; margin: 0 0 0.2rem; }
+.timeline-org { display: block; color: var(--color-accent); font-size: var(--fs-md); font-weight: 500; }
+.timeline-date { display: block; color: var(--color-text-muted); font-size: var(--fs-sm); margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
 
 /* ---- Projects ---- */
 .projects-section { background: transparent; }
@@ -396,17 +442,17 @@ main:focus { outline: none; }
 .project-card:hover { border-color: var(--color-accent); transform: translateY(-3px); }
 .project-card__body { padding: 1.5rem; flex: 1; }
 .project-card__status {
-    display: inline-block; font-size: 0.7rem; font-weight: 600;
+    display: inline-block; font-size: var(--fs-2xs); font-weight: 600;
     padding: 0.18rem 0.6rem; border-radius: 20px; margin-bottom: 0.75rem;
     letter-spacing: 0.02em;
 }
 .project-card__status.is-done { background: rgba(63,185,80,0.14); color: var(--color-success); border: 1px solid rgba(63,185,80,0.3); }
 .project-card__status.is-progress { background: rgba(210,153,34,0.14); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
-.project-card__title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
-.project-card__desc { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.6; }
+.project-card__title { font-size: var(--fs-lg); font-weight: 700; margin-bottom: 0.5rem; }
+.project-card__desc { color: var(--color-text-muted); font-size: var(--fs-md); margin-bottom: 1rem; line-height: 1.6; }
 .project-card__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .tag {
-    font-size: 0.75rem; font-weight: 500;
+    font-size: var(--fs-xs); font-weight: 500;
     background: var(--color-accent-glow);
     color: var(--color-accent);
     border: 1px solid rgba(var(--accent-rgb), 0.3);
@@ -443,15 +489,15 @@ a.song-card__link:hover { color: var(--color-accent); }
    isimde tür alt satıra "kayıp" kart yüksekliğini bozmasın; tüm kartlar 2-satır
    alt-bilgiyle eşit yükseklikte kalır. */
 .song-card__sub { display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; }
-.song-card__meta { font-size: 0.8rem; color: var(--color-text-muted); }
-.song-card__genre { font-size: 0.8rem; color: var(--color-accent); }
+.song-card__meta { font-size: var(--fs-sm); color: var(--color-text-muted); }
+.song-card__genre { font-size: var(--fs-sm); color: var(--color-accent); }
 .song-card__main { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
 
 /* Şarkı kartı ikonu — statik müzik nota (eski animasyonlu equalizer kaldırıldı;
    tüm kartlar isimden bağımsız aynı görünür). */
 .song-card__icon { display: inline-flex; align-items: center; justify-content: center; color: var(--color-accent); flex-shrink: 0; }
 .song-card:hover .song-card__icon { color: var(--color-accent-hover); }
-.song-card__duration { color: var(--color-text-muted); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+.song-card__duration { color: var(--color-text-muted); font-size: var(--fs-md); font-variant-numeric: tabular-nums; }
 
 /* ---- Pricing ---- */
 .pricing-section { text-align: center; }
@@ -462,7 +508,7 @@ a.song-card__link:hover { color: var(--color-accent); }
 .contact-form-wrapper { max-width: 560px; margin: 0 auto; }
 .contact-form { display: flex; flex-direction: column; gap: 1.25rem; }
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-.form-group label { font-size: 0.875rem; font-weight: 500; color: var(--color-text-muted); }
+.form-group label { font-size: var(--fs-md); font-weight: 500; color: var(--color-text-muted); }
 .form-required { color: var(--color-danger); margin-left: 0.15rem; }
 .form-input {
     background: var(--color-bg-card);
@@ -470,7 +516,7 @@ a.song-card__link:hover { color: var(--color-accent); }
     border-radius: var(--radius-sm);
     color: var(--color-text);
     padding: 0.6rem 0.875rem;
-    font-family: var(--font-sans); font-size: 0.9rem;
+    font-family: var(--font-sans); font-size: var(--fs-md);
     transition: border-color var(--transition), box-shadow var(--transition);
     width: 100%;
 }
@@ -484,7 +530,7 @@ a.song-card__link:hover { color: var(--color-accent); }
     text-align: center;
 }
 .footer-container { max-width: 1100px; margin: 0 auto; }
-.footer p { color: var(--color-text-muted); font-size: 0.875rem; }
+.footer p { color: var(--color-text-muted); font-size: var(--fs-md); }
 
 /* ---- Consent Banner ---- */
 .consent-banner {
@@ -571,7 +617,7 @@ a.song-card__link:hover { color: var(--color-accent); }
   padding: 6px 13px; border-radius: 999px;
   border: 1px solid rgba(74, 222, 128, 0.3);
   background: rgba(74, 222, 128, 0.08);
-  font-size: 0.78rem; font-weight: 600; color: var(--color-success);
+  font-size: var(--fs-sm); font-weight: 600; color: var(--color-success);
   margin-bottom: 24px;
 }
 .hero-status::before {
@@ -592,13 +638,13 @@ a.song-card__link:hover { color: var(--color-accent); }
 }
 .skill-group__title {
   display: flex; align-items: center; gap: 0.6rem;
-  font-weight: 700; font-size: 0.95rem; margin-bottom: 1rem;
+  font-weight: 700; font-size: var(--fs-base); margin-bottom: 1rem;
 }
 .skill-group__dot { width: 9px; height: 9px; border-radius: 3px; background: var(--color-accent); }
 .skill-group:nth-child(3n) .skill-group__dot { background: var(--color-accent-2); }
 .skill-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .skill-chip {
-  font-size: 0.82rem; font-weight: 500; color: var(--color-text);
+  font-size: var(--fs-sm); font-weight: 500; color: var(--color-text);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--color-border);
   padding: 0.38rem 0.75rem; border-radius: var(--radius-sm);
@@ -616,12 +662,12 @@ a.song-card__link:hover { color: var(--color-accent); }
 .service-card__icon {
   width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.3rem; margin-bottom: 1.1rem;
+  font-size: var(--fs-xl); margin-bottom: 1.1rem;
   background: var(--color-accent-glow);
 }
 .service-card:nth-child(3n) .service-card__icon { background: var(--color-accent-2-glow); }
-.service-card__title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
-.service-card__desc { color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.7; }
+.service-card__title { font-size: var(--fs-lg); font-weight: 700; margin-bottom: 0.5rem; }
+.service-card__desc { color: var(--color-text-muted); font-size: var(--fs-md); line-height: 1.7; }
 
 /* Asimetrik bölüm başlıkları (ritim için) */
 .section-split { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 3rem; align-items: start; }
@@ -640,13 +686,13 @@ a.song-card__link:hover { color: var(--color-accent); }
 .detail-container { max-width: 960px; }
 .detail-back {
     display: inline-flex; align-items: center; gap: 0.4rem;
-    color: var(--color-text-muted); font-size: 0.9rem; font-weight: 500;
+    color: var(--color-text-muted); font-size: var(--fs-md); font-weight: 500;
     margin-bottom: 1.5rem;
 }
 .detail-back:hover { color: var(--color-accent); }
 .detail-head { margin-bottom: 1.5rem; }
-.detail-title { font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 800; line-height: 1.15; margin: 0.75rem 0 0.5rem; }
-.detail-lead { color: var(--color-text-muted); font-size: 1.15rem; line-height: 1.6; }
+.detail-title { font-size: var(--fs-title); font-weight: 800; line-height: 1.15; margin: 0.75rem 0 0.5rem; }
+.detail-lead { color: var(--color-text-muted); font-size: var(--fs-lg); line-height: 1.6; }
 .detail-cover {
     width: 100%; aspect-ratio: 16 / 9; max-height: 460px; object-fit: cover;
     border-radius: var(--radius-lg); border: 1px solid var(--color-border);
@@ -663,9 +709,9 @@ a.song-card__link:hover { color: var(--color-accent); }
 .prose h2, .prose h3, .prose h4 {
     margin: 2rem 0 0.85rem; line-height: 1.3; letter-spacing: -0.01em; color: var(--color-text);
 }
-.prose h2 { font-size: 1.4rem; }
-.prose h3 { font-size: 1.2rem; }
-.prose h4 { font-size: 1.05rem; }
+.prose h2 { font-size: var(--fs-2xl); }
+.prose h3 { font-size: var(--fs-xl); }
+.prose h4 { font-size: var(--fs-lg); }
 .prose a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; }
 .prose a:hover { color: var(--color-accent-hover); }
 .prose strong { color: var(--color-text); font-weight: 700; }
@@ -690,15 +736,15 @@ a.song-card__link:hover { color: var(--color-accent); }
     background: var(--color-bg-card); border: 1px solid var(--color-border);
     border-radius: var(--radius-sm); overflow-x: auto; line-height: 1.6;
 }
-.prose pre code { background: none; border: 0; padding: 0; font-size: 0.875rem; }
+.prose pre code { background: none; border: 0; padding: 0; font-size: var(--fs-md); }
 .prose img { max-width: 100%; height: auto; border-radius: var(--radius-sm); margin: 1.5rem 0; }
 .prose hr { border: 0; border-top: 1px solid var(--color-border); margin: 2rem 0; }
-.prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+.prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: var(--fs-base); }
 .prose th, .prose td { border: 1px solid var(--color-border); padding: 0.5rem 0.75rem; text-align: left; }
 .prose th { background: var(--color-bg-card); font-weight: 600; }
 .detail-block { margin-top: 2.5rem; }
 .detail-subtitle {
-    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    font-size: var(--fs-sm); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--color-accent); margin-bottom: 1rem;
 }
 .detail-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; }
@@ -710,7 +756,7 @@ a.song-card__link:hover { color: var(--color-accent); }
 /* Müzik detayı — meta liste + sözler + YouTube Music butonu */
 .detail-meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
 .detail-meta__item { display: flex; flex-direction: column; gap: 0.2rem; }
-.detail-meta__label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.detail-meta__label { font-size: var(--fs-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
 .detail-meta__value { font-weight: 600; }
 .detail-lyrics { white-space: pre-wrap; color: var(--color-text-muted); line-height: 1.9; }
 .btn-youtube { background: #ff0033; color: #fff; border: 1px solid #ff0033; }
@@ -741,7 +787,7 @@ html.lightbox-open { overflow: hidden; }
     display: grid; place-items: center;
     background: rgba(0, 0, 0, 0.5); color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 50%; font-size: 1.25rem; line-height: 1; cursor: pointer;
+    border-radius: 50%; font-size: var(--fs-xl); line-height: 1; cursor: pointer;
     transition: background var(--transition), border-color var(--transition);
 }
 .lightbox__close:hover { background: rgba(0, 0, 0, 0.85); border-color: #fff; }

@@ -48,9 +48,9 @@
     <meta name="twitter:description" content="@seoDescription" />
     <meta name="twitter:image" content="@ogImage" />
     @Html.Raw("<script type=\"application/ld+json\">" + personJsonLd + "</script>")
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    @* Inter artık kendi sunucumuzdan geliyor (site.css içindeki @@font-face, wwwroot/fonts).
+       Google Fonts bağlantısı kaldırıldı: dış istek yok, CSP'de üçüncü-taraf alan açmıyoruz. *@
+    <link rel="preload" href="~/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>

@@ -35,7 +35,7 @@
 
 .auth-field label {
     display: block;
-    font-size: .7rem;
+    font-size: var(--fs-2xs);
     letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--text-dim);
@@ -49,7 +49,7 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     color: var(--text-main);
-    font-size: .95rem;
+    font-size: var(--fs-base);
     padding: .65rem .8rem;
     outline: none;
     font-family: var(--font-sans);
@@ -78,7 +78,7 @@
 
 .auth-errors {
     min-height: 18px;
-    font-size: .8rem;
+    font-size: var(--fs-sm);
     color: var(--error);
 }
 

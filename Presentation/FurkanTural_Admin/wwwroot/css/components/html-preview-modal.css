@@ -64,14 +64,14 @@
 }
 .hpm-head__icon svg { width: 1.1rem; height: 1.1rem; }
 .hpm-head__title {
-    font-size: 1rem;
+    font-size: var(--fs-base);
     font-weight: 700;
     color: var(--text-main);
     margin: 0 0 .15rem;
     white-space: nowrap;
 }
 .hpm-head__sub {
-    font-size: .78rem;
+    font-size: var(--fs-sm);
     color: var(--text-dim);
     margin: 0;
     white-space: nowrap;
@@ -111,7 +111,7 @@
 .hpm-tab {
     position: relative;
     padding: .65rem 1.1rem;
-    font-size: .8rem;
+    font-size: var(--fs-sm);
     font-weight: 600;
     color: var(--text-dim);
     background: transparent;
@@ -185,7 +185,7 @@
     align-items: center;
     gap: .4rem;
     padding: .35rem .75rem;
-    font-size: .78rem;
+    font-size: var(--fs-sm);
     font-weight: 600;
     color: var(--text-dim);
     background: transparent;
@@ -205,7 +205,7 @@
     margin: 0;
     padding: 1rem 1.25rem;
     overflow: auto;
-    font-size: .78rem;
+    font-size: var(--fs-sm);
     line-height: 1.65;
     color: var(--text-main);
     background: var(--bg-main);
@@ -228,7 +228,7 @@
     background: var(--bg-card-solid);
 }
 .hpm-footer-close {
-    font-size: .82rem;
+    font-size: var(--fs-sm);
 }
 
 /* Responsive */

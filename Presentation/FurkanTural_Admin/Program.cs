@@ -1,4 +1,4 @@
-using FurkanTural_Admin;
+﻿using FurkanTural_Admin;
 using FurkanTural_Admin.Models.Common;
 using FurkanTural_Admin.Services;
 
@@ -202,8 +202,9 @@ app.Use(async (context, next) =>
         // Cloudflare, site önünde Web Analytics beacon'ını (static.cloudflareinsights.com)
         // otomatik enjekte eder; script-src + connect-src'e izin verilmezse CSP engeller.
         "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; " +
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-        "font-src 'self' https://fonts.gstatic.com data:; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
+        "font-src 'self' data:; " +
         $"img-src 'self' data: blob: {apiOrigin}; " +
         $"media-src 'self' blob: {apiOrigin}; " +
         $"connect-src 'self' {apiOrigin} https://cloudflareinsights.com; " +

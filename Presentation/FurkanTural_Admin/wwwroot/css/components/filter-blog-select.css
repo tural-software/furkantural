@@ -37,7 +37,7 @@
 /* Individual option */
 .fbs-option {
     padding: .45rem .75rem;
-    font-size: .825rem;
+    font-size: var(--fs-sm);
     color: var(--text-main, #1a202c);
     cursor: pointer;
     transition: background .12s;
@@ -62,7 +62,7 @@
 /* Hint / empty message */
 .fbs-hint {
     padding: .45rem .75rem;
-    font-size: .8rem;
+    font-size: var(--fs-sm);
     color: var(--text-dim, #718096);
     font-style: italic;
     cursor: default;

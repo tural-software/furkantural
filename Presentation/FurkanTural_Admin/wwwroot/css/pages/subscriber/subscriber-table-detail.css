@@ -3,7 +3,7 @@
     display: flex;
     align-items: center;
     gap: .4rem;
-    font-size: .72rem;
+    font-size: var(--fs-2xs);
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: .06em;
@@ -36,7 +36,7 @@
 }
 .page-badge {
     display: inline-block;
-    font-size: .62rem;
+    font-size: var(--fs-3xs);
     font-weight: 700;
     letter-spacing: .07em;
     text-transform: uppercase;
@@ -85,31 +85,31 @@
 .schema-stat__icon { color: var(--accent); }
 .schema-stat__icon svg { width: 1.4rem; height: 1.4rem; }
 .schema-stat__label {
-    font-size: .68rem;
+    font-size: var(--fs-2xs);
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: .05em;
     margin-top: .15rem;
 }
 .schema-stat__value {
-    font-size: 1.45rem;
+    font-size: var(--fs-2xl);
     font-weight: 700;
     color: var(--text-main);
     line-height: 1.1;
 }
-.schema-stat__unit { font-size: .68rem; color: var(--text-dim); }
+.schema-stat__unit { font-size: var(--fs-2xs); color: var(--text-dim); }
 
 /* ── Schema table ─────────────────────────────────────────── */
 .data-table-wrap { overflow-x: auto; }
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: .875rem;
+    font-size: var(--fs-md);
 }
 .data-table th {
     padding: .75rem 1rem;
     text-align: left;
-    font-size: .68rem;
+    font-size: var(--fs-2xs);
     font-weight: 600;
     color: var(--text-dim);
     text-transform: uppercase;
@@ -143,7 +143,7 @@
 /* ── Type tag ─────────────────────────────────────────────── */
 .type-tag {
     display: inline-block;
-    font-size: .72rem;
+    font-size: var(--fs-2xs);
     font-family: 'Courier New', monospace;
     background: rgba(var(--accent-rgb), .1);
     color: var(--accent);
@@ -156,7 +156,7 @@
     display: inline-flex;
     align-items: center;
     gap: .3rem;
-    font-size: .72rem;
+    font-size: var(--fs-2xs);
     font-weight: 600;
     color: #4ade80;
     background: rgba(34, 197, 94, .12);
@@ -167,7 +167,7 @@
     display: inline-flex;
     align-items: center;
     gap: .3rem;
-    font-size: .72rem;
+    font-size: var(--fs-2xs);
     font-weight: 600;
     color: #f87171;
     background: rgba(239, 68, 68, .12);
@@ -208,7 +208,7 @@
 }
 .tbl-info-card { padding: 1.25rem; }
 .tbl-info-card__label {
-    font-size: .68rem;
+    font-size: var(--fs-2xs);
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: .05em;
@@ -221,8 +221,8 @@
     margin-bottom: .2rem;
 }
 .tbl-info-card__main svg { width: 1rem; height: 1rem; color: var(--text-dim); }
-.tbl-info-card__value { font-size: .875rem; color: var(--text-main); font-weight: 500; }
-.tbl-info-card__sub   { font-size: .75rem; color: var(--text-dim); padding-left: 1.55rem; }
+.tbl-info-card__value { font-size: var(--fs-md); color: var(--text-main); font-weight: 500; }
+.tbl-info-card__sub   { font-size: var(--fs-xs); color: var(--text-dim); padding-left: 1.55rem; }
 
 .status-dot {
     display: inline-block;
@@ -236,7 +236,7 @@
     display: inline-flex;
     align-items: center;
     gap: .35rem;
-    font-size: .72rem;
+    font-size: var(--fs-2xs);
     font-weight: 600;
     color: #4ade80;
     background: rgba(34, 197, 94, .12);
