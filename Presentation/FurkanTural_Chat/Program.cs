@@ -88,6 +88,11 @@ builder.Services.AddReverseProxy()
         });
     });
 
+// Data Protection anahtarlarını kalıcı bir klasöre sabitle — bkz. AddPersistentDataProtection.
+// Sonuç, uygulama ayağa kalktıktan sonra loglanır (logger o noktada hazır olur).
+var dataProtection = builder.Services.AddPersistentDataProtection(
+    builder.Configuration, builder.Environment, "FurkanTural.Chat");
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -105,6 +110,8 @@ builder.Services.AddSession(options =>
 });
 
 var app = builder.Build();
+
+app.LogDataProtectionStatus(dataProtection);
 
 if (!app.Environment.IsDevelopment())
 {

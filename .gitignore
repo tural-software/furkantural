@@ -159,3 +159,11 @@ yarn-error.log
 .ai/
 .claude/
 .gemini/
+
+# ============================================================
+#  Data Protection anahtarları
+# ============================================================
+# Session cookie'sini ve antiforgery token'ını şifreleyen anahtarlar. Çalışma anında
+# üretilir, makineye özgüdür ve gizlidir — asla commit'lenmez. (Sunucuda bu klasör
+# deploy'lar arasında KORUNMALIDIR; silinirse tüm açık oturumlar düşer.)
+**/App_Data/dataprotection-keys/
