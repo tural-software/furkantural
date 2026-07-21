@@ -195,9 +195,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Static files (for wwwroot/images/uploads)
-builder.Services.AddDirectoryBrowser();
-
 var app = builder.Build();
 
 // --- Bekleyen EF migration'larını başlangıçta otomatik uygula ---
@@ -258,6 +255,11 @@ if (swaggerEnabled)
     });
     app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 }
+
+// Sunum projeleriyle tutarlı: tarayıcıya HTTPS'i hatırlat (Cloudflare zaten HSTS gönderse de
+// origin'in kendisi de göndermeli — CF devre dışı kalırsa/atlanırsa koruma sürsün).
+if (!app.Environment.IsDevelopment())
+    app.UseHsts();
 
 app.UseHttpsRedirection();
 

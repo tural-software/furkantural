@@ -161,6 +161,14 @@ yarn-error.log
 .gemini/
 
 # ============================================================
+#  Yayın paketleri (dist-readier çıktısı)
+# ============================================================
+# Paketler .docs/dists/ altına yazılır ve .docs/ zaten yukarıda ignore edilir.
+# Bu satır ek güvenlik: gerçek prod secret'ları içeren paketler yanlışlıkla
+# başka bir klasöre düşse bile commit'lenmesin.
+*.rar
+
+# ============================================================
 #  Data Protection anahtarları
 # ============================================================
 # Session cookie'sini ve antiforgery token'ını şifreleyen anahtarlar. Çalışma anında
