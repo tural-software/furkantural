@@ -220,6 +220,11 @@ if (builder.Configuration.GetValue<bool?>("Database:ApplyMigrationsOnStartup") ?
 
 // --- Middleware pipeline ---
 
+// EN BAŞTA olmalı: aşağıdaki her şey (ExceptionMiddleware'in hata logu, ActivityLogger,
+// ClientLog/Contact IP kaydı ve Turnstile'ın remoteip doğrulaması) Connection.RemoteIpAddress
+// okur; Cloudflare edge IP'si yerine gerçek ziyaretçi IP'si buradan sonra geçerli olur.
+app.UseRealClientIp(builder.Configuration);
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (swaggerEnabled)

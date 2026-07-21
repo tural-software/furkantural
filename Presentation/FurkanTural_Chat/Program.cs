@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using FurkanTural_Chat;
+using FurkanTural_Chat.Middlewares;
 using FurkanTural_Chat.Models.Common;
 using FurkanTural_Chat.Services;
 using Yarp.ReverseProxy.Configuration;
@@ -112,6 +113,9 @@ builder.Services.AddSession(options =>
 var app = builder.Build();
 
 app.LogDataProtectionStatus(dataProtection);
+
+// EN BAŞTA olmalı: ClientLogController gerçek ziyaretçi IP'sini buradan okur.
+app.UseRealClientIp(builder.Configuration);
 
 if (!app.Environment.IsDevelopment())
 {
