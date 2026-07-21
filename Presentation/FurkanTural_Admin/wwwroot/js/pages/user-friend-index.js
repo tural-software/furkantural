@@ -5,6 +5,12 @@
 (function () {
     'use strict';
 
+    // Kullanıcı adı öne, Id ikincil. Id atılmıyor: silinmiş kullanıcıların kayıtları da
+    // listelendiği için ad null gelebilir ve o satırda tek tutamak Id olur.
+    function userLabel(username, userId) {
+        return (username ? username : 'Bilinmiyor') + ' (#' + userId + ')';
+    }
+
     var FriendDetailConfig = {
         title: 'Arkadaşlık Detayı',
         description: 'Seçilen arkadaşlık kaydına ait detaylar',
@@ -20,8 +26,8 @@
             {
                 columns: 2,
                 fields: [
-                    { label: 'Gönderen (Requester)', icon: 'user', value: function (r) { return '#' + r.requesterId; } },
-                    { label: 'Alıcı (Addressee)', icon: 'user', value: function (r) { return '#' + r.addresseeId; } },
+                    { label: 'Gönderen (Requester)', icon: 'user', value: function (r) { return userLabel(r.requesterUsername, r.requesterId); } },
+                    { label: 'Alıcı (Addressee)', icon: 'user', value: function (r) { return userLabel(r.addresseeUsername, r.addresseeId); } },
                     { label: 'Durum', icon: 'field-text', value: function (r) { return r.statusName || r.statusCode || '—'; } },
                     { label: 'Durum Kodu', icon: 'field-text', value: function (r) { return r.statusCode || '—'; } },
                     { label: 'Yanıt Tarihi', icon: 'calendar', value: function (r) { return r.respondedAt ? DmFmt.date(r.respondedAt) : '—'; } },
@@ -91,7 +97,9 @@
                 if (action.indexOf('Restore') !== -1) { actionKey = 'Restore'; actionLabel = 'Geri Yükle'; actionVariant = 'success'; }
                 else { actionKey = 'ToggleActive'; var a = rec ? rec.isActive : false; actionLabel = a ? 'Pasife Al' : 'Aktife Al'; actionVariant = a ? 'warning' : 'success'; }
                 var capturedIsActive = rec ? rec.isActive : false;
-                var recordName = rec ? ('#' + rec.requesterId + ' → #' + rec.addresseeId) : ('ID: ' + id);
+                var recordName = rec
+                    ? (userLabel(rec.requesterUsername, rec.requesterId) + ' → ' + userLabel(rec.addresseeUsername, rec.addresseeId))
+                    : ('ID: ' + id);
                 ConfirmModal.open({ id: id, email: recordName, actionLabel: actionLabel, actionVariant: actionVariant, onConfirm: function () { submitAction(form, capturedIsActive, actionKey); } });
             });
         });

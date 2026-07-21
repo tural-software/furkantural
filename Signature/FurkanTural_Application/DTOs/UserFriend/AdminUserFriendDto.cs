@@ -5,6 +5,12 @@ public class AdminUserFriendDto
     public int Id { get; set; }
     public int RequesterId { get; set; }
     public int AddresseeId { get; set; }
+
+    // Kullanıcı adları entity'de yok; StatusCode/StatusName gibi servis tarafından doldurulur.
+    // Kullanıcı silinmiş/bulunamamışsa null kalır — bu durumda arayüz Id'ye geri düşer.
+    public string? RequesterUsername { get; set; }
+    public string? AddresseeUsername { get; set; }
+
     public int StatusId { get; set; }
     public string? StatusCode { get; set; }
     public string? StatusName { get; set; }

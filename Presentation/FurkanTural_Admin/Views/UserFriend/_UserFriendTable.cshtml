@@ -1,4 +1,5 @@
 @using System.Text.Json
+@using Microsoft.AspNetCore.Html
 @using FurkanTural_Admin.Models.UserFriend
 @model UserFriendIndexViewModel
 @{
@@ -17,6 +18,28 @@
     }) ?? "#";
 
     var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+}
+
+@*
+    Kullanıcı hücresi: ad öne çıkar, Id ikincil kalır. Id tamamen atılmıyor çünkü
+    admin listesi silinmiş kullanıcıların kayıtlarını da gösterir — o satırlarda ad
+    çözülemez ve elde tek tutamak Id olur.
+*@
+@functions {
+    static IHtmlContent UserCell(string? username, int userId)
+    {
+        var builder = new HtmlContentBuilder();
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            builder.AppendHtml("<span class=\"user-cell__unknown\">Bilinmiyor</span>");
+        }
+        else
+        {
+            builder.AppendHtml("<span class=\"user-cell__name\">").Append(username).AppendHtml("</span>");
+        }
+        builder.AppendHtml("<span class=\"user-cell__id\">#").Append(userId.ToString()).AppendHtml("</span>");
+        return builder;
+    }
 }
 
 <script id="__friend-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
@@ -40,8 +63,8 @@
             {
                 <tr>
                     <td>@row.Id</td>
-                    <td>#@row.RequesterId</td>
-                    <td>#@row.AddresseeId</td>
+                    <td>@UserCell(row.RequesterUsername, row.RequesterId)</td>
+                    <td>@UserCell(row.AddresseeUsername, row.AddresseeId)</td>
                     <td>@(row.StatusName ?? row.StatusCode ?? "—")</td>
                     <td>@(row.RespondedAt?.ToString("dd.MM.yyyy HH:mm") ?? "—")</td>
                     <td>

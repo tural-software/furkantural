@@ -5,6 +5,11 @@ public sealed class UserFriendAdminDto
     public int Id { get; set; }
     public int RequesterId { get; set; }
     public int AddresseeId { get; set; }
+
+    // API tarafında doldurulur; kullanıcı silinmişse null gelebilir.
+    public string? RequesterUsername { get; set; }
+    public string? AddresseeUsername { get; set; }
+
     public int StatusId { get; set; }
     public string? StatusCode { get; set; }
     public string? StatusName { get; set; }

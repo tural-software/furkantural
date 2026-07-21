@@ -239,3 +239,14 @@
 /* ── Empty row ────────────────────────────────────────────── */
 .empty-row td { text-align: center; color: var(--text-dim); padding: 2.5rem 1rem; font-size: var(--fs-md); }
 
+/* ── Kullanıcı hücresi (Gönderen / Alıcı) ─────────────────────
+   Ad birincil, Id ikincil. Id kalıyor çünkü silinmiş kullanıcıların
+   satırlarında ad çözülemez ve tek tutamak Id olur. */
+.user-cell__name    { color: var(--text-main); }
+.user-cell__unknown { color: var(--text-dim); font-style: italic; }
+.user-cell__id {
+    margin-left: .4rem;
+    font-size: var(--fs-2xs);
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+}

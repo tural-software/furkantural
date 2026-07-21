@@ -429,6 +429,12 @@ public class UserFriendService(
         var entities = await _unitOfWork.UserFriends.GetAllForAdminAsync(cancellationToken);
         var statuses = (await _unitOfWork.Statuses.GetAllForAdminAsync(cancellationToken)).ToDictionary(s => s.Id);
 
+        // Admin listesi silinmiş/pasif kullanıcıların kayıtlarını da içerdiği için kullanıcı adları
+        // GetUsersByIdAsync ile DEĞİL, filtresiz admin okumasıyla çözülür: üye tarafındaki o yardımcı
+        // _dbSet üzerinden gider ve global sorgu filtresi (!IsDeleted && IsActive) silinmiş kullanıcıyı
+        // gizler — tam da yöneticinin görmesi gereken satırlarda ad boş kalırdı.
+        var users = (await _unitOfWork.Users.GetAllForAdminAsync(cancellationToken)).ToDictionary(u => u.Id);
+
         var dtos = entities.Select(e =>
         {
             var dto = e.ToAdminDto();
@@ -437,6 +443,10 @@ public class UserFriendService(
                 dto.StatusCode = status.Code;
                 dto.StatusName = status.Name;
             }
+            if (users.TryGetValue(e.RequesterId, out var requester))
+                dto.RequesterUsername = requester.Username;
+            if (users.TryGetValue(e.AddresseeId, out var addressee))
+                dto.AddresseeUsername = addressee.Username;
             return dto;
         });
 
@@ -527,6 +537,11 @@ public class UserFriendService(
         var status = await _unitOfWork.Statuses.GetByIdForAdminAsync(entity.StatusId, cancellationToken);
         dto.StatusCode = status?.Code;
         dto.StatusName = status?.Name;
+
+        // Tek kayıt için tüm kullanıcıları çekmek yerine iki hedefli okuma (yine filtresiz).
+        dto.RequesterUsername = (await _unitOfWork.Users.GetByIdForAdminAsync(entity.RequesterId, cancellationToken))?.Username;
+        dto.AddresseeUsername = (await _unitOfWork.Users.GetByIdForAdminAsync(entity.AddresseeId, cancellationToken))?.Username;
+
         return dto;
     }
 }
