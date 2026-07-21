@@ -100,6 +100,8 @@ body {
   color: var(--text);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  /* Uzun URL / bölünemeyen kelime dar ekranda satırı taşırmasın. */
+  overflow-wrap: break-word;
 }
 
 a { color: var(--accent); text-decoration: none; }
@@ -147,7 +149,11 @@ a:hover { color: var(--accent-hover); }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  gap: 0.75rem;
+  /* height değil min-height: dar ekranda menü alt satıra indiğinde başlık büyüyebilmeli,
+     sabit yükseklik içeriği kırpardı. */
+  min-height: 64px;
+  flex-wrap: wrap;
 }
 .brand {
   display: flex;
@@ -325,7 +331,10 @@ a:hover { color: var(--accent-hover); }
 /* Çok-sütunlu kart grid'i — geniş ekranda yan yana, dar ekranda tek sütun. */
 .post-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* min(300px, 100%) şart: düz minmax(300px, ...) dar telefonlarda sütunu 300px'te
+     tutuyor, konteyner 280px'e düşünce grid ekrandan taşıyordu. min() ile sütun
+     hiçbir zaman konteynerden geniş olamaz. */
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 1.5rem;
   margin: 0 auto 4rem;
 }
@@ -395,11 +404,13 @@ a:hover { color: var(--accent-hover); }
 .post-meta__sep { opacity: 0.5; }
 .post-meta--detail { margin: 0.9rem 0 0; }
 
-/* Kart kapak görseli — kartın üstüne tam-genişlik oturur. */
+/* Kutu, üretilen kapakların gerçek oranında (1200x630) — böylece listede de
+   kırpılma olmuyor. Kartların yüksekliği eşit kalmalı, o yüzden içerideki img
+   `cover` kalıyor: oranı farklı bir kapak gelirse grid bozulmasın. */
 .post-card__cover {
   display: block;
   margin: 0;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1200 / 630;
   overflow: hidden;
   background: var(--bg);
 }
@@ -481,14 +492,27 @@ a:hover { color: var(--accent-hover); }
   background: color-mix(in srgb, var(--chip-color, var(--accent)) 14%, transparent);
 }
 
-/* Detay sayfası kapak görseli. aspect-ratio ile yer ayrılır → görsel yüklenince
-   layout kaymaz (CLS / Core Web Vitals). */
+/* Detay sayfası kapak görseli — HER ZAMAN TAMAMEN GÖRÜNÜR.
+   (Tıklanınca açılan lightbox bu kuralın dışında; orası zaten tam görsel gösterir.)
+
+   Eskiden burada `aspect-ratio: 16/9` + `max-height: 440px` + `object-fit: cover`
+   vardı ve görseli kırpıyordu. Sebep: okuma sütunu geniş ekranda 720→880→940→1000px
+   büyürken max-height sabit kalıyor, kutu giderek yassılaşıyordu. 1000px sütunda
+   kutu 1000x440 (oran 2.27) olurken kapak 1200x630 (oran 1.905) → cover, üst ve
+   alttan %16'yı kesiyordu. 1200px altındaki ekranlarda sütun 720px olduğu için
+   440px sınırına hiç değilmiyor, bu yüzden sorun yalnızca büyük ekranda görünüyordu.
+
+   Çözüm: yükseklik sınırı yok, kutu kapağın gerçek oranında. aspect-ratio yalnızca
+   görsel yüklenmeden yer ayırmak için duruyor (CLS) — img'de width/height olmadığı
+   için hâlâ gerekli. */
 .post-cover {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  max-height: 440px;
-  object-fit: cover;
+  height: auto;
+  aspect-ratio: 1200 / 630;
+  /* Oranı farklı bir kapak yüklenirse kırpma yerine sığdır: taşan kısmı kesmektense
+     kenarda boşluk bırak — görselin tamamı görünmeli. */
+  object-fit: contain;
   border-radius: var(--radius);
   margin: 1.5rem 0;
 }
@@ -614,7 +638,9 @@ html.lightbox-open { overflow: hidden; }
 .prose pre code { background: none; border: 0; padding: 0; font-size: var(--fs-md); }
 .prose img { max-width: 100%; height: auto; border-radius: var(--radius-sm); margin: 1.5rem 0; }
 .prose hr { border: 0; border-top: 1px solid var(--border); margin: 2.2rem 0; }
-.prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: var(--fs-base); }
+/* display:block + overflow-x — Markdown'dan gelen tabloyu saramadığımız için kaydırma
+   kutusu tablonun kendisi oluyor. Aksi halde çok sütunlu tablo telefonda sayfayı taşırır. */
+.prose table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1.5rem 0; font-size: var(--fs-base); }
 .prose th, .prose td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
 .prose th { background: var(--bg-elev); font-weight: 600; }
 
@@ -629,17 +655,59 @@ html.lightbox-open { overflow: hidden; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
+  /* flex-wrap ile birlikte sabit yükseklik anlamsız: sarınca ikinci satır kırpılırdı. */
+  min-height: 60px;
+  padding: 0.75rem 0;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-@media (max-width: 560px) {
-  .header-inner { height: 56px; }
-  .brand__logo { height: 34px; }
-  .hero { padding: 3.5rem 0 2.5rem; }
-  .site-nav { gap: 0.85rem; }
+/* ---- Tablet (≤900px) ----
+   561–1199px arası hiç kural yoktu; masaüstü boşlukları bu aralıkta fazla ferah kalıyordu. */
+@media (max-width: 900px) {
+  .hero { padding: 4.5rem 0 3rem; }
+  .content-page { padding: 2.5rem 0 3.25rem; }
+  .post-grid { gap: 1.25rem; }
+}
+
+/* ---- Mobil (≤640px) ----
+   Buradaki tek kesin kural: hiçbir şey YATAY taşmayacak. Ölçüm: 360px'lik ekranda
+   konteyner 320px kalıyordu; marka (~168px) + menü (~181px) = ~349px tek satıra
+   sığmıyor ve sayfa yana kayıyordu. Menü artık kendi satırına iniyor. */
+@media (max-width: 640px) {
+  .container { padding: 0 1rem; }
+
+  .header-inner {
+    justify-content: center;
+    row-gap: 0.5rem;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    min-height: 56px;
+  }
+  .brand__logo { height: 32px; }
+  .site-nav { gap: 0.9rem; }
+  .nav-link { font-size: var(--fs-sm); }
   .toggle-text { display: none; }
+  .theme-toggle-btn { padding: 0.4rem 0.55rem; }
+
+  .hero { padding: 3.25rem 0 2.25rem; }
+  .hero__lead { font-size: var(--fs-base); }
+  .hero__actions .btn { width: 100%; }
+
+  .post-card__body { padding: 1.1rem 1.15rem 1.25rem; }
+  .content-page { padding: 2rem 0 3rem; }
+  .post-cover { margin: 1.15rem 0; }
+
+  .footer-inner { justify-content: center; text-align: center; row-gap: 0.35rem; }
+  .lightbox { padding: 1rem; }
+}
+
+/* ---- Dar telefon (≤380px) ----
+   Marka + menü burada iyice sıkışıyor; "Blog" alt etiketi düşüyor. */
+@media (max-width: 380px) {
+  .brand__sub { display: none; }
+  .brand__logo { height: 28px; }
+  .site-nav { gap: 0.7rem; }
 }
 
 /* Sayfalama (blog listesi) */
