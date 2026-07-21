@@ -11,7 +11,9 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
     private readonly string _apiBase = (configuration["Api:BaseUrl"] ?? string.Empty).TrimEnd('/');
 
     // Liste sayfa boyutu — 1000+ yazıda bile DB yalnız bu kadar satır döndürür (API tarafı sayfalar).
-    private const int PageSize = 9;
+    // 12 seçildi çünkü kart grid'i (auto-fill, minmax(300px, 1fr)) konteyner genişliğine göre
+    // 1–4 sütun çiziyor; 12 hepsine tam bölündüğü için hiçbir kırılma noktasında yarım satır kalmıyor.
+    private const int PageSize = 12;
 
     public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, CancellationToken cancellationToken = default)
     {
