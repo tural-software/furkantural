@@ -22,6 +22,7 @@ public class AuthService(
     IConfiguration configuration,
     IOptions<AppTokenSettings> appTokenSettings,
     ITurnstileVerifier turnstileVerifier,
+    ILoginThrottle loginThrottle,
     IClock clock) : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -30,7 +31,15 @@ public class AuthService(
     private readonly IConfiguration _configuration = configuration;
     private readonly AppTokenSettings _appTokenSettings = appTokenSettings.Value;
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
+    private readonly ILoginThrottle _loginThrottle = loginThrottle;
     private readonly IClock _clock = clock;
+
+    // Zamanlama savunması için sabit bir kukla hash. Lazy: PBKDF2 üretimi pahalıdır, süreç
+    // başına YALNIZCA BİR KEZ hesaplanır (her istekte üretilseydi savunma kendisi bir yük olurdu).
+    // Değeri hiçbir hesapla eşleşmez; yalnızca Verify'ın CPU maliyetini ödetmek için vardır.
+    private static readonly Lazy<string> DummyHash = new(() =>
+        new PasswordHasher().Hash("login-timing-defense-placeholder"),
+        LazyThreadSafetyMode.ExecutionAndPublication);
 
     public async Task<Result<LoginResultDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default)
     {
@@ -46,12 +55,33 @@ public class AuthService(
         if (string.IsNullOrWhiteSpace(dto.Password))
             return Result<LoginResultDto>.Fail("Şifre boş olamaz.");
 
+        // Brute-force savunması: parola DOĞRULANMADAN önce kilit kontrolü yapılır ki kilitliyken
+        // hiç hash hesaplanmasın (PBKDF2 pahalıdır → aksi halde ucuz bir CPU tüketim vektörü olurdu).
+        if (_loginThrottle.GetRemainingLockout(dto.Username) is { } remaining)
+            return Result<LoginResultDto>.Fail(
+                $"Çok fazla hatalı deneme yapıldı. Lütfen {Math.Ceiling(remaining.TotalSeconds)} saniye sonra tekrar deneyin.",
+                statusCode: 429);
+
         var user = await _unitOfWork.Users.GetAsync(x => x.Username == dto.Username, cancellationToken);
         if (user is null)
+        {
+            // ZAMANLAMA YAN KANALI SAVUNMASI: Var olmayan kullanıcıda hemen dönseydik yanıt
+            // ~5 ms, var olan kullanıcıda PBKDF2 doğrulaması yüzünden ~150 ms sürerdi; saldırgan
+            // bu farkı ölçüp hangi kullanıcı adlarının var olduğunu sayabilirdi. Sahte bir hash'e
+            // karşı gerçek bir doğrulama çalıştırarak aynı maliyeti bilinçli olarak ödüyoruz.
+            _passwordHasher.Verify(dto.Password, DummyHash.Value);
+
+            // Var olmayan kullanıcı için de sayaç işletilir — "kilitlendi" yanıtının hesabın
+            // varlığını ele vermemesi için.
+            _loginThrottle.RegisterFailure(dto.Username);
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
+        }
 
         if (string.IsNullOrWhiteSpace(user.Password))
+        {
+            _loginThrottle.RegisterFailure(dto.Username);
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
+        }
 
         bool passwordValid;
         if (_passwordHasher.IsHashed(user.Password))
@@ -74,7 +104,14 @@ public class AuthService(
         }
 
         if (!passwordValid)
+        {
+            _loginThrottle.RegisterFailure(dto.Username);
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
+        }
+
+        // Başarılı giriş sayacı sıfırlar: meşru kullanıcı birkaç kez yanılıp sonra doğru
+        // girdiğinde birikmiş denemeler onu sonradan kilitlemesin.
+        _loginThrottle.Reset(dto.Username);
 
         var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId, cancellationToken);
         var roleName = role?.Name ?? "User";
