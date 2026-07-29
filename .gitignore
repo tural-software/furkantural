@@ -175,3 +175,6 @@ yarn-error.log
 # üretilir, makineye özgüdür ve gizlidir — asla commit'lenmez. (Sunucuda bu klasör
 # deploy'lar arasında KORUNMALIDIR; silinirse tüm açık oturumlar düşer.)
 **/App_Data/dataprotection-keys/
+
+# Claude'ye ait, kimlik bilgisi doldurulmus Postman koleksiyonu (paylasilmaz)
+FurkanTural_API_Claude.postman_collection.json
