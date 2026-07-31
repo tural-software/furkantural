@@ -179,3 +179,9 @@ yarn-error.log
 
 # Claude'ye ait, kimlik bilgisi doldurulmus Postman koleksiyonu (paylasilmaz)
 FurkanTural_API_Claude.postman_collection.json
+# ============================================================
+#  Labs (ayri repo: tural-software/furkantural-labs)
+# ============================================================
+# Kendi .git'i var. Ignore edilmezse monorepo'da untracked gorunur ve
+# git add . onu gitlink (bozuk submodule) olarak ekler.
+/Labs/
