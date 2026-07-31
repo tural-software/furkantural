@@ -131,6 +131,7 @@ coverage/
 *.coverage
 *.cobertura.xml
 lcov.info
+[Ll]abs/
 
 # ============================================================
 #  Node / Front-End (if added later)
