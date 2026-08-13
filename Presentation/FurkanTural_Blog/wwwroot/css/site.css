@@ -172,12 +172,6 @@ a:hover { color: var(--accent-hover); }
 .brand__logo--light { display: none; }
 [data-theme="light"] .brand__logo--dark { display: none; }
 [data-theme="light"] .brand__logo--light { display: block; }
-.brand__sub {
-  color: var(--accent);
-  font-weight: 700;
-  font-size: var(--fs-sm);
-  letter-spacing: 0.4px;
-}
 .site-nav { display: flex; align-items: center; gap: 1.25rem; }
 /* Boyut açıkça veriliyor: burada font-size yokken gövdeden 1rem miras alınıyordu ve
    Portfolio'nun 0.875rem'lik gezinme bağlantılarına göre gözle görülür biçimde büyüktü. */
@@ -703,9 +697,8 @@ html.lightbox-open { overflow: hidden; }
 }
 
 /* ---- Dar telefon (≤380px) ----
-   Marka + menü burada iyice sıkışıyor; "Blog" alt etiketi düşüyor. */
+   Marka + menü burada iyice sıkışıyor; logo küçülüyor. */
 @media (max-width: 380px) {
-  .brand__sub { display: none; }
   .brand__logo { height: 28px; }
   .site-nav { gap: 0.7rem; }
 }

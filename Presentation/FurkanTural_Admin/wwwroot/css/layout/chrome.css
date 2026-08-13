@@ -33,7 +33,6 @@
 .brand-logo--light { display: none; }
 [data-theme="light"] .brand-logo--dark { display: none; }
 [data-theme="light"] .brand-logo--light { display: block; }
-.brand-sub { font-size: var(--fs-sm); letter-spacing: .2px; }
 
 .brand:hover {
     transform: scale(1.05);
