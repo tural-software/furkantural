@@ -359,12 +359,19 @@
             m.hidden = true;
             m.innerHTML =
                 '<div class="dev-card">' +
-                  '<div class="dev-head"><span>Ses ve Cihaz Ayarları</span><button type="button" class="dev-close" aria-label="Kapat">✕</button></div>' +
+                  '<div class="dev-head"><span>Ayarlar</span><button type="button" class="dev-close" aria-label="Kapat">✕</button></div>' +
                   '<div class="dev-row"><label>Ses seviyesi</label><input type="range" class="dev-vol" min="0" max="100" step="1"></div>' +
                   '<div class="dev-row"><label>Mikrofon</label><select class="dev-mic"></select></div>' +
                   '<div class="dev-row dev-row--cam"><label>Kamera</label><select class="dev-cam"></select></div>' +
                   '<div class="dev-row dev-row--spk"><label>Hoparlör</label><select class="dev-spk"></select></div>' +
                   '<div class="dev-row"><button type="button" class="dev-rescan btn-outline">🔄 Cihazlarımı Algıla</button></div>' +
+                  '<div class="dev-row dev-row--legal">' +
+                    '<label>Yasal</label>' +
+                    '<div class="dev-legal-actions">' +
+                      '<button type="button" class="dev-legal btn-outline" data-doc="agreement">Üyelik Sözleşmesi</button>' +
+                      '<button type="button" class="dev-legal btn-outline" data-doc="privacy">Gizlilik Politikası</button>' +
+                    '</div>' +
+                  '</div>' +
                 '</div>';
             document.body.appendChild(m);
             m.addEventListener('click', function (e) { if (e.target === m) m.hidden = true; });
@@ -380,8 +387,79 @@
                 refillDevModal(await scanDevices(true));   // kullanıcı isteğiyle yeniden tara
                 rescan.disabled = false; rescan.textContent = old;
             });
+            m.querySelectorAll('.dev-legal').forEach(function (b) {
+                b.addEventListener('click', function () { openLegal(b.getAttribute('data-doc')); });
+            });
             if (!canSetSink) m.querySelector('.dev-row--spk').style.display = 'none';
             return m;
+        }
+
+        // ── Yasal belgeler: ayarların üstünde ikinci katman ─────────────────
+        // Belge kendi sayfasından çekilir (tek kaynak: /Home/Agreement, /Home/Privacy);
+        // metin burada kopyalanmaz, sayfa güncellenince modal da güncellenir.
+        // Kapatınca ayarlar modalı geri açılır — kullanıcı başladığı yere döner.
+        var legalModal = null;
+        var legalCache = {};
+        var LEGAL_DOCS = {
+            agreement: { url: '/Home/Agreement', title: 'Üyelik Sözleşmesi' },
+            privacy:   { url: '/Home/Privacy',   title: 'Gizlilik Politikası' }
+        };
+
+        function closeLegal() {
+            if (!legalModal) return;
+            legalModal.hidden = true;
+            if (devModal) devModal.hidden = false;   // ilk modalı geri getir
+        }
+
+        function buildLegalModal() {
+            var m = document.createElement('div');
+            m.className = 'device-modal legal-modal';
+            m.hidden = true;
+            m.innerHTML =
+                '<div class="dev-card legal-modal-card" role="dialog" aria-modal="true">' +
+                  '<div class="dev-head"><span class="legal-modal-title"></span>' +
+                  '<button type="button" class="dev-close" aria-label="Kapat">✕</button></div>' +
+                  '<div class="legal-modal-body" tabindex="0"></div>' +
+                '</div>';
+            document.body.appendChild(m);
+            m.addEventListener('click', function (e) { if (e.target === m) closeLegal(); });
+            m.querySelector('.dev-close').addEventListener('click', closeLegal);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && legalModal && !legalModal.hidden) closeLegal();
+            });
+            return m;
+        }
+
+        async function openLegal(doc) {
+            var meta = LEGAL_DOCS[doc];
+            if (!meta) return;
+            if (!legalModal) legalModal = buildLegalModal();
+
+            legalModal.querySelector('.legal-modal-title').textContent = meta.title;
+            var body = legalModal.querySelector('.legal-modal-body');
+            if (devModal) devModal.hidden = true;
+            legalModal.hidden = false;
+
+            if (legalCache[doc]) { body.innerHTML = legalCache[doc]; body.scrollTop = 0; return; }
+
+            body.textContent = 'Yükleniyor…';
+            try {
+                var res = await fetch(meta.url, { credentials: 'same-origin' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                var parsed = new DOMParser().parseFromString(await res.text(), 'text/html');
+                var card = parsed.querySelector('.legal-card');
+                if (!card) throw new Error('legal-card yok');
+                // Sayfadaki h1 modal başlığında zaten duruyor; gövdede tekrar etmesin.
+                var h1 = card.querySelector('h1'); if (h1) h1.remove();
+                // Aynı köken olsa da gövdeye script/stil tasimayalim.
+                card.querySelectorAll('script,style,link').forEach(function (n) { n.remove(); });
+                legalCache[doc] = card.innerHTML;
+                body.innerHTML = legalCache[doc];
+                body.scrollTop = 0;
+            } catch (e) {
+                body.innerHTML = 'Belge yüklenemedi. <a href="' + meta.url +
+                                 '" target="_blank" rel="noopener">Yeni sekmede aç</a>';
+            }
         }
         function fillSelect(sel, items, selectedId, fallback) {
             sel.innerHTML = '';

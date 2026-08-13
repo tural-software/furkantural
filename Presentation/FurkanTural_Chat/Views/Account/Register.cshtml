@@ -49,7 +49,9 @@
                 <input asp-for="AcceptAgreement" aria-required="true" aria-describedby="reg-agreement-err" />
                 <span>
                     <a asp-controller="Home" asp-action="Agreement" target="_blank" rel="noopener">Üyelik sözleşmesini</a>
-                    okudum ve kabul ediyorum.
+                    ve
+                    <a asp-controller="Home" asp-action="Privacy" target="_blank" rel="noopener">Gizlilik Politikasını</a>
+                    okudum, kabul ediyorum.
                 </span>
             </label>
             <span asp-validation-for="AcceptAgreement" class="field-error" id="reg-agreement-err" role="alert"></span>
