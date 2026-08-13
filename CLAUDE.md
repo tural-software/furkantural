@@ -38,6 +38,7 @@ Bu **API-merkezli katmanlı mimari**: MVC sunum projeleri DB'ye/EF'e **dokunmaz*
 > Sonuç: Performans (N+1, AsNoTracking, IQueryable) ve unit-test çalışmaları esas olarak **Business + Persistence (API tarafı)** içindir, MVC içinde değil.
 
 ## Kritik Kurallar
+- **Kod yorumu yazma:** Yeni kod yorumu (`//`, `/* */`, `@* *@`, `<!-- -->`, `#`) **eklenmez**. Gerekçe, tasarım kararı ve ölçüm sonucu koda değil, kullanıcıya verilen yanıta yazılır. Yorum yalnızca kullanıcı açıkça isterse eklenir. Mevcut yorumlar kendiliğinden **silinmez** de; temizlik ayrı bir iştir ve kullanıcının yönlendirmesiyle parça parça yapılır.
 - **API kontratı = salt-okunur:** Mevcut endpoint imzaları (route, HTTP verb, parametreler) ve DTO property'leri **değiştirilemez**. MVC projeleri bu DTO'ların lokal kopyalarıyla deserialize eder; kontrat değişimi sessizce kırar. (Yeni opsiyonel alan eklemek uyumlu olabilir → api-guardian onayı.)
 - **appsettings.json'a dokunma:** Secret'lar placeholder/şifreli (`0000:base64:0000` AES deseni startup'ta çözülür). Bulguları yalnızca **raporla**, değiştirme.
 - **Domain entity değişimi = migration riski:** `Core/FurkanTural_Domain` veya `Persistence/Configurations` değişimi yeni migration gerektirir → orchestrator'a eskalat.
