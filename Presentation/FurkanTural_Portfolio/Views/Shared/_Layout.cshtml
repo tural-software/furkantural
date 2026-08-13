@@ -5,6 +5,10 @@
     var seoDescription = (ViewData["MetaDescription"] as string) ?? SharedLocalizer["Seo_Description"].Value;
     var ogImage = (ViewData["OgImage"] as string) ?? (siteUrl + "/img/og-image.png");
     var ogType = (ViewData["OgType"] as string) ?? "website";
+    var routeController = ViewContext.RouteData.Values["controller"] as string;
+    var routeAction = ViewContext.RouteData.Values["action"] as string;
+    var isHomePage = string.Equals(routeController, "Home", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(routeAction, "Index", StringComparison.OrdinalIgnoreCase);
     var personJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
     {
         ["@context"] = "https://schema.org",
@@ -20,19 +24,20 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    @* Scroll-reveal'in boyanmadan önce gizlenebilmesi için .js işaretini erken ekle (FOUC önleme). *@
+    
     <script>document.documentElement.classList.add('js');</script>
-    @* Temayı (Admin ile aynı sistem) boyanmadan önce uygula — FOUC ve yanlış-tema yanıp sönmesi önlenir. *@
     <script src="~/js/theme.js" asp-append-version="true"></script>
+    
     <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | Furkan Tural" : "Furkan Tural")</title>
+    
     <meta name="description" content="@(ViewData["MetaDescription"] ?? SharedLocalizer["Seo_Description"])" />
     <meta name="author" content="Furkan Tural" />
     <meta name="theme-color" content="#0d1117" />
-    <link rel="canonical" href="@canonical" />
 
-    @* PWA — kurulabilir uygulama *@
+    <link rel="canonical" href="@canonical" />
     <link rel="manifest" href="~/site.webmanifest" />
     <link rel="apple-touch-icon" href="~/icons/apple-touch-icon.png" />
+    
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="FT Portföy" />
@@ -47,46 +52,55 @@
     <meta name="twitter:title" content="@seoTitle" />
     <meta name="twitter:description" content="@seoDescription" />
     <meta name="twitter:image" content="@ogImage" />
+    
     @Html.Raw("<script type=\"application/ld+json\">" + personJsonLd + "</script>")
-    @* Inter artık kendi sunucumuzdan geliyor (site.css içindeki @@font-face, wwwroot/fonts).
-       Google Fonts bağlantısı kaldırıldı: dış istek yok, CSP'de üçüncü-taraf alan açmıyoruz. *@
+    
     <link rel="preload" href="~/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <a class="skip-link" href="#main">İçeriğe geç</a>
-    @* Tüm-sayfa dekoratif 3D arkaplan (içeriğin arkasında, etkileşimsiz). *@
     <canvas id="canvas-container" aria-hidden="true"></canvas>
-    <nav class="navbar" id="navbar" aria-label="Ana navigasyon">
+    <nav class="navbar@(isHomePage ? "" : " navbar--compact")" id="navbar" aria-label="Ana navigasyon">
         <div class="nav-container">
             <a class="nav-brand" asp-controller="Home" asp-action="Index" aria-label="Furkan Tural">
                 <img class="nav-brand__logo nav-brand__logo--dark" src="~/img/furkan-tural-wordmark-dark.png" alt="" width="148" height="40" />
                 <img class="nav-brand__logo nav-brand__logo--light" src="~/img/furkan-tural-wordmark-light.png" alt="" width="148" height="40" />
             </a>
             <div class="nav-links" id="navLinks">
-                <a class="nav-link" href="#about">@SharedLocalizer["Nav_About"]</a>
-                <a class="nav-link" href="#skills">@SharedLocalizer["Nav_Skills"]</a>
-                <a class="nav-link" href="#experience">@SharedLocalizer["Nav_Experience"]</a>
-                <a class="nav-link" href="#education">@SharedLocalizer["Nav_Education"]</a>
-                <a class="nav-link" href="#projects">@SharedLocalizer["Nav_Projects"]</a>
-                <a class="nav-link" href="#music">@SharedLocalizer["Nav_Music"]</a>
-                <a class="nav-link" href="#pricing">@SharedLocalizer["Nav_Pricing"]</a>
-                <a class="nav-link" href="#contact">@SharedLocalizer["Nav_Contact"]</a>
+                @if (isHomePage)
+                {
+                    <a class="nav-link" href="#about">@SharedLocalizer["Nav_About"]</a>
+                    <a class="nav-link" href="#skills">@SharedLocalizer["Nav_Skills"]</a>
+                    <a class="nav-link" href="#experience">@SharedLocalizer["Nav_Experience"]</a>
+                    <a class="nav-link" href="#education">@SharedLocalizer["Nav_Education"]</a>
+                    <a class="nav-link" href="#projects">@SharedLocalizer["Nav_Projects"]</a>
+                    <a class="nav-link" href="#music">@SharedLocalizer["Nav_Music"]</a>
+                    <a class="nav-link" href="#pricing">@SharedLocalizer["Nav_Pricing"]</a>
+                    <a class="nav-link" href="#contact">@SharedLocalizer["Nav_Contact"]</a>
+                }
+                else
+                {
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">@SharedLocalizer["Nav_Home"]</a>
+                }
             </div>
             <div class="nav-actions">
                 <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="@SharedLocalizer["Theme_Toggle_Dark"]">
                     <span data-theme-icon aria-hidden="true">🌙</span>
                     <span class="toggle-text">@SharedLocalizer["Nav_Theme"]</span>
                 </button>
-                <button class="nav-toggle" id="navToggle" aria-label="Menü" aria-expanded="false" aria-controls="navLinks">
-                    <span></span><span></span><span></span>
-                </button>
+                @if (isHomePage)
+                {
+                    <button class="nav-toggle" id="navToggle" aria-label="Menü" aria-expanded="false" aria-controls="navLinks">
+                        <span></span><span></span><span></span>
+                    </button>
+                }
             </div>
         </div>
     </nav>
 
-    @* data-collapse-*: "Devamını Göster" buton etiketleri tek kaynaktan (lokalize) → collapse.js okur. *@
     <main id="main" tabindex="-1"
           data-collapse-more="@SharedLocalizer["Common_ShowMore"]"
           data-collapse-less="@SharedLocalizer["Common_ShowLess"]">
@@ -96,6 +110,7 @@
     <footer class="footer">
         <div class="footer-container">
             <p>&copy; @FurkanTural_Portfolio.Helpers.TimeHelper.NowIstanbul.Year Furkan Tural. Tüm hakları saklıdır.</p>
+            <a asp-controller="Home" asp-action="Privacy">@SharedLocalizer["Footer_Privacy"]</a>
         </div>
     </footer>
 
@@ -116,6 +131,7 @@
     <script src="~/js/background-three.js" asp-append-version="true" defer></script>
     <script src="~/js/portfolio-3d.js" asp-append-version="true" defer></script>
     <script src="~/js/lightbox.js" asp-append-version="true" defer></script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

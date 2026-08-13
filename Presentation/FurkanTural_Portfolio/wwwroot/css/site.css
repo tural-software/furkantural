@@ -59,11 +59,6 @@
     --nav-height: 64px;
     --transition: 0.2s ease;
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
-    /* Ortak tipografi ölçeği — DÖRT PROJEDE DE BİREBİR AYNI.
-       Bir değeri burada değiştirirsen diğer üç dosyada da değiştir: bu ölçeğin
-       tek amacı siteler arası eşitlik, tek dosyada sapması onu işlevsiz kılar.
-       px karşılıkları 16px kök font-size'a göredir. */
     --fs-3xs: 0.625rem;   /* 10px — büyük harfli mikro rozet */
     --fs-2xs: 0.6875rem;  /* 11px — etiket, meta, tablo üstbilgisi */
     --fs-xs: 0.75rem;     /* 12px */
@@ -100,11 +95,6 @@
 html {
     scroll-behavior: smooth;
     font-size: 16px;
-    /* scroll-padding-top: anchor link'ler (#about vb.) sabit navbar'ın ALTINA otursun.
-       NOT: scroll-snap KALDIRILDI — tam-ekran (≥100vh) section'larda içerik viewport'u
-       aştığında snap, kullanıcının kaydırmasıyla çekişip "takılma/geçiş zorlaştı"
-       hissi yaratıyordu. min-height:100vh tek başına "bir section'dayken komşu
-       görünmez"i zaten sağlıyor; serbest+akıcı scroll için snap'e gerek yok. */
     scroll-padding-top: var(--nav-height);
 }
 
@@ -148,7 +138,6 @@ a:hover { color: var(--color-accent-hover); }
 }
 
 .nav-brand { display: flex; align-items: center; }
-/* Wordmark logosu — şeffaf zemin + site paleti; aktif temaya göre dark/light değişir. */
 .nav-brand__logo { display: block; height: 40px; width: auto; }
 .nav-brand__logo--light { display: none; }
 [data-theme="light"] .nav-brand__logo--dark { display: none; }
@@ -167,8 +156,6 @@ a:hover { color: var(--color-accent-hover); }
 
 .nav-actions { display: flex; align-items: center; gap: 0.5rem; }
 
-/* Erişilebilirlik: klavye kullanıcısı için içeriğe atlama linki (WCAG 2.4.1).
-   Normalde ekran dışında; yalnız odaklanınca belirir. */
 .skip-link {
     position: fixed;
     left: 1rem;
@@ -184,9 +171,6 @@ a:hover { color: var(--color-accent-hover); }
 .skip-link:focus { top: 1rem; }
 main:focus { outline: none; }
 
-/* Görünür klavye-odak göstergesi (WCAG 2.4.7). :focus-visible → yalnız klavye/
-   programatik odakta belirir, fare tıklamasında değil. outline-offset sayesinde
-   accent-zeminli butonlarda bile halka sayfa arkaplanında görünür kalır. */
 :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 /* Theme toggle — Admin (.theme-toggle-btn) stiliyle hizalı */
@@ -244,12 +228,24 @@ main:focus { outline: none; }
     }
     .nav-links.open { transform: translateY(0); opacity: 1; pointer-events: all; }
     .nav-toggle { display: flex; }
+    .navbar--compact .nav-links {
+        position: static;
+        flex-direction: row;
+        background: none;
+        border: none;
+        padding: 0;
+        transform: none;
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+@media (max-width: 430px) {
+    .navbar--compact .nav-brand__logo { height: 30px; }
+    .navbar--compact .toggle-text { display: none; }
 }
 
 /* ---- Section base ---- */
-/* Her section en az tam viewport yüksekliği + içerik dikey ortalı → bir section'da
-   iken komşu section görünmez. min-height (sabit height değil) → içerik taşarsa
-   normal akar/kaydırılır, kırpılmaz. svh mobil tarayıcı çubuğu için. */
 .section {
     padding: 5rem 1.5rem;
     min-height: 100vh;
@@ -258,10 +254,11 @@ main:focus { outline: none; }
     flex-direction: column;
     justify-content: center;
 }
-/* width:100% şart: .section flex-column + container'da yatay auto-margin olunca
-   stretch iptal olup container içeriğe büzülüyor, grid'ler tek/dar sütuna çöküyordu.
-   Genişlik 1280 → geniş ekranda kartlar daha ferah yayılır. */
 .section-container { width: 100%; max-width: 1280px; margin: 0 auto; }
+.section-container.content-page { max-width: 1100px; padding: 7rem 1.5rem 4rem; }
+.content-page .section-title { text-align: center; }
+.content-page .section-desc { max-width: none; }
+.content-page p { text-align: justify; text-align-last: left; -webkit-hyphens: auto; hyphens: auto; }
 .section-header { text-align: center; margin-bottom: 3rem; }
 .section-eyebrow {
     display: inline-block;
@@ -275,14 +272,8 @@ main:focus { outline: none; }
 .section-empty { color: var(--color-text-muted); text-align: center; padding: 2rem 0; }
 
 /* ---- "Devamını Göster" — uzun dinamik listeleri katlama ---- */
-/* collapse.js, [data-collapse] kapsayıcısında limitten sonraki öğelere
-   .collapse-item--hidden ekler ve altına .collapse-toggle-wrap > butonu enjekte eder.
-   JS yoksa bu sınıflar hiç eklenmez → içerik tam görünür kalır (ilerlemeli geliştirme). */
 .collapse-item--hidden { display: none !important; }
 .collapse-toggle-wrap { display: flex; justify-content: center; margin-top: 2.25rem; }
-/* JS, öğe sayısı limitin altındayken wrap'i [hidden] ile gizler. Üstteki display:flex
-   kuralı UA'nın [hidden]{display:none}'ıyla aynı özgüllükte olup onu ezdiğinden, daha
-   yüksek özgüllüklü bu kural olmadan boş bir buton görünür kalırdı. */
 .collapse-toggle-wrap[hidden] { display: none; }
 @keyframes collapseItemIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .collapse-item--in { animation: collapseItemIn 0.4s ease both; }
@@ -374,7 +365,6 @@ main:focus { outline: none; }
 .btn-block { width: 100%; }
 
 /* ---- About ---- */
-/* Section'lar saydam → tüm-sayfa 3D arkaplan her bölümde eşit görünür (banding yok). */
 .about-section { background: transparent; }
 .about-content { max-width: 700px; margin: 0 auto; text-align: center; }
 .about-desc { font-size: var(--fs-lg); color: var(--color-text-muted); line-height: 1.8; }
@@ -463,7 +453,6 @@ main:focus { outline: none; }
 .project-card__footer { padding: 1rem 1.5rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.75rem; }
 
 /* ---- Songs ---- */
-/* Şarkılar tek dar sütun yerine kart-grid: geniş ekranda yan yana yayılır. */
 .songs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 0.75rem; }
 .song-card {
     background: var(--color-bg-card);
@@ -475,26 +464,19 @@ main:focus { outline: none; }
 }
 .song-card:hover { border-color: var(--color-accent); }
 
-/* Glass kartlar — referans gibi yarı-saydam (3D arkadan görünür), radius 1rem.
-   Blur YOK: furkantural da blur kullanmıyor + çok sayıda kartta backdrop-filter pahalı. */
 .skill-card, .project-card, .song-card, .timeline-content {
     background: var(--color-bg-card-translucent);
     border-radius: var(--radius-lg);
 }
+
 .song-card__info { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; min-width: 0; }
 .song-card__name { font-weight: 600; }
 a.song-card__link { color: inherit; }
 a.song-card__link:hover { color: var(--color-accent); }
-/* Meta (sanatçı•parça•yıl) ile tür HER ZAMAN ayrı satırda (kolon dizilim) → uzun
-   isimde tür alt satıra "kayıp" kart yüksekliğini bozmasın; tüm kartlar 2-satır
-   alt-bilgiyle eşit yükseklikte kalır. */
 .song-card__sub { display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; }
 .song-card__meta { font-size: var(--fs-sm); color: var(--color-text-muted); }
 .song-card__genre { font-size: var(--fs-sm); color: var(--color-accent); }
 .song-card__main { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
-
-/* Şarkı kartı ikonu — statik müzik nota (eski animasyonlu equalizer kaldırıldı;
-   tüm kartlar isimden bağımsız aynı görünür). */
 .song-card__icon { display: inline-flex; align-items: center; justify-content: center; color: var(--color-accent); flex-shrink: 0; }
 .song-card:hover .song-card__icon { color: var(--color-accent-hover); }
 .song-card__duration { color: var(--color-text-muted); font-size: var(--fs-md); font-variant-numeric: tabular-nums; }
@@ -529,8 +511,18 @@ a.song-card__link:hover { color: var(--color-accent); }
     padding: 2rem 1.5rem;
     text-align: center;
 }
-.footer-container { max-width: 1100px; margin: 0 auto; }
-.footer p { color: var(--color-text-muted); font-size: var(--fs-md); }
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 1.25rem;
+    flex-wrap: wrap;
+}
+.footer p { color: var(--color-text-muted); font-size: var(--fs-md); margin: 0; }
+.footer-container a { color: var(--color-text-muted); font-size: var(--fs-md); }
+.footer-container a:hover { color: var(--color-accent); }
 
 /* ---- Consent Banner ---- */
 .consent-banner {
@@ -574,15 +566,9 @@ a.song-card__link:hover { color: var(--color-accent); }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
 
 /* ---- Scroll-reveal ---- */
-/* Gizleme YALNIZCA JS aktifken (.js) uygulanır → JS yoksa içerik tam görünür.
-   Sadece opacity/transform kullanılır (ekran okuyucu içeriği görmeye devam eder). */
 .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
 .js .reveal.is-visible { opacity: 1; transform: none; }
 
-/* =============================================================================
-   site-additions (handoff: design_handoff_portfolio_3d) — 3D + yeni bölüm stilleri.
-   Mevcut token'lar korunur; YENİ: ikincil mor aksan + 3D/yeni-bölüm kuralları.
-============================================================================= */
 :root {
   /* İkincil aksan: müzisyen kimliği (mor). */
   --color-accent-2: #a78bfa;
@@ -593,9 +579,6 @@ a.song-card__link:hover { color: var(--color-accent); }
   --color-accent-2-glow: rgba(124, 92, 252, 0.12);
 }
 
-/* Hero imza objesi (mini globe boncukları) — SOYUT karo: arka plan/kenarlık/gölge
-   YOK; boncuklar doğrudan sayfa 3D arkaplanı üzerinde yüzer → aydınlık/karanlık
-   fark etmeksizin güzel durur. overflow: visible → kenardaki boncuklar kırpılmaz. */
 .hero-3d {
   width: 360px; height: 360px;
   background: none;
@@ -792,21 +775,18 @@ html.lightbox-open { overflow: hidden; }
 }
 .lightbox__close:hover { background: rgba(0, 0, 0, 0.85); border-color: #fff; }
 
-/* Geniş ekranlar (PC) — site genelinde daha ferah yerleşim. Önce okuma yoğun
-   detay sayfası (proje/müzik) genişler; çok geniş ekranda ana kapsayıcılar da
-   birlikte büyür ki sayfa geneli geniş ekranlarda daha dolu/ferah dursun. */
 @media (min-width: 1200px) {
-  .nav-container, .hero-container, .footer-container { max-width: 1180px; }
+  .nav-container, .hero-container, .footer-container, .section-container.content-page { max-width: 1180px; }
   .section-container, .timeline-2col { max-width: 1380px; }
   .detail-container { max-width: 1140px; }
 }
 @media (min-width: 1600px) {
-  .nav-container, .hero-container, .footer-container { max-width: 1340px; }
+  .nav-container, .hero-container, .footer-container, .section-container.content-page { max-width: 1340px; }
   .section-container, .timeline-2col { max-width: 1500px; }
   .detail-container { max-width: 1280px; }
 }
 @media (min-width: 1920px) {
-  .nav-container, .hero-container, .footer-container { max-width: 1480px; }
+  .nav-container, .hero-container, .footer-container, .section-container.content-page { max-width: 1480px; }
   .section-container, .timeline-2col { max-width: 1660px; }
   .detail-container { max-width: 1400px; }
 }
