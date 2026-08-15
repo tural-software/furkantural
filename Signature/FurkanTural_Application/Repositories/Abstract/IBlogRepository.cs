@@ -3,32 +3,22 @@ using FurkanTural_Domain.Entities;
 namespace FurkanTural_Application.Repositories.Abstract;
 
 /// <summary>
-/// Blog'a özel sorgular: kategori + başlık filtreli sayfalama ve çoğa-çok kategori ilişkisi
-/// (genel <see cref="IRepository{T}"/> davranışına ek olarak).
+/// Blog'a özgü okumalar; hepsi çoğa-çok kategori bağı ya da liste ekranının tek sorguda dönmesi için
+/// var. GetPublishedPageAsync toplam ile sayfayı tek gidiş-dönüşte alır, arama yalnızca başlıkta yapılır
+/// (içerik taranmaz), sıralama Id'ye göre azalandır ve sayfa numarası 1 tabanlıdır.
+/// GetCategoriesForBlogsAsync liste ekranında blog başına sorgu açılmasın diyedir — hiç kategorisi
+/// olmayan blog sözlükte boş liste ile değil, hiç yer almaz.
+///
+/// SetCategoriesAsync bağların tamamını verilen kümeyle değiştirir: fazlalar kaldırılır, eksikler
+/// eklenir, tekrar eden Id'ler teke iner. Ara tablo satırları yumuşak silinmez, gerçekten silinir. Bu
+/// metot da kendi başına kaydetmez; <see cref="IUnitOfWork.SaveChangesAsync"/> beklenir.
 /// </summary>
 public interface IBlogRepository : IRepository<Blog>
 {
-    /// <summary>Yayınlanmış blogları en yeni en üstte, isteğe bağlı kategori + başlık aramasıyla sayfalar.</summary>
-    Task<(IReadOnlyList<Blog> Items, int Total)> GetPublishedPageAsync(
-        int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Sitemap/SEO için yayınlı yazıların hafif listesi: yalnız Id + tarihler (içerik çekilmez).
-    /// En yeni en üstte. Global query filter (yayınlı = !IsDeleted &amp;&amp; IsActive) otomatik uygulanır.
-    /// </summary>
-    Task<IReadOnlyList<(int Id, DateTime CreatedAt, DateTime? UpdatedAt)>> GetSitemapDataAsync(
-        CancellationToken cancellationToken = default);
-
-    /// <summary>Verilen blog Id'leri için kategoriler (blogId → kategori listesi).</summary>
-    Task<Dictionary<int, List<Category>>> GetCategoriesForBlogsAsync(
-        IReadOnlyCollection<int> blogIds, CancellationToken cancellationToken = default);
-
-    /// <summary>Tek bir bloğun kategorileri.</summary>
+    Task<(IReadOnlyList<Blog> Items, int Total)> GetPublishedPageAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<(int Id, DateTime CreatedAt, DateTime? UpdatedAt)>> GetSitemapDataAsync(CancellationToken cancellationToken = default);
+    Task<Dictionary<int, List<Category>>> GetCategoriesForBlogsAsync(IReadOnlyCollection<int> blogIds, CancellationToken cancellationToken = default);
     Task<List<Category>> GetCategoriesByBlogAsync(int blogId, CancellationToken cancellationToken = default);
-
-    /// <summary>Bloğa atanmış kategori Id'leri (admin düzenlemede çoklu-seçimi ön-doldurmak için).</summary>
     Task<List<int>> GetCategoryIdsByBlogAsync(int blogId, CancellationToken cancellationToken = default);
-
-    /// <summary>Bloğun kategori kümesini verilen Id'lerle eşitler (ekle/çıkar). Kaydetmeyi çağıran yapar.</summary>
     Task SetCategoriesAsync(int blogId, IReadOnlyCollection<int> categoryIds, int? userId, CancellationToken cancellationToken = default);
 }
