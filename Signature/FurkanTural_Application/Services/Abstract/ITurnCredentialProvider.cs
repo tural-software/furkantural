@@ -4,12 +4,13 @@ using FurkanTural_Application.Wrappers;
 namespace FurkanTural_Application.Services.Abstract;
 
 /// <summary>
-/// WebRTC için kısa ömürlü TURN (ICE) kimlik bilgileri üretir.
-/// Cloudflare Realtime TURN API'sini sunucuda çağırır; API token tarayıcıya verilmez.
+/// WebRTC için kısa ömürlü ICE/TURN kimlik bilgileri. Değerler kalıcı değildir, her çağrıda dış
+/// sağlayıcıdan yeniden üretilir ve süreleri dolar; saklanıp yeniden kullanılmamalıdır. Yapılandırma
+/// eksikse 503 döner — bu geçici bir hata değil, arama altyapısının hiç kurulmamış olduğu anlamına
+/// gelir. customIdentifier yalnızca sağlayıcı tarafındaki kullanım ölçümünü kullanıcıya bağlamak
+/// içindir, yetkilendirmeye etki etmez.
 /// </summary>
 public interface ITurnCredentialProvider
 {
-    /// <param name="customIdentifier">Cloudflare kullanım analizi için kullanıcı kimliği (opsiyonel).</param>
-    /// <param name="cancellationToken">İşlemi iptal etmek için belirteç.</param>
     Task<Result<TurnCredentialsDto>> GetIceServersAsync(int? customIdentifier = null, CancellationToken cancellationToken = default);
 }

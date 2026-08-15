@@ -4,6 +4,11 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
+/// <summary>
+/// Bülten aboneleri. UnsubscribeAsync kaydı yumuşak siler; canlı okumalar silinmiş satırı görmediği
+/// için aynı adres yeniden abone olduğunda eski kayıt canlandırılmaz, yeni bir satır açılır. Kayıt
+/// hâlâ canlıyken ikinci kez abone olma denemesi ise hata döner.
+/// </summary>
 public interface ISubscriberService : IService<SubscriberDto, CreateSubscriberDto, UpdateSubscriberDto>
 {
     Task<Result> SubscribeAsync(string email, CancellationToken cancellationToken = default);

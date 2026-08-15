@@ -1,11 +1,12 @@
 namespace FurkanTural_Application.Services.Abstract;
 
 /// <summary>
-/// Web Push ile (uygulama kapalıyken bile) bildirim gönderir. Bildirim "en iyi çaba"dır:
-/// yapılandırma yoksa veya gönderim başarısızsa <b>sessizce</b> geçer, asıl akışı (mesaj gönderimi) bozmaz.
+/// Kullanıcı uygulamada değilken gönderilen tarayıcı push bildirimi. En iyi çaba ilkesiyle çalışır:
+/// yapılandırma yoksa, abonelik yoksa veya gönderim başarısız olursa istisna fırlatmaz, sessizce
+/// döner — mesajlaşmanın kendisi bildirime bağlı kalmasın diye. Geçersiz hâle gelmiş abonelikler bu
+/// sırada temizlenir.
 /// </summary>
 public interface IPushSender
 {
-    /// <summary>Alıcıya "yeni mesaj" bildirimi gönderir (yalnız gönderen adı; içerik gizli).</summary>
     Task SendMessageNotificationAsync(int receiverUserId, string senderName, CancellationToken cancellationToken = default);
 }

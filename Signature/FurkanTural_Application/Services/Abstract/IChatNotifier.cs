@@ -4,8 +4,11 @@ using FurkanTural_Application.DTOs.UserFriend;
 namespace FurkanTural_Application.Services.Abstract;
 
 /// <summary>
-/// Gerçek zamanlı bildirim soyutlaması. Business katmanı SignalR'a doğrudan bağımlı
-/// olmasın diye burada tanımlanır; somut uygulaması (IHubContext) API katmanındadır.
+/// Gerçek zamanlı sohbet bildirimlerinin soyutlaması; iş katmanı gerçek zamanlı altyapıya doğrudan
+/// bağlanmasın diye vardır, uygulaması sunum tarafında durur. Hedefleme bağlantı kimliğiyle değil
+/// kullanıcı kimliğiyle yapılır, yani kullanıcının açık tüm oturumları aynı bildirimi alır. Teslim
+/// garantisi yoktur: alıcı çevrim dışıysa bildirim düşer, kalıcı olan yalnızca veri tabanına yazılan
+/// kayıttır — bu yüzden bildirim gönderimi kayıt işleminin yerine geçmez.
 /// </summary>
 public interface IChatNotifier
 {
@@ -13,10 +16,6 @@ public interface IChatNotifier
     Task NotifyFriendRequestAcceptedAsync(int requesterUserId, FriendDto friend);
     Task NotifyMessageReceivedAsync(int receiverUserId, ChatMessageDto message);
     Task NotifyMessageReadAsync(int senderUserId, int byUserId);
-
-    /// <summary>Gönderen mesajını sildi; her iki tarafın açık istemcileri balonu kaldırsın.</summary>
     Task NotifyMessageDeletedAsync(int targetUserId, ChatMessageDto message);
-
-    /// <summary>Gönderen mesajını düzenledi; her iki tarafın açık istemcileri içeriği güncellesin.</summary>
     Task NotifyMessageEditedAsync(int targetUserId, ChatMessageDto message);
 }

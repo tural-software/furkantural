@@ -4,20 +4,22 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
+/// <summary>
+/// Arama kayıtları. İlk dört metot SignalR hub akışından çağrılır ve bilinçli olarak
+/// <see cref="Wrappers.Result"/> zarfı kullanmaz: hub'ın kullanıcıya döndüreceği bir hata yüzeyi
+/// yoktur, kayıt bulunamazsa sessizce geçilir. MarkAnsweredAsync ve MarkEndedAsync sonlanmış bir
+/// aramayı yeniden yazmaz, böylece geç gelen kapanış sinyalleri süreyi bozmaz; süre yalnızca arama
+/// yanıtlanmışsa hesaplanır. Arama türü ve durumu serbest metin değil
+/// <see cref="FurkanTural_Domain.Constants.CallDefinitions"/> değerleridir, geçersiz gelen değer
+/// hata yerine sessizce varsayılana çekilir.
+/// </summary>
 public interface ICallLogService
 {
-    // ── Hub yaşam döngüsü ──
-    /// <summary>Yeni "Ringing" arama kaydı oluşturur; callId döner.</summary>
     Task<int> CreateRingingAsync(int callerId, int calleeId, string callType, CancellationToken cancellationToken = default);
     Task<CallParticipantsDto?> GetParticipantsAsync(int callId, CancellationToken cancellationToken = default);
     Task MarkAnsweredAsync(int callId, CancellationToken cancellationToken = default);
-    /// <summary>Aramayı sonlandırır. <paramref name="status"/>: Ended/Rejected/Missed/Canceled/Failed.</summary>
     Task MarkEndedAsync(int callId, string status, CancellationToken cancellationToken = default);
-
-    // ── Üye ──
     Task<Result<IEnumerable<CallLogDto>>> GetHistoryAsync(int currentUserId, CancellationToken cancellationToken = default);
-
-    // ── Admin ──
     Task<PagedResult<AdminCallLogDto>> GetAllPagedForAdminAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<Result<AdminCallLogDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);
     Task<Result<AdminCallLogDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);

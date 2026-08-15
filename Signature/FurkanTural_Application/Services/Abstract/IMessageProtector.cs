@@ -1,19 +1,15 @@
 namespace FurkanTural_Application.Services.Abstract;
 
 /// <summary>
-/// Sohbet mesajı içeriğini <b>at-rest</b> (veritabanında) şifreler. Amaç: veritabanı/yedek
-/// hırsızlığı durumunda içeriğin anahtarsız okunamaması. Bu uçtan uca şifreleme DEĞİLDİR —
-/// sunucu anahtarı elinde tutar, kullanıcıya/yetkiliye okutmak için çözer (KVKK sözleşmesiyle uyumlu).
-/// Geri çözülebilir olmalıdır; bu yüzden parola gibi tek yönlü hash kullanılmaz — bkz. IPasswordHasher.
+/// Sohbet mesajı içeriğinin veri tabanında şifreli tutulması. Saklanan değer kendini ön ekiyle
+/// tanıtır; IsProtected bu ön eke bakar ve şifreleme devreye girmeden önce yazılmış eski kayıtları
+/// ayırt etmeye yarar. Protect ile Unprotect null ve boş değeri olduğu gibi geçirir, bu yüzden metin
+/// taşımayan mesajlarda ayrıca kontrol gerekmez. Aynı düz metin her seferinde farklı şifreli metin
+/// üretir, dolayısıyla eşit içerikler şifreli hâllerine bakılarak eşleştirilemez.
 /// </summary>
 public interface IMessageProtector
 {
-    /// <summary>Düz metni şifreler ("ENC1:" önekli, kendini tanımlayan format). null/boş ise olduğu gibi döner.</summary>
     string? Protect(string? plaintext);
-
-    /// <summary>Şifreliyse çözer; şifreli değilse (legacy düz metin) olduğu gibi döner.</summary>
     string? Unprotect(string? stored);
-
-    /// <summary>Saklanan değer bu şemayla şifrelenmiş mi? (Legacy düz metin kayıtları ayırt etmek için.)</summary>
     bool IsProtected(string? stored);
 }
