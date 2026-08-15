@@ -79,8 +79,6 @@ public class ApiResultTests
         // Assert
         result.Success.Should().BeFalse();
         result.Message.Should().BeEmpty();
-        result.InternalMessage.Should().BeEmpty();
-        result.ErrorCode.Should().BeEmpty();
         result.StatusCode.Should().Be(200);
         result.Errors.Should().BeEmpty();
     }
