@@ -1,7 +1,8 @@
 namespace FurkanTural_Domain.Constants;
 
 /// <summary>
-/// <see cref="Entities.Report"/> için hedef-türü ve durum sabitleri.
+/// <see cref="Entities.Report"/> için hedef-türü ve durum sabitleri. Şikayetin hangi tablonun
+/// kaydına baktığını <see cref="TargetTypes"/> belirler, çünkü TargetId'nin foreign key'i yoktur.
 /// </summary>
 public static class ReportDefinitions
 {

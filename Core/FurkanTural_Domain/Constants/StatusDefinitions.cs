@@ -1,8 +1,8 @@
 namespace FurkanTural_Domain.Constants;
 
 /// <summary>
-/// <see cref="Entities.Status"/> tablosundaki statülerin sabit grup ve kod anahtarları.
-/// Servisler statüyü id ile değil, bu sabitler (Group + Code) ile çözer.
+/// <see cref="Entities.Status"/> satırlarının Group + Code anahtarları; servisler statüyü Id ile
+/// değil bu ikiliyle çözer.
 /// </summary>
 public static class StatusDefinitions
 {

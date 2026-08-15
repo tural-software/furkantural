@@ -1,7 +1,8 @@
 namespace FurkanTural_Domain.Constants;
 
 /// <summary>
-/// <see cref="Entities.CallLog"/> için tür ve durum sabitleri.
+/// <see cref="Entities.CallLog"/> için tür ve durum sabitleri; <see cref="PolicyDefaults"/> ise
+/// tekil <see cref="Entities.CallPolicy"/> satırının tohum değerlerini taşır.
 /// </summary>
 public static class CallDefinitions
 {
@@ -13,20 +14,19 @@ public static class CallDefinitions
 
     public static class Statuses
     {
-        public const string Ringing = "Ringing";   // çalıyor (cevap bekleniyor)
-        public const string Answered = "Answered";  // cevaplandı (görüşme sürüyor)
-        public const string Ended = "Ended";        // normal sonlandı
-        public const string Rejected = "Rejected";  // alıcı reddetti
-        public const string Missed = "Missed";      // cevaplanmadı (arayan vazgeçti / zaman aşımı)
-        public const string Canceled = "Canceled";  // arayan iptal etti
-        public const string Failed = "Failed";      // teknik hata
+        public const string Ringing = "Ringing";
+        public const string Answered = "Answered";
+        public const string Ended = "Ended";
+        public const string Rejected = "Rejected";
+        public const string Missed = "Missed";
+        public const string Canceled = "Canceled";
+        public const string Failed = "Failed";
     }
 
     public static bool IsValidType(string? type) =>
         string.Equals(type, Types.Audio, System.StringComparison.OrdinalIgnoreCase) ||
         string.Equals(type, Types.Video, System.StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>Görüntülü arama bit hızı politikasının varsayılanları (seed + fallback).</summary>
     public static class PolicyDefaults
     {
         public const bool BitrateLimitEnabled = true;

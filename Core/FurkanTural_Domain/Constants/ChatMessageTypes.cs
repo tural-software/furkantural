@@ -1,8 +1,8 @@
 namespace FurkanTural_Domain.Constants;
 
 /// <summary>
-/// <see cref="Entities.ChatMessage"/>.MessageType için sabit değerler.
-/// Null/boş = <see cref="Text"/>.
+/// <see cref="Entities.ChatMessage.MessageType"/> için geçerli değerler. Alan null veya boşsa mesaj
+/// <see cref="Text"/> kabul edilir; tür taşımayan eski kayıtlar bu yüzden çalışmayı sürdürür.
 /// </summary>
 public static class ChatMessageTypes
 {
