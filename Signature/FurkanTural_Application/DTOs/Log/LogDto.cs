@@ -1,5 +1,9 @@
 namespace FurkanTural_Application.DTOs.Log;
 
+/// <summary>
+/// Kayıt defteri satırı. Date, satırın oluşturulma zamanı değil olayın kendi zaman damgasıdır — çağıran
+/// gönderir — ve listeler bu alana göre sıralanır, satırın CreatedAt'ine göre değil.
+/// </summary>
 public class LogDto
 {
     public int Id { get; set; }

@@ -1,5 +1,9 @@
 namespace FurkanTural_Application.DTOs.Education;
 
+/// <summary>
+/// Portfolyodaki eğitim kaydı. EndDate boş bırakılması eksik veri değil "hâlâ devam ediyor" anlamına
+/// gelir; görünüm katmanı bu durumda tarih yerine sürüyor ifadesi basar.
+/// </summary>
 public class EducationDto
 {
     public int Id { get; set; }

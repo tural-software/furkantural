@@ -1,8 +1,10 @@
 namespace FurkanTural_Application.DTOs.UserFriend;
 
 /// <summary>
-/// Bekleyen bir arkadaşlık isteğini temsil eder. Username/DisplayName/AvatarUrl
-/// her zaman karşı tarafa aittir (gelen istekte gönderen, giden istekte alıcı).
+/// Bekleyen arkadaşlık isteği; gelen ve giden istekler aynı DTO ile döner, ayrımı IsOutgoing yapar.
+/// Dikkat: Username/DisplayName/AvatarUrl her zaman karşı tarafı anlatır, RequesterUserId ise her zaman
+/// isteği başlatanı gösterir. Giden istekte bu ikisi farklı kişilerdir — profil alanları alıcıya,
+/// RequesterUserId çağıranın kendisine aittir.
 /// </summary>
 public class FriendRequestDto
 {
@@ -12,7 +14,5 @@ public class FriendRequestDto
     public string? DisplayName { get; set; }
     public string? AvatarUrl { get; set; }
     public DateTime RequestedAt { get; set; }
-
-    /// <summary>true ise bu istek current kullanıcının GÖNDERDİĞİ (bekleyen) bir istektir (salt-okunur).</summary>
     public bool IsOutgoing { get; set; }
 }

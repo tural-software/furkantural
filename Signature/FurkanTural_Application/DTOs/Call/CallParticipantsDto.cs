@@ -1,6 +1,5 @@
 namespace FurkanTural_Application.DTOs.Call;
 
-/// <summary>Hub'ın bir aramayı yetkilendirip yönlendirmesi için gereken asgari bilgi.</summary>
 public class CallParticipantsDto
 {
     public int Id { get; set; }

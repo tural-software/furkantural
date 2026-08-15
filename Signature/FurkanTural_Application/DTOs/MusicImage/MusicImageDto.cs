@@ -1,5 +1,9 @@
 namespace FurkanTural_Application.DTOs.MusicImage;
 
+/// <summary>
+/// Müzik kaydının görseli. IsCover tekil değildir: yeni bir görseli kapak işaretlemek eskisinin
+/// işaretini kaldırmaz, hiçbir yerde teklik denetimi yapılmaz.
+/// </summary>
 public class MusicImageDto
 {
     public int Id { get; set; }

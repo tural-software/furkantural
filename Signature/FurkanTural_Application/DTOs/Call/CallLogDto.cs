@@ -1,6 +1,10 @@
 namespace FurkanTural_Application.DTOs.Call;
 
-/// <summary>Üye arama geçmişi öğesi (karşı taraf bilgisiyle zenginleştirilmiş).</summary>
+/// <summary>
+/// Arama geçmişi satırının, isteği yapan kullanıcıya göre düzleştirilmiş hâli. Kayıtta arayan ve aranan
+/// ayrı alanlarda durur; buradaki Other* alanları ile Direction ise çağırana göre hesaplanır, dolayısıyla
+/// aynı arama iki taraf için farklı DTO üretir.
+/// </summary>
 public class CallLogDto
 {
     public int Id { get; set; }
@@ -8,7 +12,6 @@ public class CallLogDto
     public string? OtherUsername { get; set; }
     public string? OtherDisplayName { get; set; }
     public string? OtherAvatarUrl { get; set; }
-    /// <summary>"Incoming" | "Outgoing".</summary>
     public string Direction { get; set; } = "Outgoing";
     public string? CallType { get; set; }
     public string? Status { get; set; }

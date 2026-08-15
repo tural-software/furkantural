@@ -1,15 +1,18 @@
 namespace FurkanTural_Application.DTOs.Call;
 
 /// <summary>
-/// Cloudflare Realtime TURN "generate-ice-servers" yanıtı.
-/// <c>iceServers</c> bir <b>dizi</b>dir (STUN + TURN girdileri).
-/// Tarayıcı: <c>new RTCPeerConnection({ iceServers: dto.iceServers, iceTransportPolicy: 'relay' })</c>.
+/// Cloudflare Realtime'dan alınan ICE sunucu listesi. Kimlik bilgileri kısa ömürlüdür (24 saat) ve her
+/// istekte yeniden üretilir, saklanmaya uygun değildir.
 /// </summary>
 public class TurnCredentialsDto
 {
     public IceServerDto[] IceServers { get; set; } = [];
 }
 
+/// <summary>
+/// Tarayıcının RTCIceServer nesnesiyle aynı şekli taşır, doğrudan RTCPeerConnection'a verilir. STUN
+/// girdilerinde Username ve Credential boş kalır, yalnızca TURN girdileri doldurulur.
+/// </summary>
 public class IceServerDto
 {
     public string[] Urls { get; set; } = [];

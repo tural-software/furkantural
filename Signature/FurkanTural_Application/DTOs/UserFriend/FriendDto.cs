@@ -1,7 +1,10 @@
 namespace FurkanTural_Application.DTOs.UserFriend;
 
 /// <summary>
-/// Onaylanmış bir arkadaşı temsil eder (karşı kullanıcının görünür bilgileri).
+/// Arkadaş listesi satırı; engellenenler listesi de aynı DTO ile döner. IsOnline veri tabanından değil
+/// bellekteki bağlantı takibinden gelir, dolayısıyla sunucu yeniden başladığında herkes çevrimdışı
+/// görünür; LastSeenAt ise kalıcı kayıttan okunur. Since isteğin yanıtlandığı tarihtir, o boşsa ilişki
+/// satırının açıldığı tarihe düşer.
 /// </summary>
 public class FriendDto
 {
@@ -11,10 +14,6 @@ public class FriendDto
     public string? DisplayName { get; set; }
     public string? AvatarUrl { get; set; }
     public DateTime Since { get; set; }
-
-    /// <summary>Arkadaş şu an çevrimiçi mi (en az bir aktif SignalR bağlantısı var mı)?</summary>
     public bool IsOnline { get; set; }
-
-    /// <summary>Çevrimdışıysa en son görüldüğü an (UTC); hiç bağlanmadıysa null.</summary>
     public DateTime? LastSeenAt { get; set; }
 }

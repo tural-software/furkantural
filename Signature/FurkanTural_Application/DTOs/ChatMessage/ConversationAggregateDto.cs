@@ -1,8 +1,9 @@
 namespace FurkanTural_Application.DTOs.ChatMessage;
 
 /// <summary>
-/// Repository'nin tek sorguda döndürdüğü, karşı kullanıcı başına konuşma istatistiği
-/// (son mesaj + okunmamış sayısı). Arkadaş meta verisiyle servis katmanında birleştirilir.
+/// Sohbet listesinin ham sayıları; doğrudan istemciye verilmez. Kullanıcı bilgisi taşımaz ve LastMessage
+/// bu aşamada hâlâ şifrelidir — çözme ile kullanıcı bilgisinin eklenmesi
+/// <see cref="ConversationSummaryDto"/> kurulurken yapılır.
 /// </summary>
 public class ConversationAggregateDto
 {
