@@ -2,6 +2,10 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Domain.Entities;
 
+/// <summary>
+/// <see cref="Blog"/> görseli (BlogId). Url tam adres değil, wwwroot/images/uploads altındaki
+/// dosya adıdır.
+/// </summary>
 public class BlogImage : BaseEntity
 {
     public string? Url { get; set; }

@@ -3,8 +3,8 @@ using FurkanTural_Domain.Entities.Common;
 namespace FurkanTural_Domain.Entities;
 
 /// <summary>
-/// Blog kategorisi. Blog ile çoğa-çok ilişkilidir (<see cref="BlogCategory"/> ara tablosu).
-/// <see cref="Color"/> kart üzerindeki kategori chip'inin rengidir (hex; boşsa UI varsayılan accent kullanır).
+/// Blog kategorisi; <see cref="Blog"/>'a <see cref="BlogCategory"/> üzerinden çoğa-çok bağlanır.
+/// Color, kategori etiketinin hex rengidir.
 /// </summary>
 public class Category : BaseEntity
 {

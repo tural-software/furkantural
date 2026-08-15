@@ -3,7 +3,11 @@ using FurkanTural_Domain.Entities.Common;
 namespace FurkanTural_Domain.Entities;
 
 /// <summary>
-/// İki kullanıcı arasında birebir sohbet mesajı. Gönderim zamanı = <c>CreatedAt</c>.
+/// İki kullanıcı arasındaki birebir mesaj; SenderId ve ReceiverId <see cref="User"/>'a bakar,
+/// gönderim anı CreatedAt'tir. Content veritabanında AES-GCM ile şifreli durur, düz metne yalnızca
+/// serviste dönülür. MessageType <see cref="Constants.ChatMessageTypes"/> sabitlerinden gelir;
+/// AttachmentUrl adres değil, yükleme klasörüne göreli dosya adıdır. EditedAt ayrı tutulur, çünkü
+/// UpdatedAt'i okundu işaretlemesi de damgalar.
 /// </summary>
 public class ChatMessage : BaseEntity
 {
@@ -13,15 +17,9 @@ public class ChatMessage : BaseEntity
     public bool IsRead { get; set; }
     public DateTime? ReadAt { get; set; }
 
-    /// <summary>"Text" (varsayılan) veya "Audio". Null/boş = Text.</summary>
     public string? MessageType { get; set; }
-    /// <summary>Ses mesajı için yüklenen dosyanın adı (/images/uploads altında).</summary>
     public string? AttachmentUrl { get; set; }
     public int? DurationSeconds { get; set; }
 
-    /// <summary>
-    /// Gönderenin mesajı son düzenlediği an (yalnızca Text). Null = hiç düzenlenmedi.
-    /// BaseEntity.UpdatedAt kullanılamaz çünkü okundu işaretleme de onu damgalar.
-    /// </summary>
     public DateTime? EditedAt { get; set; }
 }

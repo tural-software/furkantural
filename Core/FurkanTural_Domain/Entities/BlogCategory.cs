@@ -3,7 +3,7 @@ using FurkanTural_Domain.Entities.Common;
 namespace FurkanTural_Domain.Entities;
 
 /// <summary>
-/// Blog ↔ Kategori çoğa-çok ara tablosu (FK-only; navigation property yok, proje deseniyle uyumlu).
+/// <see cref="Blog"/> ile <see cref="Category"/> arasındaki çoğa-çok ara tablosu.
 /// </summary>
 public class BlogCategory : BaseEntity
 {

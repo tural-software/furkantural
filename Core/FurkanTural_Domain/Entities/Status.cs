@@ -3,8 +3,8 @@ using FurkanTural_Domain.Entities.Common;
 namespace FurkanTural_Domain.Entities;
 
 /// <summary>
-/// Site genelinde yeniden kullanılabilir durum (lookup) tablosu.
-/// Her kullanım kendi <see cref="Group"/> adıyla filtreler (örn. "Friendship").
+/// Farklı akışların paylaştığı durum sözlüğü. Bir satır Group + Code ikilisiyle adreslenir ve
+/// servisler Id yerine <see cref="Constants.StatusDefinitions"/> sabitleriyle çözer.
 /// </summary>
 public class Status : BaseEntity
 {

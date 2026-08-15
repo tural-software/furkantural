@@ -2,21 +2,24 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Domain.Entities;
 
+/// <summary>
+/// Uygulama kullanıcısı; RoleId <see cref="Role"/>'e bakar. Password düz metin değil PBKDF2
+/// türetimidir. MembershipAgreementVersion kabul anındaki
+/// <see cref="Constants.AgreementDefinitions.CurrentVersion"/> değerini saklar; sabit ilerletilirse
+/// eşleşme bozulur ve mevcut üyeden yeniden onay istenir. LastSeenAt son çevrimdışı olunan andır.
+/// </summary>
 public class User : BaseEntity
 {
     public string? Username { get; set; }
     public string? Password { get; set; }
     public int RoleId { get; set; }
 
-    // Chat / üyelik alanları
     public string? Email { get; set; }
     public string? DisplayName { get; set; }
     public string? AvatarUrl { get; set; }
 
-    // Aktiflik: kullanıcının en son çevrimdışı olduğu an ("son görülme").
     public DateTime? LastSeenAt { get; set; }
 
-    // Üyelik sözleşmesi onayı (KVKK / hizmet şartları): kabul anı ve kabul edilen sürüm.
     public DateTime? MembershipAgreementAcceptedAt { get; set; }
     public string? MembershipAgreementVersion { get; set; }
 }
