@@ -5,9 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FurkanTural_Persistence.Configurations;
 
+/// <summary>
+/// Tablo çok kayıtlı bir liste değil tekil ayar kaydıdır; tohumlanan Id = 1 satırı tek küresel
+/// politikadır. Tohum SaveChangesAsync'ten geçmediği için CreatedAt elle verilir.
+/// </summary>
 public class CallPolicyConfiguration : BaseEntityConfiguration<CallPolicy>
 {
-    // HasData, SaveChangesAsync'i atladığı için CreatedAt sabit verilir.
     private static readonly DateTime SeedDate = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     public override void Configure(EntityTypeBuilder<CallPolicy> builder)
@@ -15,7 +18,6 @@ public class CallPolicyConfiguration : BaseEntityConfiguration<CallPolicy>
         base.Configure(builder);
         builder.ToTable("CallPolicies");
 
-        // Tek küresel satır (Id=1).
         builder.HasData(new CallPolicy
         {
             Id = 1,

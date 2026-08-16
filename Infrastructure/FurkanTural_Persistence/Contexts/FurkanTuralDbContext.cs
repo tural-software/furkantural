@@ -4,6 +4,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace FurkanTural_Persistence.Contexts;
 
+/// <summary>
+/// Yapılandırma sınıfları tek tek kaydedilmez, derlemeden taranarak toplanır — yeni bir yapılandırma
+/// dosyası eklemek onu devreye almaya yeter.
+///
+/// Ardından bütün DateTime alanlarına UTC dönüştürücüsü takılır: okurken Kind=Utc damgalanır, yazarken
+/// değer olduğu gibi geçer. Serileştirme bu sayede daima 'Z' ile biten metin üretir. Kendi
+/// dönüştürücüsü tanımlanmış alanlar bu turda atlanır, üzerlerine yazılmaz.
+/// </summary>
 public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options) : DbContext(options)
 {
     public DbSet<Blog> Blogs => Set<Blog>();
@@ -31,8 +39,6 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     public DbSet<CallPolicy> CallPolicies => Set<CallPolicy>();
     public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
 
-    // Tüm DateTime'ları DB'den UTC olarak materyalize et (Kind=Utc) → System.Text.Json daima 'Z' ile yazar.
-    // Yazarken değer korunur (kanonik kural: her zaman UTC saklanır).
     private static readonly ValueConverter<DateTime, DateTime> UtcConverter =
         new(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
@@ -43,12 +49,11 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(FurkanTuralDbContext).Assembly);
 
-        // Audit zaman damgaları (CreatedAt/UpdatedAt/DeletedAt) AuditSaveChangesInterceptor'da set edilir.
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties())
             {
-                if (property.GetValueConverter() is not null) continue; // mevcut converter'ı ezme
+                if (property.GetValueConverter() is not null) continue;
                 if (property.ClrType == typeof(DateTime))
                     property.SetValueConverter(UtcConverter);
                 else if (property.ClrType == typeof(DateTime?))

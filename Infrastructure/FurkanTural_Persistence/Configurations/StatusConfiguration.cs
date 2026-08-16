@@ -5,9 +5,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FurkanTural_Persistence.Configurations;
 
+/// <summary>
+/// Arkadaşlık durumları sabit Id'lerle tohumlanır ama okuma tarafı Id kullanmaz, grup ile kod
+/// çiftinden arar; tekil indeks de o çift üzerindedir. Tohum satırları SaveChangesAsync'ten geçmediği
+/// için CreatedAt elle verilir.
+/// </summary>
 public class StatusConfiguration : BaseEntityConfiguration<Status>
 {
-    // HasData, SaveChangesAsync'i atladığı için CreatedAt sabit verilir.
     private static readonly DateTime SeedDate = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     public override void Configure(EntityTypeBuilder<Status> builder)

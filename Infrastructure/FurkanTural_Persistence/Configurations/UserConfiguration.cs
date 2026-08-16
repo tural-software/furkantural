@@ -4,6 +4,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FurkanTural_Persistence.Configurations;
 
+/// <summary>
+/// Kullanıcı adı ve e-posta tekil indekslerinin ikisi de yumuşak silmeye göre süzülmez; e-postadaki
+/// süzgeç yalnızca boş değerleri indeks dışında tutar. Sonuç şudur: silinmiş bir kullanıcının adı ve
+/// e-postası satır tabloda durmaya devam ettiği için kalıcı olarak rezerve kalır.
+///
+/// Bunu kayıt akışıyla birlikte okumak gerekir: oradaki varlık kontrolü EF üzerinden geçtiği için
+/// global süzgeç yüzünden silinmiş satırı göremez, adres boştaymış gibi davranır ve ekleme tekil
+/// indekse takılır. Aynı tuzaktan kaçınan örnek için <see cref="UserFriendConfiguration"/>.
+/// </summary>
 public class UserConfiguration : BaseEntityConfiguration<User>
 {
     public override void Configure(EntityTypeBuilder<User> builder)

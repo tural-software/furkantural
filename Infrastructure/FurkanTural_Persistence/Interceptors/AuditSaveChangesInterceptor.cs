@@ -6,8 +6,16 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace FurkanTural_Persistence.Interceptors;
 
 /// <summary>
-/// Audit zaman damgalarını tek kanonik saat kaynağından (<see cref="IClock"/>) set eder:
-/// Added → CreatedAt, Modified → UpdatedAt, soft-delete (IsDeleted=true) → DeletedAt.
+/// Zaman damgalarını kaydetme anında basar; eşzamanlı ve asenkron kaydetme yollarının ikisini de
+/// karşılar, yalnızca BaseEntity türevlerine dokunur.
+///
+/// Saat bir kez okunup bütün girdilere aynı değer yazılır, dolayısıyla tek kaydetmede eklenen satırlar
+/// birebir aynı CreatedAt'i taşır — zaman damgasını ayırt edici sayan okumalar bunu hesaba katmalıdır.
+/// DeletedAt yalnızca boşken doldurulur; zaten silinmiş bir kayıt yeniden kaydedilirse ilk silinme anı
+/// korunur.
+///
+/// Eklemede IsActive ve IsDeleted, çağıranın verdiği değere bakılmaksızın sabitlenir; bu yolla pasif
+/// veya silinmiş bir kayıt doğrudan oluşturulamaz.
 /// </summary>
 public sealed class AuditSaveChangesInterceptor(IClock clock) : SaveChangesInterceptor
 {
@@ -42,7 +50,6 @@ public sealed class AuditSaveChangesInterceptor(IClock clock) : SaveChangesInter
                     break;
                 case EntityState.Modified:
                     entry.Entity.UpdatedAt = now;
-                    // Soft-delete: DeletedAt yalnızca ilk silmede damgalanır.
                     if (entry.Entity.IsDeleted && entry.Entity.DeletedAt is null)
                         entry.Entity.DeletedAt = now;
                     break;
