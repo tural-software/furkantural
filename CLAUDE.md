@@ -41,7 +41,13 @@ Bu **API-merkezli katmanlı mimari**: MVC sunum projeleri DB'ye/EF'e **dokunmaz*
 - **Kod yorumu yazma:** Yeni kod yorumu (`//`, `/* */`, `@* *@`, `<!-- -->`, `#`) **eklenmez**. Gerekçe, tasarım kararı ve ölçüm sonucu koda değil, kullanıcıya verilen yanıta yazılır. Yorum yalnızca kullanıcı açıkça isterse eklenir. Mevcut yorumlar kendiliğinden **silinmez** de; temizlik ayrı bir iştir ve kullanıcının yönlendirmesiyle parça parça yapılır.
 - **API kontratı = salt-okunur:** Mevcut endpoint imzaları (route, HTTP verb, parametreler) ve DTO property'leri **değiştirilemez**. MVC projeleri bu DTO'ların lokal kopyalarıyla deserialize eder; kontrat değişimi sessizce kırar. (Yeni opsiyonel alan eklemek uyumlu olabilir → api-guardian onayı.)
 - **appsettings.json'a dokunma:** Secret'lar placeholder/şifreli (`0000:base64:0000` AES deseni startup'ta çözülür). Bulguları yalnızca **raporla**, değiştirme.
-- **Domain entity değişimi = migration riski:** `Core/FurkanTural_Domain` veya `Persistence/Configurations` değişimi yeni migration gerektirir → orchestrator'a eskalat.
+- **Domain entity değişimi = migration riski:** `Core/FurkanTural_Domain` veya `Persistence/Configurations` değişimi yeni migration gerektirir → orchestrator'a eskalat. Tasarım zamanı fabrikası **yoktur**; DbContext API'nin host'undan çözülür, dolayısıyla `--startup-project` zorunludur:
+
+  ```powershell
+  dotnet ef migrations add <Ad> --project Infrastructure\FurkanTural_Persistence --startup-project Web\FurkanTural_API
+  ```
+
+  Bağlantı dizesi `appsettings`'ten gelir ve `Program.cs`'teki AES bloğu `builder.Build()`'dan önce çözer; `Database.Migrate()` ise `Build()`'dan sonra olduğu için `dotnet ef` sırasında tetiklenmez.
 - **Auth konfigürasyonu (Program.cs)** değiştirilmeden önce raporlanır.
 - Prod'a **Docker/ayrı servis kurulamaz** — çözümler in-process olmalı.
 
