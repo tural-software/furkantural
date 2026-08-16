@@ -54,7 +54,6 @@ PublishProfiles/
 
 # Static / compiled assets (front-end build output inside wwwroot)
 **/wwwroot/dist/
-**/wwwroot/lib/
 **/wwwroot/css/bundle*
 **/wwwroot/js/bundle*
 **/wwwroot/images/uploads/
