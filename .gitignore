@@ -4,12 +4,10 @@
 [Bb]in/
 [Oo]bj/
 [Oo]ut/
-[Ll]og/
-[Ll]ogs/
+/[Ll]og/
+/[Ll]ogs/
 .[Dd]ocs/
 **/[Pp]ublish/
-!**/DTOs/Log/
-!**/DTOs/Logs/
 
 # NuGet
 *.nupkg
@@ -131,7 +129,6 @@ coverage/
 *.coverage
 *.cobertura.xml
 lcov.info
-[Ll]abs/
 
 # ============================================================
 #  Node / Front-End (if added later)
@@ -184,4 +181,4 @@ FurkanTural_API_Claude.postman_collection.json
 # ============================================================
 # Kendi .git'i var. Ignore edilmezse monorepo'da untracked gorunur ve
 # git add . onu gitlink (bozuk submodule) olarak ekler.
-/Labs/
+/[Ll]abs/

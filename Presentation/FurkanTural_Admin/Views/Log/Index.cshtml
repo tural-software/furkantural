@@ -1,0 +1,139 @@
+@using FurkanTural_Admin.Models.Log
+@model LogIndexViewModel
+@{
+    ViewData["Title"] = "Sistem Logları";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/log/log-index.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.__logMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+            levelFilter   = Model.LevelFilter ?? "",
+            searchProject = Model.SearchProject ?? "",
+            searchMessage = Model.SearchMessage ?? "",
+            dateFrom      = Model.DateFrom ?? "",
+            dateTo        = Model.DateTo ?? "",
+            pageNumber    = Model.PageNumber,
+            pageSize      = Model.PageSize
+        }));
+    </script>
+    <script src="~/js/detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/pages/log-detail.js" asp-append-version="true"></script>
+}
+
+<div class="container">
+
+    <nav class="bc">
+        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
+        <span class="bc__sep">›</span>
+        <span>Sistem Logları</span>
+    </nav>
+
+    <div class="pg-header">
+        <div>
+            <h1 class="section-title">Sistem Logları</h1>
+            <p class="section-desc">API tarafından üretilen sistem loglarını görüntüleyin. Salt okunur kayıtlardır.</p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "refresh")
+                Yenile
+            </a>
+            <a href="@Url.Action("TableDetail")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "table-icon")
+                Tablo Detayları
+            </a>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--total">
+                @await Html.PartialAsync("_Icons", "logs")
+            </div>
+            <div>
+                <p class="stat-box__label">Toplam Log</p>
+                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <span class="stat-box__unit">kayıt</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--date">
+                @await Html.PartialAsync("_Icons", "calendar")
+            </div>
+            <div>
+                <p class="stat-box__label">Son Aktivite</p>
+                <div class="stat-box__value stat-box__value--sm">
+                    @(Model.LastActivityAt.HasValue
+                        ? Model.LastActivityAt.Value.ToString("dd MMM yyyy HH:mm")
+                        : "—")
+                </div>
+                <span class="stat-box__unit">tarih</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+        <form method="get" action="@Url.Action("Index")">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Seviye</label>
+                    <select name="levelFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.LevelFilter))">Tümü</option>
+                        <option value="Error"   selected="@(Model.LevelFilter == "Error")">Error</option>
+                        <option value="Warning" selected="@(Model.LevelFilter == "Warning")">Warning</option>
+                        <option value="Info"    selected="@(Model.LevelFilter == "Info")">Info</option>
+                        <option value="Debug"   selected="@(Model.LevelFilter == "Debug")">Debug</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Proje ara</label>
+                    <div class="filter-input-wrap">
+                        @await Html.PartialAsync("_Icons", "search")
+                        <input type="text" name="searchProject" value="@Model.SearchProject"
+                               class="filter-input filter-input--search"
+                               placeholder="Proje ara..." />
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Mesaj ara</label>
+                    <div class="filter-input-wrap">
+                        @await Html.PartialAsync("_Icons", "search")
+                        <input type="text" name="searchMessage" value="@Model.SearchMessage"
+                               class="filter-input filter-input--search"
+                               placeholder="Mesaj ara..." />
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Log Tarihi</label>
+                    <div class="filter-date-row">
+                        <input type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
+                        <span class="filter-date-sep">→</span>
+                        <input type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
+                    </div>
+                </div>
+                <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                <div class="filter-actions">
+                    <button type="submit" class="btn-primary">
+                        @await Html.PartialAsync("_Icons", "filter-icon")
+                        Filtrele
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn-outline">
+                        @await Html.PartialAsync("_Icons", "x-mark")
+                        Temizle
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" id="log-table-card" style="padding: 0; overflow: hidden;">
+        <div id="log-table-section">
+            @await Html.PartialAsync("_LogTable", Model)
+        </div>
+    </div>
+
+</div>
