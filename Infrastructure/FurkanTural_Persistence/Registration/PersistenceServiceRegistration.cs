@@ -8,6 +8,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace FurkanTural_Persistence.Registration;
 
+/// <summary>
+/// Veri katmanının bileşim kökü. Dışarıya yalnızca <see cref="IUnitOfWork"/> açılır; repo arayüzlerinin
+/// hiçbiri kapsayıcıya kaydedilmez, dolayısıyla IRepository&lt;T&gt; veya IBlogRepository doğrudan enjekte
+/// edilemez, hepsine UnitOfWork üzerinden gidilir.
+///
+/// Bağlantı dizesi kayıt anında bir kez okunup kapanışta tutulur, her istekte yeniden çözülmez. Buradan
+/// bir sıra bağımlılığı doğar: şifreli yapılandırmayı çözen adım bu çağrıdan önce koşmalıdır, yoksa
+/// kapanışa şifreli metin girer ve hata ancak ilk veri tabanı erişiminde ortaya çıkar.
+///
+/// <see cref="AuditSaveChangesInterceptor"/> tekil, bağlam ise istek kapsamlıdır. Damgalayıcının
+/// ihtiyaç duyduğu saat kaynağı burada kaydedilmediği için bu metot tek başına çalışan bir kurulum
+/// vermez; iş katmanının kaydı da yapılmalıdır.
+/// </summary>
 public static class PersistenceServiceRegistration
 {
     public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
