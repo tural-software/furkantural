@@ -11,6 +11,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
+/// <summary>
+/// Sözleşmenin kendi başına duran uygulaması: <see cref="Repository{T}"/> türetmez, bağlantı açma ve
+/// sayfalama mantığını kendi içinde tekrarlar. Tablo adı da oradaki gibi EF modelinden okunmaz, sabit
+/// yazılıdır — Logs tablosu konfigürasyondan yeniden adlandırılırsa buradaki SQL'ler derleme hatası
+/// vermeden kırılır.
+/// </summary>
 public class LogRepository(FurkanTuralDbContext context) : ILogRepository
 {
     private readonly FurkanTuralDbContext _context = context;
@@ -25,18 +31,14 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
         return conn;
     }
 
-    // ── WRITE – EF Core ────────────────────────────────────────────────────
-
     public async Task AddAsync(Log log, CancellationToken cancellationToken = default)
         => await _dbSet.AddAsync(log, cancellationToken);
-
-    // ── READ – Dapper ──────────────────────────────────────────────────────
 
     public async Task<Log?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.QueryFirstOrDefaultAsync<Log>(new CommandDefinition(
-            $"SELECT * FROM [{Table}] WHERE Id = @Id AND IsDeleted = 0 AND IsActive = 1",
+            $"SELECT * FROM [{Table}] WHERE Id = @Id AND {LiveRows.Filter}",
             new { Id = id }, cancellationToken: cancellationToken));
     }
 
@@ -47,7 +49,7 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
 
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.QueryAsync<Log>(new CommandDefinition(
-            $"SELECT * FROM [{Table}] WHERE IsDeleted = 0 AND IsActive = 1 ORDER BY Date DESC",
+            $"SELECT * FROM [{Table}] WHERE {LiveRows.Filter} ORDER BY Date DESC",
             cancellationToken: cancellationToken));
     }
 
@@ -56,13 +58,14 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
         if (predicate != null)
             return await _dbSet.AsNoTracking()
                 .Where(predicate)
+                .OrderByDescending(l => l.Date)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
 
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.QueryAsync<Log>(new CommandDefinition(
-            $"SELECT * FROM [{Table}] WHERE IsDeleted = 0 AND IsActive = 1 " +
+            $"SELECT * FROM [{Table}] WHERE {LiveRows.Filter} " +
             $"ORDER BY Date DESC OFFSET @Offset ROWS FETCH NEXT @Size ROWS ONLY",
             new { Offset = (pageNumber - 1) * pageSize, Size = pageSize },
             cancellationToken: cancellationToken));
@@ -75,7 +78,7 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
 
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.ExecuteScalarAsync<int>(new CommandDefinition(
-            $"SELECT COUNT(*) FROM [{Table}] WHERE IsDeleted = 0 AND IsActive = 1",
+            $"SELECT COUNT(*) FROM [{Table}] WHERE {LiveRows.Filter}",
             cancellationToken: cancellationToken));
     }
 
@@ -84,7 +87,7 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
         var conn = await GetOpenConnectionAsync(cancellationToken);
         var row = await conn.QuerySingleAsync<SummaryRow>(new CommandDefinition(
             $"SELECT COUNT(*) AS [Count], MAX(CreatedAt) AS [LastModifiedDate] " +
-            $"FROM [{Table}] WHERE IsDeleted = 0 AND IsActive = 1",
+            $"FROM [{Table}] WHERE {LiveRows.Filter}",
             cancellationToken: cancellationToken));
         return new EntitySummaryDto(row.Count, row.LastModifiedDate);
     }
@@ -115,12 +118,10 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
             parameters, cancellationToken: cancellationToken));
     }
 
-    // ── Private helpers ────────────────────────────────────────────────────
-
     private static (string Where, DynamicParameters Parameters) BuildAdminWhere(
         string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo)
     {
-        var sql = new StringBuilder("WHERE IsDeleted = 0 AND IsActive = 1");
+        var sql = new StringBuilder($"WHERE {LiveRows.Filter}");
         var parameters = new DynamicParameters();
 
         if (!string.IsNullOrWhiteSpace(level))

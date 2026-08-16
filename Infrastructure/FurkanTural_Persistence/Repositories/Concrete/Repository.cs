@@ -10,10 +10,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
+/// <summary>
+/// Sözleşmenin melez uygulaması. Ayrımı belirleyen kural şudur: sabit bir SQL cümlesine çevrilebilen
+/// okumalar Dapper'a, yüklem alanlar EF Core'a gider. Yüklem EF'de kalmak zorundadır çünkü ifade
+/// ağacını SQL'e çeviren şey EF'in kendisidir; Dapper böyle bir girdiyi tüketemez.
+///
+/// İki yol da aynı DbConnection üzerinden koşar, Dapper ayrı bağlantı açmaz. Bunun görünür sonucu
+/// şudur: henüz SaveChangesAsync görmemiş bir değişiklik Dapper okumasına yansımaz, çünkü o değişiklik
+/// hâlâ değişiklik izleyicisinde durur ve veri tabanına yazılmamıştır.
+///
+/// Tablo adı sabit yazılmaz, EF modelinden çalışma anında okunur — konfigürasyondaki ToTable değişimi
+/// ham SQL'lere kendiliğinden yansır. Yumuşak silme süzgeci ise <see cref="LiveRows"/> üzerinden gelir.
+/// Bağlam alanı, türetilmiş repo'lar başka entity'lerin Set'lerine ulaşabilsin diye korumalıdır.
+/// </summary>
 public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where T : BaseEntity
 {
-    // protected: türetilmiş repo'lar (ör. BlogRepository) diğer entity'lerin Set'lerine
-    // erişmek için context'i tekrar yakalamak zorunda kalmasın (CS9107 önlenir).
     protected readonly FurkanTuralDbContext _context = context;
     protected readonly DbSet<T> _dbSet = context.Set<T>();
     private string? _tableName;
@@ -27,13 +38,11 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
         return conn;
     }
 
-    // ── READ – Dapper ──────────────────────────────────────────────────────
-
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.QueryFirstOrDefaultAsync<T>(new CommandDefinition(
-            $"SELECT * FROM [{TableName}] WHERE Id = @Id AND IsDeleted = 0 AND IsActive = 1",
+            $"SELECT * FROM [{TableName}] WHERE Id = @Id AND {LiveRows.Filter}",
             new { Id = id }, cancellationToken: cancellationToken));
     }
 
@@ -54,13 +63,13 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
     }
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
-        => await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
+        => await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate, cancellationToken);
 
     public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.QueryAsync<T>(new CommandDefinition(
-            $"SELECT * FROM [{TableName}] WHERE IsDeleted = 0 AND IsActive = 1",
+            $"SELECT * FROM [{TableName}] WHERE {LiveRows.Filter}",
             cancellationToken: cancellationToken));
     }
 
@@ -79,11 +88,10 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
                 .ToListAsync(cancellationToken);
         }
 
-        // ORDER BY yönü sabit bir literal (ASC/DESC) — kullanıcı girdisi değil, SQL injection yok.
         var order = descending ? "DESC" : "ASC";
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.QueryAsync<T>(new CommandDefinition(
-            $"SELECT * FROM [{TableName}] WHERE IsDeleted = 0 AND IsActive = 1 " +
+            $"SELECT * FROM [{TableName}] WHERE {LiveRows.Filter} " +
             $"ORDER BY Id {order} OFFSET @Offset ROWS FETCH NEXT @Size ROWS ONLY",
             new { Offset = (pageNumber - 1) * pageSize, Size = pageSize },
             cancellationToken: cancellationToken));
@@ -96,7 +104,7 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
 
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.ExecuteScalarAsync<int>(new CommandDefinition(
-            $"SELECT COUNT(*) FROM [{TableName}] WHERE IsDeleted = 0 AND IsActive = 1",
+            $"SELECT COUNT(*) FROM [{TableName}] WHERE {LiveRows.Filter}",
             cancellationToken: cancellationToken));
     }
 
@@ -120,8 +128,6 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
             cancellationToken: cancellationToken));
         return new EntitySummaryDto(row.Count, row.LastModifiedDate);
     }
-
-    // ── WRITE – EF Core ────────────────────────────────────────────────────
 
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
         => await _dbSet.AddAsync(entity, cancellationToken);
@@ -157,7 +163,6 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
     {
         entity.IsDeleted = true;
         entity.IsActive = false;
-        // DeletedAt, AuditSaveChangesInterceptor tarafından kanonik saatten damgalanır.
         _dbSet.Update(entity);
         return Task.CompletedTask;
     }
@@ -170,8 +175,6 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
         _dbSet.Update(entity);
         return Task.CompletedTask;
     }
-
-    // ── Private helpers ────────────────────────────────────────────────────
 
     private sealed class SummaryRow
     {

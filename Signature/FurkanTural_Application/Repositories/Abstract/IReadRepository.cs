@@ -11,9 +11,8 @@ namespace FurkanTural_Application.Repositories.Abstract;
 /// daima boş döner. Silinmiş veya pasif kayda ulaşmanın tek yolu adında Admin geçen üç metottur;
 /// onlar hiçbir filtre uygulamaz.
 ///
-/// Yalnızca GetAsync izlenen varlık döndürür, dolayısıyla üzerinde yapılan değişiklik UpdateAsync
-/// çağrılmasa bile kaydedilir; diğer okumaların sonucu bağımsızdır ve kalıcı olması için açıkça
-/// <see cref="IWriteRepository{T}"/> üzerinden geçmesi gerekir.
+/// Hiçbir okuma izlenen varlık döndürmez. Dönen nesne üzerinde yapılan değişiklik kendiliğinden
+/// kaydedilmez; kalıcı olması için açıkça <see cref="IWriteRepository{T}"/> üzerinden geçmesi gerekir.
 ///
 /// Sayfa numarası 1 tabanlıdır ve descending tarihe değil Id'ye uygulanır. GetAdminSummaryAsync her
 /// satır için UpdatedAt, yoksa DeletedAt, o da yoksa CreatedAt değerini alıp en büyüğünü döndürür.

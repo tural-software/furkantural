@@ -5,6 +5,11 @@ using FurkanTural_Persistence.Contexts;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
+/// <summary>
+/// Özelleşmiş repo'lar kendi alanlarında, genel olanlar tür anahtarlı bir sözlükte tutulur. Bu yüzden
+/// GetRepository&lt;Blog&gt; ile Blogs iki ayrı nesne döndürür; ikisi de aynı bağlamı sardığı için durum
+/// ikilenmez, çünkü saklanan tek durum DbContext'in kendisindedir.
+/// </summary>
 public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
 {
     private readonly Dictionary<Type, object> _repos = new();

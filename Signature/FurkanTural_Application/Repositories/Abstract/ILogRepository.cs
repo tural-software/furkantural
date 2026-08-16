@@ -12,9 +12,8 @@ namespace FurkanTural_Application.Repositories.Abstract;
 ///
 /// Süzgeçlerde level birebir eşleşir, project ile message içinde-geçen araması yapar. dateTo günün
 /// tamamını kapsar (bir gün eklenip küçüktür ile karşılaştırılır), dolayısıyla saat bilgisi taşıyan bir
-/// değer beklenenden bir gün fazlasını getirir. Sıralama Id'ye değil kaydın kendi Date alanına göredir;
-/// tek istisna yüklem verilen GetAllPagedAsync'tir, orada hiç sıralama yapılmadığı için sayfaya hangi
-/// satırların düşeceği belirsizdir.
+/// değer beklenenden bir gün fazlasını getirir. Sıralama Id'ye değil kaydın kendi Date alanına göre
+/// azalandır ve yüklem verilip verilmemesi bunu değiştirmez.
 /// </summary>
 public interface ILogRepository
 {

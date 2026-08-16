@@ -10,19 +10,19 @@ using System.Text;
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
 /// <summary>
-/// Genel <see cref="Repository{T}"/> davranışına ek olarak blog-kategori (çoğa-çok) sorguları
-/// ve kategori/başlık filtreli sayfalama sağlar. Global query filter (!IsDeleted &amp;&amp; IsActive)
-/// tüm sorgulara otomatik uygulanır.
+/// Kategori bağı kuran okumalar EF üzerinden, sayfalama Dapper üzerinden koşar. Dapper tarafında
+/// global sorgu süzgeci geçerli olmadığı için canlı satır koşulu <see cref="LiveRows"/> ile elle
+/// eklenir; EF tarafında aynı koşul kendiliğinden uygulanır.
+///
+/// GetSitemapDataAsync yalnızca Id ile tarihleri projekte eder, dolayısıyla blog gövdesi veri
+/// tabanından hiç çıkmaz.
 /// </summary>
 public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(context), IBlogRepository
 {
     public async Task<(IReadOnlyList<Blog> Items, int Total)> GetPublishedPageAsync(
         int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default)
     {
-        // Dapper QueryMultiple ile COUNT ve sayfa verisi tek bir DB roundtrip'te alınır.
-        // Global soft-delete filtresi (IsDeleted=0, IsActive=1) burada manuel uygulanır —
-        // Dapper EF Core global query filter'larını tanımaz.
-        const string baseWhere = "WHERE b.IsDeleted = 0 AND b.IsActive = 1";
+        var baseWhere = $"WHERE {LiveRows.FilterFor("b")}";
 
         var filterSb = new StringBuilder();
         if (!string.IsNullOrWhiteSpace(search))
@@ -60,8 +60,6 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
     public async Task<IReadOnlyList<(int Id, DateTime CreatedAt, DateTime? UpdatedAt)>> GetSitemapDataAsync(
         CancellationToken cancellationToken = default)
     {
-        // Yalnız Id + tarihler projekte edilir → SQL, Content (nvarchar(max)) sütununu hiç okumaz.
-        // Global query filter (!IsDeleted && IsActive) otomatik uygulanır → yalnız yayınlı yazılar.
         var rows = await _context.Set<Blog>().AsNoTracking()
             .OrderByDescending(b => b.Id)
             .Select(b => new { b.Id, b.CreatedAt, b.UpdatedAt })
@@ -117,12 +115,10 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
         var existing = await links.Where(bc => bc.BlogId == blogId).ToListAsync(cancellationToken);
         var wanted = categoryIds.Distinct().ToHashSet();
 
-        // İstenmeyenleri kaldır (ara tablo satırları sert silinir — soft-delete biriktirmez).
         var toRemove = existing.Where(bc => !wanted.Contains(bc.CategoryId)).ToList();
         if (toRemove.Count > 0)
             links.RemoveRange(toRemove);
 
-        // Eksik olanları ekle.
         var existingIds = existing.Select(bc => bc.CategoryId).ToHashSet();
         foreach (var cid in wanted)
             if (!existingIds.Contains(cid))
