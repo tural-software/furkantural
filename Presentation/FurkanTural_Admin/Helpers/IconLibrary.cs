@@ -1,7 +1,5 @@
 using System.Text.Json;
-
 namespace FurkanTural_Admin.Helpers;
-
 /// <summary>
 /// Tek kaynak (single source of truth) — tüm admin paneli SVG ikonları.
 /// Sunucu tarafı <c>_Icons.cshtml</c> partial'ı ve istemci tarafı <c>detail-modal.js</c>
@@ -10,7 +8,6 @@ namespace FurkanTural_Admin.Helpers;
 /// </summary>
 public static class IconLibrary
 {
-    /// <summary>Anahtar → inline SVG markup.</summary>
     public static readonly IReadOnlyDictionary<string, string> Icons = new Dictionary<string, string>
     {
         ["users"] = "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /><circle cx=\"9\" cy=\"7\" r=\"4\" /><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /><path d=\"M16 3.13a4 4 0 0 1 0 7.75\" /></svg>",
@@ -78,15 +75,14 @@ public static class IconLibrary
         ["triangle-alert"] = "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"/><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"13\"/><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"/></svg>",
         ["copy"] = "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\"/><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"/></svg>",
     };
-
     /// <summary>Verilen anahtarın SVG'sini döndürür; bulunamazsa boş string.</summary>
     public static string Render(string? key)
         => key is not null && Icons.TryGetValue(key, out var svg) ? svg : string.Empty;
-
-    // İstemciye gömülen JSON (bir kez serialize edilir). Varsayılan encoder '<','>' karakterlerini
-    // \u003c / \u003e olarak kaçırır → inline <script> içinde güvenli.
+    /// <summary>
+    /// Bir kez üretilip saklanır. Varsayılan kodlayıcı açılı ayraçları kaçırdığı için çıktı inline
+    /// bir betik bloğuna güvenle basılabilir; kodlayıcı gevşetilirse ikon markup’ı betiği kapatabilir.
+    /// </summary>
     private static readonly Lazy<string> _json = new(() => JsonSerializer.Serialize(Icons));
-
-    /// <summary>window.__ICONS için JSON gösterimi (cache'li).</summary>
+    /// <summary>İstemcideki window.__ICONS bu değerden beslenir.</summary>
     public static string Json => _json.Value;
 }

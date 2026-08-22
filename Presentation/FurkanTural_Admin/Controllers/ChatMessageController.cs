@@ -21,7 +21,7 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
         if (!string.IsNullOrWhiteSpace(search))
             filtered = filtered.Where(r => r.Content != null && r.Content.Contains(search, StringComparison.OrdinalIgnoreCase));
 
-        // Kullanıcı adı filtresi: gönderen VEYA alıcı kullanıcı adında eşleşme.
+        // Filtre iki alanı birden tarar: eşleşme gönderende ya da alıcıda olabilir.
         if (!string.IsNullOrWhiteSpace(usernameFilter))
             filtered = filtered.Where(r =>
                 (r.SenderUsername != null && r.SenderUsername.Contains(usernameFilter, StringComparison.OrdinalIgnoreCase)) ||
@@ -107,8 +107,12 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
     }
 
     /// <summary>
-    /// Sohbet ekini (ses/foto/video) API'nin yetkili ucundan akış olarak sunar.
-    /// Ekler API'de statik sunulmadığından admin önizlemesi bu proxy üzerinden çalışır.
+    /// Sohbet ekini API'nin yetkili ucundan akış olarak sunar. Ekler API'de statik sunulmadığı için
+    /// panel önizlemesi bu vekil üzerinden çalışır.
+    ///
+    /// Dosya adı API'ye geçmeden önce burada da elenir: üst dizine çıkma işaretleri ve yol
+    /// ayraçları reddedilir, uzantı beyaz listeye sokulur. Asıl yetki denetimini API yapar; buradaki
+    /// eleme onun yerine geçmez, adres çubuğundan gelen bir değerin ağa çıkmasını engeller.
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> Attachment(string file, CancellationToken cancellationToken = default)
@@ -117,9 +121,6 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
         if (string.IsNullOrEmpty(token)) return Unauthorized();
         if (string.IsNullOrWhiteSpace(file)) return BadRequest();
 
-        // Path-traversal ve protokol-enjeksiyonu koruması:
-        // Dosya adı yalnızca izin verilen karakterleri içerebilir; "..", "/"  ve "\"
-        // içeren ya da izin verilmeyen uzantıya sahip değerler reddedilir.
         if (file.Contains("..") || file.Contains('/') || file.Contains('\\'))
             return BadRequest();
 

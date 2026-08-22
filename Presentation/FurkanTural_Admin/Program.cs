@@ -6,9 +6,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-// Tüm API çağrılarını saran hata-loglama handler'ı: başarısız yanıtları API'nin AdminOnly log
-// uç noktasına iletir → hatalar SQL log tablosunda görünür. ConfigureHttpClientDefaults sayesinde
-// her typed/named HttpClient'a otomatik uygulanır (tek tek eklemeye gerek yok).
 builder.Services.AddTransient<ApiFailureLoggingHandler>();
 builder.Services.ConfigureHttpClientDefaults(http => http.AddHttpMessageHandler<ApiFailureLoggingHandler>());
 
@@ -161,8 +158,6 @@ builder.Services.AddHttpClient<ICallPolicyApiClient, CallPolicyApiClient>(client
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-// Data Protection anahtarlarını kalıcı bir klasöre sabitle — bkz. AddPersistentDataProtection.
-// Sonuç, uygulama ayağa kalktıktan sonra loglanır (logger o noktada hazır olur).
 var dataProtection = builder.Services.AddPersistentDataProtection(
     builder.Configuration, builder.Environment, "FurkanTural.Admin");
 

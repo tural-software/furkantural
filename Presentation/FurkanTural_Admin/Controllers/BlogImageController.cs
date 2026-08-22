@@ -10,7 +10,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
     private readonly IBlogApiClient _blogApiClient = blogApiClient;
     private readonly string _apiBaseUrl = configuration["Api:BaseUrl"]?.TrimEnd('/') ?? string.Empty;
 
-    // ── Shared filter + paginate helper ──────────────────────────────────────
     private static BlogImageIndexViewModel BuildViewModel(
         IReadOnlyList<BlogImageAdminDto> all,
         string? searchUrl,
@@ -83,7 +82,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         };
     }
 
-    // ── Index ─────────────────────────────────────────────────────────────────
     public async Task<IActionResult> Index(
         string? url,
         string? isCoverFilter,
@@ -107,7 +105,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         return View(vm);
     }
 
-    // ── Table partial ─────────────────────────────────────────────────────────
     [HttpGet]
     public async Task<IActionResult> TablePartial(
         string? url,
@@ -131,7 +128,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         return PartialView("_BlogImageTable", vm);
     }
 
-    // ── Table detail ──────────────────────────────────────────────────────────
     public IActionResult TableDetail()
     {
         var token = HttpContext.Session.GetString("token");
@@ -140,7 +136,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
 
         return View();
     }
-    // ── Blog options (searchable dropdown) ─────────────────────────────────────────────────
     [HttpGet]
     public async Task<IActionResult> BlogOptions(CancellationToken cancellationToken = default)
     {
@@ -157,7 +152,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
 
         return Json(options);
     }
-    // ── Delete ────────────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
@@ -170,7 +164,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         return ok ? Ok() : StatusCode(500, new { message = "Silme işlemi başarısız oldu." });
     }
 
-    // ── Toggle active ─────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken = default)
@@ -183,7 +176,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         return ok ? Ok() : StatusCode(500, new { message = "Durum değiştirme işlemi başarısız oldu." });
     }
 
-    // ── Restore ───────────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken = default)
@@ -196,7 +188,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         return ok ? Ok() : StatusCode(500, new { message = "Geri yükleme işlemi başarısız oldu." });
     }
 
-    // ── Create ────────────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
@@ -226,7 +217,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         return Ok();
     }
 
-    // ── Update ────────────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(

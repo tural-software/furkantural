@@ -168,7 +168,6 @@ public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient cat
         return View();
     }
 
-    // ── Blog options (filter dropdown) ───────────────────────────────────────
     [HttpGet]
     public async Task<IActionResult> BlogOptions(CancellationToken cancellationToken = default)
     {

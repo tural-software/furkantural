@@ -13,7 +13,6 @@ public class MusicImageController(
     private readonly IMusicApiClient      _musicApiClient      = musicApiClient;
     private readonly string               _apiBaseUrl          = configuration["Api:BaseUrl"]?.TrimEnd('/') ?? string.Empty;
 
-    // ── Shared filter + paginate helper ──────────────────────────────────────
     private static MusicImageIndexViewModel BuildViewModel(
         IReadOnlyList<MusicImageAdminDto> all,
         string? searchUrl,
@@ -86,7 +85,6 @@ public class MusicImageController(
         };
     }
 
-    // ── Index ─────────────────────────────────────────────────────────────────
     public async Task<IActionResult> Index(
         string? url,
         string? isCoverFilter,
@@ -110,7 +108,6 @@ public class MusicImageController(
         return View(vm);
     }
 
-    // ── Table partial ─────────────────────────────────────────────────────────
     [HttpGet]
     public async Task<IActionResult> TablePartial(
         string? url,
@@ -134,7 +131,6 @@ public class MusicImageController(
         return PartialView("_MusicImageTable", vm);
     }
 
-    // ── Table detail ──────────────────────────────────────────────────────────
     public IActionResult TableDetail()
     {
         var token = HttpContext.Session.GetString("token");
@@ -144,7 +140,6 @@ public class MusicImageController(
         return View();
     }
 
-    // ── Music options (searchable dropdown) ──────────────────────────────────
     [HttpGet]
     public async Task<IActionResult> MusicOptions(CancellationToken cancellationToken = default)
     {
@@ -162,7 +157,6 @@ public class MusicImageController(
         return Json(options);
     }
 
-    // ── Delete ────────────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
@@ -175,7 +169,6 @@ public class MusicImageController(
         return ok ? Ok() : StatusCode(500, new { message = "Silme işlemi başarısız oldu." });
     }
 
-    // ── Toggle active ─────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken = default)
@@ -188,7 +181,6 @@ public class MusicImageController(
         return ok ? Ok() : StatusCode(500, new { message = "Durum değiştirme işlemi başarısız oldu." });
     }
 
-    // ── Restore ───────────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken = default)
@@ -201,7 +193,6 @@ public class MusicImageController(
         return ok ? Ok() : StatusCode(500, new { message = "Geri yükleme işlemi başarısız oldu." });
     }
 
-    // ── Create ────────────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
@@ -231,7 +222,6 @@ public class MusicImageController(
         return Ok();
     }
 
-    // ── Update ────────────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(

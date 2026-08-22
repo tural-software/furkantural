@@ -3,14 +3,15 @@ using System.Net.Http.Json;
 namespace FurkanTural_Admin.Services;
 
 /// <summary>
-/// Tüm API çağrılarını saran handler: başarısız (non-2xx) yanıtları gerçek durum kodu + gövde ile
-/// API'nin AdminOnly log uç noktasına (<c>/api/v1/log</c>) iletir; böylece hatalar SQL log
-/// tablosunda görünür hale gelir. Admin'in doğrudan DB erişimi olmadığından loglama API üzerinden
-/// yapılır ve istek üzerindeki Bearer token tekrar kullanılır.
+/// Başarısız API yanıtlarını gerçek durum kodu ve gövdesiyle birlikte günlük ucuna iletir. Panelin
+/// veri tabanına erişimi olmadığı için kayıt da API üzerinden gider ve isteğin kendi jetonu yeniden
+/// kullanılır; ayrı bir kimlik doğrulaması yoktur.
 ///
-/// Log POST'u arka planda (fire-and-forget) gönderilir → kullanıcı isteğini yavaşlatmaz. Log
-/// uç noktasının kendi yanıtları atlanır (recursion koruması) ve iletim başarısız olsa bile
-/// asıl istek etkilenmez.
+/// Kayıt isteği beklenmez, arka planda gönderilir. Beklenseydi her hatalı çağrı kullanıcıya iki
+/// istek süresi kadar gecikmiş görünürdü. Karşılığında kaydın yazıldığı garanti değildir.
+///
+/// Günlük ucunun kendi yanıtları atlanır. Atlanmasaydı başarısız bir kayıt denemesi yeni bir kayıt
+/// denemesi doğurur ve bu kendini besleyerek sürerdi.
 /// </summary>
 public class ApiFailureLoggingHandler(IHttpClientFactory httpClientFactory, ILogger<ApiFailureLoggingHandler> logger)
     : DelegatingHandler
@@ -21,13 +22,12 @@ public class ApiFailureLoggingHandler(IHttpClientFactory httpClientFactory, ILog
     {
         var response = await base.SendAsync(request, cancellationToken);
 
-        // Başarılı yanıtları ve log uç noktasının kendisini (recursion) atla.
         if (response.IsSuccessStatusCode || IsLogEndpoint(request.RequestUri))
             return response;
 
         try
         {
-            // Gövdeyi buffer'la → hem burada loglamak için hem de asıl çağıran okuyabilsin.
+            // Gövde tamponlanır; okunmadan bırakılırsa asıl çağıran boş gövde görür.
             await response.Content.LoadIntoBufferAsync();
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             Forward(request, (int)response.StatusCode, body);
@@ -43,8 +43,10 @@ public class ApiFailureLoggingHandler(IHttpClientFactory httpClientFactory, ILog
     private static bool IsLogEndpoint(Uri? uri)
         => uri is not null && uri.AbsolutePath.EndsWith(LogPath, StringComparison.OrdinalIgnoreCase);
 
-    // Arka planda logu API'ye iletir. Gereken her şey önce locale alınır; request bu çağrıdan
-    // sonra dispose edilebilir.
+    /// <summary>
+    /// Gereken her değer çağrıdan önce yerele kopyalanır: istek nesnesi bu noktadan sonra serbest
+    /// bırakılabilir ve arka plandaki gönderim ona erişmeye çalışırsa düşerdi.
+    /// </summary>
     private void Forward(HttpRequestMessage request, int statusCode, string body)
     {
         if (request.RequestUri is null) return;
@@ -52,7 +54,7 @@ public class ApiFailureLoggingHandler(IHttpClientFactory httpClientFactory, ILog
         var method = request.Method.Method;
         var path = request.RequestUri.AbsolutePath;
         var logUri = new Uri(request.RequestUri, LogPath);
-        var auth = request.Headers.Authorization; // mevcut Bearer token'ı yeniden kullan
+        var auth = request.Headers.Authorization;
 
         var payload = new
         {

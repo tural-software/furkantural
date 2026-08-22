@@ -9,7 +9,6 @@ public sealed class MusicIndexViewModel
     public int PassiveCount { get; init; }
     public int DeletedCount { get; init; }
 
-    // Filter state
     public string? SearchName { get; init; }
     public string? SearchArtist { get; init; }
     public string? ActiveFilter { get; init; }
@@ -18,7 +17,6 @@ public sealed class MusicIndexViewModel
     public string? DateTo { get; init; }
     public int?    MusicIdFilter { get; init; }
 
-    // Pagination
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = 10;
     public int TotalFiltered { get; init; }

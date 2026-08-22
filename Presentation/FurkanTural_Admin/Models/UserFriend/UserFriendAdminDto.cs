@@ -6,7 +6,7 @@ public sealed class UserFriendAdminDto
     public int RequesterId { get; set; }
     public int AddresseeId { get; set; }
 
-    // API tarafında doldurulur; kullanıcı silinmişse null gelebilir.
+    /// <summary>Silinmiş kullanıcıda null gelir; yönetim listesi bu satırları da gösterir.</summary>
     public string? RequesterUsername { get; set; }
     public string? AddresseeUsername { get; set; }
 

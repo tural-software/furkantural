@@ -9,7 +9,6 @@ public sealed class ProjectImageIndexViewModel
     public int PassiveCount { get; init; }
     public int DeletedCount { get; init; }
 
-    // Filters
     public string? SearchUrl       { get; init; }
     public string? IsCoverFilter   { get; init; }
     public string? ActiveFilter    { get; init; }
@@ -18,7 +17,6 @@ public sealed class ProjectImageIndexViewModel
     public string? DateFrom        { get; init; }
     public string? DateTo          { get; init; }
 
-    // Pagination
     public int PageNumber    { get; init; } = 1;
     public int PageSize      { get; init; } = 10;
     public int TotalFiltered { get; init; }

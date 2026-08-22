@@ -12,7 +12,6 @@ public sealed class UserIndexViewModel
     public int PassiveCount { get; init; }
     public int DeletedCount { get; init; }
 
-    // Filter state
     public string? SearchUsername { get; init; }
     public int? RoleFilter { get; init; }
     public string? ActiveFilter { get; init; }
@@ -20,7 +19,6 @@ public sealed class UserIndexViewModel
     public string? DateFrom { get; init; }
     public string? DateTo { get; init; }
 
-    // Pagination
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = 10;
     public int TotalFiltered { get; init; }

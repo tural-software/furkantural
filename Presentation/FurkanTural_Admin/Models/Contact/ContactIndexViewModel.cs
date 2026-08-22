@@ -10,7 +10,6 @@ public sealed class ContactIndexViewModel
     public int DeletedCount { get; init; }
     public int UnreadCount { get; init; }
 
-    // Filter state
     public string? SearchName { get; init; }
     public string? ActiveFilter { get; init; }
     public string? DeletedFilter { get; init; }
@@ -18,7 +17,6 @@ public sealed class ContactIndexViewModel
     public string? DateFrom { get; init; }
     public string? DateTo { get; init; }
 
-    // Pagination
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = 10;
     public int TotalFiltered { get; init; }

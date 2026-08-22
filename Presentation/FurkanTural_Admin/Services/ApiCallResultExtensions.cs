@@ -32,7 +32,7 @@ internal static class ApiCallResultExtensions
         }
         catch
         {
-            // Gövde JSON değilse (örn. boş 401) durum kodu tek başına yeterli sinyaldir.
+            // Gövde JSON değilse (örneğin boş bir 401) durum kodu tek başına yeterli bilgidir.
         }
 
         return ApiCallResult.Fail((int)response.StatusCode, message);

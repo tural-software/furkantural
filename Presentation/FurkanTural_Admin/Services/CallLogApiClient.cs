@@ -17,7 +17,7 @@ public class CallLogApiClient(HttpClient httpClient, ILogger<CallLogApiClient> l
     {
         try
         {
-            // /call/admin sayfalı döner; admin client-side filtre/sayfalama için büyük sayfa çekiyoruz.
+            // Uç sayfalı döner ama panel filtrelemeyi istemcide yaptığı için tek seferde hepsi isteniyor.
             using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/call/admin?pageNumber=1&pageSize=100000");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             using var response = await _httpClient.SendAsync(request, ct);
