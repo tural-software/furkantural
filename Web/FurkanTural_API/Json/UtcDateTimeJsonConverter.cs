@@ -5,9 +5,10 @@ using System.Text.Json.Serialization;
 namespace FurkanTural_API.Json;
 
 /// <summary>
-/// Tüm <see cref="DateTime"/> değerlerini UTC ISO-8601 ('Z' ekli) olarak yazar; okurken
-/// belirsiz (Unspecified) gelen değerleri UTC kabul eder. Kanonik kural: API'den çıkan
-/// her tarih kesinlikle UTC'dir; saat dilimine çevirme yalnızca istemci gösteriminde yapılır.
+/// Tel üzerindeki biçimi sabitler: her tarih <c>yyyy-MM-ddTHH:mm:ss.fffZ</c> olarak yazılır, yani
+/// çıktı daima 'Z' ile biter ve milisaniye alanı hep üç hanedir. Okurken belirsiz gelen değer UTC
+/// sayılır, yerel gelen değer çevrilir; böylece hangi istemci ne gönderirse göndersin bağlam
+/// içeriye tek bir biçimde girer.
 /// </summary>
 public sealed class UtcDateTimeJsonConverter : JsonConverter<DateTime>
 {

@@ -138,7 +138,10 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetAdminSummaryAsync(cancellationToken));
 
-    // User rolü için kayıt sahipliği kontrolü; Admin rolü her zaman geçer
+    /// <summary>
+    /// Yetkilendirme politikası yalnızca "üye ya da yönetici" der; kaydın kime ait olduğunu
+    /// söylemez. Sahiplik bu yüzden ayrıca burada denetlenir ve yönetici koşulsuz geçer.
+    /// </summary>
     private async Task<bool> HasOwnershipOrAdmin(int blogId, CancellationToken cancellationToken)
     {
         if (SortUserRole() == "Admin") return true;

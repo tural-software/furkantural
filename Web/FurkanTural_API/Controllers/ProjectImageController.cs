@@ -116,7 +116,6 @@ public class ProjectImageController(IProjectImageService projectImageService, IF
 
         var existingData = existing.Data!;
 
-        // Yeni görsel gönderilmediyse sadece metadata güncelle, dosya işlemi yapma
         if (request.ImageData is not { Length: > 0 })
         {
             var metaDto = new UpdateProjectImageDto
@@ -134,11 +133,9 @@ public class ProjectImageController(IProjectImageService projectImageService, IF
         var userId = SortUserId() ?? 0;
         var oldUrl = existingData.Url;
 
-        // Adım 1: Yeni dosyayı fiziksel olarak kaydet
         var newFileName = await _fileService.SaveAsync(
             request.ImageData, request.ImageName ?? string.Empty, "Project", request.ProjectId, userId);
 
-        // Adım 2: Veritabanını yeni dosya adıyla güncelle
         var updateDto = new UpdateProjectImageDto
         {
             Id = request.Id,
@@ -152,19 +149,16 @@ public class ProjectImageController(IProjectImageService projectImageService, IF
         var updateResult = await _projectImageService.UpdateAsync(updateDto, cancellationToken);
         if (updateResult.IsFailure)
         {
-            // DB başarısız → yeni dosyayı diskten sil (disk rollback)
-            try { await _fileService.DeleteAsync(newFileName); } catch { /* best-effort */ }
+            try { await _fileService.DeleteAsync(newFileName); } catch { }
             return ToActionResult(updateResult);
         }
 
-        // Adım 3: Eski dosyayı fiziksel olarak sil
         try
         {
             await _fileService.DeleteAsync(oldUrl);
         }
         catch
         {
-            // Eski dosya silinemedi → DB'yi eski haline geri sar + yeni dosyayı sil
             var rollbackDto = new UpdateProjectImageDto
             {
                 Id = existingData.Id,
@@ -174,8 +168,8 @@ public class ProjectImageController(IProjectImageService projectImageService, IF
                 ProjectId = existingData.ProjectId,
                 UpdatedBy = SortUserId()
             };
-            try { await _projectImageService.UpdateAsync(rollbackDto, cancellationToken); } catch { /* best-effort */ }
-            try { await _fileService.DeleteAsync(newFileName); } catch { /* best-effort */ }
+            try { await _projectImageService.UpdateAsync(rollbackDto, cancellationToken); } catch { }
+            try { await _fileService.DeleteAsync(newFileName); } catch { }
             return StatusCode(500, "Eski görsel dosyası silinemedi. İşlem geri alındı.");
         }
 

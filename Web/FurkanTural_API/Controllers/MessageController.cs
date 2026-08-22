@@ -8,11 +8,24 @@ using Microsoft.AspNetCore.StaticFiles;
 
 namespace FurkanTural_API.Controllers;
 
+/// <summary>
+/// Ekler statik dosya olarak sunulmaz; her indirme bu denetleyiciden ve yetki kontrolünden geçer.
+/// Yanıt yalnızca isteyenin kendi tarayıcısında önbelleklenebilir olarak işaretlenir, çünkü içerik
+/// iki kişiye özeldir ve paylaşımlı bir ara sunucuda tutulmamalıdır.
+///
+/// İstek boyutu sınırları taşınan verinin base64 büyümesine göre konur ve asıl sınır değildir;
+/// gerçek üst sınır dosya katmanına geçilen bayt değeridir. Buradaki sınır yalnızca gövdenin
+/// okunmadan reddedilmesini sağlar.
+///
+/// Yükleme sırasında dosya diske kaydedildikten sonra mesaj yazılamazsa dosya geri silinir, aksi
+/// hâlde diskte hiçbir kaydın işaret etmediği bir ek kalırdı. Silme ve düzenleme ise iki tarafa
+/// birden bildirilir: alıcının açık istemcileri kadar gönderenin diğer sekmeleri de eşitlenir.
+/// </summary>
 [Authorize(Policy = "UserOrAdmin")]
 [ApiVersion("1.0")]
 public class MessageController(IChatMessageService chatMessageService, IChatNotifier chatNotifier, IFileService fileService) : JwtBaseController
 {
-    private const long AudioMaxBytes = 10L * 1024 * 1024; // sesli mesaj ≤10MB
+    private const long AudioMaxBytes = 10L * 1024 * 1024;
 
     private static readonly FileExtensionContentTypeProvider _contentTypes = new();
 
@@ -36,7 +49,7 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
 
     /// <summary>Sesli mesaj (voice note) gönder (≤10MB)</summary>
     [HttpPost("audio")]
-    [RequestSizeLimit(16_000_000)] // base64(10MB) ≈ 13.4MB + JSON payı; gerçek sınır FileService maxBytes
+    [RequestSizeLimit(16_000_000)]
     public async Task<IActionResult> SendAudio([FromBody] SendAudioRequest request, CancellationToken cancellationToken)
     {
         var userId = SortUserId();
@@ -51,21 +64,21 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message); // desteklenmeyen uzantı veya boyut aşımı
+            return BadRequest(ex.Message);
         }
 
         var result = await _chatMessageService.SendAudioAsync(userId.Value, request.ReceiverId, fileName, request.DurationSeconds, cancellationToken);
         if (result.Success && result.Data is not null)
             await _chatNotifier.NotifyMessageReceivedAsync(request.ReceiverId, result.Data);
         else
-            await _fileService.DeleteAsync(fileName); // başarısızsa yetim dosyayı temizle
+            await _fileService.DeleteAsync(fileName);
 
         return ToActionResult(result);
     }
 
     /// <summary>Foto/Video mesajı gönder (foto ≤10MB, video ≤30MB)</summary>
     [HttpPost("media")]
-    [RequestSizeLimit(48_000_000)] // base64(30MB) ≈ 40MB + JSON payı; gerçek sınır FileService maxBytes
+    [RequestSizeLimit(48_000_000)]
     public async Task<IActionResult> SendMedia([FromBody] SendMediaRequest request, CancellationToken cancellationToken)
     {
         var userId = SortUserId();
@@ -83,14 +96,14 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message); // desteklenmeyen uzantı veya boyut aşımı
+            return BadRequest(ex.Message);
         }
 
         var result = await _chatMessageService.SendMediaAsync(userId.Value, request.ReceiverId, fileName, isVideo ? "Video" : "Image", request.DurationSeconds, cancellationToken);
         if (result.Success && result.Data is not null)
             await _chatNotifier.NotifyMessageReceivedAsync(request.ReceiverId, result.Data);
         else
-            await _fileService.DeleteAsync(fileName); // başarısızsa yetim dosyayı temizle
+            await _fileService.DeleteAsync(fileName);
 
         return ToActionResult(result);
     }
@@ -141,7 +154,6 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
         if (!_contentTypes.TryGetContentType(physicalPath, out var contentType))
             contentType = "application/octet-stream";
 
-        // Kişisel içerik: yalnızca istemcinin kendi tarayıcısı önbellekleyebilir (paylaşımlı proxy'ler asla).
         Response.Headers.CacheControl = "private, max-age=3600";
         return PhysicalFile(physicalPath, contentType, enableRangeProcessing: true);
     }
@@ -156,7 +168,6 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
         var result = await _chatMessageService.DeleteOwnAsync(userId.Value, id, cancellationToken);
         if (result.Success && result.Data is not null)
         {
-            // Alıcının açık istemcileri balonu kaldırsın; gönderenin diğer sekmeleri de eşitlensin.
             await _chatNotifier.NotifyMessageDeletedAsync(result.Data.ReceiverId, result.Data);
             await _chatNotifier.NotifyMessageDeletedAsync(result.Data.SenderId, result.Data);
         }
@@ -194,8 +205,6 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
 
         return ToActionResult(result);
     }
-
-    // ── Admin ──
 
     /// <summary>Tüm mesajları (admin) sayfalı listele</summary>
     [HttpGet("admin")]

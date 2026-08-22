@@ -16,12 +16,10 @@ public class LogController(ILogService logService, IClock clock) : BaseApiContro
     private readonly ILogService _logService = logService;
     private readonly IClock _clock = clock;
 
-    // Trim sınırları DB kolon uzunluklarıyla hizalı (LogConfiguration); aşan değer
-    // SaveChanges'te DbUpdateException fırlatırdı. ClientLogController ile aynı desen.
-    private const int MaxMessage = 1000;   // nvarchar(1000)
-    private const int MaxDetail = 8000;    // nvarchar(max)
-    private const int MaxPath = 500;       // nvarchar(500)
-    private const int MaxProject = 200;    // nvarchar(200)
+    private const int MaxMessage = 1000;
+    private const int MaxDetail = 8000;
+    private const int MaxPath = 500;
+    private const int MaxProject = 200;
 
     /// <summary>
     /// Sistem logunu ID ile getir
@@ -81,8 +79,6 @@ public class LogController(ILogService logService, IClock clock) : BaseApiContro
             Project = Trim(StripControls(request.Project), MaxProject) ?? "FurkanTural_Admin",
             Date = _clock.UtcNow,
             Level = NormalizeLevel(request.Level),
-            // Önce control-char temizliği (log injection / CRLF satır-sahteleme savunması),
-            // sonra DB kolon uzunluğuna kırp. Detail çok-satırlı olabilir → \t\r\n korunur.
             Message = Trim(StripControls(request.Message), MaxMessage),
             Detail = Trim(StripControls(request.Detail, keepWhitespace: true), MaxDetail),
             Path = Trim(StripControls(request.Path), MaxPath),
@@ -92,8 +88,10 @@ public class LogController(ILogService logService, IClock clock) : BaseApiContro
         return result.Success ? NoContent() : ToActionResult(result);
     }
 
-    // Control karakterleri (null, CR/LF, escape vb.) kaldır — log injection ve plaintext/SIEM
-    // export'ta satır-sahteleme savunması. keepWhitespace=true ise \t \r \n korunur.
+    /// <summary>
+    /// <see cref="ClientLogController"/> içindeki eşiyle aynı kuralı uygular; sınırlar da aynı
+    /// kolonlardan gelir. İkisi ayrışırsa aynı tabloya iki farklı temizlikten geçmiş kayıt düşer.
+    /// </summary>
     private static string? StripControls(string? value, bool keepWhitespace = false)
     {
         if (string.IsNullOrEmpty(value)) return value;

@@ -112,8 +112,6 @@ public class FriendController(IUserFriendService userFriendService) : JwtBaseCon
         return ToActionResult(await _userFriendService.GetBlockedAsync(currentUserId.Value, cancellationToken));
     }
 
-    // ── Admin ──
-
     /// <summary>Tüm arkadaşlık kayıtlarını (admin) listele</summary>
     [HttpGet("admin")]
     [Authorize(Policy = "AdminOnly")]

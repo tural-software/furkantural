@@ -8,6 +8,19 @@ using Asp.Versioning;
 
 namespace FurkanTural_API.Controllers;
 
+/// <summary>
+/// Görsel değiştirme üç adımda yürür ve her adımın geri alması vardır: yeni dosya diske yazılır,
+/// kayıt yeni ada güncellenir, sonra eski dosya silinir. Veri tabanı adımı düşerse yeni dosya
+/// diskten kaldırılır. Eski dosya silinemezse kayıt eski adına geri sarılır, yeni dosya silinir ve
+/// istek 500 döner: silinemeyen tek bir dosya, tamamlanmış görünen bir güncellemeyi bilerek geri
+/// aldırır, çünkü kayıtla disk arasında sessiz bir ayrışma bırakmaktansa işlemi hiç yapmamak
+/// yeğlenir.
+///
+/// Geri alma denemeleri kendi başlarına yutulur; zaten hata dönmekte olan bir istek, temizlik de
+/// başarısız oldu diye ikinci bir istisnayla bölünmez.
+///
+/// İstek görsel verisi taşımıyorsa dosya katmanına hiç uğranmaz, yalnızca üst veri güncellenir.
+/// </summary>
 [ApiVersion("1.0")]
 public class BlogImageController(IBlogImageService blogImageService, IFileService fileService) : JwtBaseController
 {
@@ -127,7 +140,6 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
 
         var existingData = existing.Data!;
 
-        // Yeni görsel gönderilmediyse sadece metadata güncelle, dosya işlemi yapma
         if (request.ImageData is not { Length: > 0 })
         {
             var metaDto = new UpdateBlogImageDto
@@ -145,11 +157,9 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
         var userId = SortUserId() ?? 0;
         var oldUrl = existingData.Url;
 
-        // Adım 1: Yeni dosyayı fiziksel olarak kaydet
         var newFileName = await _fileService.SaveAsync(
             request.ImageData, request.ImageName ?? string.Empty, "Blog", request.BlogId, userId);
 
-        // Adım 2: Veritabanını yeni dosya adıyla güncelle
         var updateDto = new UpdateBlogImageDto
         {
             Id = request.Id,
@@ -163,19 +173,16 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
         var updateResult = await _blogImageService.UpdateAsync(updateDto, cancellationToken);
         if (updateResult.IsFailure)
         {
-            // DB başarısız → yeni dosyayı diskten sil (disk rollback)
-            try { await _fileService.DeleteAsync(newFileName); } catch { /* best-effort */ }
+            try { await _fileService.DeleteAsync(newFileName); } catch { }
             return ToActionResult(updateResult);
         }
 
-        // Adım 3: Eski dosyayı fiziksel olarak sil
         try
         {
             await _fileService.DeleteAsync(oldUrl);
         }
         catch
         {
-            // Eski dosya silinemedi → DB'yi eski haline geri sar + yeni dosyayı sil
             var rollbackDto = new UpdateBlogImageDto
             {
                 Id = existingData.Id,
@@ -185,8 +192,8 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
                 BlogId = existingData.BlogId,
                 UpdatedBy = SortUserId()
             };
-            try { await _blogImageService.UpdateAsync(rollbackDto, cancellationToken); } catch { /* best-effort */ }
-            try { await _fileService.DeleteAsync(newFileName); } catch { /* best-effort */ }
+            try { await _blogImageService.UpdateAsync(rollbackDto, cancellationToken); } catch { }
+            try { await _fileService.DeleteAsync(newFileName); } catch { }
             return StatusCode(500, "Eski görsel dosyası silinemedi. İşlem geri alındı.");
         }
 
@@ -213,7 +220,10 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.GetAdminSummaryAsync(cancellationToken));
 
-    // User rolü için kayıt sahipliği kontrolü; Admin rolü her zaman geçer
+    /// <summary>
+    /// Sahiplik görselin kendisinden değil bağlı olduğu yazıdan çözülür; yetkilendirme politikası
+    /// yalnızca rolü bildiği için bu denetim ayrıca yapılır ve yönetici koşulsuz geçer.
+    /// </summary>
     private async Task<bool> HasOwnershipOrAdmin(int imageId, CancellationToken cancellationToken)
     {
         if (SortUserRole() == "Admin") return true;

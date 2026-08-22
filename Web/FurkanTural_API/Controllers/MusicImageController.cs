@@ -98,7 +98,6 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
 
         var existingData = existing.Data!;
 
-        // Yeni görsel gönderilmediyse sadece metadata güncelle, dosya işlemi yapma
         if (request.ImageData is not { Length: > 0 })
         {
             var metaDto = new UpdateMusicImageDto
@@ -116,11 +115,9 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
         var userId = SortUserId() ?? 0;
         var oldUrl = existingData.Url;
 
-        // Adım 1: Yeni dosyayı fiziksel olarak kaydet
         var newFileName = await _fileService.SaveAsync(
             request.ImageData, request.ImageName ?? string.Empty, "Music", request.MusicId, userId);
 
-        // Adım 2: Veritabanını yeni dosya adıyla güncelle
         var updateDto = new UpdateMusicImageDto
         {
             Id = request.Id,
@@ -134,19 +131,16 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
         var updateResult = await _musicImageService.UpdateAsync(updateDto, cancellationToken);
         if (updateResult.IsFailure)
         {
-            // DB başarısız → yeni dosyayı diskten sil (disk rollback)
-            try { await _fileService.DeleteAsync(newFileName); } catch { /* best-effort */ }
+            try { await _fileService.DeleteAsync(newFileName); } catch { }
             return ToActionResult(updateResult);
         }
 
-        // Adım 3: Eski dosyayı fiziksel olarak sil
         try
         {
             await _fileService.DeleteAsync(oldUrl);
         }
         catch
         {
-            // Eski dosya silinemedi → DB'yi eski haline geri sar + yeni dosyayı sil
             var rollbackDto = new UpdateMusicImageDto
             {
                 Id = existingData.Id,
@@ -156,8 +150,8 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
                 MusicId = existingData.MusicId,
                 UpdatedBy = SortUserId()
             };
-            try { await _musicImageService.UpdateAsync(rollbackDto, cancellationToken); } catch { /* best-effort */ }
-            try { await _fileService.DeleteAsync(newFileName); } catch { /* best-effort */ }
+            try { await _musicImageService.UpdateAsync(rollbackDto, cancellationToken); } catch { }
+            try { await _fileService.DeleteAsync(newFileName); } catch { }
             return StatusCode(500, "Eski görsel dosyası silinemedi. İşlem geri alındı.");
         }
 

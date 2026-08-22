@@ -4,8 +4,13 @@ using FurkanTural_Application.Services.Abstract;
 namespace FurkanTural_API.Realtime;
 
 /// <summary>
-/// <see cref="IPresenceTracker"/>'ın bellek içi uygulaması. Kullanıcı başına aktif
-/// bağlantı kimliklerini tutar; aynı kullanıcının birden çok sekmesi/cihazı güvenle sayılır.
+/// Kullanıcı başına açık bağlantı kimlikleri bellekte tutulur, dolayısıyla aynı kullanıcının birden
+/// çok sekmesi ve cihazı ayrı ayrı sayılır. Connect yalnızca ilk bağlantıda, Disconnect yalnızca son
+/// bağlantı kapandığında true döner; çağıran "çevrimiçi oldu" ve "çevrimdışı oldu" olaylarını bu
+/// dönüş değerine bakarak üretir.
+///
+/// Sayım süreç belleğindedir: uygulama yeniden başlarsa herkes çevrimdışı görünür ve istemcilerin
+/// yeniden bağlanması beklenir.
 /// </summary>
 public class PresenceTracker : IPresenceTracker
 {
@@ -34,7 +39,6 @@ public class PresenceTracker : IPresenceTracker
                 return false;
         }
 
-        // Boş kalan girdiyi temizle (yarış durumunda yeniden eklenmişse koru).
         _connections.TryRemove(userId, out _);
         return true;
     }

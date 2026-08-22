@@ -5,6 +5,11 @@ using FurkanTural_Application.Services.Abstract;
 
 namespace FurkanTural_API.Middlewares;
 
+/// <summary>
+/// Yakalanmamış her istisnayı sabit metinli bir 500'e çevirir. İstemciye tür, mesaj veya yığın
+/// bilgisi geçmez; bu yüzden birbirinden çok farklı sebepler dışarıdan aynı yanıtı üretir ve ayrım
+/// yalnızca kaydedilen günlükte kalır.
+/// </summary>
 public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
 {
     private readonly RequestDelegate _next = next;
@@ -24,11 +29,19 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
         }
     }
 
+    /// <summary>
+    /// Günlük kaydı isteğin kendi kapsamından değil, yeni açılan bir kapsamdan yazılır. Sebebi:
+    /// istisna bir kayıt hatasıysa isteğin veri bağlamı bozulmuş durumdadır ve aynı bağlam üzerinden
+    /// yazma denemesi de düşerdi. O hâlde istek 500 dönerdi ama geriye hiçbir kayıt kalmazdı.
+    ///
+    /// Mesaj ve yol, hedef kolonların genişliğine kırpılır; aksi hâlde günlüğü yazma denemesi ikinci
+    /// bir kayıt hatası doğururdu. Detay alanı sınırsız olduğundan kırpılmaz.
+    ///
+    /// Kaydın kendisi başarısız olursa yutulur ve yanıt yine döner: hata yanıtı, günlüğün yazılıp
+    /// yazılamadığına bağlı kalmamalıdır.
+    /// </summary>
     private static async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
-        // Logu TAZE bir DI scope'tan yaz: exception bir DbUpdateException ise request'in
-        // scoped DbContext'i "faulted" olur ve aynı context üzerinden log yazımı da patlar
-        // (ve sessizce yutulurdu → 500 olur ama hiç log kalmazdı). Yeni scope = temiz DbContext.
         try
         {
             using var scope = context.RequestServices
@@ -42,9 +55,6 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
                     Project = "FurkanTural_API",
                     Date = clock?.UtcNow ?? DateTime.UtcNow,
                     Level = "Error",
-                    // Message/Path, DB kolonlarını (nvarchar(1000)/(500)) aşabilir; ikincil
-                    // DbUpdateException'ı (ve sessizce yutulan kayıp logu) önlemek için kırp.
-                    // Detail nvarchar(max) olduğundan güvenli.
                     Message = Truncate(ex.Message, 1000),
                     Detail = ex.ToString(),
                     IpAddress = context.Connection.RemoteIpAddress?.ToString(),
@@ -54,7 +64,6 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
         }
         catch
         {
-            // DB log başarısız olsa bile yanıt döndürmeye devam et
         }
 
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

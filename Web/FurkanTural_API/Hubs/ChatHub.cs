@@ -7,6 +7,17 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace FurkanTural_API.Hubs;
 
+/// <summary>
+/// Çağıran her metotta jetondan çözülür. Kimlik çözülemezse metot hata üretmeden sessizce döner:
+/// istemci bir yanıt bekliyorsa cevapsız kalır, beklemiyorsa hiçbir şey olmamış gibi görünür.
+///
+/// Hata bildirimi istisnayla değil istemci olayıyla yapılır. Mesajlaşmada <c>MessageError</c>,
+/// aramada <c>CallError</c> olayı çağırana geri gönderilir; hub metodu yine başarıyla tamamlanır.
+///
+/// Arama metotlarının yetkisi taraf olmaya bağlıdır ve her biri farklıdır: yanıtlama ile reddetmeyi
+/// yalnızca aranan, iptali yalnızca arayan yapabilir, kapatmayı ise iki taraf da yapabilir. Taraf
+/// olmayan çağrı sessizce düşer.
+/// </summary>
 [Authorize(Policy = "UserOrAdmin")]
 public class ChatHub(
     IChatMessageService chatMessageService,
@@ -30,9 +41,11 @@ public class ChatHub(
         return int.TryParse(sub, out var id) ? id : null;
     }
 
-    // ───────── Aktiflik (çevrimiçi / son görülme) ─────────
-
-    /// <summary>Bağlanan kullanıcıyı çevrimiçi işaretler; arkadaşlarını bilgilendirir ve ona o an çevrimiçi olanları gönderir.</summary>
+    /// <summary>
+    /// Bağlanana o an çevrimiçi olan arkadaşlarının listesi tek seferde gönderilir; istemci
+    /// açılışta kimin çevrimiçi olduğunu ayrıca sormaz. Arkadaşlara "çevrimiçi oldu" bildirimi
+    /// yalnızca ilk bağlantıda gider, ikinci sekme açıldığında tekrarlanmaz.
+    /// </summary>
     public override async Task OnConnectedAsync()
     {
         var userId = CurrentUserId();
@@ -45,13 +58,11 @@ public class ChatHub(
                 ? friendsResult.Data.ToList()
                 : [];
 
-            // Bağlanan kullanıcıya o an çevrimiçi olan arkadaşlarının id listesini gönder.
             var onlineFriendIds = friends.Where(f => _presenceTracker.IsOnline(f.FriendUserId))
                                          .Select(f => f.FriendUserId)
                                          .ToArray();
             await Clients.Caller.SendAsync("OnlineFriends", onlineFriendIds);
 
-            // İlk bağlantıysa arkadaşlarına "çevrimiçi oldu" bildir.
             if (becameOnline)
                 foreach (var f in friends)
                     await Clients.User(f.FriendUserId.ToString()).SendAsync("UserOnline", userId.Value);
@@ -60,7 +71,14 @@ public class ChatHub(
         await base.OnConnectedAsync();
     }
 
-    /// <summary>Bağlantı kesilince; son bağlantıysa "son görülme" damgalanır ve arkadaşlar çevrimdışı bilgilendirilir.</summary>
+    /// <summary>
+    /// Son görülme damgası ve çevrimdışı bildirimi yalnızca kullanıcının son bağlantısı kapandığında
+    /// üretilir; açık başka sekmesi varsa hiçbiri olmaz.
+    ///
+    /// Buradaki yazmalar isteğin iptal jetonuyla değil iptal edilemez bir jetonla yapılır: bağlantı
+    /// zaten koptuğu için istek jetonu iptal edilmiş durumdadır ve onunla yazmak son görülme
+    /// damgasını hiç kaydettirmezdi.
+    /// </summary>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userId = CurrentUserId();
@@ -69,7 +87,6 @@ public class ChatHub(
             var becameOffline = _presenceTracker.Disconnect(userId.Value, Context.ConnectionId);
             if (becameOffline)
             {
-                // Bağlantı koptuğu için Context.ConnectionAborted iptal edilmiş olabilir → None ile yaz.
                 var lastSeen = await _userService.UpdateLastSeenAsync(userId.Value, CancellationToken.None);
 
                 var friendsResult = await _userFriendService.GetFriendsAsync(userId.Value, CancellationToken.None);
@@ -82,9 +99,6 @@ public class ChatHub(
         await base.OnDisconnectedAsync(exception);
     }
 
-    // ───────── Mesajlaşma ─────────
-
-    /// <summary>Mesaj gönderir; arkadaşlık doğrulanır, kalıcılaştırılır ve alıcıya canlı iletilir.</summary>
     public async Task SendMessage(int receiverId, string content)
     {
         var senderId = CurrentUserId();
@@ -104,23 +118,32 @@ public class ChatHub(
         }
     }
 
-    /// <summary>"Yazıyor..." göstergesi için alıcıya bildirim gönderir (yalnızca arkadaşlar arası).</summary>
+    /// <summary>
+    /// Arkadaşlık burada ayrıca doğrulanır. Yalnızca gürültüyü kesmek için değil: doğrulama olmasa
+    /// rastgele bir kimliğe yazma sinyali gönderip yanıtına bakarak o hesabın var olup olmadığı
+    /// anlaşılabilirdi.
+    /// </summary>
     public async Task Typing(int receiverId)
     {
         var senderId = CurrentUserId();
         if (senderId is null)
             return;
 
-        // Arkadaş olmayan/engellenen kullanıcıya "yazıyor" gürültüsü ve varlık sızıntısı olmasın.
         if (!await _userFriendService.AreFriendsAsync(senderId.Value, receiverId, Context.ConnectionAborted))
             return;
 
         await Clients.User(receiverId.ToString()).SendAsync("UserTyping", senderId.Value);
     }
 
-    // ───────── Sesli/Görüntülü arama (WebRTC sinyalleşme) ─────────
-
-    /// <summary>Aramayı başlatır (offer). Arkadaşlık + engel + hız sınırı doğrular; callId döner.</summary>
+    /// <summary>
+    /// WebRTC sinyalleşmesinin giriş kapısı. Dört koşul sırayla denetlenir: kendini arama, arkadaşlık,
+    /// engel ve hız sınırı. Hız sınırı en sonda durur, çünkü geçen her çağrı kotadan düşer; önce
+    /// denetlenseydi zaten reddedilecek çağrılar da kotayı tüketirdi.
+    ///
+    /// Dönen değer arama kimliğidir ve sonraki bütün sinyal metotları onu bekler. Koşullardan biri
+    /// tutmazsa hata <c>CallError</c> olayıyla gider ve dönüş sıfır olur; çağıran bunu geçerli bir
+    /// kimlik sanmamalıdır.
+    /// </summary>
     public async Task<int> CallUser(int receiverId, string callType, string offer)
     {
         var callerId = CurrentUserId();
@@ -165,7 +188,11 @@ public class ChatHub(
         return callId;
     }
 
-    /// <summary>Aramayı yanıtlar (answer). Yalnızca alıcı ve yalnızca hâlâ çalan arama için.</summary>
+    /// <summary>
+    /// Yalnızca hâlâ çalan bir arama yanıtlanabilir. Bu denetim yarışa ve yeniden oynatmaya karşıdır:
+    /// iptal edilmiş, reddedilmiş veya bitmiş bir arama, eski bir yanıt paketi tekrar gönderilerek
+    /// canlandırılamaz.
+    /// </summary>
     public async Task AnswerCall(int callId, string answer)
     {
         var userId = CurrentUserId();
@@ -174,14 +201,12 @@ public class ChatHub(
         var call = await _callLogService.GetParticipantsAsync(callId, Context.ConnectionAborted);
         if (call is null || call.CalleeId != userId.Value) return;
 
-        // İptal/reddedilmiş/bitmiş arama yeniden yanıtlanamaz (yarış ve yeniden oynatma koruması).
         if (!string.Equals(call.Status, CallDefinitions.Statuses.Ringing, StringComparison.OrdinalIgnoreCase)) return;
 
         await _callLogService.MarkAnsweredAsync(callId, Context.ConnectionAborted);
         await Clients.User(call.CallerId.ToString()).SendAsync("CallAnswered", new { callId, answer });
     }
 
-    /// <summary>ICE adayını eşe iletir.</summary>
     public async Task SendIceCandidate(int callId, string candidate)
     {
         var userId = CurrentUserId();
@@ -195,7 +220,6 @@ public class ChatHub(
         await Clients.User(peerId.ToString()).SendAsync("ReceiveIceCandidate", new { callId, candidate });
     }
 
-    /// <summary>Kamera aç/kapa durumunu eşe iletir (eşte avatar/video gösterimi için).</summary>
     public async Task NotifyMediaState(int callId, bool videoOn)
     {
         var userId = CurrentUserId();
@@ -209,7 +233,6 @@ public class ChatHub(
         await Clients.User(peerId.ToString()).SendAsync("CallMediaState", new { callId, videoOn });
     }
 
-    /// <summary>Alıcı aramayı reddeder.</summary>
     public async Task RejectCall(int callId)
     {
         var userId = CurrentUserId();
@@ -222,7 +245,10 @@ public class ChatHub(
         await Clients.User(call.CallerId.ToString()).SendAsync("CallRejected", new { callId });
     }
 
-    /// <summary>Arayan, alıcı yanıtlamadan aramayı iptal eder (cevapsız).</summary>
+    /// <summary>
+    /// Arayan vazgeçtiğinde kayda "iptal edildi" değil "cevapsız" yazılır. Arananın gözünden olan da
+    /// budur; arama kayıtlarında bu satırlar kaçırılmış aramalarla aynı kovada görünür.
+    /// </summary>
     public async Task CancelCall(int callId)
     {
         var userId = CurrentUserId();
@@ -235,7 +261,6 @@ public class ChatHub(
         await Clients.User(call.CalleeId.ToString()).SendAsync("CallCanceled", new { callId });
     }
 
-    /// <summary>Görüşmeyi sonlandırır (her iki taraf da çağırabilir).</summary>
     public async Task HangUp(int callId)
     {
         var userId = CurrentUserId();

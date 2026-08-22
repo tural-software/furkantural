@@ -7,8 +7,9 @@ using Microsoft.AspNetCore.SignalR;
 namespace FurkanTural_API.Realtime;
 
 /// <summary>
-/// <see cref="IChatNotifier"/>'ın SignalR uygulaması. Business katmanı bu soyutlamayı
-/// kullanır; gerçek push işlemi <see cref="IHubContext{ChatHub}"/> üzerinden yapılır.
+/// Hedefleme bağlantıya değil kullanıcıya yapılır, dolayısıyla bildirim o kullanıcının açık olan
+/// bütün sekme ve cihazlarına birden gider. Business katmanının SignalR'a bağlanmadan bildirim
+/// gönderebilmesi bu sınıf sayesindedir; soyutlama orada, uygulaması burada durur.
 /// </summary>
 public class ChatNotifier(IHubContext<ChatHub> hubContext) : IChatNotifier
 {

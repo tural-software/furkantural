@@ -38,7 +38,6 @@ public class CallController(
         IceServerDto[] servers;
         if (string.Equals(mode, "Static", StringComparison.OrdinalIgnoreCase))
         {
-            // Yerel/kurulumsuz: STUN listesi config'ten; relay zorunlu değil → P2P (token yok).
             servers = _configuration.GetSection("Calls:Ice:StaticServers").Get<IceServerDto[]>() ?? [];
             if (servers.Length == 0)
                 servers = [new IceServerDto { Urls = ["stun:stun.cloudflare.com:3478"] }];
@@ -47,7 +46,7 @@ public class CallController(
         {
             var ice = await _turnCredentialProvider.GetIceServersAsync(userId, cancellationToken);
             if (ice.IsFailure)
-                return ToActionResult(ice); // TURN yapılandırılmamış (503) / hata (502)
+                return ToActionResult(ice);
             servers = ice.Data!.IceServers;
         }
 
@@ -69,8 +68,6 @@ public class CallController(
         return ToActionResult(await _callLogService.GetHistoryAsync(userId.Value, cancellationToken));
     }
 
-    // ── Admin: arama politikası (bit hızı) ──
-
     /// <summary>Arama (video) politikasını getir (admin)</summary>
     [HttpGet("policy")]
     [Authorize(Policy = "AdminOnly")]
@@ -89,8 +86,6 @@ public class CallController(
             MaxHeight = request.MaxHeight,
             MaxFps = request.MaxFps
         }, SortUserId(), cancellationToken));
-
-    // ── Admin: arama kayıtları ──
 
     /// <summary>Tüm arama kayıtlarını (admin) sayfalı listele</summary>
     [HttpGet("admin")]

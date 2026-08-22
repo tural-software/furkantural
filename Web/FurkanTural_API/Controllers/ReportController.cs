@@ -30,8 +30,6 @@ public class ReportController(IReportService reportService) : JwtBaseController
         }, cancellationToken));
     }
 
-    // ── Admin ──
-
     /// <summary>Tüm şikayetleri (admin) listele</summary>
     [HttpGet("admin")]
     [Authorize(Policy = "AdminOnly")]

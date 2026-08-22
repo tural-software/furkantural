@@ -1,7 +1,7 @@
 namespace FurkanTural_API.Models.Push;
 
-// Not: Subscriber.SubscribeRequest ile aynı kısa ad → Swagger schemaId çakışması (CS yok ama
-// swagger.json üretimi 500). Bu tip semantik olarak "push aboneliği" olduğundan ayrı adlandırıldı.
+// Adı kısaltılıp SubscribeRequest yapılamaz: Subscriber altındaki tiple çakışır ve derleme
+// geçse bile swagger.json üretimi 500 döner.
 public class PushSubscriptionRequest
 {
     public string? Endpoint { get; set; }

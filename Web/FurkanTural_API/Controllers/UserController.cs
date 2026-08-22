@@ -179,7 +179,7 @@ public class UserController : JwtBaseController
         return ToActionResult(await _userService.AcceptAgreementAsync(userId.Value, cancellationToken));
     }
 
-    private const long AvatarMaxBytes = 5L * 1024 * 1024; // avatar ≤5MB
+    private const long AvatarMaxBytes = 5L * 1024 * 1024;
 
     private async Task<IActionResult> SaveAvatarAsync(int targetUserId, UserAvatarRequest request, CancellationToken cancellationToken)
     {
@@ -194,7 +194,7 @@ public class UserController : JwtBaseController
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message); // desteklenmeyen uzantı veya boyut aşımı
+            return BadRequest(ex.Message);
         }
 
         return ToActionResult(await _userService.UpdateAvatarAsync(targetUserId, fileName, SortUserId(), cancellationToken));
