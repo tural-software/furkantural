@@ -12,11 +12,10 @@ public class CallPolicyService(IUnitOfWork unitOfWork) : ICallPolicyService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-    private const int PolicyId = 1; // tek küresel satır
+    private const int PolicyId = 1;
 
     public async Task<VideoPolicyDto> GetEffectiveForUserAsync(int userId, CancellationToken cancellationToken = default)
     {
-        // v1: küresel politika herkese uygulanır. (Tier dikişi: ileride userId'ye göre dallanır.)
         var entity = await _unitOfWork.CallPolicies.GetByIdAsync(PolicyId, cancellationToken);
         return entity?.ToVideoPolicyDto() ?? DefaultVideoPolicy();
     }

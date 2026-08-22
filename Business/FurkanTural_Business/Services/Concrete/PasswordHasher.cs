@@ -3,11 +3,6 @@ using FurkanTural_Application.Services.Abstract;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// PBKDF2-SHA256 tabanlı parola özetleyici. Format kendini tanımlar:
-/// <c>PBKDF2$&lt;iterasyon&gt;$&lt;saltBase64&gt;$&lt;hashBase64&gt;</c> — iterasyon sayısı
-/// ileride artırılırsa eski kayıtlar kendi iterasyonuyla doğrulanmaya devam eder.
-/// </summary>
 public sealed class PasswordHasher : IPasswordHasher
 {
     private const string Prefix = "PBKDF2";

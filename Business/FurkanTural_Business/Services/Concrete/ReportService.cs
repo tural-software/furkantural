@@ -15,8 +15,6 @@ public class ReportService(IUnitOfWork unitOfWork, ActivityLogger activityLogger
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly ActivityLogger _activityLogger = activityLogger;
 
-    // ── Üye ──
-
     public async Task<Result> CreateAsync(int reporterId, CreateReportDto dto, CancellationToken cancellationToken = default)
     {
         if (!ReportDefinitions.IsValidTargetType(dto.TargetType))
@@ -47,8 +45,6 @@ public class ReportService(IUnitOfWork unitOfWork, ActivityLogger activityLogger
 
         return Result.Ok("Şikayetiniz alındı. En kısa sürede incelenecektir.");
     }
-
-    // ── Admin ──
 
     public async Task<Result<IEnumerable<AdminReportDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
     {
@@ -138,8 +134,6 @@ public class ReportService(IUnitOfWork unitOfWork, ActivityLogger activityLogger
         var summary = await _unitOfWork.Reports.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
-
-    // ── Yardımcılar ──
 
     private async Task<AdminReportDto> EnrichAsync(Report entity, CancellationToken cancellationToken)
     {

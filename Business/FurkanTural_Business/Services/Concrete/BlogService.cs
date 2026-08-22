@@ -98,7 +98,6 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
 
     public async Task<PagedResult<BlogDto>> GetPublishedPagedAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default)
     {
-        // En yeni yazı en üstte; isteğe bağlı kategori + başlık filtresi DB tarafında uygulanır.
         var (entities, total) = await _unitOfWork.Blogs.GetPublishedPageAsync(pageNumber, pageSize, categoryId, search, cancellationToken);
         var dtos = entities.Select(e => e.ToDto()).ToList();
         await AttachCategoriesAsync(dtos, cancellationToken);
@@ -158,7 +157,6 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         await _unitOfWork.Blogs.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // CategoryIds null ise kategoriler dokunulmaz; boş liste verilirse tümü kaldırılır.
         if (dto.CategoryIds is not null)
         {
             await _unitOfWork.Blogs.SetCategoriesAsync(entity.Id, dto.CategoryIds, dto.UpdatedBy, cancellationToken);
@@ -190,8 +188,6 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         var summary = await _unitOfWork.Blogs.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
-
-    // ── Kategori yardımcıları ────────────────────────────────────────────────
 
     private async Task<List<CategoryDto>> GetCategoryDtosAsync(int blogId, CancellationToken cancellationToken)
     {

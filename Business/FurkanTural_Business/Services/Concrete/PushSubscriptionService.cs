@@ -17,11 +17,10 @@ public class PushSubscriptionService(IUnitOfWork unitOfWork, IConfiguration conf
         if (string.IsNullOrWhiteSpace(dto.Endpoint) || string.IsNullOrWhiteSpace(dto.P256dh) || string.IsNullOrWhiteSpace(dto.Auth))
             return Result.Fail("Geçersiz abonelik bilgisi.", statusCode: 400);
 
-        // Aynı endpoint zaten kayıtlıysa (aynı cihaz tekrar abone oldu) güncelle; değilse ekle.
         var existing = await _unitOfWork.PushSubscriptions.GetAsync(s => s.Endpoint == dto.Endpoint, cancellationToken);
         if (existing is not null)
         {
-            existing.UserId = userId;             // cihaz başka kullanıcıya geçmiş olabilir
+            existing.UserId = userId;
             existing.P256dh = dto.P256dh!;
             existing.Auth = dto.Auth!;
             existing.UserAgent = dto.UserAgent;
@@ -46,7 +45,7 @@ public class PushSubscriptionService(IUnitOfWork unitOfWork, IConfiguration conf
     public async Task<Result> UnsubscribeAsync(int userId, string? endpoint, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(endpoint))
-            return Result.Ok(); // gönderecek bir şey yok → sessiz başarı
+            return Result.Ok();
 
         var entity = await _unitOfWork.PushSubscriptions.GetAsync(s => s.Endpoint == endpoint && s.UserId == userId, cancellationToken);
         if (entity is not null)
@@ -61,7 +60,6 @@ public class PushSubscriptionService(IUnitOfWork unitOfWork, IConfiguration conf
     public string? GetVapidPublicKey()
     {
         var key = _configuration["Push:Vapid:PublicKey"];
-        // Yapılandırılmamış/placeholder ise null → istemci abone olmaya çalışmaz.
         if (string.IsNullOrWhiteSpace(key) || key.Contains("####") || key.StartsWith("CHANGE_ME", StringComparison.OrdinalIgnoreCase))
             return null;
         return key;

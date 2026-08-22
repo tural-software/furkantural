@@ -20,7 +20,7 @@ public partial class CategoryService(IUnitOfWork unitOfWork, ActivityLogger acti
     private static string? ValidateColor(string? color)
     {
         if (string.IsNullOrWhiteSpace(color))
-            return null; // renk opsiyonel
+            return null;
         return HexColorRegex().IsMatch(color.Trim())
             ? null
             : "Renk geçerli bir hex kodu olmalıdır (örn. #38bdf8).";

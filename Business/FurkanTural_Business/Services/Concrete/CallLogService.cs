@@ -21,8 +21,6 @@ public class CallLogService(IUnitOfWork unitOfWork, IClock clock) : ICallLogServ
         CallDefinitions.Statuses.Failed
     };
 
-    // ── Hub yaşam döngüsü ──
-
     public async Task<int> CreateRingingAsync(int callerId, int calleeId, string callType, CancellationToken cancellationToken = default)
     {
         var entity = new CallLog
@@ -70,8 +68,6 @@ public class CallLogService(IUnitOfWork unitOfWork, IClock clock) : ICallLogServ
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    // ── Üye ──
-
     public async Task<Result<IEnumerable<CallLogDto>>> GetHistoryAsync(int currentUserId, CancellationToken cancellationToken = default)
     {
         var entities = (await _unitOfWork.CallLogs.GetAllAsync(
@@ -111,8 +107,6 @@ public class CallLogService(IUnitOfWork unitOfWork, IClock clock) : ICallLogServ
 
         return Result<IEnumerable<CallLogDto>>.Ok(list);
     }
-
-    // ── Admin ──
 
     public async Task<PagedResult<AdminCallLogDto>> GetAllPagedForAdminAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
@@ -183,8 +177,6 @@ public class CallLogService(IUnitOfWork unitOfWork, IClock clock) : ICallLogServ
         var summary = await _unitOfWork.CallLogs.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
-
-    // ── Yardımcılar ──
 
     private async Task<AdminCallLogDto> EnrichAsync(CallLog entity, CancellationToken cancellationToken)
     {

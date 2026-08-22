@@ -209,7 +209,6 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
                  (x.DisplayName != null && x.DisplayName.Contains(q))),
             cancellationToken);
 
-        // Engelli kullanıcılar (her iki yön) arama sonuçlarında gizlenir.
         var results = new List<UserSearchResultDto>();
         foreach (var u in matches.Take(40))
         {
@@ -260,7 +259,6 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         entity.LastSeenAt = now;
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        // Aktiflik sık değişir → ActivityLogger çağrılmaz (gürültü olmasın).
         return now;
     }
 

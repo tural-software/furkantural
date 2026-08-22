@@ -13,7 +13,6 @@ public class TurnstileVerifier(IConfiguration configuration, IHttpClientFactory 
     {
         var secret = _configuration["Turnstile:SecretKey"];
 
-        // SecretKey yapılandırılmamış (boş veya placeholder) → doğrulamayı atla.
         if (string.IsNullOrWhiteSpace(secret) || secret.StartsWith("CHANGE_ME", StringComparison.OrdinalIgnoreCase))
             return true;
 
