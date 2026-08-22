@@ -1,4 +1,4 @@
-// Furkan Tural Blog — basit service worker (kurulabilirlik + çevrimdışı kabuk).
+// Kurulabilirlik ve çevrimdışı kabuk için service worker.
 const CACHE = 'ft-blog-v1';
 const PRECACHE = ['/css/site.css', '/js/site.js', '/icons/icon-192.png'];
 

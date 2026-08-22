@@ -15,7 +15,6 @@ public class PagedPostsViewModel
     public bool HasPrevious => PageNumber > 1;
     public bool HasNext => PageNumber < TotalPages;
 
-    // ── Filtre durumu ────────────────────────────────────────
     /// <summary>Seçili kategori (null = tümü).</summary>
     public int? CategoryId { get; init; }
 

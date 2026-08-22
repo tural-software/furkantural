@@ -6,10 +6,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace FurkanTural_Blog.Controllers;
 
 /// <summary>
-/// Arama motorları için robots.txt ve sitemap.xml üretir.
-/// URL'ler isteğin host'una göre mutlak olarak oluşturulur; sitemap statik
-/// sayfaların yanında yayınlı blog yazılarını da içerir (API erişilemezse
-/// yalnız statik sayfalar listelenir).
+/// Arama motorlarının ve besleme okuyucularının beklediği üç dosyayı üretir: robots.txt,
+/// sitemap.xml ve feed.xml. Adresler yapılandırmadan değil isteğin kendi host'undan kurulur, yani
+/// site hangi alan adından sunuluyorsa çıktı da onu gösterir.
+///
+/// Üçü de API'ye bağımlıdır ama hiçbiri API'ye bağlı kalmaz: yazılar alınamazsa sitemap yalnızca
+/// statik sayfaları, besleme ise boş bir kanal döner. Arama motoruna hata vermek, eksik ama geçerli
+/// bir dosya vermekten kötüdür.
+///
+/// XML çıktıları metin olarak değil bayt olarak döndürülür. Bir metin oluşturucuya yazıldığında
+/// bildirim her zaman utf-16 çıkar ve dosyanın kendi başlığı gerçek kodlamasıyla çelişirdi.
 /// </summary>
 public class SeoController(IBlogApiService blogApi) : Controller
 {
@@ -29,21 +35,21 @@ public class SeoController(IBlogApiService blogApi) : Controller
         return Content(sb.ToString(), "text/plain", Encoding.UTF8);
     }
 
+    /// <summary>
+    /// Anasayfanın son değişiklik tarihi en güncel yazınınkinden alınır, çünkü sayfa yazıları
+    /// listeler ve kendi başına bir değişiklik tarihi yoktur. Gizlilik sayfası sabit bir tarih
+    /// taşır; içeriği değişirse buradaki değer de elle güncellenmelidir.
+    /// </summary>
     [HttpGet("sitemap.xml")]
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
     {
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
-        // lastmod, UTC bir tarihten ISO yyyy-MM-dd üretir (sitemap için geçerli W3C biçimi).
         static string Iso(DateTime d) => DateTime.SpecifyKind(d, DateTimeKind.Utc).ToString("yyyy-MM-dd");
 
-        // Yayınlı yazıların hafif listesi (Id + tarihler; içerik çekilmez).
-        // API erişilemezse boş liste → yalnız statik sayfalar listelenir.
         var posts = await _blogApi.GetSitemapItemsAsync(cancellationToken);
 
-        // Anasayfa son-yazıları listelediğinden lastmod'u = en güncel yazının değişiklik tarihi
-        // (hiç yazı yoksa bugüne düşer). Statik gizlilik sayfası sabit bir tarih taşır.
         var homeLastMod = posts.Count > 0 ? posts.Max(p => p.LastModified) : DateTime.UtcNow;
 
         var urls = new List<(string Loc, string LastMod, string Priority, string ChangeFreq)>
@@ -52,12 +58,9 @@ public class SeoController(IBlogApiService blogApi) : Controller
             ($"{baseUrl}/Home/Privacy", "2026-01-01", "0.3", "yearly"),
         };
 
-        // Her yazının gerçek son-değişiklik tarihi lastmod olur (arama motorları yeniden tarama için bunu kullanır).
         foreach (var post in posts)
             urls.Add(($"{baseUrl}/Home/Post/{post.Id}", Iso(post.LastModified), "0.7", "monthly"));
 
-        // XmlWriter bir StringBuilder'a yazınca bildirimi daima utf-16 olur;
-        // doğru "encoding=utf-8" bildirimi için UTF-8 stream'e yazıp byte döndürüyoruz.
         using var ms = new MemoryStream();
         var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false) };
         using (var writer = XmlWriter.Create(ms, settings))
@@ -80,8 +83,10 @@ public class SeoController(IBlogApiService blogApi) : Controller
         return File(ms.ToArray(), "application/xml; charset=utf-8");
     }
 
-    // İçerik dinamik (yazılar API'den) → cache 1s. Okuyucuların abone olabilmesi
-    // için RSS 2.0 beslemesi; API erişilemezse boş kanal döner (graceful).
+    /// <summary>
+    /// Beslemede en yeni yirmi yazı yer alır. Sınır okuyucu tarafında bir gereklilik değil, dosya
+    /// boyutunu sabit tutmak içindir; arşivin tamamı sitemap üzerinden zaten erişilebilir.
+    /// </summary>
     [HttpGet("feed.xml")]
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> Feed(CancellationToken cancellationToken)
@@ -90,7 +95,6 @@ public class SeoController(IBlogApiService blogApi) : Controller
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
         var nowR = DateTime.UtcNow.ToString("r");
 
-        // Yayınlı yazılar, en yeni önce, en fazla 20 (API erişilemezse boş kanal).
         var posts = (await _blogApi.GetPostsAsync(cancellationToken))
             .OrderByDescending(p => p.CreatedAt)
             .Take(20)
@@ -112,7 +116,6 @@ public class SeoController(IBlogApiService blogApi) : Controller
             writer.WriteElementString("language", "tr-TR");
             writer.WriteElementString("lastBuildDate", nowR);
 
-            // atom:link rel=self — besleme kendini tanımlar (iyi pratik).
             writer.WriteStartElement("atom", "link", atomNs);
             writer.WriteAttributeString("href", $"{baseUrl}/feed.xml");
             writer.WriteAttributeString("rel", "self");
@@ -132,11 +135,11 @@ public class SeoController(IBlogApiService blogApi) : Controller
                 writer.WriteAttributeString("isPermaLink", "true");
                 writer.WriteString(link);
                 writer.WriteEndElement();
-                writer.WriteEndElement(); // item
+                writer.WriteEndElement();
             }
 
-            writer.WriteEndElement(); // channel
-            writer.WriteEndElement(); // rss
+            writer.WriteEndElement();
+            writer.WriteEndElement();
             writer.WriteEndDocument();
         }
 

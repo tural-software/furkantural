@@ -4,27 +4,32 @@ using Microsoft.AspNetCore.Html;
 namespace FurkanTural_Blog.Helpers;
 
 /// <summary>
-/// Blog içeriğini (Markdown) güvenli HTML'e render eder.
-/// Ham HTML <see cref="MarkdownExtensions.DisableHtml"/> ile devre dışı bırakıldığından
-/// içeriğe gömülü &lt;script&gt; vb. etiketler kaçışlanır → XSS-güvenli.
-/// Eski düz-metin kayıtlar da geçerli Markdown'dır; satır sonları korunur.
+/// Yazı içeriği Markdown olarak saklanır ve buradan HTML'e çevrilir. Çıktı doğrudan sayfaya
+/// basıldığı için boru hattının en önemli ayarı ham HTML'in kapatılmasıdır: içerikteki etiketler
+/// kaçışlanır, yani bir yazının gövdesine gömülen betik çalışmaz. Bu ayar kaldırılırsa içerik
+/// üretimi tek adımda betik çalıştırma yetkisine dönüşür.
+///
+/// Yumuşak satır sonları zorlu satır sonu sayılır. Markdown'ın kendi kuralı bunları birleştirir;
+/// burada korunmalarının sebebi Markdown'dan önce yazılmış düz metin kayıtların görünümünü
+/// bozmamaktır.
 /// </summary>
 public static class MarkdownRenderer
 {
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
-        .UseAutoLinks()                     // çıplak URL'ler tıklanabilir linke dönüşür
-        .UsePipeTables()                    // | tablo | desteği
-        .UseSoftlineBreakAsHardlineBreak()  // tek satır sonu → <br> (eski metinlerin görünümü korunur)
-        .DisableHtml()                      // ham HTML'i kaçışla (XSS koruması)
+        .UseAutoLinks()
+        .UsePipeTables()
+        .UseSoftlineBreakAsHardlineBreak()
+        .DisableHtml()
         .Build();
 
-    /// <summary>Markdown'ı HTML'e çevirir; içerik boşsa boş içerik döner.</summary>
     public static IHtmlContent ToHtml(string? markdown)
         => string.IsNullOrWhiteSpace(markdown)
             ? HtmlString.Empty
             : new HtmlString(Markdown.ToHtml(markdown, Pipeline));
 
-    /// <summary>Markdown'ı düz metne indirger (özet/snippet için); içerik boşsa boş döner.</summary>
+    /// <summary>
+    /// Biçimlendirme atılıp düz metin üretir; sayfada değil, özet ve meta etiketlerinde kullanılır.
+    /// </summary>
     public static string ToPlainText(string? markdown)
         => string.IsNullOrWhiteSpace(markdown)
             ? string.Empty

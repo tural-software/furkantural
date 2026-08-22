@@ -1,7 +1,9 @@
 namespace FurkanTural_Blog.Models;
 
-// API'den gelen blog görseli (BlogImage). Url göreli yol (örn. "blog/images/x.jpg");
-// tam adres = ApiBaseUrl + "/" + Url.
+/// <summary>
+/// Url göreli yoldur ve tek başına kullanılamaz; tam adres API tabanıyla birleştirilerek
+/// oluşturulur (bkz. <c>HomeController.BuildImageUrl</c>).
+/// </summary>
 public class BlogImageViewModel
 {
     public string? Url { get; set; }

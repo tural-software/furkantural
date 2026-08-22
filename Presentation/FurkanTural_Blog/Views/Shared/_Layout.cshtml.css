@@ -1,5 +1,6 @@
-﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
+﻿/* Bu dosyanın hiçbir etkisi yoktur ve proje şablonundan kalmadır. Kapsamlı stil paketi hiçbir
+   görünümden yüklenmez; ayrıca buradaki kurallar Bootstrap sınıflarını hedefler ve site Bootstrap
+   kullanmaz. Gerçek stiller wwwroot/css/site.css içindedir. */
 
 a.navbar-brand {
   white-space: normal;

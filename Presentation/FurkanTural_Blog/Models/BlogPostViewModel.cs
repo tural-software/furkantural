@@ -13,27 +13,36 @@ public class BlogPostViewModel
     public string? Content { get; set; }
     public DateTime CreatedAt { get; set; }
 
-    /// <summary>Son güncelleme tarihi (hiç düzenlenmediyse null).</summary>
     public DateTime? UpdatedAt { get; set; }
 
-    /// <summary>Kapak görselinin tam adresi (ApiBaseUrl + Url); yoksa null.</summary>
+    /// <summary>
+    /// Denetleyici tarafından doldurulur; API'den gelen görselin göreli yolu burada tam adrese
+    /// çevrilmiş hâlde durur.
+    /// </summary>
     public string? CoverImageUrl { get; set; }
 
-    /// <summary>Kapak görseli alt metni (erişilebilirlik); yoksa null.</summary>
     public string? CoverAltText { get; set; }
 
-    /// <summary>Bu yazının kategorileri (kart chip'leri için).</summary>
     public List<CategoryViewModel> Categories { get; set; } = [];
 
-    /// <summary>Yayın tarihi, Türkçe uzun biçim (örn. "18 Haziran 2026"); tarih yoksa boş.</summary>
+    /// <summary>
+    /// Okunabilir tarih Türkçe kültürle biçimlenir; sunucunun kültür ayarından bağımsız olsun diye
+    /// kültür koda sabitlenmiştir.
+    /// </summary>
     public string PublishedDisplay =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("d MMMM yyyy", Tr);
 
-    /// <summary>Makine-okur tarih (datetime attribute / JSON-LD için), ISO 8601; tarih yoksa boş.</summary>
+    /// <summary>
+    /// Makine tarafında okunan biçim; sayfadaki tarih etiketleri ve yapılandırılmış veri bunu
+    /// kullanır, ekranda görünen metni değil.
+    /// </summary>
     public string PublishedIso =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("yyyy-MM-dd");
 
-    /// <summary>Makine-okur son güncelleme tarihi (ISO 8601); güncelleme yoksa yayın tarihine düşer.</summary>
+    /// <summary>
+    /// Hiç düzenlenmemiş yazıda yayın tarihine düşer, boş kalmaz: arama motorları bu alanın
+    /// yokluğunu değil değerini bekler.
+    /// </summary>
     public string ModifiedIso
     {
         get
@@ -43,10 +52,12 @@ public class BlogPostViewModel
         }
     }
 
-    /// <summary>İçeriğin Markdown'dan render edilmiş güvenli HTML hâli (yazı sayfası için).</summary>
     public IHtmlContent ContentHtml => MarkdownRenderer.ToHtml(Content);
 
-    /// <summary>Yaklaşık okuma süresi (dakika), ~200 kelime/dk; en az 1.</summary>
+    /// <summary>
+    /// Dakikada iki yüz kelime varsayımıyla hesaplanır ve hiçbir zaman sıfır dönmez; çok kısa bir
+    /// yazı da "1 dakika" gösterir.
+    /// </summary>
     public int ReadingMinutes
     {
         get
@@ -58,7 +69,10 @@ public class BlogPostViewModel
         }
     }
 
-    /// <summary>Listeleme için içerikten kısa bir özet üretir (düz metin, ~160 karakter).</summary>
+    /// <summary>
+    /// Markdown işaretleri atılıp düz metne indirgenir, sonra yüz altmış karakterde kesilir. Kesme
+    /// son boşluğa çekilir ki özet kelimenin ortasında bitmesin.
+    /// </summary>
     public string Excerpt
     {
         get
@@ -66,7 +80,6 @@ public class BlogPostViewModel
             if (string.IsNullOrWhiteSpace(Content))
                 return string.Empty;
 
-            // Markdown işaretlerini (##, **, - vb.) ayıkla → liste/özet temiz düz metin olsun.
             var text = MarkdownRenderer.ToPlainText(Content);
             if (text.Length == 0)
                 return string.Empty;

@@ -31,7 +31,6 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
 
     public async Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken ct = default)
     {
-        // Filtre seçenekleri her durumda gerekir (boş sonuçta bile filtre çubuğu görünür).
         var categories = await GetCategoriesAsync(ct);
         try
         {

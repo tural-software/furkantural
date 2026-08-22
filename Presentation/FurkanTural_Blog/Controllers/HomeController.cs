@@ -10,25 +10,31 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
     private readonly IBlogApiService _blogApi = blogApi;
     private readonly string _apiBase = (configuration["Api:BaseUrl"] ?? string.Empty).TrimEnd('/');
 
-    // Liste sayfa boyutu — 1000+ yazıda bile DB yalnız bu kadar satır döndürür (API tarafı sayfalar).
-    // 12 seçildi çünkü kart grid'i (auto-fill, minmax(300px, 1fr)) konteyner genişliğine göre
-    // 1–4 sütun çiziyor; 12 hepsine tam bölündüğü için hiçbir kırılma noktasında yarım satır kalmıyor.
+    /// <summary>
+    /// Değer keyfi değil: kart ızgarası kapsayıcı genişliğine göre bir ilâ dört sütun çiziyor ve 12
+    /// dördüne de tam bölündüğü için hiçbir kırılma noktasında yarım satır kalmıyor. Izgaranın
+    /// sütun sayısı değişirse bu sayı da yeniden seçilmelidir.
+    /// </summary>
     private const int PageSize = 12;
 
+    /// <summary>
+    /// Aralık dışı sayfa numarası hata değil, son geçerli sayfaya yönlendirme üretir ve filtreler
+    /// korunur; elle yazılmış bir adres kullanıcıyı boş listeyle baş başa bırakmaz.
+    ///
+    /// Kapak görselleri yalnızca bu sayfadaki yazılar için ve paralel çekilir. Çağrı sayısı böylece
+    /// sayfa boyutunu hiç aşmaz ve arşiv büyüdükçe artmaz.
+    /// </summary>
     public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, CancellationToken cancellationToken = default)
     {
         if (page < 1) page = 1;
 
         var paged = await _blogApi.GetPostsPagedAsync(page, PageSize, categoryId, search, cancellationToken);
 
-        // İstenen sayfa aralık dışındaysa (örn. ?page=9999) son geçerli sayfaya yönlendir (filtre korunur).
         if (paged.TotalPages > 0 && page > paged.TotalPages)
             return RedirectToAction(nameof(Index), new { page = paged.TotalPages, categoryId, search });
 
         if (paged.Items.Count > 0)
         {
-            // Yalnız BU sayfadaki yazıların kapaklarını paralel çek → çağrı sayısı her zaman ≤ PageSize,
-            // toplam yazı sayısından bağımsız (eski "tüm görseller" çağrısı 1000+ yazıda ölçeklenmezdi).
             var covers = await Task.WhenAll(paged.Items.Select(async post =>
             {
                 var images = await _blogApi.GetImagesByBlogAsync(post.Id, cancellationToken);
@@ -66,8 +72,11 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
         return View(post);
     }
 
-    // Görsel public adresi: yeni kayıtlar göreli yol taşır ('blogs/images/..'),
-    // eski (legacy) kayıtlar düz dosya adı → 'images/uploads/' altında servis edilir.
+    /// <summary>
+    /// Bölü işareti taşıyan değer göreli yoldur ve olduğu gibi eklenir; taşımayan değer klasörlere
+    /// ayrılmadan önceki düzenden kalma düz dosya adıdır ve eski yükleme klasörü altında aranır.
+    /// Ayrımın kaynağı API tarafındaki dosya servisidir, ikisi birlikte değişmelidir.
+    /// </summary>
     private string BuildImageUrl(string url) =>
         url.Contains('/') ? $"{_apiBase}/{url}" : $"{_apiBase}/images/uploads/{url}";
 

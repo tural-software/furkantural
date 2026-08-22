@@ -5,14 +5,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-// API erişilemez olduğunda sayfaların asılı kalmaması için kısa bağlantı zaman aşımı.
 static SocketsHttpHandler FastFailHandler() => new()
 {
     ConnectTimeout = TimeSpan.FromSeconds(2),
     PooledConnectionLifetime = TimeSpan.FromMinutes(2)
 };
 
-// API entegrasyonu — uygulama token servisi
 builder.Services.AddHttpClient("AppTokenClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7000");
@@ -29,7 +27,6 @@ builder.Services.AddHttpClient("ApiClient", client =>
 }).ConfigurePrimaryHttpMessageHandler(FastFailHandler)
   .AddHttpMessageHandler<DefaultTokenHandler>();
 
-// Blog services
 builder.Services.AddScoped<IBlogApiService>(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();
@@ -40,15 +37,12 @@ builder.Services.AddScoped<IBlogApiService>(sp =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-// Temel güvenlik başlıkları (her yanıta uygulanır).
 // img-src: yerel varlıklar ('self') + API'den gelen kapak görselleri (Api:BaseUrl) + data URI
 // (Service Worker önbelleği için 'self' yeterli; API origin eklenmesi zorunlu çünkü
 //  kapak URL'leri BuildImageUrl() ile API sunucusundan mutlak adres olarak oluşturulur).
@@ -66,7 +60,6 @@ app.Use(async (context, next) =>
     headers["X-Frame-Options"] = "SAMEORIGIN";
     headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
 
-    // Content-Security-Policy
     var imgSrc = string.IsNullOrWhiteSpace(apiBase)
         ? "'self' data:"
         : $"'self' data: {apiBase}";
@@ -88,7 +81,6 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// 404 vb. durum kodlarını markalı hata sayfasına yönlendir.
 app.UseStatusCodePagesWithReExecute("/Home/Error", "?code={0}");
 
 app.UseHttpsRedirection();
