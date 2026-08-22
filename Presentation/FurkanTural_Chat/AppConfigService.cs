@@ -6,9 +6,12 @@ public interface IAppConfigService
 }
 
 /// <summary>
-/// API'nin app-config ucundan (yalnızca app-token ile erişilebilir) bu uygulamaya
-/// izin verilen, çözülmüş config değerlerini çeker ve önbelleğe alır. Şifre çözme
-/// mantığı ön-yüzde tutulmaz; değerler API'den hazır (çözülmüş) gelir.
+/// Bu uygulamaya açılmış yapılandırma değerlerini API'den çeker. Şifre çözme mantığı sunum
+/// tarafında durmaz; değerler çözülmüş olarak gelir ve anahtarın kendisi buraya hiç inmez.
+///
+/// Sonuç yarım saat önbelleklenir ve önbellek süreç belleğindedir. Hata durumunda istisna
+/// fırlatılmaz, elde ne varsa o döner: yapılandırma alınamadı diye sayfa açılmamazlık etmez, ilgili
+/// alan yalnızca boş kalır.
 /// </summary>
 public class AppConfigService : IAppConfigService
 {
@@ -31,6 +34,13 @@ public class AppConfigService : IAppConfigService
         return config is not null && config.TryGetValue("Turnstile:SiteKey", out var value) ? value : null;
     }
 
+    /// <summary>
+    /// Önbellek iki kez denetlenir: biri kilitten önce, biri sonra. Aynı anda gelen istekler aksi
+    /// hâlde hepsi birden API'ye giderdi; ikinci denetim bekleyenlerin ilkinin getirdiğini
+    /// kullanmasını sağlar.
+    ///
+    /// Adlandırılmış istemci uygulama jetonunu kendi ekler; bu uç yalnızca o jetonla açıktır.
+    /// </summary>
     private async Task<Dictionary<string, string?>?> GetConfigAsync(CancellationToken cancellationToken)
     {
         if (_cache is not null && DateTime.UtcNow < _cacheExpiry)
@@ -42,7 +52,6 @@ public class AppConfigService : IAppConfigService
             if (_cache is not null && DateTime.UtcNow < _cacheExpiry)
                 return _cache;
 
-            // "ApiClient" → DefaultTokenHandler app-token'ı otomatik ekler.
             var client = _httpClientFactory.CreateClient("ApiClient");
             var response = await client.GetAsync("/api/v1/config/app", cancellationToken);
 

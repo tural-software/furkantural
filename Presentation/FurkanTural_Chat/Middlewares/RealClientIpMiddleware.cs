@@ -3,20 +3,26 @@ using System.Net;
 namespace FurkanTural_Chat.Middlewares;
 
 /// <summary>
-/// Cloudflare + IIS arkasında <c>Connection.RemoteIpAddress</c> ziyaretçiyi değil, Cloudflare
-/// edge sunucusunu gösterir. Bu middleware güvenilir bir proxy'den geldiği doğrulanan isteklerde
-/// gerçek ziyaretçi IP'sini <c>CF-Connecting-IP</c> (yoksa <c>X-Forwarded-For</c>) başlığından
-/// çözer ve <c>RemoteIpAddress</c>'i onunla değiştirir.
+/// Cloudflare ve IIS arkasında <c>Connection.RemoteIpAddress</c> ziyaretçiyi değil edge sunucusunu
+/// gösterir. Bu middleware gerçek IP'yi <c>CF-Connecting-IP</c>, yoksa <c>X-Forwarded-For</c>
+/// başlığından çözüp onun yerine koyar.
 ///
-/// Chat'te neden gerekli: <c>ClientLogController</c> tarayıcının IP'sini gövdeyle API'ye relay
-/// eder; düzeltilmezse sistem log tablosuna Cloudflare edge IP'si yazılırdı.
+/// Chat'in buna ihtiyacı istemci günlüklerinden gelir: tarayıcının IP'si gövdeyle API'ye taşınır ve
+/// burada düzeltilmezse günlük tablosuna edge sunucusunun adresi yazılır.
 ///
-/// GÜVENLİK: Başlıklar YALNIZCA istek güvenilir bir proxy ağından geldiyse dikkate alınır.
-/// Aksi halde origin'i doğrudan bulan biri CF-Connecting-IP uydurup log tablosunu zehirleyebilirdi.
+/// Başlıklar yalnızca istek güvenilir bir proxy ağından geldiyse dikkate alınır. Bu kapı olmasa
+/// origin'i doğrudan bulan biri kendi IP'sini uydurup günlük tablosunu zehirleyebilirdi.
 ///
-/// ⚠️ İKİZ DOSYA: Aynı mantığın bir kopyası
-/// <c>Web/FurkanTural_API/Middlewares/RealClientIpMiddleware.cs</c> içindedir.
-/// Birini değiştirirken diğerini de güncelleyin.
+/// X-Forwarded-For sağdan sola yürünür: güvenilir proxy'ler atlanır, ilk güvenilmeyen giriş gerçek
+/// istemci sayılır. Soldan almak, istemcinin kendi yazdığı değeri kabul etmek olurdu.
+///
+/// Loopback güvenilir kabul edilir; yerel geliştirme ve süreç dışı IIS barındırması bunu gerektirir.
+/// Üretimde risk taşımaz çünkü barındırma süreç içidir: soketi IIS tutar, uygulama ayrı bir
+/// localhost portu dinlemez, dolayısıyla aynı makinedeki başka bir süreç buraya bağlanıp başlık
+/// uyduramaz.
+///
+/// Aynı mantığın bir kopyası <c>Web/FurkanTural_API/Middlewares/RealClientIpMiddleware.cs</c>
+/// içindedir. Biri değişirse diğeri de değişmelidir.
 /// </summary>
 public sealed class RealClientIpMiddleware(RequestDelegate next, IReadOnlyList<IPNetwork> trustedProxies)
 {
@@ -38,14 +44,10 @@ public sealed class RealClientIpMiddleware(RequestDelegate next, IReadOnlyList<I
 
     private IPAddress? ResolveClientIp(HttpContext context)
     {
-        // 1) Cloudflare'in kanonik başlığı: her zaman TEK ve gerçek ziyaretçi IP'si.
         var cf = context.Request.Headers["CF-Connecting-IP"].ToString();
         if (IPAddress.TryParse(cf.Trim(), out var cfIp))
             return cfIp;
 
-        // 2) Yedek: X-Forwarded-For "client, proxy1, proxy2" biçimindedir. Sağdan sola gidip
-        //    güvenilir proxy'leri atlıyoruz; ilk güvenilmeyen giriş gerçek istemcidir. (Soldan
-        //    almak istemcinin uydurduğu değeri kabul etmek olurdu.)
         var xff = context.Request.Headers["X-Forwarded-For"].ToString();
         if (string.IsNullOrWhiteSpace(xff))
             return null;
@@ -62,8 +64,10 @@ public sealed class RealClientIpMiddleware(RequestDelegate next, IReadOnlyList<I
         return null;
     }
 
-    // XFF girişleri port taşıyabilir ("1.2.3.4:5678" / "[::1]:5678") — IPAddress.TryParse bunu
-    // ayrıştıramaz, önce portu ayıklıyoruz.
+    /// <summary>
+    /// X-Forwarded-For girişleri port taşıyabilir (<c>1.2.3.4:5678</c>, <c>[::1]:5678</c>) ve düz
+    /// ayrıştırma bunu reddeder; o yüzden uç nokta olarak ikinci bir deneme yapılır.
+    /// </summary>
     private static bool TryParseHop(string value, out IPAddress address)
     {
         if (IPAddress.TryParse(value, out address!))
@@ -79,17 +83,15 @@ public sealed class RealClientIpMiddleware(RequestDelegate next, IReadOnlyList<I
         return false;
     }
 
+    /// <summary>
+    /// Cloudflare adresleri IPv6'ya eşlenmiş biçimde gelebildiği için (<c>::ffff:104.16.0.1</c>)
+    /// karşılaştırmadan önce normalleştirilir; aksi hâlde aralık eşleşmesi kaçardı.
+    /// </summary>
     private bool IsTrusted(IPAddress address)
     {
-        // Cloudflare IPv4 aralıkları IPv6'ya eşlenmiş gelebilir (::ffff:104.16.0.1) — normalize et.
         if (address.IsIPv4MappedToIPv6)
             address = address.MapToIPv4();
 
-        // Loopback güvenilir kabul edilir: yerel geliştirme ve (kullanılırsa) out-of-process
-        // IIS barındırmasında ANCM isteği loopback üzerinden proxy'ler.
-        // Üretimde risk taşımaz çünkü hostingModel="inprocess" — soketi IIS'in kendisi tutar,
-        // uygulama ayrı bir localhost portu dinlemez; dolayısıyla aynı makinedeki başka bir
-        // süreç buraya loopback'ten bağlanıp başlık uyduramaz.
         if (IPAddress.IsLoopback(address))
             return true;
 
@@ -107,8 +109,9 @@ public static class RealClientIpMiddlewareExtensions
 {
     /// <summary>
     /// Güvenilir proxy ağları <c>ForwardedHeaders:TrustedProxies</c> (CIDR dizisi) ile
-    /// yapılandırılabilir; boş bırakılırsa Cloudflare'in yayınladığı aralıklar kullanılır.
-    /// <c>ForwardedHeaders:Enabled</c> false ise middleware hiç eklenmez.
+    /// yapılandırılabilir; boş bırakılırsa koda gömülü Cloudflare aralıkları kullanılır.
+    /// <c>ForwardedHeaders:Enabled</c> false ise middleware hiç eklenmez ve istekler edge
+    /// sunucusunun IP'siyle kaydedilir.
     /// </summary>
     public static IApplicationBuilder UseRealClientIp(this IApplicationBuilder app, IConfiguration configuration)
     {
@@ -121,25 +124,28 @@ public static class RealClientIpMiddlewareExtensions
         return app.UseMiddleware<RealClientIpMiddleware>(networks);
     }
 
+    /// <summary>
+    /// Ayrıştırılamayan CIDR sessizce atlanır: hatalı yazılmış tek bir ayar uygulamayı açılmaktan
+    /// alıkoymamalıdır. Karşılığında yanlış yazılan aralık hiç uyarı vermeden güvenilmez kalır.
+    /// </summary>
     private static IReadOnlyList<IPNetwork> ParseNetworks(IEnumerable<string> cidrs)
     {
         var list = new List<IPNetwork>();
         foreach (var cidr in cidrs)
         {
-            // Hatalı bir CIDR yüzünden uygulama açılmasın diye sessizce atlıyoruz; gömülü
-            // varsayılanlar zaten geçerli, buraya ancak elle yazılmış hatalı config düşer.
             if (IPNetwork.TryParse(cidr, out var network))
                 list.Add(network);
         }
         return list;
     }
 
-    // Cloudflare'in yayınladığı origin-facing aralıklar — https://www.cloudflare.com/ips/
-    // Nadiren değişir; değiştiğinde appsettings'teki ForwardedHeaders:TrustedProxies ile
-    // yeniden yayın yapmadan güncellenebilir.
+    /// <summary>
+    /// Cloudflare'in yayımladığı origin tarafı aralıklar (<c>https://www.cloudflare.com/ips/</c>).
+    /// Nadiren değişir ve değiştiğinde yeniden yayın gerekmez: yapılandırmadaki TrustedProxies
+    /// listesi bu diziyi tümüyle devre dışı bırakır.
+    /// </summary>
     private static readonly string[] CloudflareRanges =
     [
-        // IPv4
         "173.245.48.0/20",
         "103.21.244.0/22",
         "103.22.200.0/22",
@@ -155,7 +161,6 @@ public static class RealClientIpMiddlewareExtensions
         "104.24.0.0/14",
         "172.64.0.0/13",
         "131.0.72.0/22",
-        // IPv6
         "2400:cb00::/32",
         "2606:4700::/32",
         "2803:f800::/32",

@@ -20,6 +20,11 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         return View(new LoginRequestModel());
     }
 
+    /// <summary>
+    /// Oturum, kimlik doğrulandıktan sonra ve yeni değerler yazılmadan önce boşaltılır. Böylece
+    /// girişten önce oluşturulmuş bir oturum kimliği doğrulanmış kullanıcıyı taşıyamaz. Yalnızca
+    /// içerik sıfırlanır; oturum ve çerez yapılandırmasına dokunulmaz.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginRequestModel model, CancellationToken cancellationToken)
@@ -31,8 +36,6 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         if (!result.Success || result.Data?.Token is null)
             return Json(new { ok = false, errors = ApiErrors(result.Errors, result.Message, "Giriş başarısız.") });
 
-        // Session fixation önlemi: başarılı kimlik doğrulamadan önce mevcut session verilerini temizle.
-        // Program.cs'deki AddSession/cookie config'e dokunmadan yalnız içerik sıfırlanır.
         HttpContext.Session.Clear();
         StoreSession(result.Data);
         SetFlash("success", "Hoş geldin", result.Data.Username ?? string.Empty);
@@ -49,6 +52,9 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         return View(new RegisterRequestModel());
     }
 
+    /// <summary>
+    /// Giriş akışındaki gibi, yeni hesabın oturumu yazılmadan önce mevcut oturum boşaltılır.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterRequestModel model, CancellationToken cancellationToken)
@@ -60,7 +66,6 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         if (!result.Success || result.Data?.Token is null)
             return Json(new { ok = false, errors = ApiErrors(result.Errors, result.Message, "Kayıt başarısız.") });
 
-        // Session fixation önlemi: yeni hesap oluşturma öncesi session'ı temizle.
         HttpContext.Session.Clear();
         StoreSession(result.Data);
         SetFlash("success", "Aramıza hoş geldin", result.Data.Username ?? string.Empty);

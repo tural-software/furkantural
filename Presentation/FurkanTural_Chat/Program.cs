@@ -35,7 +35,6 @@ builder.Services.AddHttpClient("ApiClient", client =>
     client.BaseAddress = new Uri(apiBaseUrl);
 }).AddHttpMessageHandler<DefaultTokenHandler>();
 
-// ───────── BFF reverse proxy (YARP, aynı process — Docker/ayrı servis yok) ─────────
 // Tarayıcı kimlik doğrulamalı tüm çağrıları same-origin '/bff/*' ile yapar; kullanıcı JWT'si
 // burada session'dan okunup Authorization header'ı olarak API'ye eklenir. Token tarayıcıya hiç sızmaz.
 var bffRoutes = new[]
@@ -89,8 +88,6 @@ builder.Services.AddReverseProxy()
         });
     });
 
-// Data Protection anahtarlarını kalıcı bir klasöre sabitle — bkz. AddPersistentDataProtection.
-// Sonuç, uygulama ayağa kalktıktan sonra loglanır (logger o noktada hazır olur).
 var dataProtection = builder.Services.AddPersistentDataProtection(
     builder.Configuration, builder.Environment, "FurkanTural.Chat");
 
@@ -125,7 +122,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// ───────── Güvenlik başlıkları ─────────
 // Chat'e özgü kısıtlamalar:
 //   • SignalR: cdn.jsdelivr.net (script) + wss: (connect)
 //   • Turnstile: challenges.cloudflare.com (script + frame)
@@ -151,7 +147,6 @@ app.Use(async (context, next) =>
     var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
     context.Items["csp-nonce"] = nonce;
 
-    // Content-Security-Policy
     // connect-src: same-origin (/bff/* REST + WebSocket), API base, wss: (SignalR WS transport)
     var connectSrc = string.IsNullOrWhiteSpace(apiBase)
         ? "'self' wss: ws:"

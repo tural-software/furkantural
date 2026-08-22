@@ -7,6 +7,11 @@ namespace FurkanTural_Chat.Controllers;
 /// Tarayıcıdan gelen istemci-tarafı logları (hata/uyarı/bilgi) app-token ile API'ye iletir.
 /// App-token tarayıcıya sızmaz; relay sunucu tarafında "ApiClient" (DefaultTokenHandler) ekler.
 /// Anonim erişilebilir → login/kayıt sayfalarındaki hatalar da loglanabilir.
+///
+/// Uç her koşulda 204 döner ve iletim hatası yutulur: tarayıcı kendi hatasını bildirmeye
+/// çalışırken ikinci bir hatayla karşılaşmamalıdır. Kullanıcı kimliği ve tarayıcı bilgisi
+/// ayrıntıya burada eklenir, çünkü API tarafında istek artık tarayıcıdan değil bu projeden gelmiş
+/// görünür.
 /// </summary>
 public class ClientLogController(IHttpClientFactory httpClientFactory) : Controller
 {
@@ -15,14 +20,12 @@ public class ClientLogController(IHttpClientFactory httpClientFactory) : Control
     [HttpPost("/client-log")]
     public async Task<IActionResult> Post([FromBody] ClientLogInput input, CancellationToken cancellationToken)
     {
-        // Loglama hiçbir koşulda istemciyi hataya düşürmemeli; sessizce yut, her durumda 204 dön.
         try
         {
             if (input is not null && !string.IsNullOrWhiteSpace(input.Message))
             {
                 var userId = HttpContext.Session.GetInt32("userId");
                 var userAgent = Request.Headers.UserAgent.ToString();
-                // Tanı için bağlam: kullanıcı (varsa) + tarayıcı bilgisi istemci detayına eklenir.
                 var detail = $"userId={(userId?.ToString() ?? "-")} | ua={userAgent} | {input.Detail}";
 
                 var client = _httpClientFactory.CreateClient("ApiClient");

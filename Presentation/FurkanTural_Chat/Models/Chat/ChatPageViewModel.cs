@@ -1,8 +1,12 @@
 namespace FurkanTural_Chat.Models.Chat;
 
+/// <summary>
+/// Burada kasıtlı olarak bulunmayan bir alan var: kullanıcının jetonu. Tarayıcıya hiç
+/// gönderilmez, oturumda kalır ve isteklere ters vekil tarafından eklenir. Bu modele bir jeton
+/// alanı eklemek o kurulumu tek satırda geçersiz kılar.
+/// </summary>
 public class ChatPageViewModel
 {
-    // Not: Kullanıcı JWT'si artık tarayıcıya gönderilmez (BFF/YARP proxy ekler). Token view'e taşınmaz.
     public string ApiBaseUrl { get; set; } = string.Empty;
     public int UserId { get; set; }
     public string Username { get; set; } = string.Empty;
