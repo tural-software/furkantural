@@ -1,3 +1,4 @@
+using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Services.Concrete;
@@ -5,6 +6,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace FurkanTural_Business.Registration;
 
+/// <summary>
+/// Yalnızca bu derlemedeki servisleri kaydeder. Bağımlılıklarının bir kısmı burada kurulmaz ve
+/// çağıranın sorumluluğunda kalır: <see cref="IUnitOfWork"/> (Persistence),
+/// <see cref="IPresenceTracker"/> ile <see cref="IChatNotifier"/> (SignalR gerektirdiği için API'de),
+/// <c>IHttpContextAccessor</c>, <c>IHttpClientFactory</c>, <c>IOptions&lt;AppTokenSettings&gt;</c> ve
+/// somut olarak çözülen <see cref="FurkanTural_Application.Settings.FileStorageSettings"/>. Eksikleri
+/// bu metot değil, ilk çözümleme anında DI fark ettirir.
+///
+/// Durum tutan sınıflar singleton'dır: hız sınırlayıcılar ve giriş kilidi sayaçlarını, saat ise saat
+/// dilimini bir kez çözüp süreç boyunca taşır. <see cref="IMessageProtector"/> de singleton'dır ve
+/// yapıcısı eksik anahtarda istisna fırlattığından, yapılandırma hatası uygulama açılışında değil o
+/// servisin ilk çözümlendiği istekte yüzeye çıkar.
+/// </summary>
 public static class BusinessServiceRegistration
 {
     public static IServiceCollection AddBusinessServices(this IServiceCollection services)
