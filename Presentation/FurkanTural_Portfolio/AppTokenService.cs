@@ -5,6 +5,15 @@ public interface IAppTokenService
     Task<string> GetTokenAsync(CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Uygulama jetonunu API'den alır ve süresi dolana dek elde tutar. Başarısızlık da kısa süre
+/// hatırlanır: uç ulaşılamaz durumdayken her sayfa isteğinin yeniden denemesi, zaten düşmüş bir
+/// servise yük bindirmekten başka işe yaramaz ve her ziyaretçiyi zaman aşımı kadar bekletirdi.
+///
+/// Bekleme süresince istisna fırlatılmaz; elde eski bir jeton varsa o, yoksa boş dize döner.
+/// Böylece jeton alınamadığında sayfa açılmaya devam eder ve yalnızca API'den beslenen bölümler
+/// boş kalır.
+/// </summary>
 public class AppTokenService : IAppTokenService
 {
     private readonly HttpClient _httpClient;
@@ -13,8 +22,6 @@ public class AppTokenService : IAppTokenService
 
     private string? _cachedToken;
     private DateTime _tokenExpiry = DateTime.MinValue;
-    // Token alımı başarısız olduğunda, ölü uca her istek için tekrar tekrar gitmemek
-    // için kısa süre yeniden denemeyi durdururuz (negatif önbellek).
     private DateTime _retryBlockedUntil = DateTime.MinValue;
     private static readonly TimeSpan FailureBackoff = TimeSpan.FromSeconds(15);
     private readonly SemaphoreSlim _lock = new(1, 1);
@@ -26,12 +33,18 @@ public class AppTokenService : IAppTokenService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Jeton, bildirilen bitiş anından bir saat önce süresi dolmuş sayılır. Bu pay, uzun süren bir
+    /// isteğin tam da geçerlilik sınırında yakalanıp yetkisiz dönmesini önler.
+    ///
+    /// Önbellek hem kilitten önce hem sonra denetlenir; aynı anda gelen istekler aksi hâlde hepsi
+    /// birden jeton isterdi.
+    /// </summary>
     public async Task<string> GetTokenAsync(CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrWhiteSpace(_cachedToken) && DateTime.UtcNow < _tokenExpiry)
             return _cachedToken;
 
-        // Yakın zamanda başarısız olduysak, backoff süresi dolana kadar yeniden deneme.
         if (DateTime.UtcNow < _retryBlockedUntil)
             return _cachedToken ?? string.Empty;
 
@@ -63,7 +76,7 @@ public class AppTokenService : IAppTokenService
             if (result?.Data?.Token is not null)
             {
                 _cachedToken = result.Data.Token;
-                _tokenExpiry = result.Data.ExpiresAt.AddHours(-1); // 1 saat erken yenile
+                _tokenExpiry = result.Data.ExpiresAt.AddHours(-1);
             }
 
             return _cachedToken ?? string.Empty;

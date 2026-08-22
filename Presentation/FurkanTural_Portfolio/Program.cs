@@ -10,14 +10,12 @@ builder.Services.AddControllersWithViews()
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
 
-// API erişilemez olduğunda sayfaların asılı kalmaması için kısa bağlantı zaman aşımı.
 static SocketsHttpHandler FastFailHandler() => new()
 {
     ConnectTimeout = TimeSpan.FromSeconds(2),
     PooledConnectionLifetime = TimeSpan.FromMinutes(2)
 };
 
-// API entegrasyonu — uygulama token servisi
 builder.Services.AddHttpClient("AppTokenClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7000");
@@ -35,7 +33,6 @@ builder.Services.AddHttpClient("ApiClient", client =>
 }).ConfigurePrimaryHttpMessageHandler(FastFailHandler)
   .AddHttpMessageHandler<DefaultTokenHandler>();
 
-// Portfolio services
 builder.Services.AddScoped<IPortfolioApiService>(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();
@@ -53,20 +50,16 @@ builder.Services.AddScoped<IPortfolioContactClient>(sp =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-// Güvenlik başlıkları (her yanıta uygulanır).
 app.Use(async (context, next) =>
 {
     var headers = context.Response.Headers;
 
-    // Mevcut başlıklar (Blog ile tutarlı).
     headers["X-Content-Type-Options"] = "nosniff";
     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     headers["X-Frame-Options"] = "SAMEORIGIN";
@@ -74,7 +67,6 @@ app.Use(async (context, next) =>
     // Tarayıcı özellik politikası: kamera/mikrofon/konum/ödeme gereksinimi yok (Blog/Chat ile tutarlı).
     headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
 
-    // Content-Security-Policy
     // script-src notu: 'unsafe-inline' gerekli — sayfada sunucu-kontrollü iki inline blok var:
     //   (1) document.documentElement.classList.add('js')  (_Layout.cshtml, FOUC önleme)
     //   (2) <script type="application/ld+json"> JSON-LD blokları (_Layout + Detail sayfaları)
@@ -109,7 +101,6 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// 404 vb. durum kodlarını markalı hata sayfasına yönlendir.
 app.UseStatusCodePagesWithReExecute("/Home/Error", "?code={0}");
 
 app.UseHttpsRedirection();

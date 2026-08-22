@@ -1,8 +1,7 @@
 @model IReadOnlyList<SkillViewModel>
-@* Skills — çubuk yerine KATEGORİ etiketleri (handoff). DİNAMİK: @Model üzerinden.
-   ŞEMASIZ gruplama: SkillViewModel.Category alanı OLMADAN, mevcut Proficiency'ye
-   göre seviye bucket'ına grupla (model/DB değişmez). Seviye adları SharedLocalizer'dan
-   (Step 1'de standartlaştırıldı: Uzman/İleri/Orta/Başlangıç). *@
+@* Yetenekler seviye kovalarına göre gruplanır. Gruplama modelde bir kategori alanı olmadığı için
+   mevcut Proficiency değerinden türetilir; şema değişmeden görünüm kategorili görünsün diye böyle
+   yapılmıştır. Kova adları SharedLocalizer üzerinden gelir. *@
 <section class="section reveal skills-section" id="skills">
     <div class="section-container">
         <div class="section-header">

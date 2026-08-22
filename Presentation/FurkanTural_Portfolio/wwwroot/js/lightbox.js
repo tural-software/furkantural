@@ -1,21 +1,13 @@
-// =============================================================================
-// lightbox.js — generic görsel inceleme (tüm site)
-// Sitedeki içerik görsellerine tıklanınca görseli büyük, odaklı bir modalda açar.
-// Kapatma: 'X' butonu · görsel DIŞINA (arka plana) tıklama · ESC.
-// Modal yalnız görseli içerir (başka içerik yok).
+// İçerik görsellerini büyük bir modalda açar. Tek tek bağlanmaz: belge düzeyinde tek bir tıklama
+// dinleyicisi çalışır, böylece sonradan eklenen görseller de kendiliğinden kapsama girer.
 //
-// Generic yaklaşım — event delegation: tek bir document click dinleyicisi tüm
-// <img>'leri (gelecekte dinamik eklenenler dahil) yakalar. Hariç tutulanlar:
-//   - <a>/<button> içindeki görseller (link/buton önceliği)
-//   - [data-no-lightbox] (öğenin kendisi ya da bir atası)
-//   - doğal genişliği < 48px olan küçük ikonlar
-// Büyük kaynak için isteğe bağlı `data-full` özniteliği desteklenir.
+// Kapsam dışı kalanlar: bağlantı veya düğme içindeki görseller, [data-no-lightbox] taşıyan ya da
+// böyle bir atası olan öğeler, ve doğal genişliği 48 pikselden küçük olan ikonlar. Görsel büyük bir
+// sürümünü `data-full` ile bildirebilir; bildirmezse gösterilen kaynak kullanılır.
 //
-// Erişilebilirlik (WCAG 2.1.1 Klavye): uygun görseller focusable yapılır
-// (tabindex/role/aria-label); Enter/Space ile açılır; modal açılınca odak kapat
-// butonuna taşınır ve Tab ile modal içinde kalır (focus-trap); kapanışta odak
-// tetikleyen görsele geri verilir.
-// =============================================================================
+// Klavyeyle de açılır: uygun görseller odaklanabilir yapılır, Enter ve boşluk modalı açar. Modal
+// açıkken odak içeride kalır, kapanışta tetikleyen görsele döner. Bu davranış kaldırılırsa modal
+// yalnızca fareyle kullanılabilir hâle gelir.
 (function () {
   'use strict';
 
@@ -34,7 +26,6 @@
     closeBtn = overlay.querySelector('.lightbox__close');
     document.body.appendChild(overlay);
 
-    // Arka plana (görsel dışına) tıklama kapatır; görsele tıklama kapatmaz.
     overlay.addEventListener('click', function (e) {
       if (e.target === imgEl) return;
       close();
@@ -50,9 +41,9 @@
     imgEl.setAttribute('alt', alt || '');
     overlay.classList.add('is-open');
     overlay.setAttribute('aria-hidden', 'false');
-    document.documentElement.classList.add('lightbox-open'); // sayfa kaydırmasını kilitle
+    document.documentElement.classList.add('lightbox-open');
     isOpen = true;
-    closeBtn.focus(); // odağı modala taşı
+    closeBtn.focus();
   }
 
   function close() {
@@ -62,7 +53,7 @@
     document.documentElement.classList.remove('lightbox-open');
     isOpen = false;
     if (lastFocused && typeof lastFocused.focus === 'function') {
-      lastFocused.focus(); // odağı tetikleyen öğeye geri ver
+      lastFocused.focus();
     }
     lastFocused = null;
   }
@@ -73,7 +64,7 @@
     if (img.closest('[data-no-lightbox]')) return false;
     if (img.closest('.lightbox')) return false;
     var w = img.naturalWidth || img.width || 0;
-    if (w && w < 48) return false;             // küçük ikonları atla (yüklendiğinde geçerli)
+    if (w && w < 48) return false;
     return true;
   }
 
@@ -81,7 +72,6 @@
     open(img.getAttribute('data-full') || img.currentSrc || img.src, img.alt, img);
   }
 
-  // Tıklama — event delegation (tüm görseller, gelecekte eklenenler dahil).
   document.addEventListener('click', function (e) {
     var t = e.target;
     if (!t || !t.closest) return;
@@ -93,12 +83,10 @@
 
   document.addEventListener('keydown', function (e) {
     if (isOpen) {
-      // Modal açık: ESC kapatır; Tab odağı modal içinde tutar (tek öğe = kapat).
       if (e.key === 'Escape') { close(); return; }
       if (e.key === 'Tab') { e.preventDefault(); closeBtn.focus(); }
       return;
     }
-    // Modal kapalı: odaklı zoomable görselde Enter/Space açar.
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
       var el = document.activeElement;
       if (el && el.classList && el.classList.contains('lightbox-zoomable') && eligible(el)) {
@@ -108,7 +96,6 @@
     }
   });
 
-  // Uygun görselleri zoom-in imleci + klavye erişimi için işaretle.
   function markZoomable(img) {
     img.classList.add('lightbox-zoomable');
     img.setAttribute('tabindex', '0');

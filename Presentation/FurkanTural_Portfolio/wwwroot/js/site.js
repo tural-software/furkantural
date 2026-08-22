@@ -2,9 +2,7 @@
    Furkan Tural Portfolio — site.js
 ================================================ */
 
-// Tema toggle artık theme.js (Admin ile aynı sistem) tarafından yönetiliyor.
 
-// ---- Mobile nav toggle ----
 (function () {
     const toggle = document.getElementById('navToggle');
     const links = document.getElementById('navLinks');
@@ -15,7 +13,6 @@
         toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
 
-    // Close on link click
     links.querySelectorAll('.nav-link').forEach(a => {
         a.addEventListener('click', () => {
             links.classList.remove('open');
@@ -24,7 +21,6 @@
     });
 })();
 
-// ---- Consent banner ----
 (function () {
     const banner = document.getElementById('consentBanner');
     if (!banner) return;
@@ -45,7 +41,6 @@
     });
 })();
 
-// ---- Toast helper ----
 function showToast(message, type = 'success') {
     const container = document.getElementById('toastContainer');
     if (!container) return;
@@ -62,19 +57,17 @@ function showToast(message, type = 'success') {
     }, 4000);
 }
 
-// ---- Turnstile callback ----
 function onTurnstileSuccess(token) {
     const input = document.getElementById('turnstileToken');
     if (input) input.value = token;
 }
 
-// ---- Contact form ----
 (function () {
     const form = document.getElementById('contactForm');
     if (!form) return;
 
-    // Turnstile site key artık _ContactSection.cshtml'de sunucu-tarafı render ediliyor
-    // (data-sitekey="@ViewBag.TurnstileSiteKey"); istemci-tarafı swap'e gerek yok.
+    // Site anahtarı sunucu tarafında basılır (data-sitekey); istemcide değiştirmeye çalışmak
+    // widget zaten kurulduktan sonra iş görmez.
 
     const submitBtn = document.getElementById('contactSubmitBtn');
     const submitText = document.getElementById('contactSubmitText');
@@ -93,7 +86,6 @@ function onTurnstileSuccess(token) {
             return;
         }
 
-        // Set loading state
         submitBtn.disabled = true;
         submitText.style.display = 'none';
         sendingText.style.display = 'inline';

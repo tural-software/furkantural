@@ -4,21 +4,27 @@ using Microsoft.AspNetCore.Html;
 namespace FurkanTural_Portfolio.Helpers;
 
 /// <summary>
-/// Proje açıklamasını (Markdown) güvenli HTML'e render eder.
-/// Ham HTML <see cref="MarkdownExtensions.DisableHtml"/> ile devre dışı bırakıldığından
-/// içeriğe gömülü &lt;script&gt; vb. etiketler kaçışlanır → XSS-güvenli.
-/// Eski düz-metin açıklamalar da geçerli Markdown'dır; satır sonları korunur.
+/// Proje açıklaması Markdown olarak saklanır ve buradan HTML'e çevrilir. Çıktı doğrudan sayfaya
+/// basıldığı için boru hattının en önemli ayarı ham HTML'in kapatılmasıdır: açıklamadaki etiketler
+/// kaçışlanır, yani gövdeye gömülen betik çalışmaz. Bu ayar kaldırılırsa içerik girişi tek adımda
+/// betik çalıştırma yetkisine dönüşür.
+///
+/// Yumuşak satır sonları zorlu satır sonu sayılır. Markdown'ın kendi kuralı bunları birleştirir;
+/// burada korunmalarının sebebi Markdown'dan önce yazılmış düz metin açıklamaların görünümünü
+/// bozmamaktır.
+///
+/// Blog projesindeki eşiyle aynı kuralları uygular; ikisi ayrışırsa aynı içerik iki sitede farklı
+/// biçimlenir.
 /// </summary>
 public static class MarkdownRenderer
 {
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
-        .UseAutoLinks()                     // çıplak URL'ler tıklanabilir linke dönüşür
-        .UsePipeTables()                    // | tablo | desteği
-        .UseSoftlineBreakAsHardlineBreak()  // tek satır sonu → <br> (eski metinlerin görünümü korunur)
-        .DisableHtml()                      // ham HTML'i kaçışla (XSS koruması)
+        .UseAutoLinks()
+        .UsePipeTables()
+        .UseSoftlineBreakAsHardlineBreak()
+        .DisableHtml()
         .Build();
 
-    /// <summary>Markdown'ı HTML'e çevirir; içerik boşsa boş içerik döner.</summary>
     public static IHtmlContent ToHtml(string? markdown)
         => string.IsNullOrWhiteSpace(markdown)
             ? HtmlString.Empty

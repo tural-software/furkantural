@@ -11,9 +11,13 @@ public class HomeController(IPortfolioApiService apiService, IPortfolioContactCl
     private readonly IPortfolioContactClient _contactClient = contactClient;
     private readonly IAppConfigService _appConfigService = appConfigService;
 
+    /// <summary>
+    /// Anasayfanın beş bölümü birbirinden bağımsız uçlardan beslenir ve hepsi aynı anda başlatılır.
+    /// Sırayla beklenseydi sayfanın açılma süresi beş çağrının toplamı olurdu; böyle en yavaş
+    /// olanın süresi kadardır.
+    /// </summary>
     public async Task<IActionResult> Index(CancellationToken ct)
     {
-        // Bağımsız okumalar; sıralı beklemek yerine paralel çalıştırılır.
         var skillsTask = _apiService.GetSkillsAsync(ct);
         var projectsTask = _apiService.GetProjectsAsync(ct);
         var songsTask = _apiService.GetSongsAsync(ct);
@@ -35,6 +39,10 @@ public class HomeController(IPortfolioApiService apiService, IPortfolioContactCl
         return View(vm);
     }
 
+    /// <summary>
+    /// Bot doğrulaması burada da denetlenir. Asıl doğrulamayı API yapar; buradaki erken ret onun
+    /// yerine geçmez, yalnızca jeton hiç gönderilmemiş istekleri ağa çıkmadan eler.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Contact([FromForm] ContactFormModel model, CancellationToken ct)
@@ -42,8 +50,6 @@ public class HomeController(IPortfolioApiService apiService, IPortfolioContactCl
         if (!ModelState.IsValid)
             return BadRequest(new { message = "Lütfen tüm alanları doldurun." });
 
-        // MVC-katmanı savunması: Turnstile token boş veya eksikse formu reddet.
-        // (API katmanı zaten Turnstile'ı doğrular; bu erken-ret spam isteklerini azaltır.)
         if (string.IsNullOrWhiteSpace(model.TurnstileToken))
             return BadRequest(new { message = "Bot koruması doğrulaması eksik. Lütfen tekrar deneyin." });
 

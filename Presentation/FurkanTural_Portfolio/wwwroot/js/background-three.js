@@ -1,17 +1,20 @@
-// Portfolio — tüm-sayfa sabit three.js parçacık/constellation arkaplanı (#canvas-container).
-// Guard'lar: prefers-reduced-motion, WebGL yokluğu ve modül yükleme hatası →
-// hepsinde sessizce çık; statik içerik (solid bg) bozulmadan kalır.
+// Sayfanın tamamına yayılan sabit parçacık arka planı. Hareket azaltma tercihi açıksa, WebGL
+// yoksa veya kütüphane yüklenemezse sahne hiç başlamaz ve arka plan düz rengiyle kalır; üç
+// durumda da hata gösterilmez, çünkü bu katman tümüyle dekoratiftir.
+//
+// Kütüphane sabit bir sürümle dinamik import edilir. Dinamik import bütünlük doğrulamasını
+// desteklemediğinden sürümün sabitlenmesi tek güvencedir; aralık verilirse yüklenen kod habersiz
+// değişebilir.
 (function () {
   'use strict';
 
   var canvas = document.getElementById('canvas-container');
   if (!canvas) return;
 
-  // 1) Hareket azaltma tercihi → sahneyi hiç başlatma (a11y).
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  // 2) WebGL desteğini AYRI bir canvas'ta test et — gerçek canvas'ın context tipini
-  //    kirletmeyelim (three kendi webgl/webgl2 context'ini açacak).
+  // WebGL testi ayrı bir tuval üzerinde yapılır; asıl tuvalde bağlam açmak kütüphanenin kendi
+  // bağlamını açmasını engellerdi.
   function webglSupported() {
     try {
       var probe = document.createElement('canvas');
@@ -21,8 +24,6 @@
   }
   if (!webglSupported()) return;
 
-  // 3) three.js'i CDN'den sürüm-sabitli (pinned) dinamik import ile yükle.
-  //    Not: dinamik import() SRI desteklemez; bütünlük için sürüm sabitlenmiştir.
   var THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
 
   import(THREE_URL)

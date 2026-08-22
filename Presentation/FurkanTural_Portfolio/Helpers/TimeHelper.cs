@@ -1,7 +1,8 @@
 namespace FurkanTural_Portfolio.Helpers;
 
 /// <summary>
-/// Sunucu render'ında UTC zamanları Europe/Istanbul'a çevirir (sunucu saat diliminden bağımsız).
+/// Sunucu hangi saat diliminde çalışırsa çalışsın çıktı Türkiye saatine göre üretilir; tarayıcıya
+/// bırakılsaydı sayfa sunucuda ve istemcide farklı saatler gösterebilirdi.
 /// </summary>
 public static class TimeHelper
 {

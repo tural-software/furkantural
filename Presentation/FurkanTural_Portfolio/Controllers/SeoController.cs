@@ -6,8 +6,16 @@ using FurkanTural_Portfolio.Services;
 namespace FurkanTural_Portfolio.Controllers;
 
 /// <summary>
-/// Arama motorları için robots.txt ve sitemap.xml üretir.
-/// URL'ler isteğin host'una göre mutlak olarak oluşturulur.
+/// Arama motorlarının beklediği robots.txt ve sitemap.xml dosyalarını üretir. Adresler
+/// yapılandırmadan değil isteğin kendi host'undan kurulur, yani site hangi alan adından sunuluyorsa
+/// çıktı da onu gösterir.
+///
+/// Sitemap proje ve müzik detay sayfalarını da listeler; API'ye ulaşılamazsa hata dönmez, dosya
+/// yalnızca statik sayfalarla üretilir. Arama motoruna hata vermek, eksik ama geçerli bir dosya
+/// vermekten kötüdür.
+///
+/// XML çıktısı metin olarak değil bayt olarak döndürülür. Bir metin oluşturucuya yazıldığında
+/// bildirim her zaman utf-16 çıkar ve dosyanın kendi başlığı gerçek kodlamasıyla çelişirdi.
 /// </summary>
 public class SeoController(IPortfolioApiService apiService) : Controller
 {
@@ -27,7 +35,6 @@ public class SeoController(IPortfolioApiService apiService) : Controller
         return Content(sb.ToString(), "text/plain", Encoding.UTF8);
     }
 
-    // İçerik dinamik (detay sayfaları API'den) → cache 24s yerine 1s.
     [HttpGet("sitemap.xml")]
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
@@ -41,8 +48,6 @@ public class SeoController(IPortfolioApiService apiService) : Controller
             ($"{baseUrl}/Home/Privacy", "0.3", "yearly"),
         };
 
-        // Dinamik detay sayfaları (proje + müzik) — arama motorları keşfedebilsin.
-        // API erişilemezse servis boş döndürür → sitemap statik sayfalara düşer (hata yok).
         var projectsTask = _apiService.GetProjectsAsync(cancellationToken);
         var songsTask = _apiService.GetSongsAsync(cancellationToken);
         await Task.WhenAll(projectsTask, songsTask);
@@ -56,8 +61,6 @@ public class SeoController(IPortfolioApiService apiService) : Controller
             urls.Add(($"{baseUrl}/Music/Detail/{song.Id}", "0.7", "monthly"));
         }
 
-        // XmlWriter bir StringBuilder'a yazınca bildirimi daima utf-16 olur;
-        // doğru "encoding=utf-8" bildirimi için UTF-8 stream'e yazıp byte döndürüyoruz.
         using var ms = new MemoryStream();
         var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false) };
         using (var writer = XmlWriter.Create(ms, settings))

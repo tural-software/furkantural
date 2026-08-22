@@ -1,21 +1,20 @@
-// =============================================================================
-// portfolio-3d.js
-// Hero imza objesi (#ftHero) + müzik 3D visualizer (#ftMusic) + perspektif tilt
-// ([data-tilt]). Mevcut background-three.js ile AYNI guard desenini izler:
-//   - prefers-reduced-motion → 3D hiç başlamaz (statik içerik korunur)
-//   - WebGL yoksa / three yüklenmezse → sessizce çık (try/catch)
-//   - sekme gizliyken + öğe ekran dışındayken rAF duraklatılır (pil/CPU)
-// three.js, mevcut background-three.js ile aynı sürümden (pinned) yüklenir;
-// import() tekrarlanınca tarayıcı modülü yeniden değerlendirmez (tek fetch).
-// =============================================================================
+// Açılış bölümündeki imza nesnesi, müzik görselleştiricisi ve [data-tilt] taşıyan kartların
+// perspektif eğimi. background-three.js ile aynı korumaları uygular ve üçünde de başarısızlık
+// sessizdir: hareket azaltma tercihi açıksa, WebGL yoksa veya kütüphane yüklenemezse 3D hiç
+// başlamaz ve sayfa statik hâliyle çalışmaya devam eder.
+//
+// Kütüphane background-three.js ile aynı sabit sürümden yüklenir. İkisinin sürümü ayrışırsa
+// tarayıcı aynı modülü iki kez indirir; aynı kaldığı sürece ikinci import ağa hiç çıkmaz.
+//
+// Canlandırma yalnızca gerektiğinde döner: sekme gizlendiğinde ve öğe ekrandan çıktığında kare
+// döngüsü durdurulur. Bu duraklatma kaldırılırsa sayfa arka planda pil ve işlemci tüketmeye
+// devam eder.
 (function () {
   'use strict';
 
-  // 1) Hareket azaltma tercihi → hiçbir 3D başlatma. Tilt yine de çalışır ama
-  //    geçişsiz (kart hover'ı görsel olarak kalır, animasyon yok).
   var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // 2) WebGL desteğini ayrı bir probe canvas'ta test et (asıl canvas'ı kirletme).
+  // WebGL testi ayrı bir tuval üzerinde yapılır; asıl tuvalde bağlam açmak kütüphanenin kendi bağlamını engellerdi.
   function webglSupported() {
     try {
       var p = document.createElement('canvas');
@@ -36,7 +35,6 @@
       .catch(function () { /* yükleme başarısız → statik içerik korunur */ });
   });
 
-  // --- ortak: sekme gizliyken duraklat + ekran dışında duraklat (IO) ----------
   function runLoop(canvas, render) {
     var raf = null;
     var visible = true, onscreen = true;
@@ -58,7 +56,7 @@
     return r;
   }
 
-  // === FİKİR 1: Hero imza objesi — siber gece-Dünya dokusu + yörüngede Ay ======
+  // Hero imza objesi — siber gece-Dünya dokusu + yörüngede Ay
   // Kullanıcının sağladığı equirektangular "cyber" map'ler (Dünya gece ışıkları, Ay
   // krater ışımaları — kendinden parlar) ışıksız MeshBasicMaterial ile yedirilir →
   // küre her yerde eşit parlar, geo/karasal renk dokusu YOK. Ay ayrı pivot grubunda
@@ -111,7 +109,7 @@
     });
   }
 
-  // === FİKİR 4: Müzik 3D visualizer — sky→mor bar dizisi =====================
+  // Müzik 3D visualizer — sky→mor bar dizisi
   // İPUCU: gerçek ses analizi için Web Audio API AnalyserNode bağlanabilir;
   // şu an sahte spektrum (sin tabanlı) ile çalışır — ses dosyası gerektirmez.
   function initVisualizer(THREE) {
@@ -144,7 +142,7 @@
     });
   }
 
-  // === FİKİR 2: Perspektif tilt — [data-tilt] kartlar ========================
+  // Perspektif tilt — [data-tilt] kartlar
   // Saf CSS 3D transform. [data-tilt-lift] çocuk öğe karttan "yükselir" (translateZ).
   function initTilt() {
     var cards = document.querySelectorAll('[data-tilt]');

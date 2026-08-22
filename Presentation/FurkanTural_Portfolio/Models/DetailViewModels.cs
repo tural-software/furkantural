@@ -1,7 +1,8 @@
 namespace FurkanTural_Portfolio.Models;
 
-// API'den gelen görsel (ProjectImage/MusicImage). Url göreli yol (örn. "projects/images/x.jpg");
-// tam adres = ApiBaseUrl + "/" + Url.
+/// <summary>
+/// Url göreli yoldur ve tek başına kullanılamaz; tam adres API tabanıyla birleştirilerek oluşturulur.
+/// </summary>
 public sealed class RemoteImageViewModel
 {
     public string? Url { get; set; }

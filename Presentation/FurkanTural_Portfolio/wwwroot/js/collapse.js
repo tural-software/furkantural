@@ -1,17 +1,17 @@
-// "Devamını Göster" — uzun dinamik listeleri katlama (ilerlemeli geliştirme).
+// Uzun listeleri katlayıp "Devamını Göster" düğmesi arkasına alır. Davranışı kapsayıcıdaki
+// data-collapse değeri seçer:
 //
-// İki mod (kapsayıcıdaki data-collapse değeri belirler):
-//   • data-collapse="row"  → grid'ler için: görünür öğe sayısı = O AN ekrana sığan
-//       SÜTUN sayısı (tam bir satır). İçerik tek satıra sığıyorsa buton hiç çıkmaz;
-//       ikinci bir satıra taşan öğeler "Devamını Göster" altına gizlenir. Sütun
-//       sayısı ekran genişliğiyle değiştiği için resize'da yeniden hesaplanır.
-//       Mobilde (≤768px) tek sütuna inince taban EN AZ MOBILE_FLOOR öğedir.
-//   • data-collapse="N"    → tek-sütun listeler (timeline) için: ilk N öğeden
-//       sonrası gizlenir (satır kavramı dikey listede anlamlı olmadığından sabit).
+//   row → ızgaralar için. Görünür öğe sayısı o anda ekrana sığan sütun sayısı kadardır, yani tam
+//         bir satır. İçerik zaten tek satıra sığıyorsa düğme hiç çıkmaz. Sütun sayısı ekran
+//         genişliğiyle değiştiği için yeniden boyutlandırmada baştan hesaplanır; dar ekranda tek
+//         sütuna inildiğinde taban en az MOBILE_FLOOR öğedir, aksi hâlde tek kart görünüp kalan
+//         her şey gizlenirdi.
+//   N   → dikey listeler için sabit sayı. Satır kavramı tek sütunlu bir listede karşılık
+//         bulmadığından burada sütun hesabı yapılmaz.
 //
-// Güvenlik/erişilebilirlik: gizleme YALNIZCA JS ile yapılır. JS çalışmazsa hiçbir
-// şey gizlenmez → tüm içerik görünür kalır (içerik daima DOM'da; SEO/ekran-okuyucu
-// güvenli, cloaking değil). reduced-motion'da açılış animasyonu ve yumuşak kaydırma yok.
+// Gizleme yalnızca betikle yapılır ve içerik her zaman belgede durur. Betik çalışmazsa hiçbir şey
+// gizlenmez; arama motoru ve ekran okuyucu tamamını görür, dolayısıyla bu bir gizleme hilesi
+// değildir. Hareket azaltma tercihi açıkken açılış animasyonu ve yumuşak kaydırma uygulanmaz.
 (function () {
   'use strict';
 

@@ -1,4 +1,4 @@
-// Section scroll-reveal — IntersectionObserver ile görünüme girince yumuşak giriş.
+// Bölüm giriş animasyonu — IntersectionObserver ile görünüme girince yumuşak giriş.
 // SEO/a11y güvenli: içerik DOM'da ve yalnızca opacity/transform ile gizlenir
 // (display/visibility DEĞİL, ekran okuyucu görür). Gizleme CSS'te `.js .reveal`
 // ile koşullu → JS çalışmazsa içerik tam görünür. Reduced-motion'da CSS daima
