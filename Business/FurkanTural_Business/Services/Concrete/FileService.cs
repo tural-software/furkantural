@@ -3,19 +3,25 @@ using FurkanTural_Application.Settings;
 
 namespace FurkanTural_Business.Services.Concrete;
 
+/// <summary>
+/// Göreli yol <c>modül/ortamTürü/dosyaAdı</c> biçiminde kurulur. Modül klasörü relatedTableName'e
+/// göre seçilir; eşleşmeyen ad "misc" altına düşer, hata vermez. Ortam türü uzantıdan çıkarılır ve
+/// <c>.webm</c> ile <c>.ogg</c> ses sayılır: bu uzantılar hem sesle hem videoyla gelebilir, ama
+/// buradaki üreticileri tarayıcının ses kaydı olduğu için ses kümesi önceliklidir.
+///
+/// Dosya adı her yüklemede benzersiz üretilir; aynı ada sahip iki yükleme birbirinin üzerine yazmaz.
+/// </summary>
 public sealed class FileService : IFileService
 {
     private static readonly HashSet<string> _imageExtensions =
         new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
 
-    // .webm / .ogg ses üreticilerimizden (MediaRecorder voice note) geldiği için "voices" sayılır.
     private static readonly HashSet<string> _audioExtensions =
         new(StringComparer.OrdinalIgnoreCase) { ".webm", ".mp3", ".m4a", ".ogg", ".wav" };
 
     private static readonly HashSet<string> _videoExtensions =
         new(StringComparer.OrdinalIgnoreCase) { ".mp4", ".mov", ".m4v", ".avi", ".mkv" };
 
-    // relatedTableName -> modül klasörü
     private static readonly Dictionary<string, string> _moduleFolders =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -26,7 +32,7 @@ public sealed class FileService : IFileService
             ["Blog"] = "blogs",
         };
 
-    private const string LegacyFolder = "images/uploads"; // eski düz yükleme klasörü (geri-uyum)
+    private const string LegacyFolder = "images/uploads";
 
     private readonly string _webRootPath;
     private readonly IClock _clock;
@@ -53,7 +59,6 @@ public sealed class FileService : IFileService
                 $"Dosya boyutu sınırı aşıldı. En fazla {maxBytes.Value / (1024 * 1024)} MB yükleyebilirsiniz.");
 
         var module = _moduleFolders.TryGetValue(relatedTableName, out var folder) ? folder : "misc";
-        // .webm/.ogg ambiguous: ses kümesinde olduğundan "voices"; saf video uzantıları "videos".
         var mediaType = isImage ? "images" : isAudio ? "voices" : "videos";
 
         var targetDir = Path.Combine(_webRootPath, module, mediaType);
@@ -64,7 +69,6 @@ public sealed class FileService : IFileService
 
         await File.WriteAllBytesAsync(filePath, imageData);
 
-        // DB'ye yazılacak göreli yol (ileri-slash, ön-yüzde apiBase + '/' + value).
         return $"{module}/{mediaType}/{fileName}";
     }
 
@@ -73,7 +77,6 @@ public sealed class FileService : IFileService
         if (string.IsNullOrWhiteSpace(fileName))
             return Task.CompletedTask;
 
-        // Yeni kayıtlar göreli yol ('chats/images/..') taşır; eski kayıtlar düz dosya adı → images/uploads.
         var relative = fileName.Contains('/') ? fileName : $"{LegacyFolder}/{fileName}";
         var filePath = Path.Combine(_webRootPath, relative.Replace('/', Path.DirectorySeparatorChar));
 
@@ -89,11 +92,9 @@ public sealed class FileService : IFileService
         if (string.IsNullOrWhiteSpace(fileName))
             return null;
 
-        // Yeni kayıtlar göreli yol ('chats/images/..') taşır; eski kayıtlar düz dosya adı → images/uploads.
         var relative = fileName.Contains('/') ? fileName : $"{LegacyFolder}/{fileName}";
         var filePath = Path.GetFullPath(Path.Combine(_webRootPath, relative.Replace('/', Path.DirectorySeparatorChar)));
 
-        // Klasör kaçışına (../) karşı: çözülen yol web kökü altında kalmalı.
         var root = Path.GetFullPath(_webRootPath);
         if (!filePath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
             return null;

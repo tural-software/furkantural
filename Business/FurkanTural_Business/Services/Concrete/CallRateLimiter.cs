@@ -5,8 +5,9 @@ using Microsoft.Extensions.Configuration;
 namespace FurkanTural_Business.Services.Concrete;
 
 /// <summary>
-/// In-memory kayan pencere ile arama-başlatma hız sınırı. Singleton.
-/// Eşikler: <c>Calls:RateLimit:MaxPerWindow</c> (vars. 5), <c>Calls:RateLimit:WindowSeconds</c> (vars. 60).
+/// Eşikler <c>Calls:RateLimit</c> altındaki MaxPerWindow (5) ve WindowSeconds (60) değerlerinden
+/// okunur. Pencere kayandır: sabit dilimlere bölünmediği için dilim sınırında iki katı deneme
+/// yapılamaz.
 /// </summary>
 public sealed class CallRateLimiter : ICallRateLimiter
 {

@@ -10,6 +10,11 @@ using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Services.Concrete;
 
+/// <summary>
+/// Üye tarafındaki listeler kullanıcıları tek sorguda toplu çeker, satır başına arama yapmaz.
+/// Yönetim tarafı ise süzgeçsiz okumaya geçer: silinmiş veya pasif kullanıcıların kayıtları da
+/// listelendiği için normal okuma o satırlarda adı boş bırakırdı.
+/// </summary>
 public class UserFriendService(
     IUnitOfWork unitOfWork,
     IStatusService statusService,
@@ -27,8 +32,6 @@ public class UserFriendService(
 
     private Task<int?> StatusIdAsync(string code, CancellationToken ct)
         => _statusService.GetIdByCodeAsync(StatusDefinitions.Groups.Friendship, code, ct);
-
-    // ── Üye işlemleri ──
 
     public async Task<Result> SendRequestAsync(int requesterId, int addresseeId, CancellationToken cancellationToken = default)
     {
@@ -63,7 +66,6 @@ public class UserFriendService(
                     : Result.Fail("Bu kullanıcıya zaten bekleyen bir isteğiniz var.");
             }
 
-            // Reddedilmiş/yanıtlanmış eski kayıt: isteği yeniden başlat.
             existing.RequesterId = requesterId;
             existing.AddresseeId = addresseeId;
             existing.StatusId = pendingId.Value;
@@ -110,7 +112,6 @@ public class UserFriendService(
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Arkadaşlık isteği kabul edildi. Id: {entity.Id}", cancellationToken);
 
-        // İsteği gönderen kişiye yeni arkadaşını (onaylayan = currentUser) bildir.
         var accepter = await _unitOfWork.Users.GetByIdAsync(currentUserId, cancellationToken);
         if (accepter is not null)
         {
@@ -303,8 +304,6 @@ public class UserFriendService(
             cancellationToken);
     }
 
-    // ── Engelleme (block) ──
-
     public async Task<Result> BlockUserAsync(int currentUserId, int targetUserId, CancellationToken cancellationToken = default)
     {
         if (currentUserId == targetUserId)
@@ -325,7 +324,6 @@ public class UserFriendService(
 
         if (existing is not null)
         {
-            // Engelleyen = Requester olacak şekilde yeniden yönlendir.
             existing.RequesterId = currentUserId;
             existing.AddresseeId = targetUserId;
             existing.StatusId = blockedId.Value;
@@ -365,7 +363,6 @@ public class UserFriendService(
         if (entity is null)
             return Result.Fail("Engellenen kullanıcı bulunamadı.", statusCode: 404);
 
-        // Soft-delete → ilişki sıfırlanır, taraflar yeniden istek gönderebilir.
         await _unitOfWork.UserFriends.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Engel kaldırıldı. {currentUserId} -> {targetUserId}", cancellationToken);
@@ -422,17 +419,11 @@ public class UserFriendService(
         return Result<IEnumerable<FriendDto>>.Ok(list.OrderBy(f => f.DisplayName ?? f.Username));
     }
 
-    // ── Admin ──
-
     public async Task<Result<IEnumerable<AdminUserFriendDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _unitOfWork.UserFriends.GetAllForAdminAsync(cancellationToken);
         var statuses = (await _unitOfWork.Statuses.GetAllForAdminAsync(cancellationToken)).ToDictionary(s => s.Id);
 
-        // Admin listesi silinmiş/pasif kullanıcıların kayıtlarını da içerdiği için kullanıcı adları
-        // GetUsersByIdAsync ile DEĞİL, filtresiz admin okumasıyla çözülür: üye tarafındaki o yardımcı
-        // _dbSet üzerinden gider ve global sorgu filtresi (!IsDeleted && IsActive) silinmiş kullanıcıyı
-        // gizler — tam da yöneticinin görmesi gereken satırlarda ad boş kalırdı.
         var users = (await _unitOfWork.Users.GetAllForAdminAsync(cancellationToken)).ToDictionary(u => u.Id);
 
         var dtos = entities.Select(e =>
@@ -501,9 +492,6 @@ public class UserFriendService(
         return Result<EntitySummaryDto>.Ok(summary);
     }
 
-    // ── Yardımcılar ──
-
-    /// <summary>Verilen kullanıcı kimliklerini tek sorguda yükler (liste başına N+1 lookup yerine).</summary>
     private async Task<Dictionary<int, User>> GetUsersByIdAsync(IEnumerable<int> userIds, CancellationToken cancellationToken)
     {
         var ids = userIds.Distinct().ToList();
@@ -538,7 +526,6 @@ public class UserFriendService(
         dto.StatusCode = status?.Code;
         dto.StatusName = status?.Name;
 
-        // Tek kayıt için tüm kullanıcıları çekmek yerine iki hedefli okuma (yine filtresiz).
         dto.RequesterUsername = (await _unitOfWork.Users.GetByIdForAdminAsync(entity.RequesterId, cancellationToken))?.Username;
         dto.AddresseeUsername = (await _unitOfWork.Users.GetByIdForAdminAsync(entity.AddresseeId, cancellationToken))?.Username;
 

@@ -9,6 +9,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
+/// <summary>
+/// Mesaj kaydedildikten sonra iki bildirim e-postası gönderilir: biri site sahibine, biri gönderene.
+/// Gövdeleri koda gömülü değildir, veri tabanındaki şablonlardan gelir ve yalnızca etkin şablon
+/// kullanılır — şablon yoksa o e-posta hiç gönderilmez. Gönderim hatası yutulur; form yanıtı zaten
+/// kaydedilmiş mesaja göre verilir, posta kutusuna göre değil.
+/// </summary>
 public class ContactService(
     IUnitOfWork unitOfWork,
     IEmailService emailService,
@@ -26,7 +32,6 @@ public class ContactService(
 
     public async Task<Result> SubmitAsync(SubmitContactDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
-        // Turnstile doğrulaması (paylaşılan doğrulayıcı; SecretKey yapılandırılmamışsa atlar)
         if (!await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, ipAddress, cancellationToken))
             return Result.Fail("Robot doğrulaması başarısız oldu. Lütfen tekrar deneyin.");
 
@@ -51,7 +56,6 @@ public class ContactService(
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Yeni iletişim mesajı alındı. Id: {entity.Id}", cancellationToken);
 
-        // Send email notifications
         await SendEmailsAsync(dto, ipAddress, userAgent, cancellationToken);
 
         return Result.Ok();
@@ -69,24 +73,22 @@ public class ContactService(
 
         var templates = await _unitOfWork.ContactTemplates.GetAllAsync(ct);
 
-        // Owner template
         var ownerTemplate = templates.FirstOrDefault(t => t.TemplateType == "Owner" && t.IsActive);
         if (ownerTemplate?.HtmlContent is not null)
         {
             var ownerBody = ReplacePlaceholders(ownerTemplate.HtmlContent, dto.Name, dto.Email, dto.Message,
                 now, ipAddress, userAgent, formPageUrl, linkedInUrl, gitHubUrl, instagramUrl, contactEmail);
             try { await _emailService.SendAsync(ownerEmail, $"Yeni İletişim Mesajı - {dto.Name}", ownerBody, ct); }
-            catch { /* log, don't fail the request */ }
+            catch { }
         }
 
-        // User template
         var userTemplate = templates.FirstOrDefault(t => t.TemplateType == "User" && t.IsActive);
         if (userTemplate?.HtmlContent is not null && !string.IsNullOrWhiteSpace(dto.Email))
         {
             var userBody = ReplacePlaceholders(userTemplate.HtmlContent, dto.Name, dto.Email, dto.Message,
                 now, ipAddress, userAgent, formPageUrl, linkedInUrl, gitHubUrl, instagramUrl, contactEmail);
             try { await _emailService.SendAsync(dto.Email!, "Mesajınız Alındı - Furkan Tural", userBody, ct); }
-            catch { /* log, don't fail the request */ }
+            catch { }
         }
     }
 

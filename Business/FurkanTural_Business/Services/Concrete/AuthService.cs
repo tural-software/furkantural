@@ -15,6 +15,20 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FurkanTural_Business.Services.Concrete;
 
+/// <summary>
+/// Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde
+/// gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı
+/// hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir
+/// kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.
+///
+/// Başarılı giriş kayda yazabilir: parola eski geri çözülebilir biçimde saklanıyorsa doğrulandığı
+/// anda özet biçimine taşınır (bkz. <see cref="IPasswordHasher"/>). Böylece havuz ayrı bir taşıma işi
+/// olmadan zamanla dönüşür, ama okuma gibi görünen bir uç yazma yapar.
+///
+/// Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için
+/// geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her
+/// çağrıda doğrulama uygular.
+/// </summary>
 public class AuthService(
     IUnitOfWork unitOfWork,
     IEncryptionService encryptionService,
@@ -34,17 +48,12 @@ public class AuthService(
     private readonly ILoginThrottle _loginThrottle = loginThrottle;
     private readonly IClock _clock = clock;
 
-    // Zamanlama savunması için sabit bir kukla hash. Lazy: PBKDF2 üretimi pahalıdır, süreç
-    // başına YALNIZCA BİR KEZ hesaplanır (her istekte üretilseydi savunma kendisi bir yük olurdu).
-    // Değeri hiçbir hesapla eşleşmez; yalnızca Verify'ın CPU maliyetini ödetmek için vardır.
     private static readonly Lazy<string> DummyHash = new(() =>
         new PasswordHasher().Hash("login-timing-defense-placeholder"),
         LazyThreadSafetyMode.ExecutionAndPublication);
 
     public async Task<Result<LoginResultDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default)
     {
-        // Turnstile yalnızca onu kullanan uygulamalar için (örn. Chat). Admin gibi
-        // token göndermeyen istemciler etkilenmez. (Register ucu Chat'e özeldir; orada koşulsuz.)
         if (IsTurnstileRequired(dto.AppSource) &&
             !await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, null, cancellationToken))
             return Result<LoginResultDto>.Fail("Robot doğrulaması başarısız oldu. Lütfen tekrar deneyin.", statusCode: 400);
@@ -55,8 +64,6 @@ public class AuthService(
         if (string.IsNullOrWhiteSpace(dto.Password))
             return Result<LoginResultDto>.Fail("Şifre boş olamaz.");
 
-        // Brute-force savunması: parola DOĞRULANMADAN önce kilit kontrolü yapılır ki kilitliyken
-        // hiç hash hesaplanmasın (PBKDF2 pahalıdır → aksi halde ucuz bir CPU tüketim vektörü olurdu).
         if (_loginThrottle.GetRemainingLockout(dto.Username) is { } remaining)
             return Result<LoginResultDto>.Fail(
                 $"Çok fazla hatalı deneme yapıldı. Lütfen {Math.Ceiling(remaining.TotalSeconds)} saniye sonra tekrar deneyin.",
@@ -65,14 +72,7 @@ public class AuthService(
         var user = await _unitOfWork.Users.GetAsync(x => x.Username == dto.Username, cancellationToken);
         if (user is null)
         {
-            // ZAMANLAMA YAN KANALI SAVUNMASI: Var olmayan kullanıcıda hemen dönseydik yanıt
-            // ~5 ms, var olan kullanıcıda PBKDF2 doğrulaması yüzünden ~150 ms sürerdi; saldırgan
-            // bu farkı ölçüp hangi kullanıcı adlarının var olduğunu sayabilirdi. Sahte bir hash'e
-            // karşı gerçek bir doğrulama çalıştırarak aynı maliyeti bilinçli olarak ödüyoruz.
             _passwordHasher.Verify(dto.Password, DummyHash.Value);
-
-            // Var olmayan kullanıcı için de sayaç işletilir — "kilitlendi" yanıtının hesabın
-            // varlığını ele vermemesi için.
             _loginThrottle.RegisterFailure(dto.Username);
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
         }
@@ -90,8 +90,6 @@ public class AuthService(
         }
         else
         {
-            // Legacy kayıt: geri çözülebilir AES. Doğruysa şeffaf olarak PBKDF2'ye taşı —
-            // böylece parola havuzu zamanla tek yönlü hash'e döner, ek migration gerekmez.
             var decryptResult = _encryptionService.Decrypt(user.Password);
             passwordValid = !decryptResult.IsFailure && decryptResult.Data == dto.Password;
 
@@ -109,8 +107,6 @@ public class AuthService(
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
         }
 
-        // Başarılı giriş sayacı sıfırlar: meşru kullanıcı birkaç kez yanılıp sonra doğru
-        // girdiğinde birikmiş denemeler onu sonradan kilitlemesin.
         _loginThrottle.Reset(dto.Username);
 
         var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId, cancellationToken);
@@ -167,7 +163,6 @@ public class AuthService(
 
     public async Task<Result<LoginResultDto>> RefreshAsync(int userId, string? appSource, CancellationToken cancellationToken = default)
     {
-        // Kullanıcı hâlâ mevcut/aktif mi? (Silinen/pasifleştirilen hesap token yenileyemez.)
         var user = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
         if (user is null)
             return Result<LoginResultDto>.Fail("Kullanıcı bulunamadı.", statusCode: 401);
@@ -178,7 +173,6 @@ public class AuthService(
         return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, appSource));
     }
 
-    // Turnstile, config'deki Turnstile:RequiredApps listesindeki AppSource'lar için zorunludur.
     private bool IsTurnstileRequired(string? appSource)
     {
         if (string.IsNullOrWhiteSpace(appSource)) return false;
@@ -222,7 +216,6 @@ public class AuthService(
             RoleName = roleName,
             AvatarUrl = user.AvatarUrl,
             ExpiresAt = expiresAt,
-            // Geçerli sürümü kabul etmiş mi? (Sürüm artarsa eski onay "kabul edilmemiş" sayılır.)
             MembershipAgreementAccepted = user.MembershipAgreementAcceptedAt != null
                 && user.MembershipAgreementVersion == AgreementDefinitions.CurrentVersion
         };

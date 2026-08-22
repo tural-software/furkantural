@@ -9,15 +9,19 @@ using Microsoft.Extensions.Configuration;
 namespace FurkanTural_Business.Services.Concrete;
 
 /// <summary>
-/// Cloudflare Realtime TURN'den kısa ömürlü ICE kimlik bilgileri üretir.
-/// Yapılandırma: <c>Cloudflare:Realtime:TurnKeyId</c> + <c>Cloudflare:Realtime:TurnApiToken</c> (token şifreli).
+/// Sağlayıcı Cloudflare Realtime'dır; <c>Cloudflare:Realtime:TurnKeyId</c> ve
+/// <c>Cloudflare:Realtime:TurnApiToken</c> ile çağrılır. Cloudflare <c>iceServers</c> alanını kimi
+/// zaman dizi kimi zaman tek nesne olarak döndürür, ikisi de aynı listeye normalize edilir.
+///
+/// İstenen ömür 24 saattir. Dış çağrının her hatası — ağ, yetki, çözümleme — kullanıcıya tek bir
+/// "ulaşılamadı" yanıtına iner; ayrımı yalnızca durum kodu taşır.
 /// </summary>
 public class TurnCredentialProvider(IConfiguration configuration, IHttpClientFactory httpClientFactory) : ITurnCredentialProvider
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
-    private const int TtlSeconds = 86400; // 24 saat (Cloudflare maks 48 saat)
+    private const int TtlSeconds = 86400;
 
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
 
@@ -32,14 +36,13 @@ public class TurnCredentialProvider(IConfiguration configuration, IHttpClientFac
         try
         {
             var client = _httpClientFactory.CreateClient();
-            // Cloudflare: generate-ice-servers → iceServers bir dizi (STUN + TURN) döner.
             using var request = new HttpRequestMessage(HttpMethod.Post,
                 $"https://rtc.live.cloudflare.com/v1/turn/keys/{keyId}/credentials/generate-ice-servers")
             {
                 Content = JsonContent.Create(new
                 {
                     ttl = TtlSeconds,
-                    customIdentifier = customIdentifier?.ToString() // kullanıcı bazlı kullanım analizi
+                    customIdentifier = customIdentifier?.ToString()
                 })
             };
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
@@ -48,7 +51,6 @@ public class TurnCredentialProvider(IConfiguration configuration, IHttpClientFac
             if (!response.IsSuccessStatusCode)
                 return Result<TurnCredentialsDto>.Fail("Arama kimlik bilgileri alınamadı.", statusCode: 502);
 
-            // Cloudflare "iceServers"ı dizi VEYA tek nesne döndürebilir → her ikisini de normalize et.
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
             if (!doc.RootElement.TryGetProperty("iceServers", out var ice))

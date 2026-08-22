@@ -10,6 +10,17 @@ using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Services.Concrete;
 
+/// <summary>
+/// Yeni gönderilen mesajın düz metni çağırana elde olan değerden verilir, kaydedilen şifreli değer
+/// tekrar çözülmez. Yönetim görünümleri de içeriği çözülmüş alır — panel araması düz metin üzerinde
+/// çalışsın diye — dolayısıyla mesaj içeriği yönetim uçlarından da okunabilir.
+///
+/// Kullanıcı adları yönetim tarafında süzgeçsiz okumayla çözülür: silinmiş kullanıcı normal okumada
+/// görünmez ve tam da yöneticinin görmesi gereken satırlarda ad boş kalırdı.
+///
+/// GetConversationsAsync arkadaş başına sorgu açmaz; konuşma sayaçları tek toplulaştırma sorgusundan
+/// gelir.
+/// </summary>
 public class ChatMessageService(
     IUnitOfWork unitOfWork,
     IUserFriendService userFriendService,
@@ -29,11 +40,6 @@ public class ChatMessageService(
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly IClock _clock = clock;
 
-    /// <summary>
-    /// Alıcı çevrimdışıysa (açık SignalR bağlantısı yok) Web Push bildirimi gönderir.
-    /// Çevrimiçiyse SignalR zaten ulaştırır; açık-odaksız sekmede istemci kendi Notification'ını gösterir.
-    /// "En iyi çaba": push hatası mesaj gönderimini etkilemez.
-    /// </summary>
     private async Task PushIfReceiverOfflineAsync(int senderId, int receiverId, CancellationToken cancellationToken)
     {
         if (_presenceTracker.IsOnline(receiverId))
@@ -44,13 +50,9 @@ public class ChatMessageService(
         await _pushSender.SendMessageNotificationAsync(receiverId, name, cancellationToken);
     }
 
-    /// <summary>İstemcideki maxlength ile aynı; sunucu tarafı kontrat olarak da uygulanır.</summary>
     private const int MaxContentLength = 4000;
 
-    /// <summary>Gönderen mesajını gönderimden sonra en fazla bu süre içinde düzenleyebilir.</summary>
     private static readonly TimeSpan EditWindow = TimeSpan.FromMinutes(15);
-
-    // ── Üye işlemleri ──
 
     public async Task<Result<ChatMessageDto>> SendAsync(int senderId, int receiverId, string? content, CancellationToken cancellationToken = default)
     {
@@ -78,7 +80,7 @@ public class ChatMessageService(
         {
             SenderId = senderId,
             ReceiverId = receiverId,
-            Content = _messageProtector.Protect(plaintext), // at-rest şifreli saklanır
+            Content = _messageProtector.Protect(plaintext),
             MessageType = "Text",
             IsRead = false
         };
@@ -87,7 +89,6 @@ public class ChatMessageService(
 
         await PushIfReceiverOfflineAsync(senderId, receiverId, cancellationToken);
 
-        // İstemciye/SignalR'a düz metin döner (elimizde zaten var; tekrar çözmeye gerek yok).
         var dto = entity.ToDto();
         dto.Content = plaintext;
         return Result<ChatMessageDto>.Ok(dto);
@@ -153,7 +154,6 @@ public class ChatMessageService(
         {
             SenderId = senderId,
             ReceiverId = receiverId,
-            // Image -> "Image", Video -> "Video" (normalize)
             MessageType = ChatMessageTypes.IsMedia(messageType) && string.Equals(messageType, ChatMessageTypes.Video, StringComparison.OrdinalIgnoreCase)
                 ? ChatMessageTypes.Video : ChatMessageTypes.Image,
             AttachmentUrl = fileName,
@@ -186,7 +186,6 @@ public class ChatMessageService(
         return Result<IEnumerable<ChatMessageDto>>.Ok(ordered.Select(ToDecryptedDto));
     }
 
-    // Mapler "dilsiz" kalsın diye çözme servis katmanında yapılır: DTO'yu üret, içeriği çöz.
     private ChatMessageDto ToDecryptedDto(ChatMessage entity)
     {
         var dto = entity.ToDto();
@@ -194,8 +193,6 @@ public class ChatMessageService(
         return dto;
     }
 
-    // Admin görünümleri de içeriği çözülmüş görür (panel araması düz metin üzerinde çalışır)
-    // ve gönderen/alıcı kullanıcı adlarıyla zenginleştirilir.
     private AdminChatMessageDto ToDecryptedAdminDto(ChatMessage entity, IReadOnlyDictionary<int, string?> usernames)
     {
         var dto = entity.ToAdminDto();
@@ -205,14 +202,12 @@ public class ChatMessageService(
         return dto;
     }
 
-    /// <summary>Tüm kullanıcıların id→kullanıcı adı eşlemesi (silinmişler dahil; admin tüm mesajları görür).</summary>
     private async Task<Dictionary<int, string?>> LoadAllUsernamesAsync(CancellationToken cancellationToken)
     {
         var users = await _unitOfWork.Users.GetAllForAdminAsync(cancellationToken);
         return users.ToDictionary(u => u.Id, u => (string?)u.Username);
     }
 
-    /// <summary>Tek bir mesajın gönderen+alıcısı için kullanıcı adı eşlemesi (silinmişler dahil).</summary>
     private async Task<Dictionary<int, string?>> LoadUsernamesForAsync(ChatMessage entity, CancellationToken cancellationToken)
     {
         var dict = new Dictionary<int, string?>();
@@ -251,7 +246,6 @@ public class ChatMessageService(
         var friendsResult = await _userFriendService.GetFriendsAsync(currentUserId, cancellationToken);
         var friends = friendsResult.Data ?? [];
 
-        // Tüm konuşma istatistikleri veritabanında toplulaştırılır (arkadaş başına sorgu YOK).
         var aggregates = (await _unitOfWork.ChatMessages.GetConversationAggregatesAsync(currentUserId, cancellationToken))
             .ToDictionary(a => a.OtherUserId);
 
@@ -279,7 +273,6 @@ public class ChatMessageService(
         if (string.IsNullOrWhiteSpace(file))
             return Result.Fail("Dosya belirtilmedi.", statusCode: 400);
 
-        // Ek yalnızca taraf olunan (gönderen/alıcı) bir mesaja aitse erişilebilir.
         var allowed = await _unitOfWork.ChatMessages.AnyAsync(
             x => x.AttachmentUrl == file && (x.SenderId == userId || x.ReceiverId == userId),
             cancellationToken);
@@ -298,11 +291,9 @@ public class ChatMessageService(
         if (entity.SenderId != userId)
             return Result<ChatMessageDto>.Fail("Yalnızca kendi mesajınızı silebilirsiniz.", statusCode: 403);
 
-        // Soft delete: iki taraftan da kalkar; admin gerekirse geri yükleyebilir (restore ucu mevcut).
         await _unitOfWork.ChatMessages.SoftDeleteAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Bildirim yalnız id + taraflar için kullanılır; yine de tutarlılık adına içeriği çözülmüş döndür.
         return Result<ChatMessageDto>.Ok(ToDecryptedDto(entity));
     }
 
@@ -330,17 +321,15 @@ public class ChatMessageService(
         if (_clock.UtcNow - entity.CreatedAt > EditWindow)
             return Result<ChatMessageDto>.Fail($"Mesaj yalnızca gönderildikten sonraki {(int)EditWindow.TotalMinutes} dakika içinde düzenlenebilir.");
 
-        entity.Content = _messageProtector.Protect(trimmed); // güncel içerik de at-rest şifreli
+        entity.Content = _messageProtector.Protect(trimmed);
         entity.EditedAt = _clock.UtcNow;
         await _unitOfWork.ChatMessages.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var dto = entity.ToDto();
-        dto.Content = trimmed; // istemciye düz metin
+        dto.Content = trimmed;
         return Result<ChatMessageDto>.Ok(dto);
     }
-
-    // ── Admin ──
 
     public async Task<Result<IEnumerable<AdminChatMessageDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default)
     {
@@ -410,14 +399,12 @@ public class ChatMessageService(
 
     public async Task<Result<int>> EncryptLegacyContentAsync(CancellationToken cancellationToken = default)
     {
-        // Silinmişler dahil tüm kayıtlar (admin görünümü); yalnız Text içeriği olan ve henüz şifrelenmemişler.
         var all = await _unitOfWork.ChatMessages.GetAllForAdminAsync(cancellationToken);
         var pending = all.Where(m => !string.IsNullOrEmpty(m.Content) && !_messageProtector.IsProtected(m.Content)).ToList();
         if (pending.Count == 0)
             return Result<int>.Ok(0);
 
         var migrated = 0;
-        // Büyük tablolarda tek seferde değil, 500'lük gruplar hâlinde kaydet.
         foreach (var batch in pending.Chunk(500))
         {
             foreach (var entity in batch)

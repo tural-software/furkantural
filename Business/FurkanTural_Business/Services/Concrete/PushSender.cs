@@ -10,13 +10,16 @@ using LibPushSubscription = WebPush.PushSubscription;
 namespace FurkanTural_Business.Services.Concrete;
 
 /// <summary>
-/// <see cref="IPushSender"/>'ın Web Push uygulaması (VAPID). Tarayıcı push servislerine (FCM/Apple/Mozilla)
-/// dışarı HTTPS POST atar — ayrı servis/Docker yok. "En iyi çaba": yapılandırma yoksa veya gönderim
-/// başarısızsa sessizce geçer; geçersiz (404/410) abonelikleri temizler.
+/// VAPID ile Web Push. Anahtarlar <c>Push:Vapid</c> altındaki Subject, PublicKey ve PrivateKey'den
+/// okunur; değer boşsa ya da yer tutucu deseni taşıyorsa push kapalı sayılır. Gönderim tarayıcının
+/// kendi push servisine dışarı HTTPS isteğiyle yapılır, araya ayrı bir servis girmez.
+///
+/// Push istemcisi süreç boyunca tek örnektir — abonelik başına yeni istemci soket tüketirdi. 404 veya
+/// 410 dönen abonelikler tarayıcı tarafında düşmüş demektir ve aynı tur içinde silinir; diğer hatalar
+/// yalnızca günlüğe yazılır.
 /// </summary>
 public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, ILogger<PushSender> logger) : IPushSender
 {
-    // HttpClient'i tek instance üzerinden paylaş (soket tükenmesini önler); thread-safe.
     private static readonly WebPushClient _client = new();
 
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -29,7 +32,7 @@ public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, IL
         {
             var vapid = ReadVapid();
             if (vapid is null)
-                return; // yapılandırılmamış → push pasif (mesajlaşma yine çalışır)
+                return;
 
             var subs = (await _unitOfWork.PushSubscriptions.GetAllAsync(s => s.UserId == receiverUserId, cancellationToken)).ToList();
             if (subs.Count == 0)
@@ -39,7 +42,7 @@ public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, IL
             {
                 title = "Chatural",
                 body = $"{senderName} sana mesaj gönderdi",
-                tag = "chat-message",   // aynı tag → bildirimler üst üste yığılmaz
+                tag = "chat-message",
                 url = "/Chat"
             });
 
@@ -52,7 +55,7 @@ public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, IL
                 }
                 catch (WebPushException ex) when ((int)ex.StatusCode is 404 or 410)
                 {
-                    dead.Add(s); // abonelik artık geçersiz → temizle
+                    dead.Add(s);
                 }
                 catch (Exception ex)
                 {
@@ -68,7 +71,6 @@ public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, IL
         }
         catch (Exception ex)
         {
-            // Push asla mesaj gönderimini bozmamalı.
             _logger.LogError(ex, "Push bildirimi akışında beklenmeyen hata. Alıcı: {UserId}", receiverUserId);
         }
     }

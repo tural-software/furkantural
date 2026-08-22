@@ -6,28 +6,17 @@ using Microsoft.Extensions.Configuration;
 namespace FurkanTural_Business.Services.Concrete;
 
 /// <summary>
-/// In-memory kayan pencere ile login deneme sınırı (brute-force savunması). Singleton.
-/// Eşikler: <c>Auth:LoginThrottle:MaxAttempts</c> (vars. 5),
-/// <c>Auth:LoginThrottle:WindowSeconds</c> (vars. 300),
-/// <c>Auth:LoginThrottle:LockoutSeconds</c> (vars. 300).
+/// Eşikler <c>Auth:LoginThrottle</c> altındaki MaxAttempts (5), WindowSeconds (300) ve
+/// LockoutSeconds (300) değerlerinden okunur; sıfır veya negatif verilen ayar yok sayılıp varsayılana
+/// düşülür.
 ///
-/// KİLİT ANAHTARI = kullanıcı adı + İSTEMCİ IP'si (yalnızca kullanıcı adı DEĞİL).
-/// Sebep: salt kullanıcı adına kilitlemek, saldırganın bilinen bir hesabı (örn. admin) kasten
-/// ve bedelsiz biçimde süresiz kilitlemesine izin verirdi — meşru kullanıcı dışarıda kalırdı
-/// (hesap-kilidi DoS'u). IP ile kapsamlandırınca saldırganın kilidi yalnızca KENDİ IP'sini
-/// bağlar; meşru kullanıcı başka bir IP'den sorunsuz girer.
+/// Anahtarın IP yarısı istek bağlamından gelir. Bağlam yoksa — arka plan çağrısı veya birim testi —
+/// anahtar yalnızca kullanıcı adına iner ve sınır o çağrılar arasında paylaşılır.
 ///
-/// Takas: çok sayıda IP'ye dağılmış bir saldırı bu katmanı aşabilir. Bu bilinçli — hacim
-/// tabanlı savunma önde duran Cloudflare'in işidir; burada amaç tek kaynaklı parola
-/// denemelerini ucuza kesmek ve meşru kullanıcıyı asla dışarıda bırakmamaktır.
-/// (OWASP da salt hesap-kilidi yerine IP tabanlı kısıtlamayı önerir.)
-///
-/// Var olmayan kullanıcı adları için de sayaç tutulur — aksi halde "kilitlendi" yanıtı, hesabın
-/// gerçekten var olduğunu ele veren bir yan kanal olurdu (kullanıcı adı sayımı).
-///
-/// Not: In-memory olduğundan sayaçlar app pool geri dönüşümünde sıfırlanır ve süreçler arası
-/// paylaşılmaz. Tek sunuculu in-process kurulum için (Docker/ayrı servis kısıtı) yeterli;
-/// kalıcı kilit gerekirse DB'ye taşınmalı (entity + migration gerektirir).
+/// Sözlükten girdi yalnızca başarılı girişte veya kilit dolduğunda silinir; kilide hiç ulaşmamış
+/// denemeler kendiliğinden temizlenmezdi. Bu yüzden periyodik bir süpürme çalışır ve penceresi dolmuş
+/// kilitsiz girdileri atar: her başarısız denemede yeni bir kullanıcı adı üreten saldırı aksi hâlde
+/// sözlüğü sınırsız büyütürdü.
 /// </summary>
 public sealed class LoginThrottle : ILoginThrottle
 {
@@ -38,7 +27,6 @@ public sealed class LoginThrottle : ILoginThrottle
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ConcurrentDictionary<string, Attempts> _attempts = new(StringComparer.OrdinalIgnoreCase);
 
-    // Bayat girdileri toplamak için periyodik süpürme (bkz. PruneIfDue).
     private static readonly TimeSpan SweepInterval = TimeSpan.FromMinutes(5);
     private DateTime _lastSweep;
     private int _sweeping;
@@ -79,13 +67,11 @@ public sealed class LoginThrottle : ILoginThrottle
             if (remaining > TimeSpan.Zero)
                 return remaining;
 
-            // Kilit doldu: temiz sayfa aç ki kullanıcı yeniden tam hak ile başlasın.
             entry.LockedUntil = null;
             entry.Failures.Clear();
             expired = true;
         }
 
-        // Kilidini doldurmuş girdiyi sözlükten de düşür — aksi halde anahtar sonsuza dek kalırdı.
         if (expired)
             _attempts.TryRemove(key, out _);
 
@@ -118,8 +104,6 @@ public sealed class LoginThrottle : ILoginThrottle
         _attempts.TryRemove(key, out _);
     }
 
-    // Anahtar: "kullanıcı adı|IP". IP çözülemezse (HttpContext yoksa — örn. birim testi)
-    // yalnızca kullanıcı adına düşülür; üretimde RealClientIpMiddleware gerçek IP'yi koyar.
     private bool TryBuildKey(string? username, out string key)
     {
         key = string.Empty;
@@ -130,12 +114,6 @@ public sealed class LoginThrottle : ILoginThrottle
         return true;
     }
 
-    // Sözlükten yalnızca başarılı giriş (Reset) veya kilidin dolması ile girdi silinir. Kilide
-    // hiç ulaşmamış başarısız denemeler kendiliğinden temizlenmezdi → yavaş bellek sızıntısı
-    // (ve benzersiz kullanıcı adı üreten bir saldırıda hızlı şişme). Bu süpürme, penceresi
-    // dolmuş ve kilitli olmayan girdileri periyodik olarak atar.
-    //
-    // Interlocked ile tek seferde tek süpürme: eşzamanlı isteklerde iş tekrarlanmasın.
     private void PruneIfDue(DateTime now)
     {
         if (now - _lastSweep < SweepInterval) return;
@@ -151,7 +129,6 @@ public sealed class LoginThrottle : ILoginThrottle
                 bool stale;
                 lock (entry)
                 {
-                    // Kilitli girdiye dokunma; kilit süresi bilgisini kaybetmeyelim.
                     if (entry.LockedUntil is { } until && until > now)
                         continue;
 

@@ -5,8 +5,9 @@ using Microsoft.Extensions.Configuration;
 namespace FurkanTural_Business.Services.Concrete;
 
 /// <summary>
-/// In-memory kayan pencere ile mesaj gönderme hız sınırı. Singleton.
-/// Eşikler: <c>Chat:RateLimit:MaxPerWindow</c> (vars. 20), <c>Chat:RateLimit:WindowSeconds</c> (vars. 10).
+/// Eşikler <c>Chat:RateLimit</c> altındaki MaxPerWindow (20) ve WindowSeconds (10) değerlerinden
+/// okunur. Pencere kayandır: sabit dilimlere bölünmediği için dilim sınırında iki katı mesaj
+/// gönderilemez.
 /// </summary>
 public sealed class MessageRateLimiter : IMessageRateLimiter
 {

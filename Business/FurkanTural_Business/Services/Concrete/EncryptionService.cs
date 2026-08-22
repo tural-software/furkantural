@@ -7,6 +7,15 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
+/// <summary>
+/// AES-CBC; anahtar ve IV yapılandırmadan okunur, iki ayrı bölüm adı (<c>EncryptionSettings</c> ve
+/// eski <c>EncryptionConfiguration</c>) sırayla denenir. İkisi de yoksa koda gömülü değerlere düşülür
+/// — yani eksik yapılandırma hata vermez, depoda açıkça duran bir anahtarla şifreleme yapılır.
+///
+/// IV sabit olduğundan aynı düz metin her zaman aynı şifreli metni üretir; eşit değerler şifreli
+/// hâllerine bakılarak eşleştirilebilir. Bu, mesaj içeriği için ayrı bir servisin
+/// (<see cref="IMessageProtector"/>) bulunma sebebidir.
+/// </summary>
 public partial class EncryptionService(IConfiguration configuration) : IEncryptionService
 {
     private readonly byte[] _key = Encoding.UTF8.GetBytes(

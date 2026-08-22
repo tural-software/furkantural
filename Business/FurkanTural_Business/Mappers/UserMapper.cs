@@ -3,6 +3,11 @@ using FurkanTural_Application.DTOs.User;
 
 namespace FurkanTural_Business.Mappers;
 
+/// <summary>
+/// ToEntity parolayı taşımaz. Kasıtlıdır: parola bu sınıfın göremeyeceği bir dönüşümden geçmesi
+/// gerektiği için <see cref="FurkanTural_Business.Services.Concrete.UserService"/> tarafından ayrıca
+/// yazılır. Buradan çıkan varlık, o adım atlanırsa parolasız kalır.
+/// </summary>
 public static class UserMapper
 {
     public static UserDto ToDto(this User entity) => new()
@@ -35,7 +40,6 @@ public static class UserMapper
     public static User ToEntity(this CreateUserDto dto) => new()
     {
         Username = dto.Username,
-        // Password is set explicitly in UserService after encryption
         RoleId = dto.RoleId,
         CreatedBy = dto.CreatedBy,
         Email = dto.Email,
