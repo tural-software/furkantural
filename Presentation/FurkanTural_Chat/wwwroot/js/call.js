@@ -10,7 +10,6 @@
         var conn = B.connection;
         var toast = B.toast || function () {};
 
-        // ── durum ──
         var pc = null, localStream = null, remoteStream = null;
         var audioSender = null, videoSender = null;
         var callId = null, peerId = null, isCaller = false, callType = 'audio';
@@ -24,7 +23,6 @@
         var lastMinPos = null;               // son PiP konumu (oturum içi)
         var vadRAF = null, vadSource = null, vadAnalyser = null; // konuşma göstergesi (ses aktivitesi)
 
-        // ── UI ──
         var ui = buildUi();
         document.body.appendChild(ui.overlay);
 
@@ -138,7 +136,6 @@
             lastMinPos = { left: left, top: top };
         }
 
-        // ── Sentezlenmiş zil sesi (Web Audio; dosyasız) ──
         function ensureAudio() {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -184,7 +181,6 @@
             ringNodes = [];
         }
 
-        // ── Ses/cihaz yönetimi (mikrofon, kamera, hoparlör, ses seviyesi) ──
         var prefs = (function () {
             var v = parseFloat(localStorage.getItem('ft.call.volume'));
             return {
@@ -496,7 +492,6 @@
             });
         }
 
-        // ── Arama yapılandırması (ICE dizisi + video politikası) ──
         async function getCallConfig() {
             var r = await B.api('/api/v1/call/config');
             if (!(r && r.success && r.data && Array.isArray(r.data.iceServers) && r.data.iceServers.length)) return null;
@@ -595,7 +590,6 @@
             pendingCandidates = [];
         }
 
-        // ── giden arama ──
         async function startCall(targetId, type) {
             if (callId || incoming) { toast('Zaten bir aramadasınız.', 'error'); return; }
             isCaller = true; callType = type; peerId = targetId;
@@ -620,7 +614,6 @@
             }
         }
 
-        // ── gelen arama ──
         conn.on('IncomingCall', function (data) {
             if (callId || incoming) { conn.invoke('RejectCall', data.callId).catch(function () {}); return; } // meşgul
             incoming = data; // { callId, callerId, callType, offer }
@@ -663,7 +656,6 @@
             incoming = null; stopRinging(); hideOverlay(); resetState();
         }
 
-        // ── arayan: answer geldi ──
         conn.on('CallAnswered', async function (data) {
             if (data.callId !== callId || !pc) return;
             clearTimeout(ringTimeout);
@@ -703,7 +695,6 @@
             if (data && data.callId === callId) ui.overlay.dataset.remoteVideo = data.videoOn ? 'on' : 'off';
         });
 
-        // ── sonlandırma ──
         function hangup(msg) {
             if (callId) conn.invoke('HangUp', callId).catch(function () {});
             endCall(msg);
@@ -737,7 +728,6 @@
             callId = null; peerId = null; isCaller = false; pendingCandidates = []; incoming = null;
         }
 
-        // ── kontrol butonları ──
         function toggleMute() {
             if (!audioSender || !audioSender.track) { toast('Mikrofon kapalı (Ayarlar\'dan açabilirsiniz).'); return; }
             audioSender.track.enabled = !audioSender.track.enabled;
@@ -792,7 +782,6 @@
         // Reddedilse bile tekrar otomatik sorulmaz (manuel "Cihazlarımı Algıla" ile yenilenebilir).
         setTimeout(function () { if (!scanAttempted) scanDevices(false); }, 1500);
 
-        // ── başlığa eklenen arama butonları ──
         var btnAudio = document.getElementById('callAudioBtn');
         var btnVideo = document.getElementById('callVideoBtn');
         if (btnAudio) btnAudio.addEventListener('click', function () { var id = B.currentFriendId(); if (id) startCall(id, 'audio'); });

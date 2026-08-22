@@ -12,7 +12,6 @@
     function mediaUrl(v) { var b = B(); return b.mediaUrl ? b.mediaUrl(v) : (v || ''); }
     function fmtDate(iso) { return window.FtTime ? FtTime.date(iso) : (function () { try { return new Date(iso).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Europe/Istanbul' }); } catch (e) { return ''; } })(); }
 
-    // ── Aşama 1: profil kartı ──
     var overlay = document.createElement('div');
     overlay.className = 'profile-overlay';
     overlay.innerHTML =
@@ -25,7 +24,6 @@
         '</div>';
     document.body.appendChild(overlay);
 
-    // ── Aşama 2: fotoğraf büyütme ──
     var zoom = document.createElement('div');
     zoom.className = 'profile-zoom';
     document.body.appendChild(zoom);

@@ -1,11 +1,10 @@
-/* Chatural — PWA: service worker kaydı + prompt'lu güncelleme + "Uygulamayı yükle" akışı */
+/* Service worker kaydı, güncelleme sorma akışı ve "uygulamayı yükle" çubuğu. */
 (function () {
     'use strict';
 
     var swReg = null;
     var updateAccepted = false;   // yalnız kullanıcı onayından sonra sayfayı yenile
 
-    // ───────── Güncelleme çubuğu öğeleri ─────────
     var updateBar = document.getElementById('pwaUpdateBar');
     var updateBtn = document.getElementById('pwaUpdateBtn');
     var updateClose = document.getElementById('pwaUpdateClose');
@@ -27,7 +26,6 @@
         updateClose.addEventListener('click', function () { if (updateBar) updateBar.hidden = true; });
     }
 
-    // ───────── Service worker kaydı + güncelleme tespiti ─────────
     if ('serviceWorker' in navigator) {
         // Yeni SW kontrolü aldığında YALNIZCA kullanıcı güncellemeyi onayladıysa yenile.
         // (İlk kurulumdaki clients.claim() veya arka plan etkinleşmesi sayfayı sıçratmasın.)
@@ -71,7 +69,6 @@
         });
     }
 
-    // ───────── Yükle çubuğu (beforeinstallprompt) ─────────
     var DISMISS_KEY = 'pwa-install-dismissed';
     var deferredPrompt = null;
     var bar = document.getElementById('pwaInstallBar');

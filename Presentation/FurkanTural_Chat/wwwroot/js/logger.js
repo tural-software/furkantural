@@ -71,7 +71,6 @@
         try { return new URL(url, location.href).origin === location.origin; } catch (e) { return false; }
     }
 
-    // ── Yakalanmayan JS hataları ──
     window.addEventListener('error', function (e) {
         if (!e) return;
         // Kaynak (img/script) yükleme hataları.
@@ -89,7 +88,6 @@
         window.ClientLog.error(msg, detail);
     }, true); // capture: kaynak hatalarını da yakalamak için
 
-    // ── Yakalanmayan promise reddi ──
     window.addEventListener('unhandledrejection', function (e) {
         try { e.preventDefault(); } catch (_) {} // konsola yansımasın
         var r = e ? e.reason : null;
@@ -98,7 +96,6 @@
         window.ClientLog.error('UnhandledRejection: ' + msg, detail);
     });
 
-    // ── Kullanıcıya gösterilen hata toast'larını da logla (sessizce; toast yine gösterilir) ──
     // toast.js bu scriptten sonra yüklenebilir → DOMContentLoaded'da sarmalama yap.
     function wrapToast() {
         if (typeof window.showToast !== 'function' || window.showToast.__logged) return;

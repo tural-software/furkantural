@@ -50,7 +50,6 @@
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
 
-    @* PWA — kurulabilir uygulama *@
     <link rel="manifest" href="~/site.webmanifest" />
     <meta name="theme-color" content="#0f1117" />
     <link rel="icon" href="~/favicon.ico" sizes="any" />
@@ -79,7 +78,7 @@
         </button>
     </div>
 
-    @* PWA — yeni sürüm hazır olduğunda kullanıcı onaylı güncelleme *@
+    @* Güncelleme çubuğu; yeni sürüm hazır olsa bile kullanıcı onaylamadan devralmaz (bkz. sw.js). *@
     <div id="pwaUpdateBar" class="pwa-install-bar pwa-update-bar" role="status" aria-live="polite" hidden>
         <button type="button" id="pwaUpdateBtn" class="pwa-install-btn">
             <span aria-hidden="true">⟳</span> Yeni sürümü yükle
@@ -89,7 +88,7 @@
         </button>
     </div>
 
-    @* Çerez bilgilendirme / onay modalı — tüm sayfalarda görünür *@
+    @* Çerez onayı her sayfada görünür; yerleşimi _Layout dışına taşınırsa bazı sayfalarda kaybolur. *@
     <div id="consentOverlay" class="consent-overlay">
         <div class="consent-modal" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
             <div class="consent-title" id="consentTitle">Çerez Bilgilendirmesi</div>

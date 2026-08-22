@@ -40,7 +40,6 @@
     const baseTitle = document.title;  // okunmamış rozeti için temel sekme başlığı
     let lastDayKey = null;             // mesaj listesinde son çizilen günün anahtarı (tarih ayracı)
 
-    // ───────── helpers ─────────
     function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
     function initial(name) { return ((name || '?').trim().charAt(0) || '?').toUpperCase(); }
     function fmtTime(iso) { return window.FtTime ? FtTime.time(iso) : (function () { try { return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' }); } catch (e) { return ''; } })(); }
@@ -127,7 +126,6 @@
 
     function errOf(r, fallback) { return (r && r.errors && r.errors[0]) || (r && r.message) || fallback; }
 
-    // ───────── friends ─────────
     async function loadFriends() {
         const r = await api('/api/v1/friend');
         if (r && r.success) renderFriends(r.data || []);
@@ -175,7 +173,6 @@
         updateFriendPreviews();
     }
 
-    // ── kenar çubuğu: son mesaj önizlemesi + son konuşmaya göre sıralama ──
     function previewText(s) {
         const t = (s.type || 'text').toLowerCase();
         if (t === 'audio') return '🎤 Sesli mesaj';
@@ -225,7 +222,6 @@
         updateFriendPreviews();
     }
 
-    // ───────── search ─────────
     searchInput.addEventListener('input', () => {
         clearTimeout(searchTimer);
         const q = searchInput.value.trim();
@@ -264,7 +260,6 @@
         if (!searchResults.contains(e.target) && e.target !== searchInput) searchResults.hidden = true;
     });
 
-    // ───────── requests ─────────
     async function loadRequests() {
         const [inc, out] = await Promise.all([
             api('/api/v1/friend/requests'),
@@ -332,7 +327,6 @@
         setTimeout(() => requestsPanel.classList.remove('flash'), 1800);
     }
 
-    // ───────── conversation ─────────
     async function openConversation(friendId) {
         const f = friends.get(friendId);
         if (!f) return;
@@ -438,7 +432,6 @@
         return div;
     }
 
-    // ── mesaj işlemleri (kendi mesajını düzenle / sil) ──
     const EDIT_WINDOW_MS = 15 * 60 * 1000;   // sunucudaki düzenleme penceresiyle aynı
     let msgMenu = null, msgMenuTarget = null;
 
@@ -1012,7 +1005,6 @@
         });
     })();
 
-    // ───────── init ─────────
     (async function () {
         await loadFriends();
         await loadUnread();

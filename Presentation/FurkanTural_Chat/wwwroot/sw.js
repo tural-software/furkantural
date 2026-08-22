@@ -1,4 +1,4 @@
-/* Chatural — Service Worker (PWA shell + offline + push) */
+/* PWA kabuğu, çevrimdışı yedek ve bildirimler. */
 const CACHE = 'chatural-v11';
 
 // App shell — sade path'ler (sürümsüz). Runtime cache ?v'li istekleri ayrıca yakalar.
@@ -23,9 +23,9 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-    // skipWaiting() BİLİNÇLİ olarak çağrılmaz: güncellemede yeni SW "waiting" durumunda bekler.
-    // Kullanıcı "Yeni sürümü yükle" deyince pwa.js SKIP_WAITING mesajı gönderir → o an etkinleşir.
-    // (İlk kurulumda zaten bekleyecek bir SW yok; doğrudan etkinleşir.)
+    // Yeni sürüm kendiliğinden devralmaz, bekler. Devralsaydı kullanıcı sohbetin ortasındayken sayfa
+    // yenilenirdi. Devralma yalnızca kullanıcı güncellemeyi onayladığında, pwa.js’in gönderdiği
+    // mesajla olur. İlk kurulumda bekleyen bir sürüm olmadığı için doğrudan etkinleşir.
     event.waitUntil(
         caches.open(CACHE)
             // Tek tek ekle; biri 404 olsa bile install patlamasın.
@@ -38,7 +38,6 @@ self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// ───────── Web Push (uygulama kapalıyken bile bildirim) ─────────
 self.addEventListener('push', (event) => {
     let data = {};
     try { data = event.data ? event.data.json() : {}; } catch (e) { data = {}; }
@@ -82,8 +81,8 @@ self.addEventListener('fetch', (event) => {
 
     // Sadece aynı-origin GET. API/SignalR ve cross-origin'e karışma.
     if (req.method !== 'GET' || url.origin !== self.location.origin) return;
-    // /bff/* kimlikli kullanıcı verisidir (mesajlar, ekler): ASLA önbelleğe alınmaz —
-    // aksi halde çıkış sonrası / kullanıcı değişiminde eski verinin önbellekten dönme riski doğar.
+    // Kimlikli veri (mesajlar, ekler) hiçbir koşulda önbelleğe alınmaz. Alınsaydı çıkıştan veya
+    // kullanıcı değişiminden sonra bir öncekinin verisi önbellekten dönebilirdi.
     if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/hubs/') || url.pathname.startsWith('/bff/')) return;
 
     // Gezinmeler: network-first → çevrimdışı yedeği offline.html
