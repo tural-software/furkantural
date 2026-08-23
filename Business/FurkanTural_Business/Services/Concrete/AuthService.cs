@@ -15,7 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.<para>Başarılı giriş kayda yazabilir: parola eski geri çözülebilir biçimde saklanıyorsa doğrulandığı anda özet biçimine taşınır (bkz. <see cref="IPasswordHasher"/>). Böylece havuz ayrı bir taşıma işi olmadan zamanla dönüşür, ama okuma gibi görünen bir uç yazma yapar.</para><para>Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her çağrıda doğrulama uygular.</para></summary>
+/// <summary>Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.<para>Başarılı giriş kayda yazabilir: parola eski geri çözülebilir biçimde saklanıyorsa doğrulandığı anda özet biçimine taşınır (bkz. <see cref="IPasswordHasher"/>). Böylece havuz ayrı bir taşıma işi olmadan zamanla dönüşür, ama okuma gibi görünen bir uç yazma yapar.</para><para>Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her çağrıda doğrulama uygular.</para><para>RegisterAsync'in varlık kontrolü global süzgeci atlar (bkz. <see cref="IUserRepository"/>); silinmiş ve pasif satırları da görür, çünkü tekil indeksler o kullanıcı adlarını hâlâ tutuyor. Üç durumun üçü de dışarıya aynı metni döndürür, hangisinin tetiklendiği yalnızca istemciye çıkmayan InternalMessage'da durur — bu ayrımı yanıta taşımak hesabın silinmiş mi pasif mi olduğunu ele verirdi. Pasif dal şimdilik reddediyor; aktivasyon akışı kurulduğunda değişecek yer orasıdır.</para></summary>
 public class AuthService(
     IUnitOfWork unitOfWork,
     IEncryptionService encryptionService,
@@ -119,13 +119,13 @@ public class AuthService(
         if (!dto.AcceptAgreement)
             return Result<LoginResultDto>.Fail("Üyelik sözleşmesini onaylamadan kayıt olamazsınız.");
 
-        var usernameExists = await _unitOfWork.Users.AnyAsync(x => x.Username == dto.Username, cancellationToken);
-        if (usernameExists)
-            return Result<LoginResultDto>.Fail("Bu kullanıcı adı zaten kullanılıyor.");
+        var usernameOwner = await _unitOfWork.Users.GetByUsernameForAdminAsync(dto.Username, cancellationToken);
+        if (usernameOwner is not null)
+            return RegistrationRefused(usernameOwner, "Bu kullanıcı adı zaten kullanılıyor.");
 
-        var emailExists = await _unitOfWork.Users.AnyAsync(x => x.Email == dto.Email, cancellationToken);
-        if (emailExists)
-            return Result<LoginResultDto>.Fail("Bu e-posta adresi zaten kullanılıyor.");
+        var emailOwner = await _unitOfWork.Users.GetByEmailForAdminAsync(dto.Email, cancellationToken);
+        if (emailOwner is not null)
+            return RegistrationRefused(emailOwner, "Bu e-posta adresi zaten kullanılıyor.");
 
         var role = await _unitOfWork.Roles.GetAsync(x => x.Name == "User", cancellationToken);
         if (role is null)
@@ -159,6 +159,13 @@ public class AuthService(
 
         return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, appSource));
     }
+
+    private static Result<LoginResultDto> RegistrationRefused(User owner, string message) => owner switch
+    {
+        { IsDeleted: true } => Result<LoginResultDto>.Fail(message, $"Kayıt reddedildi: #{owner.Id} silinmiş hesap."),
+        { IsActive: false } => Result<LoginResultDto>.Fail(message, $"Kayıt reddedildi: #{owner.Id} pasif hesap; aktivasyon akışı henüz kurulu değil."),
+        _ => Result<LoginResultDto>.Fail(message)
+    };
 
     private bool IsTurnstileRequired(string? appSource)
     {
