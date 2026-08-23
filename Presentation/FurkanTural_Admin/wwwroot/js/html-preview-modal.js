@@ -17,7 +17,6 @@
     const CHECK_ICON = _ic['check'] || '';
     const CLOSE_ICON = _ic['close'] || '';
 
-    /* ── HTML escape helper ───────────────────────────────── */
     function escapeHtml(str) {
         return str
             .replace(/&/g, '&amp;')
@@ -26,7 +25,6 @@
             .replace(/"/g, '&quot;');
     }
 
-    /* ── Overlay setup ───────────────────────────────────── */
     function ensureOverlay() {
         if (_overlay) return;
         _overlay = document.createElement('div');
@@ -42,7 +40,6 @@
         });
     }
 
-    /* ── Build modal HTML ─────────────────────────────────── */
     function buildModal(name, htmlContent) {
         const srcDoc = escapeHtml(htmlContent);
         const srcRaw = escapeHtml(htmlContent);
@@ -95,9 +92,7 @@
 </div>`;
     }
 
-    /* ── Bind events ─────────────────────────────────────── */
     function bindEvents(htmlContent) {
-        /* Close buttons */
         _overlay.querySelector('#hpm-close-x').addEventListener('click', function () {
             window.HtmlPreviewModal.close();
         });
@@ -105,7 +100,6 @@
             window.HtmlPreviewModal.close();
         });
 
-        /* Tabs */
         const tabs = _overlay.querySelectorAll('.hpm-tab');
         tabs.forEach(function (tab) {
             tab.addEventListener('click', function () {
@@ -122,7 +116,6 @@
             });
         });
 
-        /* Copy button */
         const copyBtn = _overlay.querySelector('#hpm-copy-btn');
         const copyIcon = copyBtn.querySelector('.hpm-copy-btn__icon');
         const copyLabel = copyBtn.querySelector('.hpm-copy-btn__label');
@@ -156,7 +149,6 @@
         }, 2200);
     }
 
-    /* ── Public API ──────────────────────────────────────── */
     window.HtmlPreviewModal = {
         open: function (templateName, htmlContent) {
             ensureOverlay();

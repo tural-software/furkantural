@@ -20,7 +20,6 @@
         return ICONS[key] || '';
     }
 
-    /* ── Date helpers ─────────────────────────────────────── */
     // Tek kanonik biçim: gelen UTC değer DAİMA Europe/Istanbul'da gösterilir (ortak FtTime).
     function fmtDate(val) {
         if (!val) return '—';
@@ -35,7 +34,6 @@
     // Expose to configs
     window.DmFmt = { date: fmtDate, dateUtc: fmtDate };
 
-    /* ── Render helpers ───────────────────────────────────── */
     function escHtml(v) {
         return String(v)
             .replace(/&/g, '&amp;')
@@ -136,7 +134,6 @@
         }).join('');
     }
 
-    /* ── Modal lifecycle ──────────────────────────────────── */
     let _overlay = null;
     let _onAction = null;
 

@@ -8,7 +8,6 @@
 (function () {
     'use strict';
 
-    /* ── Detail modal config ──────────────────────────────── */
     var ProjectImageDetailConfig = {
         title: 'Kayıt Detayı',
         description: 'Seçilen proje görseli kaydına ait detaylar',
@@ -135,7 +134,6 @@
         }
     };
 
-    /* ── Form field configs ───────────────────────────────── */
     var _projectOptions = null;
 
     function fetchProjectOptions(callback) {
@@ -236,8 +234,6 @@
             onSuccess: onSuccess
         };
     }
-
-    /* ── Page binding ─────────────────────────────────────── */
 
     function readRows() {
         var el = document.getElementById('__project-image-rows-json');
@@ -358,7 +354,6 @@
     function bindAll() {
         var rows = readRows();
 
-        /* Görüntüle */
         document.querySelectorAll('.ft-view-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -377,7 +372,6 @@
             });
         });
 
-        /* Düzenle */
         document.querySelectorAll('.ft-edit-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -390,7 +384,6 @@
             });
         });
 
-        /* Row action forms — confirm modal */
         document.querySelectorAll('.row-actions form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();

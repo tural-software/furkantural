@@ -56,8 +56,6 @@
         });
     }
 
-    /* ── Field builders ──────────────────────────────────── */
-
     function buildTextField(field, value) {
         var reqClass = field.required ? ' fm-field__label--required' : '';
         var val = (value !== undefined && value !== null) ? String(value) : '';
@@ -220,16 +218,12 @@
         return buildTextField(field, value);
     }
 
-    /* ── Escape helpers ──────────────────────────────────── */
-
     function escHtml(s) {
         return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
     function escAttr(s) {
         return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
     }
-
-    /* ── Validation ──────────────────────────────────────── */
 
     function validateField(field, el) {
         var errEl = _overlay.querySelector('#fmerr-' + field.name);
@@ -314,8 +308,6 @@
         });
         return valid;
     }
-
-    /* ── Toggle binding ──────────────────────────────────── */
 
     function bindToggles(fields) {
         fields.forEach(function (field) {
@@ -405,8 +397,6 @@
         });
     }
 
-    /* ── Build modal HTML ────────────────────────────────── */
-
     function buildModal(config, initialValues) {
         var fieldsHtml = config.fields.map(function (f) { return buildField(f, initialValues); }).join('');
         // İçerik-yoğun formlar için geniş varyant (config.size === 'large').
@@ -428,8 +418,6 @@
             '</div>' +
             '</div>';
     }
-
-    /* ── Submit ──────────────────────────────────────────── */
 
     function doSubmit(config, fields) {
         var banner = _overlay.querySelector('#fm-error-banner');
@@ -458,7 +446,6 @@
             }
         });
 
-        /* Loading state */
         fm.classList.add('fm--loading');
         submitBtn.textContent = 'Kaydediliyor...';
         submitBtn.disabled = true;
@@ -501,8 +488,6 @@
         });
     }
 
-    /* ── Public API ──────────────────────────────────────── */
-
     window.FormModal = {
         open: function (config, initialValues) {
             ensureOverlay();
@@ -516,7 +501,6 @@
             bindToggles(fields);
             bindSearchableSelects(fields);
 
-            /* File preview listeners */
             fields.forEach(function (field) {
                 if (field.type !== 'file') return;
                 if (!field.accept || field.accept.indexOf('image') === -1) return;
@@ -552,7 +536,6 @@
                 if (el) el.addEventListener('blur', function () { validateField(field, el); });
             });
 
-            /* Focus first input or textarea */
             var first = _overlay.querySelector('.fm-field__input, .fm-field__textarea');
             if (first) setTimeout(function () { first.focus(); }, 80);
         },

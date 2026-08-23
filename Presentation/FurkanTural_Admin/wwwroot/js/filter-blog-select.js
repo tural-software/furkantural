@@ -48,8 +48,6 @@
         var selectedValue = '';
         var selectedLabel = '';
 
-        /* ── helpers ── */
-
         function openDropdown() { dropdown.classList.add('fbs-open'); }
         function closeDropdown() { dropdown.classList.remove('fbs-open'); }
 
@@ -72,7 +70,6 @@
             }
             dropdown.innerHTML = html;
 
-            /* bind clicks */
             dropdown.querySelectorAll('.fbs-option').forEach(function (el) {
                 el.addEventListener('mousedown', function (e) {
                     /* mousedown fires before blur — prevent blur from closing first */
@@ -114,8 +111,6 @@
             valueInput.value  = '';
         }
 
-        /* ── events ── */
-
         searchInput.addEventListener('focus', function () {
             filterAndRender(searchInput.value);
             openDropdown();
@@ -146,14 +141,11 @@
             }, 150);
         });
 
-        /* close on outside click */
         document.addEventListener('click', function (e) {
             if (!wrap.contains(e.target)) {
                 closeDropdown();
             }
         });
-
-        /* ── init with fetched options ── */
 
         fetchOptions(endpoint, function (options) {
             allOptions = options;

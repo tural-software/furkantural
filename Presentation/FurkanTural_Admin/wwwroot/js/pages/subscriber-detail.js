@@ -7,7 +7,6 @@
 (function () {
     'use strict';
 
-    /* ── Config ───────────────────────────────────────────── */
     var SubscriberDetailConfig = {
         title: 'Kayıt Detayı',
         description: 'Seçilen kayda ait detaylar',
@@ -96,8 +95,6 @@
             { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: true, hidden: function(r) { return r.isDeleted || !r.isActive; } }
         ]
     };
-
-    /* ── Page binding ─────────────────────────────────────── */
 
     /* rows array — kaynaği partial içindeki JSON script tag */
     function readRows() {
@@ -196,7 +193,6 @@
     function bindAll() {
         var rows = readRows();
 
-        /* Görüntüle — detail modal */
         document.querySelectorAll('.ft-view-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -209,7 +205,6 @@
             });
         });
 
-        /* Sil / Geri Yükle / Aktife Al / Pasife Al — confirm modal → AJAX */
         document.querySelectorAll('.row-actions form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();

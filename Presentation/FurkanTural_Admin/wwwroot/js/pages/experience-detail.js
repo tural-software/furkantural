@@ -18,7 +18,6 @@
         return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
     }
 
-    /* ── Detail modal config ──────────────────────────────── */
     var ExperienceDetailConfig = {
         title: 'Kayıt Detayı',
         description: 'Seçilen deneyim kaydına ait detaylar',
@@ -126,7 +125,6 @@
         ]
     };
 
-    /* ── Form field configs ───────────────────────────────── */
     var EXPERIENCE_FORM_FIELDS = [
         {
             name: 'position',
@@ -179,8 +177,6 @@
             onSuccess: onSuccess
         };
     }
-
-    /* ── Page binding ─────────────────────────────────────── */
 
     function readRows() {
         var el = document.getElementById('__experience-rows-json');
@@ -278,7 +274,6 @@
     function bindAll() {
         var rows = readRows();
 
-        /* Görüntüle — detail modal */
         document.querySelectorAll('.ft-view-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -297,7 +292,6 @@
             });
         });
 
-        /* Düzenle — form modal */
         document.querySelectorAll('.ft-edit-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -310,7 +304,6 @@
             });
         });
 
-        /* Sil / Geri Yükle / Aktife Al / Pasife Al — confirm modal */
         document.querySelectorAll('.row-actions form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -353,7 +346,6 @@
         });
     }
 
-    /* Yeni kayıt ekleme */
     function openCreateModal() {
         FormModal.open(buildCreateConfig(function () {
             if (typeof showToast === 'function') {
@@ -363,7 +355,6 @@
         }), {});
     }
 
-    /* Kayıt güncelleme */
     function openEditModal(record) {
         FormModal.open(buildEditConfig(record.id, function () {
             if (typeof showToast === 'function') {
@@ -381,7 +372,6 @@
     document.addEventListener('DOMContentLoaded', function () {
         bindAll();
 
-        /* Yeni Kayıt Ekle butonu */
         var addBtn = document.getElementById('experience-add-btn');
         if (addBtn) {
             addBtn.addEventListener('click', openCreateModal);

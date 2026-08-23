@@ -8,7 +8,6 @@
 (function () {
     'use strict';
 
-    /* ── Detail modal config ──────────────────────────────── */
     var RoleDetailConfig = {
         title: 'Kayıt Detayı',
         description: 'Seçilen rol kaydına ait detaylar',
@@ -101,7 +100,6 @@
         ]
     };
 
-    /* ── Form field configs ───────────────────────────────── */
     var ROLE_FORM_FIELDS = [
         {
             name: 'name',
@@ -134,8 +132,6 @@
             onSuccess: onSuccess
         };
     }
-
-    /* ── Page binding ─────────────────────────────────────── */
 
     function readRows() {
         var el = document.getElementById('__role-rows-json');
@@ -233,7 +229,6 @@
     function bindAll() {
         var rows = readRows();
 
-        /* Görüntüle — detail modal */
         document.querySelectorAll('.ft-view-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -252,7 +247,6 @@
             });
         });
 
-        /* Düzenle — form modal */
         document.querySelectorAll('.ft-edit-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -265,7 +259,6 @@
             });
         });
 
-        /* Sil / Geri Yükle / Aktife Al / Pasife Al — confirm modal */
         document.querySelectorAll('.row-actions form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -309,7 +302,6 @@
         });
     }
 
-    /* Yeni kayıt ekleme */
     function openCreateModal() {
         FormModal.open(buildCreateConfig(function () {
             if (typeof showToast === 'function') {
@@ -319,7 +311,6 @@
         }), {});
     }
 
-    /* Kayıt güncelleme */
     function openEditModal(record) {
         FormModal.open(buildEditConfig(record.id, function () {
             if (typeof showToast === 'function') {
@@ -334,7 +325,6 @@
     document.addEventListener('DOMContentLoaded', function () {
         bindAll();
 
-        /* Yeni Kayıt Ekle butonu */
         var addBtn = document.getElementById('role-add-btn');
         if (addBtn) {
             addBtn.addEventListener('click', openCreateModal);

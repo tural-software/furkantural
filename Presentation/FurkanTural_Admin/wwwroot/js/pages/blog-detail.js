@@ -8,7 +8,6 @@
 (function () {
     'use strict';
 
-    /* ── Detail modal config ──────────────────────────────── */
     var BlogDetailConfig = {
         title: 'Kayıt Detayı',
         description: 'Seçilen blog kaydına ait detaylar',
@@ -112,7 +111,6 @@
         ]
     };
 
-    /* ── Form field configs ───────────────────────────────── */
     var BLOG_FORM_FIELDS = [
         {
             name: 'title',
@@ -175,8 +173,6 @@
             onSuccess: onSuccess
         };
     }
-
-    /* ── Page binding ─────────────────────────────────────── */
 
     function readRows() {
         var el = document.getElementById('__blog-rows-json');
@@ -296,7 +292,6 @@
     function bindAll() {
         var rows = readRows();
 
-        /* Görüntüle — detail modal */
         document.querySelectorAll('.ft-view-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -315,7 +310,6 @@
             });
         });
 
-        /* Düzenle — form modal */
         document.querySelectorAll('.ft-edit-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -328,7 +322,6 @@
             });
         });
 
-        /* Sil / Geri Yükle / Aktife Al / Pasife Al — confirm modal */
         document.querySelectorAll('.row-actions form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();

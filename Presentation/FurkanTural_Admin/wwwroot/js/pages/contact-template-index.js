@@ -8,7 +8,6 @@
 (function () {
     'use strict';
 
-    /* ── Detail modal config ──────────────────────────────── */
     var ContactTemplateDetailConfig = {
         title: 'Kayıt Detayı',
         description: 'Seçilen şablon kaydına ait detaylar',
@@ -126,7 +125,6 @@
         ]
     };
 
-    /* ── Form field configs ───────────────────────────────── */
     var TEMPLATE_FORM_FIELDS = [
         {
             name: 'name',
@@ -188,8 +186,6 @@
             onSuccess: onSuccess
         };
     }
-
-    /* ── Helpers ──────────────────────────────────────────── */
 
     function readRows() {
         var el = document.getElementById('__contact-template-rows-json');
@@ -283,8 +279,6 @@
         });
     }
 
-    /* ── Page binding ─────────────────────────────────────── */
-
     function bindAll() {
         var rows = readRows();
 
@@ -295,7 +289,6 @@
             return null;
         }
 
-        /* Görüntüle — detail modal */
         document.querySelectorAll('.ft-view-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -314,7 +307,6 @@
             });
         });
 
-        /* Düzenle — form modal */
         document.querySelectorAll('.ft-edit-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -324,7 +316,6 @@
             });
         });
 
-        /* Sil / Geri Yükle / ToggleActive — confirm modal */
         document.querySelectorAll('.row-actions form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -365,8 +356,6 @@
             });
         });
     }
-
-    /* ── Modal openers ────────────────────────────────────── */
 
     function openPreview(record) {
         fetch('/ContactTemplate/PreviewHtml/' + record.id, {
@@ -411,8 +400,6 @@
             htmlContent:  ''   /* HtmlContent DTO'da yok — kullanıcı yeniden girmeli */
         });
     }
-
-    /* ── Init ─────────────────────────────────────────────── */
 
     document.addEventListener('DOMContentLoaded', function () {
         bindAll();

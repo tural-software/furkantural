@@ -7,7 +7,6 @@
 (function () {
     'use strict';
 
-    /* ── Detail modal config ──────────────────────────────── */
     var ContactDetailConfig = {
         title: 'Mesaj Detayı',
         description: 'Gönderilen iletişim mesajına ait detaylar',
@@ -123,8 +122,6 @@
         ]
     };
 
-    /* ── Helpers ──────────────────────────────────────────── */
-
     function readRows() {
         var el = document.getElementById('__contact-rows-json');
         if (!el) return [];
@@ -195,8 +192,6 @@
         });
     }
 
-    /* ── Binding ──────────────────────────────────────────── */
-
     function bindAll() {
         var rows = readRows();
 
@@ -211,7 +206,6 @@
             return record ? (record.name || record.email || 'ID: ' + id) : '—';
         }
 
-        /* Detay — detail modal */
         document.querySelectorAll('.row-btn[data-contact-id][title="Detay"]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.contactId, 10);
@@ -241,7 +235,6 @@
             });
         });
 
-        /* ToggleActive — confirm */
         document.querySelectorAll('.row-btn--warn[data-contact-id], .row-btn--success[data-contact-id]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.contactId, 10);
@@ -270,7 +263,6 @@
             });
         });
 
-        /* Sil — confirm */
         document.querySelectorAll('.row-btn--delete[data-contact-id]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.contactId, 10);
@@ -297,7 +289,6 @@
             });
         });
 
-        /* Geri Yükle — confirm */
         document.querySelectorAll('.row-btn--restore[data-contact-id]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.contactId, 10);
@@ -324,8 +315,6 @@
             });
         });
     }
-
-    /* ── Init ─────────────────────────────────────────────── */
 
     document.addEventListener('DOMContentLoaded', function () {
         bindAll();

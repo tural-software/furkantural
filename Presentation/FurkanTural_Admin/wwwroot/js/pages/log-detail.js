@@ -7,7 +7,6 @@
 (function () {
     'use strict';
 
-    /* ── Detail modal config ──────────────────────────────────── */
     var LogDetailConfig = {
         title: 'Log Detayı',
         description: 'Seçilen sistem logunun ayrıntıları',
@@ -108,7 +107,6 @@
         ]
     };
 
-    /* ── Helpers ──────────────────────────────────────────────── */
     function readRows() {
         var el = document.getElementById('__log-rows-json');
         if (!el) return [];

@@ -8,7 +8,6 @@
 (function () {
     'use strict';
 
-    /* ── Date helper ──────────────────────────────────────── */
     function toDateInput(val) {
         if (!val) return '';
         if (window.FtTime) return FtTime.dateInput(val);
@@ -20,7 +19,6 @@
         return y + '-' + mo + '-' + dd;
     }
 
-    /* ── Detail modal config ──────────────────────────────── */
     var MusicDetailConfig = {
         title: 'Kayıt Detayı',
         description: 'Seçilen müzik kaydına ait detaylar',
@@ -164,7 +162,6 @@
         ]
     };
 
-    /* ── Form field configs ───────────────────────────────── */
     var MUSIC_FORM_FIELDS_BASE = [
         { name: 'name',       label: 'Şarkı Adı',  type: 'text',     required: false, maxLength: 200, placeholder: 'Şarkı adını girin...' },
         { name: 'artist',     label: 'Sanatçı',    type: 'text',     required: false, maxLength: 200, placeholder: 'Sanatçı adını girin...' },
@@ -200,8 +197,6 @@
             onSuccess: onSuccess
         };
     }
-
-    /* ── Page binding ─────────────────────────────────────── */
 
     function readRows() {
         var el = document.getElementById('__music-rows-json');
@@ -330,7 +325,6 @@
     function bindAll() {
         var rows = readRows();
 
-        /* Görüntüle — detail modal */
         document.querySelectorAll('.ft-view-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -345,7 +339,6 @@
             });
         });
 
-        /* Düzenle — form modal */
         document.querySelectorAll('.ft-edit-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -358,7 +351,6 @@
             });
         });
 
-        /* Delete / ToggleActive / Restore — confirm modal */
         document.querySelectorAll('.row-actions form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();

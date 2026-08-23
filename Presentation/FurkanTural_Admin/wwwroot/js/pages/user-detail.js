@@ -8,7 +8,6 @@
 (function () {
     'use strict';
 
-    /* ── Detail modal config ──────────────────────────────── */
     var UserDetailConfig = {
         title: 'Kayıt Detayı',
         description: 'Seçilen kullanıcı kaydına ait detaylar',
@@ -129,7 +128,6 @@
         }
     };
 
-    /* ── Role options helper ──────────────────────────────── */
     function getRoleOptions() {
         var roles = (window.__userMeta || {}).roles || [];
         return roles.map(function (r) {
@@ -137,7 +135,6 @@
         });
     }
 
-    /* ── Form field configs ───────────────────────────────── */
     function buildCreateFields() {
         return [
             {
@@ -248,8 +245,6 @@
         };
     }
 
-    /* ── Page binding ─────────────────────────────────────── */
-
     function readRows() {
         var el = document.getElementById('__user-rows-json');
         if (!el) return [];
@@ -346,7 +341,6 @@
     function bindAll() {
         var rows = readRows();
 
-        /* Görüntüle — detail modal */
         document.querySelectorAll('.ft-view-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -365,7 +359,6 @@
             });
         });
 
-        /* Düzenle — form modal */
         document.querySelectorAll('.ft-edit-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -378,7 +371,6 @@
             });
         });
 
-        /* Avatar yükle — form modal */
         document.querySelectorAll('.ft-avatar-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(btn.dataset.id, 10);
@@ -391,7 +383,6 @@
             });
         });
 
-        /* Sil / Geri Yükle / Aktife Al / Pasife Al — confirm modal */
         document.querySelectorAll('.row-actions form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -435,7 +426,6 @@
         });
     }
 
-    /* Yeni kayıt ekleme */
     function openCreateModal() {
         FormModal.open(buildCreateConfig(function () {
             if (typeof showToast === 'function') {
@@ -445,7 +435,6 @@
         }), {});
     }
 
-    /* Kayıt güncelleme */
     function openEditModal(record) {
         FormModal.open(buildEditConfig(record.id, function () {
             if (typeof showToast === 'function') {
@@ -461,7 +450,6 @@
         });
     }
 
-    /* Avatar yükleme */
     function buildAvatarConfig(id, onSuccess) {
         return {
             title: 'Avatar Yükle',
@@ -493,7 +481,6 @@
     document.addEventListener('DOMContentLoaded', function () {
         bindAll();
 
-        /* Yeni Kayıt Ekle butonu */
         var addBtn = document.getElementById('user-add-btn');
         if (addBtn) {
             addBtn.addEventListener('click', openCreateModal);

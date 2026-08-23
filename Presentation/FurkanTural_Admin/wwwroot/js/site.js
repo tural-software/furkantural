@@ -1,4 +1,2 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
+// Bu dosya hiçbir görünümden yüklenmez ve proje şablonundan kalmadır. Panelin betikleri
+// sayfa başına wwwroot/js/pages/* altında, ortak bileşenler ise wwwroot/js kökünde durur.
