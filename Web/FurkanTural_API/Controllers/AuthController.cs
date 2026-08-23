@@ -12,9 +12,10 @@ using Microsoft.IdentityModel.JsonWebTokens;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class AuthController(IAuthService authService) : BaseApiController
+public class AuthController(IAuthService authService, IAccountActivationService accountActivationService) : BaseApiController
 {
     private readonly IAuthService _authService = authService;
+    private readonly IAccountActivationService _accountActivationService = accountActivationService;
 
     /// <summary>Kullanıcı girişi yap ve JWT token al</summary>
     [HttpPost("login")]
@@ -65,4 +66,10 @@ public class AuthController(IAuthService authService) : BaseApiController
             TurnstileToken = request.TurnstileToken,
             AcceptAgreement = request.AcceptAgreement
         }, cancellationToken));
+
+    /// <summary>Doğrulama bağlantısındaki jeton ile pasif hesabı yeniden etkinleştir</summary>
+    [HttpPost("activate")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Activate([FromBody] ActivateAccountRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _accountActivationService.ConsumeAsync(request.Token, cancellationToken));
 }
