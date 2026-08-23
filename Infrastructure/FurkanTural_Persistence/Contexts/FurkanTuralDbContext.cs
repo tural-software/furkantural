@@ -31,6 +31,7 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<CallPolicy> CallPolicies => Set<CallPolicy>();
     public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
+    public DbSet<AccountActivation> AccountActivations => Set<AccountActivation>();
 
     private static readonly ValueConverter<DateTime, DateTime> UtcConverter =
         new(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
