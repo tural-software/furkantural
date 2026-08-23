@@ -68,7 +68,7 @@ namespace FurkanTural_Persistence.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<string>("Trigger")
+                    b.Property<string>("TriggerSource")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 

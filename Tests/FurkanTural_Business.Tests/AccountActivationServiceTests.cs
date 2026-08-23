@@ -110,7 +110,7 @@ public class AccountActivationServiceTests
 
         await _sut.IssueAsync(7, new string('t', 80), new string('i', 60), new string('u', 400));
 
-        _added[0].Trigger!.Length.Should().Be(50);
+        _added[0].TriggerSource!.Length.Should().Be(50);
         _added[0].RequestIpAddress!.Length.Should().Be(45);
         _added[0].RequestUserAgent!.Length.Should().Be(300);
     }

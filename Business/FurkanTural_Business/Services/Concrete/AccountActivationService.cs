@@ -15,7 +15,7 @@ public class AccountActivationService(IUnitOfWork unitOfWork, IClock clock) : IA
 
     private static readonly TimeSpan Lifetime = TimeSpan.FromHours(24);
 
-    public async Task<Result<string>> IssueAsync(int userId, string trigger, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
+    public async Task<Result<string>> IssueAsync(int userId, string triggerSource, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
         var user = await _unitOfWork.Users.GetByIdForAdminAsync(userId, cancellationToken);
         if (user is null || user.IsDeleted)
@@ -30,7 +30,7 @@ public class AccountActivationService(IUnitOfWork unitOfWork, IClock clock) : IA
             ExpiresAt = _clock.UtcNow.Add(Lifetime),
             RequestIpAddress = Truncate(ipAddress, 45),
             RequestUserAgent = Truncate(userAgent, 300),
-            Trigger = Truncate(trigger, 50)
+            TriggerSource = Truncate(triggerSource, 50)
         }, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

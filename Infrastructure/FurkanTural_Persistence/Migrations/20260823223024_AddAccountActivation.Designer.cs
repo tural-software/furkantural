@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FurkanTural_Persistence.Migrations
 {
     [DbContext(typeof(FurkanTuralDbContext))]
-    [Migration("20260823204906_AddAccountActivation")]
+    [Migration("20260823223024_AddAccountActivation")]
     partial class AddAccountActivation
     {
         /// <inheritdoc />
@@ -71,7 +71,7 @@ namespace FurkanTural_Persistence.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<string>("Trigger")
+                    b.Property<string>("TriggerSource")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 

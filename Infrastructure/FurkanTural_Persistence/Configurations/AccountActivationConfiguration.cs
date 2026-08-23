@@ -16,7 +16,7 @@ public class AccountActivationConfiguration : BaseEntityConfiguration<AccountAct
         builder.Property(e => e.ExpiresAt).IsRequired();
         builder.Property(e => e.RequestIpAddress).HasMaxLength(45);
         builder.Property(e => e.RequestUserAgent).HasMaxLength(300);
-        builder.Property(e => e.Trigger).HasMaxLength(50);
+        builder.Property(e => e.TriggerSource).HasMaxLength(50);
 
         builder.HasOne<User>()
             .WithMany()

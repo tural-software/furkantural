@@ -23,7 +23,7 @@ namespace FurkanTural_Persistence.Migrations
                     ConsumedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RequestIpAddress = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
                     RequestUserAgent = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
-                    Trigger = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    TriggerSource = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
