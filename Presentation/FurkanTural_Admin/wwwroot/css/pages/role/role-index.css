@@ -3,7 +3,6 @@
    en sonda yer alır.
 ──────────────────────────────────────────────────────────── */
 
-/* ── Breadcrumb ───────────────────────────────────────────── */
 .bc {
     display: flex;
     align-items: center;
@@ -18,7 +17,6 @@
 .bc a:hover { color: var(--accent); }
 .bc__sep { opacity: .45; }
 
-/* ── Page header ──────────────────────────────────────────── */
 .pg-header {
     display: flex;
     align-items: flex-start;
@@ -46,7 +44,6 @@
     gap: .4rem;
 }
 
-/* ── Stats row ────────────────────────────────────────────── */
 .stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -77,7 +74,6 @@
 .stat-box__value { font-size: var(--fs-2xl); font-weight: 700; line-height: 1.1; color: var(--text-main); }
 .stat-box__unit  { font-size: var(--fs-2xs); color: var(--text-dim); }
 
-/* ── Filter bar ───────────────────────────────────────────── */
 .filter-bar {
     display: flex;
     flex-wrap: wrap;
@@ -126,7 +122,6 @@
 .filter-date-sep  { font-size: var(--fs-xs); color: var(--text-dim); }
 .filter-actions   { display: flex; gap: .45rem; align-items: flex-end; margin-left: auto; }
 
-/* ── Data table ───────────────────────────────────────────── */
 .data-table-wrap { overflow-x: auto; }
 .data-table {
     width: 100%;
@@ -155,7 +150,6 @@
 .data-table .col-id      { width: 64px; }
 .data-table .col-actions { width: 120px; text-align: center; }
 
-/* ── Status badges ────────────────────────────────────────── */
 .sbadge {
     display: inline-flex;
     align-items: center;
@@ -171,7 +165,6 @@
 .sbadge--deleted { background: rgba(239, 68, 68, .15);  color: #f87171; }
 .sbadge--safe    { background: rgba(34, 197, 94, .12);  color: #4ade80; }
 
-/* ── Row action buttons ───────────────────────────────────── */
 .row-actions { display: flex; gap: .3rem; justify-content: center; }
 .row-btn {
     width: 2rem;
@@ -193,7 +186,6 @@
 .row-btn--delete:hover      { background: rgba(239, 68, 68, .12);   color: #f87171; border-color: #f87171; }
 .row-btn--restore:hover     { background: rgba(34, 197, 94, .12);   color: #4ade80; border-color: #4ade80; }
 
-/* ── Table footer ─────────────────────────────────────────── */
 .tbl-footer {
     display: flex;
     align-items: center;
@@ -236,5 +228,4 @@
 .pag-btn--off       { pointer-events: none; opacity: .35; }
 .pag-ellipsis       { font-size: var(--fs-sm); color: var(--text-dim); padding: 0 .2rem; }
 
-/* ── Empty row ────────────────────────────────────────────── */
 .empty-row td { text-align: center; color: var(--text-dim); padding: 2.5rem 1rem; font-size: var(--fs-md); }

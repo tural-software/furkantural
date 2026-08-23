@@ -42,7 +42,6 @@
 .fm--large { max-width: 820px; }
 .fm--large .fm-field__textarea { min-height: 11rem; }
 
-/* Head */
 .fm-head {
     display: flex;
     align-items: flex-start;
@@ -62,7 +61,6 @@
     margin: 0;
 }
 
-/* Body */
 .fm-body {
     padding: 1.25rem 1.5rem 0;
     display: flex;
@@ -70,7 +68,6 @@
     gap: 1rem;
 }
 
-/* Field */
 .fm-field {
     display: flex;
     flex-direction: column;
@@ -113,7 +110,6 @@
 .fm-field__input--error,
 .fm-field__textarea--error { border-color: #f87171 !important; }
 
-/* File input */
 .fm-field__file {
     background: var(--bg-card-solid);
     border: 1px dashed var(--border-color);
@@ -130,14 +126,12 @@
 .fm-field__file:hover,
 .fm-field__file:focus { border-color: var(--accent); outline: none; }
 
-/* Help text */
 .fm-field__help {
     font-size: var(--fs-2xs);
     color: var(--text-dim);
     margin: .25rem 0 0;
 }
 
-/* File preview */
 .fm-field__preview {
     display: none;
     margin-top: .6rem;
@@ -165,7 +159,6 @@
 }
 .fm-field__error--visible { display: block; }
 
-/* Toggle (checkbox) */
 .fm-toggle {
     display: flex;
     align-items: center;
@@ -204,7 +197,6 @@
 .fm-toggle__label--on  { color: #4ade80; font-weight: 600; }
 .fm-toggle__label--off { color: var(--text-dim); }
 
-/* Server error banner */
 .fm-error-banner {
     display: none;
     margin: 0 1.5rem;
@@ -217,7 +209,6 @@
 }
 .fm-error-banner--visible { display: block; }
 
-/* Footer */
 .fm-footer {
     display: flex;
     align-items: center;
@@ -228,10 +219,8 @@
     border-top: 1px solid var(--border-color);
 }
 
-/* Loading overlay inside modal */
 .fm--loading { pointer-events: none; opacity: .7; }
 
-/* ── Searchable Select ────────────────────────────────────── */
 .fm-ss {
     position: relative;
 }

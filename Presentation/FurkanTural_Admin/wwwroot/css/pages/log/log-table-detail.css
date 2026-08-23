@@ -1,6 +1,4 @@
-/* ── Log Table Detail Page ───────────────────────────────── */
 
-/* ── Breadcrumb ───────────────────────────────────────────── */
 .bc {
     display: flex;
     align-items: center;
@@ -15,7 +13,6 @@
 .bc a:hover { color: var(--accent); }
 .bc__sep { opacity: .45; }
 
-/* ── Page header ──────────────────────────────────────────── */
 .pg-header {
     display: flex;
     align-items: flex-start;
@@ -49,7 +46,6 @@
     gap: .4rem;
 }
 
-/* ── Data table ───────────────────────────────────────────── */
 .data-table-wrap { overflow-x: auto; }
 .data-table {
     width: 100%;
@@ -77,7 +73,6 @@
 .data-table tr:hover td { background: rgba(var(--accent-rgb), .04); }
 .data-table .col-field { min-width: 160px; }
 
-/* ── Schema stats ─────────────────────────────────────────── */
 .schema-stats {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -112,14 +107,12 @@
 }
 .schema-stat__unit { font-size: var(--fs-2xs); color: var(--text-dim); }
 
-/* ── Field name ───────────────────────────────────────────── */
 .field-name { display: inline-flex; align-items: center; gap: .4rem; font-family: var(--font-mono, monospace); font-size: var(--fs-sm); font-weight: 600; color: var(--text-main); }
 .field-name svg { width: .95rem; height: .95rem; flex-shrink: 0; color: var(--text-dim); }
 .field-name--pk svg   { color: var(--accent); }
 .field-name--bool svg { color: #fbbf24; }
 .field-name--date svg { color: #a78bfa; }
 
-/* ── Type tag ─────────────────────────────────────────────── */
 .type-tag {
     display: inline-block;
     padding: .18rem .5rem;
@@ -132,13 +125,11 @@
     border: 1px solid rgba(var(--accent-rgb), .2);
 }
 
-/* ── Bool badges ──────────────────────────────────────────── */
 .bool-yes { display: inline-flex; align-items: center; gap: .3rem; color: #4ade80; font-weight: 600; font-size: var(--fs-sm); }
 .bool-no  { display: inline-flex; align-items: center; gap: .3rem; color: #f87171; font-weight: 600; font-size: var(--fs-sm); }
 .bool-yes svg,
 .bool-no  svg { width: .85rem; height: .85rem; }
 
-/* ── Page badge ───────────────────────────────────────────── */
 .page-badge {
     display: inline-block;
     font-size: var(--fs-3xs);

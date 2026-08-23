@@ -13,7 +13,6 @@
     box-sizing: border-box;
 }
 
-/* Dropdown panel */
 .fbs-dropdown {
     display: none;
     position: absolute;
@@ -34,7 +33,6 @@
     display: block;
 }
 
-/* Individual option */
 .fbs-option {
     padding: .45rem .75rem;
     font-size: var(--fs-sm);
@@ -59,7 +57,6 @@
     font-weight: 500;
 }
 
-/* Hint / empty message */
 .fbs-hint {
     padding: .45rem .75rem;
     font-size: var(--fs-sm);

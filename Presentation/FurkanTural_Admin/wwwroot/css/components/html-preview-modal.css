@@ -1,6 +1,4 @@
-/* ── HTML Preview Modal ──────────────────────────────────── */
 
-/* Overlay */
 .hpm-overlay {
     position: fixed;
     inset: 0;
@@ -18,7 +16,6 @@
     display: none;
 }
 
-/* Panel */
 .hpm {
     background: var(--bg-card-solid);
     border: 1px solid var(--border-color);
@@ -36,7 +33,6 @@
     box-shadow: 0 24px 70px -10px rgba(0, 0, 0, 0.22);
 }
 
-/* Header */
 .hpm-head {
     display: flex;
     align-items: center;
@@ -99,7 +95,6 @@
     background: rgba(var(--accent-rgb), .08);
 }
 
-/* Tabs */
 .hpm-tabs {
     display: flex;
     gap: 0;
@@ -143,14 +138,12 @@
     color: var(--text-main);
 }
 
-/* Body */
 .hpm-body {
     flex: 1;
     overflow: hidden;
     position: relative;
 }
 
-/* Panels */
 .hpm-panel {
     position: absolute;
     inset: 0;
@@ -161,7 +154,6 @@
     display: none;
 }
 
-/* iframe */
 .hpm-iframe {
     width: 100%;
     flex: 1;
@@ -170,7 +162,6 @@
     display: block;
 }
 
-/* Source panel */
 .hpm-source-toolbar {
     padding: .55rem 1rem;
     border-bottom: 1px solid var(--border-color);
@@ -218,7 +209,6 @@
 .hpm-pre::-webkit-scrollbar { width: 5px; height: 5px; }
 .hpm-pre::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
 
-/* Footer */
 .hpm-footer {
     padding: .85rem 1.4rem;
     border-top: 1px solid var(--border-color);
@@ -231,7 +221,6 @@
     font-size: var(--fs-sm);
 }
 
-/* Responsive */
 @media (max-width: 640px) {
     .hpm {
         height: 95vh;

@@ -1,6 +1,4 @@
-/* ── Detail Modal — generic config-driven record viewer ── */
 
-/* Overlay */
 .dm-overlay {
     position: fixed;
     inset: 0;
@@ -18,7 +16,6 @@
     display: none;
 }
 
-/* Modal box */
 .dm {
     background: var(--bg-card-solid);
     border: 1px solid var(--border-color);
@@ -38,7 +35,6 @@
 .dm::-webkit-scrollbar { width: 5px; }
 .dm::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
 
-/* Modal head */
 .dm-head {
     display: flex;
     align-items: flex-start;
@@ -78,7 +74,6 @@
     background: rgba(var(--accent-rgb), .08);
 }
 
-/* Record header (ID + badges) */
 .dm-record-head {
     display: flex;
     align-items: center;
@@ -120,7 +115,6 @@
     flex-wrap: wrap;
 }
 
-/* Badges */
 .dm-badge {
     display: inline-flex;
     align-items: center;
@@ -137,7 +131,6 @@
 .dm-badge--neutral { background: rgba(148, 163, 184, .12); color: #94a3b8; }
 .dm-badge--warning { background: rgba(251, 191, 36, .15);  color: #fbbf24; }
 
-/* Body / sections */
 .dm-body {
     padding: 1rem 1.5rem 0;
     display: flex;
@@ -145,7 +138,6 @@
     gap: 1.25rem;
 }
 
-/* Section */
 .dm-section__head {
     display: flex;
     align-items: center;
@@ -161,7 +153,6 @@
 }
 .dm-section__head svg { width: .85rem; height: .85rem; }
 
-/* Field grid */
 .dm-fields {
     display: grid;
     grid-template-columns: 1fr;
@@ -174,7 +165,6 @@
     .dm-fields--2col { grid-template-columns: 1fr; }
 }
 
-/* Field item */
 .dm-field {
     display: flex;
     align-items: flex-start;
@@ -209,7 +199,6 @@
     word-break: break-word;
 }
 
-/* Image preview block (between record-head and dm-body) */
 .dm-image-preview {
     margin: 0 1.5rem .25rem;
     border-radius: var(--radius-md);
@@ -228,7 +217,6 @@
     display: block;
 }
 
-/* Footer */
 .dm-footer {
     gap: .5rem;
     padding: 1.25rem 1.5rem;
@@ -248,7 +236,6 @@
 }
 .dm-action-btn svg { width: .85rem; height: .85rem; flex-shrink: 0; }
 
-/* Animations */
 @keyframes dm-fade-in {
     from { opacity: 0; }
     to   { opacity: 1; }
@@ -258,7 +245,6 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ── Confirm Modal ──────────────────────────────────────── */
 
 .cm-overlay {
     position: fixed;

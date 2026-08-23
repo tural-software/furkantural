@@ -1,6 +1,4 @@
-/* ── Log Index Page ──────────────────────────────────────── */
 
-/* ── Breadcrumb ───────────────────────────────────────────── */
 .bc {
     display: flex;
     align-items: center;
@@ -15,7 +13,6 @@
 .bc a:hover { color: var(--accent); }
 .bc__sep { opacity: .45; }
 
-/* ── Page header ──────────────────────────────────────────── */
 .pg-header {
     display: flex;
     align-items: flex-start;
@@ -43,7 +40,6 @@
     gap: .4rem;
 }
 
-/* ── Stats row ────────────────────────────────────────────── */
 .stats-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -71,7 +67,6 @@
 .stat-box__value { font-size: var(--fs-2xl); font-weight: 700; line-height: 1.1; color: var(--text-main); }
 .stat-box__unit  { font-size: var(--fs-2xs); color: var(--text-dim); }
 
-/* ── Filter bar ───────────────────────────────────────────── */
 .filter-bar {
     display: flex;
     flex-wrap: wrap;
@@ -120,7 +115,6 @@
 .filter-date-sep  { font-size: var(--fs-xs); color: var(--text-dim); }
 .filter-actions   { display: flex; gap: .45rem; align-items: flex-end; margin-left: auto; }
 
-/* ── Data table ───────────────────────────────────────────── */
 .data-table-wrap { overflow-x: auto; }
 .data-table {
     width: 100%;
@@ -149,7 +143,6 @@
 .data-table .col-id      { width: 64px; }
 .data-table .col-actions { width: 80px; text-align: center; }
 
-/* ── Row actions ──────────────────────────────────────────── */
 .row-actions {
     display: flex;
     gap: .3rem;
@@ -171,7 +164,6 @@
 .row-btn:hover       { background: rgba(var(--accent-rgb), .1); color: var(--accent); }
 .row-btn--edit:hover { background: rgba(56, 189, 248, .15); color: var(--accent); }
 
-/* ── Table footer / pagination ────────────────────────────── */
 .tbl-footer {
     display: flex;
     align-items: center;
@@ -214,12 +206,8 @@
 .pag-btn svg     { width: .9rem; height: .9rem; }
 .pag-ellipsis    { font-size: var(--fs-sm); color: var(--text-dim); padding: 0 .15rem; }
 
-/* ── Log-specific ─────────────────────────────────────────── */
-
-/* Son aktivite değeri küçük fontlu */
 .stat-box__value--sm { font-size: var(--fs-base); line-height: 1.3; }
 
-/* Level badges */
 .level-badge {
     display: inline-flex;
     align-items: center;
@@ -236,7 +224,6 @@
 .level-badge--debug   { background: rgba(148, 163, 184, .12); color: #94a3b8; }
 .level-badge--neutral { background: rgba(148, 163, 184, .12); color: #94a3b8; }
 
-/* Message column truncation */
 .col-message {
     max-width: 320px;
     overflow: hidden;
@@ -245,5 +232,4 @@
     cursor: default;
 }
 
-/* Log date column */
 .col-date { width: 150px; white-space: nowrap; }
