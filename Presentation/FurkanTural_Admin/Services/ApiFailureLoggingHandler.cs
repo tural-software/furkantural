@@ -2,17 +2,7 @@ using System.Net.Http.Json;
 
 namespace FurkanTural_Admin.Services;
 
-/// <summary>
-/// Başarısız API yanıtlarını gerçek durum kodu ve gövdesiyle birlikte günlük ucuna iletir. Panelin
-/// veri tabanına erişimi olmadığı için kayıt da API üzerinden gider ve isteğin kendi jetonu yeniden
-/// kullanılır; ayrı bir kimlik doğrulaması yoktur.
-///
-/// Kayıt isteği beklenmez, arka planda gönderilir. Beklenseydi her hatalı çağrı kullanıcıya iki
-/// istek süresi kadar gecikmiş görünürdü. Karşılığında kaydın yazıldığı garanti değildir.
-///
-/// Günlük ucunun kendi yanıtları atlanır. Atlanmasaydı başarısız bir kayıt denemesi yeni bir kayıt
-/// denemesi doğurur ve bu kendini besleyerek sürerdi.
-/// </summary>
+/// <summary>Başarısız API yanıtlarını gerçek durum kodu ve gövdesiyle birlikte günlük ucuna iletir. Panelin veri tabanına erişimi olmadığı için kayıt da API üzerinden gider ve isteğin kendi jetonu yeniden kullanılır; ayrı bir kimlik doğrulaması yoktur.<para>Kayıt isteği beklenmez, arka planda gönderilir. Beklenseydi her hatalı çağrı kullanıcıya iki istek süresi kadar gecikmiş görünürdü. Karşılığında kaydın yazıldığı garanti değildir.</para><para>Günlük ucunun kendi yanıtları atlanır. Atlanmasaydı başarısız bir kayıt denemesi yeni bir kayıt denemesi doğurur ve bu kendini besleyerek sürerdi.</para></summary>
 public class ApiFailureLoggingHandler(IHttpClientFactory httpClientFactory, ILogger<ApiFailureLoggingHandler> logger)
     : DelegatingHandler
 {
@@ -43,10 +33,7 @@ public class ApiFailureLoggingHandler(IHttpClientFactory httpClientFactory, ILog
     private static bool IsLogEndpoint(Uri? uri)
         => uri is not null && uri.AbsolutePath.EndsWith(LogPath, StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// Gereken her değer çağrıdan önce yerele kopyalanır: istek nesnesi bu noktadan sonra serbest
-    /// bırakılabilir ve arka plandaki gönderim ona erişmeye çalışırsa düşerdi.
-    /// </summary>
+    /// <summary>Gereken her değer çağrıdan önce yerele kopyalanır: istek nesnesi bu noktadan sonra serbest bırakılabilir ve arka plandaki gönderim ona erişmeye çalışırsa düşerdi.</summary>
     private void Forward(HttpRequestMessage request, int statusCode, string body)
     {
         if (request.RequestUri is null) return;

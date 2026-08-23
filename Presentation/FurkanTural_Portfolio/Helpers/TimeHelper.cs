@@ -1,9 +1,6 @@
 namespace FurkanTural_Portfolio.Helpers;
 
-/// <summary>
-/// Sunucu hangi saat diliminde çalışırsa çalışsın çıktı Türkiye saatine göre üretilir; tarayıcıya
-/// bırakılsaydı sayfa sunucuda ve istemcide farklı saatler gösterebilirdi.
-/// </summary>
+/// <summary>Sunucu hangi saat diliminde çalışırsa çalışsın çıktı Türkiye saatine göre üretilir; tarayıcıya bırakılsaydı sayfa sunucuda ve istemcide farklı saatler gösterebilirdi.</summary>
 public static class TimeHelper
 {
     private static readonly TimeZoneInfo Tz = Resolve();

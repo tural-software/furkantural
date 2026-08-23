@@ -4,12 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FurkanTural_Admin.Tests.Controllers;
 
-/// <summary>
-/// [HttpPost] attribute taşıyan tüm public action'ların
-/// [ValidateAntiForgeryToken] attribute de taşıdığını doğrular.
-/// Test FAIL bırakılmaz; eksik olanlar listelenip rapor çıkarılır.
-/// NOT: Güvenlik bulgusu varsa testi dikkat çekmek için fail yapılır.
-/// </summary>
+/// <summary>[HttpPost] attribute taşıyan tüm public action'ların [ValidateAntiForgeryToken] attribute de taşıdığını doğrular. Test FAIL bırakılmaz; eksik olanlar listelenip rapor çıkarılır. NOT: Güvenlik bulgusu varsa testi dikkat çekmek için fail yapılır.</summary>
 public class CsrfCoverageTests
 {
     private static readonly Assembly AdminAssembly =

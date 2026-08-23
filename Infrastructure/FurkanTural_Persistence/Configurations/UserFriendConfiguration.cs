@@ -4,13 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FurkanTural_Persistence.Configurations;
 
-/// <summary>
-/// Tekil indeks yalnızca silinmemiş satırları kapsar, dolayısıyla kaldırılan bir arkadaşlık aynı iki
-/// kişinin yeniden istek göndermesini engellemez — <see cref="UserConfiguration"/> ile
-/// <see cref="SubscriberConfiguration"/> aynı önlemi almaz. İndeks yönlüdür: yalnızca (isteyen,
-/// istenen) çiftini kapsar, ters yön veri tabanı için ayrı bir satırdır; çift kayıt engelleme işi
-/// servis katmanına aittir.
-/// </summary>
+/// <summary>Tekil indeks yalnızca silinmemiş satırları kapsar, dolayısıyla kaldırılan bir arkadaşlık aynı iki kişinin yeniden istek göndermesini engellemez — <see cref="UserConfiguration"/> ile <see cref="SubscriberConfiguration"/> aynı önlemi almaz. İndeks yönlüdür: yalnızca (isteyen, istenen) çiftini kapsar, ters yön veri tabanı için ayrı bir satırdır; çift kayıt engelleme işi servis katmanına aittir.</summary>
 public class UserFriendConfiguration : BaseEntityConfiguration<UserFriend>
 {
     public override void Configure(EntityTypeBuilder<UserFriend> builder)

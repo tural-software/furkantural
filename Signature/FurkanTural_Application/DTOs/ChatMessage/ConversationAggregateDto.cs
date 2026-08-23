@@ -1,10 +1,6 @@
 namespace FurkanTural_Application.DTOs.ChatMessage;
 
-/// <summary>
-/// Sohbet listesinin ham sayıları; doğrudan istemciye verilmez. Kullanıcı bilgisi taşımaz ve LastMessage
-/// bu aşamada hâlâ şifrelidir — çözme ile kullanıcı bilgisinin eklenmesi
-/// <see cref="ConversationSummaryDto"/> kurulurken yapılır.
-/// </summary>
+/// <summary>Sohbet listesinin ham sayıları; doğrudan istemciye verilmez. Kullanıcı bilgisi taşımaz ve LastMessage bu aşamada hâlâ şifrelidir — çözme ile kullanıcı bilgisinin eklenmesi <see cref="ConversationSummaryDto"/> kurulurken yapılır.</summary>
 public class ConversationAggregateDto
 {
     public int OtherUserId { get; set; }

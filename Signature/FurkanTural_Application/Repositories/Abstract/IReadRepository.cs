@@ -4,19 +4,7 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Application.Repositories.Abstract;
 
-/// <summary>
-/// Okuma sözleşmesi. Metotların bir bölümü Dapper ile ham SQL, bir bölümü EF Core üzerinden koşar ama
-/// sonuç aynı yere varır: adında Admin geçmeyen her okuma yalnızca canlı satırları görür (silinmemiş ve
-/// aktif). Yüklem alan aşırı yüklemeler de aynı filtreye tabidir, yani GetAllAsync(x => x.IsDeleted)
-/// daima boş döner. Silinmiş veya pasif kayda ulaşmanın tek yolu adında Admin geçen üç metottur;
-/// onlar hiçbir filtre uygulamaz.
-///
-/// Hiçbir okuma izlenen varlık döndürmez. Dönen nesne üzerinde yapılan değişiklik kendiliğinden
-/// kaydedilmez; kalıcı olması için açıkça <see cref="IWriteRepository{T}"/> üzerinden geçmesi gerekir.
-///
-/// Sayfa numarası 1 tabanlıdır ve descending tarihe değil Id'ye uygulanır. GetAdminSummaryAsync her
-/// satır için UpdatedAt, yoksa DeletedAt, o da yoksa CreatedAt değerini alıp en büyüğünü döndürür.
-/// </summary>
+/// <summary>Okuma sözleşmesi. Metotların bir bölümü Dapper ile ham SQL, bir bölümü EF Core üzerinden koşar ama sonuç aynı yere varır: adında Admin geçmeyen her okuma yalnızca canlı satırları görür (silinmemiş ve aktif). Yüklem alan aşırı yüklemeler de aynı filtreye tabidir, yani GetAllAsync(x => x.IsDeleted) daima boş döner. Silinmiş veya pasif kayda ulaşmanın tek yolu adında Admin geçen üç metottur; onlar hiçbir filtre uygulamaz.<para>Hiçbir okuma izlenen varlık döndürmez. Dönen nesne üzerinde yapılan değişiklik kendiliğinden kaydedilmez; kalıcı olması için açıkça <see cref="IWriteRepository{T}"/> üzerinden geçmesi gerekir.</para><para>Sayfa numarası 1 tabanlıdır ve descending tarihe değil Id'ye uygulanır. GetAdminSummaryAsync her satır için UpdatedAt, yoksa DeletedAt, o da yoksa CreatedAt değerini alıp en büyüğünü döndürür.</para></summary>
 public interface IReadRepository<T> where T : BaseEntity
 {
     Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default);

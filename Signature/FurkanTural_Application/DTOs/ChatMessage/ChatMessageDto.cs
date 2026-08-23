@@ -1,10 +1,6 @@
 namespace FurkanTural_Application.DTOs.ChatMessage;
 
-/// <summary>
-/// Sohbet mesajının istemciye verilen hâli. Content burada düz metindir; veri tabanında şifreli durur ve
-/// yalnızca bu DTO'ya çevrilirken çözülür. EditedAt yalnızca düzenlenmiş mesajlarda dolar, düzenleme de
-/// gönderimden sonraki 15 dakikayla ve yalnızca metin mesajlarıyla sınırlıdır.
-/// </summary>
+/// <summary>Sohbet mesajının istemciye verilen hâli. Content burada düz metindir; veri tabanında şifreli durur ve yalnızca bu DTO'ya çevrilirken çözülür. EditedAt yalnızca düzenlenmiş mesajlarda dolar, düzenleme de gönderimden sonraki 15 dakikayla ve yalnızca metin mesajlarıyla sınırlıdır.</summary>
 public class ChatMessageDto
 {
     public int Id { get; set; }

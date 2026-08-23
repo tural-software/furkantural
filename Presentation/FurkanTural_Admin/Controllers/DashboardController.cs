@@ -9,10 +9,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
 {
     private readonly IAdminSummaryClient _summaryClient = summaryClient;
 
-    /// <summary>
-    /// Kullanıcı arayüzü tamamlanmış (unlock edilmiş) modüller.
-    /// Yeni bir modül hazır hale geldiğinde bu listeye slug'ını ekle.
-    /// </summary>
+    /// <summary>Kullanıcı arayüzü tamamlanmış (unlock edilmiş) modüller. Yeni bir modül hazır hale geldiğinde bu listeye slug'ını ekle.</summary>
     private static readonly HashSet<string> ImplementedModules =
     [
         "subscribers",

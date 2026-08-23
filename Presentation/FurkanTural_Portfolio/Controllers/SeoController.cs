@@ -5,18 +5,7 @@ using FurkanTural_Portfolio.Services;
 
 namespace FurkanTural_Portfolio.Controllers;
 
-/// <summary>
-/// Arama motorlarının beklediği robots.txt ve sitemap.xml dosyalarını üretir. Adresler
-/// yapılandırmadan değil isteğin kendi host'undan kurulur, yani site hangi alan adından sunuluyorsa
-/// çıktı da onu gösterir.
-///
-/// Sitemap proje ve müzik detay sayfalarını da listeler; API'ye ulaşılamazsa hata dönmez, dosya
-/// yalnızca statik sayfalarla üretilir. Arama motoruna hata vermek, eksik ama geçerli bir dosya
-/// vermekten kötüdür.
-///
-/// XML çıktısı metin olarak değil bayt olarak döndürülür. Bir metin oluşturucuya yazıldığında
-/// bildirim her zaman utf-16 çıkar ve dosyanın kendi başlığı gerçek kodlamasıyla çelişirdi.
-/// </summary>
+/// <summary>Arama motorlarının beklediği robots.txt ve sitemap.xml dosyalarını üretir. Adresler yapılandırmadan değil isteğin kendi host'undan kurulur, yani site hangi alan adından sunuluyorsa çıktı da onu gösterir.<para>Sitemap proje ve müzik detay sayfalarını da listeler; API'ye ulaşılamazsa hata dönmez, dosya yalnızca statik sayfalarla üretilir. Arama motoruna hata vermek, eksik ama geçerli bir dosya vermekten kötüdür.</para><para>XML çıktısı metin olarak değil bayt olarak döndürülür. Bir metin oluşturucuya yazıldığında bildirim her zaman utf-16 çıkar ve dosyanın kendi başlığı gerçek kodlamasıyla çelişirdi.</para></summary>
 public class SeoController(IPortfolioApiService apiService) : Controller
 {
     private readonly IPortfolioApiService _apiService = apiService;

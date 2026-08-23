@@ -1,9 +1,6 @@
 namespace FurkanTural_Blog.Models;
 
-/// <summary>
-/// Liste sayfası için sayfalanmış blog yazıları + sayfalama + filtre durumu.
-/// Toplam sayfa istemcide (TotalCount/PageSize) hesaplanır; UI bununla beslenir.
-/// </summary>
+/// <summary>Liste sayfası için sayfalanmış blog yazıları + sayfalama + filtre durumu. Toplam sayfa istemcide (TotalCount/PageSize) hesaplanır; UI bununla beslenir.</summary>
 public class PagedPostsViewModel
 {
     public IReadOnlyList<BlogPostViewModel> Items { get; init; } = [];

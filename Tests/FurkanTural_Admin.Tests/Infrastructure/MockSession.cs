@@ -2,10 +2,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace FurkanTural_Admin.Tests.Infrastructure;
 
-/// <summary>
-/// ISession'ın in-memory Dictionary tabanlı stub implementasyonu.
-/// Gerçek ASP.NET Core session middleware gerektirmeden controller testlerinde kullanılır.
-/// </summary>
+/// <summary>ISession'ın in-memory Dictionary tabanlı stub implementasyonu. Gerçek ASP.NET Core session middleware gerektirmeden controller testlerinde kullanılır.</summary>
 public sealed class MockSession : ISession
 {
     private readonly Dictionary<string, byte[]> _store = new();

@@ -3,14 +3,7 @@ using FurkanTural_Application.Settings;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// Göreli yol <c>modül/ortamTürü/dosyaAdı</c> biçiminde kurulur. Modül klasörü relatedTableName'e
-/// göre seçilir; eşleşmeyen ad "misc" altına düşer, hata vermez. Ortam türü uzantıdan çıkarılır ve
-/// <c>.webm</c> ile <c>.ogg</c> ses sayılır: bu uzantılar hem sesle hem videoyla gelebilir, ama
-/// buradaki üreticileri tarayıcının ses kaydı olduğu için ses kümesi önceliklidir.
-///
-/// Dosya adı her yüklemede benzersiz üretilir; aynı ada sahip iki yükleme birbirinin üzerine yazmaz.
-/// </summary>
+/// <summary>Göreli yol <c>modül/ortamTürü/dosyaAdı</c> biçiminde kurulur. Modül klasörü relatedTableName'e göre seçilir; eşleşmeyen ad "misc" altına düşer, hata vermez. Ortam türü uzantıdan çıkarılır ve <c>.webm</c> ile <c>.ogg</c> ses sayılır: bu uzantılar hem sesle hem videoyla gelebilir, ama buradaki üreticileri tarayıcının ses kaydı olduğu için ses kümesi önceliklidir.<para>Dosya adı her yüklemede benzersiz üretilir; aynı ada sahip iki yükleme birbirinin üzerine yazmaz.</para></summary>
 public sealed class FileService : IFileService
 {
     private static readonly HashSet<string> _imageExtensions =

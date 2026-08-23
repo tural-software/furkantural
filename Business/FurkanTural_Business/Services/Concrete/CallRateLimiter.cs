@@ -4,11 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// Eşikler <c>Calls:RateLimit</c> altındaki MaxPerWindow (5) ve WindowSeconds (60) değerlerinden
-/// okunur. Pencere kayandır: sabit dilimlere bölünmediği için dilim sınırında iki katı deneme
-/// yapılamaz.
-/// </summary>
+/// <summary>Eşikler <c>Calls:RateLimit</c> altındaki MaxPerWindow (5) ve WindowSeconds (60) değerlerinden okunur. Pencere kayandır: sabit dilimlere bölünmediği için dilim sınırında iki katı deneme yapılamaz.</summary>
 public sealed class CallRateLimiter : ICallRateLimiter
 {
     private readonly int _max;

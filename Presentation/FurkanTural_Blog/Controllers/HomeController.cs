@@ -10,20 +10,10 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
     private readonly IBlogApiService _blogApi = blogApi;
     private readonly string _apiBase = (configuration["Api:BaseUrl"] ?? string.Empty).TrimEnd('/');
 
-    /// <summary>
-    /// Değer keyfi değil: kart ızgarası kapsayıcı genişliğine göre bir ilâ dört sütun çiziyor ve 12
-    /// dördüne de tam bölündüğü için hiçbir kırılma noktasında yarım satır kalmıyor. Izgaranın
-    /// sütun sayısı değişirse bu sayı da yeniden seçilmelidir.
-    /// </summary>
+    /// <summary>Değer keyfi değil: kart ızgarası kapsayıcı genişliğine göre bir ilâ dört sütun çiziyor ve 12 dördüne de tam bölündüğü için hiçbir kırılma noktasında yarım satır kalmıyor. Izgaranın sütun sayısı değişirse bu sayı da yeniden seçilmelidir.</summary>
     private const int PageSize = 12;
 
-    /// <summary>
-    /// Aralık dışı sayfa numarası hata değil, son geçerli sayfaya yönlendirme üretir ve filtreler
-    /// korunur; elle yazılmış bir adres kullanıcıyı boş listeyle baş başa bırakmaz.
-    ///
-    /// Kapak görselleri yalnızca bu sayfadaki yazılar için ve paralel çekilir. Çağrı sayısı böylece
-    /// sayfa boyutunu hiç aşmaz ve arşiv büyüdükçe artmaz.
-    /// </summary>
+    /// <summary>Aralık dışı sayfa numarası hata değil, son geçerli sayfaya yönlendirme üretir ve filtreler korunur; elle yazılmış bir adres kullanıcıyı boş listeyle baş başa bırakmaz.<para>Kapak görselleri yalnızca bu sayfadaki yazılar için ve paralel çekilir. Çağrı sayısı böylece sayfa boyutunu hiç aşmaz ve arşiv büyüdükçe artmaz.</para></summary>
     public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, CancellationToken cancellationToken = default)
     {
         if (page < 1) page = 1;
@@ -72,11 +62,7 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
         return View(post);
     }
 
-    /// <summary>
-    /// Bölü işareti taşıyan değer göreli yoldur ve olduğu gibi eklenir; taşımayan değer klasörlere
-    /// ayrılmadan önceki düzenden kalma düz dosya adıdır ve eski yükleme klasörü altında aranır.
-    /// Ayrımın kaynağı API tarafındaki dosya servisidir, ikisi birlikte değişmelidir.
-    /// </summary>
+    /// <summary>Bölü işareti taşıyan değer göreli yoldur ve olduğu gibi eklenir; taşımayan değer klasörlere ayrılmadan önceki düzenden kalma düz dosya adıdır ve eski yükleme klasörü altında aranır. Ayrımın kaynağı API tarafındaki dosya servisidir, ikisi birlikte değişmelidir.</summary>
     private string BuildImageUrl(string url) =>
         url.Contains('/') ? $"{_apiBase}/{url}" : $"{_apiBase}/images/uploads/{url}";
 

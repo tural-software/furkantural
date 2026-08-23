@@ -1,8 +1,6 @@
 namespace FurkanTural_Portfolio.Models;
 
-/// <summary>
-/// Url göreli yoldur ve tek başına kullanılamaz; tam adres API tabanıyla birleştirilerek oluşturulur.
-/// </summary>
+/// <summary>Url göreli yoldur ve tek başına kullanılamaz; tam adres API tabanıyla birleştirilerek oluşturulur.</summary>
 public sealed class RemoteImageViewModel
 {
     public string? Url { get; set; }

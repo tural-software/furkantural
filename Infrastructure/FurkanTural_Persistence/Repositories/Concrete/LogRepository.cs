@@ -11,12 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
-/// <summary>
-/// Sözleşmenin kendi başına duran uygulaması: <see cref="Repository{T}"/> türetmez, bağlantı açma ve
-/// sayfalama mantığını kendi içinde tekrarlar. Tablo adı da oradaki gibi EF modelinden okunmaz, sabit
-/// yazılıdır — Logs tablosu konfigürasyondan yeniden adlandırılırsa buradaki SQL'ler derleme hatası
-/// vermeden kırılır.
-/// </summary>
+/// <summary>Sözleşmenin kendi başına duran uygulaması: <see cref="Repository{T}"/> türetmez, bağlantı açma ve sayfalama mantığını kendi içinde tekrarlar. Tablo adı da oradaki gibi EF modelinden okunmaz, sabit yazılıdır — Logs tablosu konfigürasyondan yeniden adlandırılırsa buradaki SQL'ler derleme hatası vermeden kırılır.</summary>
 public class LogRepository(FurkanTuralDbContext context) : ILogRepository
 {
     private readonly FurkanTuralDbContext _context = context;

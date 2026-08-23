@@ -5,18 +5,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace FurkanTural_Persistence.Interceptors;
 
-/// <summary>
-/// Zaman damgalarını kaydetme anında basar; eşzamanlı ve asenkron kaydetme yollarının ikisini de
-/// karşılar, yalnızca BaseEntity türevlerine dokunur.
-///
-/// Saat bir kez okunup bütün girdilere aynı değer yazılır, dolayısıyla tek kaydetmede eklenen satırlar
-/// birebir aynı CreatedAt'i taşır — zaman damgasını ayırt edici sayan okumalar bunu hesaba katmalıdır.
-/// DeletedAt yalnızca boşken doldurulur; zaten silinmiş bir kayıt yeniden kaydedilirse ilk silinme anı
-/// korunur.
-///
-/// Eklemede IsActive ve IsDeleted, çağıranın verdiği değere bakılmaksızın sabitlenir; bu yolla pasif
-/// veya silinmiş bir kayıt doğrudan oluşturulamaz.
-/// </summary>
+/// <summary>Zaman damgalarını kaydetme anında basar; eşzamanlı ve asenkron kaydetme yollarının ikisini de karşılar, yalnızca BaseEntity türevlerine dokunur.<para>Saat bir kez okunup bütün girdilere aynı değer yazılır, dolayısıyla tek kaydetmede eklenen satırlar birebir aynı CreatedAt'i taşır — zaman damgasını ayırt edici sayan okumalar bunu hesaba katmalıdır. DeletedAt yalnızca boşken doldurulur; zaten silinmiş bir kayıt yeniden kaydedilirse ilk silinme anı korunur.</para><para>Eklemede IsActive ve IsDeleted, çağıranın verdiği değere bakılmaksızın sabitlenir; bu yolla pasif veya silinmiş bir kayıt doğrudan oluşturulamaz.</para></summary>
 public sealed class AuditSaveChangesInterceptor(IClock clock) : SaveChangesInterceptor
 {
     private readonly IClock _clock = clock;

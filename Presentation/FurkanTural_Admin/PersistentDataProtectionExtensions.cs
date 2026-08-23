@@ -2,44 +2,10 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace FurkanTural_Admin;
 
-/// <summary>
-/// Oturum çerezini ve sahtecilik jetonunu şifreleyen anahtarların nerede saklanacağını çözer.
-///
-/// Varsayılan davranışta, IIS altında uygulama havuzunun profili yüklü değilse anahtarlar yalnızca
-/// bellekte tutulur; her geri dönüşümde ve her yayında sıfırlanırlar. Sonuç açık oturumların toptan
-/// düşmesi ve sahtecilik jetonu hatalarıdır. Yönetim panelinde bedeli, oturumdaki jetonun da
-/// gitmesi ve yöneticinin kaydettiği formu tamamlayamadan girişe atılmasıdır.
-///
-/// Uygulama paylaşımlı bir barındırmada çalışır ve havuz kimliği çoğu zaman yalnızca sitenin kendi
-/// klasör ağacına erişebilir; makine geneli yollar kapalı olabilir. Bu yüzden tek bir yola bel
-/// bağlanmaz: adaylar sırayla denenir ve gerçek bir yazma denemesinden geçen ilki kullanılır.
-///
-/// Hiçbiri yazılamıyorsa uygulama durdurulmaz. Durmak, çözülmeye çalışılan sorundan daha kötüsünü
-/// üretirdi: oturumların düşmesi yerine sitenin tümüyle kapanması. Bunun yerine belleğe düşülür ve
-/// durum hata seviyesinde kaydedilir.
-///
-/// Anahtarları veri tabanında tutmak daha dayanıklı olurdu ama mimari buna izin vermez; sunum
-/// projeleri veri tabanına dokunmaz.
-///
-/// Aynı mantığın bir kopyası
-/// <c>Presentation/FurkanTural_Chat/PersistentDataProtectionExtensions.cs</c> içindedir. Biri
-/// değişirse diğeri de değişmelidir.
-/// </summary>
+/// <summary>Oturum çerezini ve sahtecilik jetonunu şifreleyen anahtarların nerede saklanacağını çözer.<para>Varsayılan davranışta, IIS altında uygulama havuzunun profili yüklü değilse anahtarlar yalnızca bellekte tutulur; her geri dönüşümde ve her yayında sıfırlanırlar. Sonuç açık oturumların toptan düşmesi ve sahtecilik jetonu hatalarıdır. Yönetim panelinde bedeli, oturumdaki jetonun da gitmesi ve yöneticinin kaydettiği formu tamamlayamadan girişe atılmasıdır.</para><para>Uygulama paylaşımlı bir barındırmada çalışır ve havuz kimliği çoğu zaman yalnızca sitenin kendi klasör ağacına erişebilir; makine geneli yollar kapalı olabilir. Bu yüzden tek bir yola bel bağlanmaz: adaylar sırayla denenir ve gerçek bir yazma denemesinden geçen ilki kullanılır.</para><para>Hiçbiri yazılamıyorsa uygulama durdurulmaz. Durmak, çözülmeye çalışılan sorundan daha kötüsünü üretirdi: oturumların düşmesi yerine sitenin tümüyle kapanması. Bunun yerine belleğe düşülür ve durum hata seviyesinde kaydedilir.</para><para>Anahtarları veri tabanında tutmak daha dayanıklı olurdu ama mimari buna izin vermez; sunum projeleri veri tabanına dokunmaz.</para><para>Aynı mantığın bir kopyası <c>Presentation/FurkanTural_Chat/PersistentDataProtectionExtensions.cs</c> içindedir. Biri değişirse diğeri de değişmelidir.</para></summary>
 public static class PersistentDataProtectionExtensions
 {
-    /// <summary>
-    /// Sonucu döndürür ama kaydetmez; kayıt <see cref="LogDataProtectionStatus"/> ile ve uygulama
-    /// ayağa kalktıktan sonra yapılır, çünkü gerçek kaydedici bu noktada henüz yoktur.
-    ///
-    /// applicationName anahtar halkasını yalıtan sabit addır ve içerik kökü yolundan
-    /// türetilmemelidir: uygulama başka bir klasöre taşındığında ad da değişir ve o ana kadar
-    /// üretilmiş bütün anahtarlar okunamaz hâle gelir.
-    ///
-    /// At-rest şifreleme varsayılan olarak kapalıdır. Paylaşımlı barındırmada site başka bir
-    /// fiziksel makineye taşınabilir ve makine kapsamlı şifrelenmiş anahtarlar o durumda kalıcı
-    /// olarak çözülemez; uygulama anahtarı okurken düşer. Sunucunun tamamına hâkim olunan bir
-    /// kurulumda <c>DataProtection:ProtectWithDpapi</c> ile açılabilir.
-    /// </summary>
+    /// <summary>Sonucu döndürür ama kaydetmez; kayıt <see cref="LogDataProtectionStatus"/> ile ve uygulama ayağa kalktıktan sonra yapılır, çünkü gerçek kaydedici bu noktada henüz yoktur.<para>applicationName anahtar halkasını yalıtan sabit addır ve içerik kökü yolundan türetilmemelidir: uygulama başka bir klasöre taşındığında ad da değişir ve o ana kadar üretilmiş bütün anahtarlar okunamaz hâle gelir.</para><para>At-rest şifreleme varsayılan olarak kapalıdır. Paylaşımlı barındırmada site başka bir fiziksel makineye taşınabilir ve makine kapsamlı şifrelenmiş anahtarlar o durumda kalıcı olarak çözülemez; uygulama anahtarı okurken düşer. Sunucunun tamamına hâkim olunan bir kurulumda <c>DataProtection:ProtectWithDpapi</c> ile açılabilir.</para></summary>
     public static DataProtectionSetupResult AddPersistentDataProtection(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -66,11 +32,7 @@ public static class PersistentDataProtectionExtensions
         return result;
     }
 
-    /// <summary>
-    /// <c>Build()</c> sonrasında çağrılmalıdır. Denenip başarısız olan adayların her biri uyarı
-    /// olarak, kalıcılığın hiç sağlanamaması ise hata olarak kaydedilir; paylaşımlı barındırmada
-    /// hangi yolun neden kapalı olduğunu gösteren tek kayıt budur.
-    /// </summary>
+    /// <summary><c>Build()</c> sonrasında çağrılmalıdır. Denenip başarısız olan adayların her biri uyarı olarak, kalıcılığın hiç sağlanamaması ise hata olarak kaydedilir; paylaşımlı barındırmada hangi yolun neden kapalı olduğunu gösteren tek kayıt budur.</summary>
     public static void LogDataProtectionStatus(this WebApplication app, DataProtectionSetupResult result)
     {
         var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("DataProtection");
@@ -95,9 +57,7 @@ public static class PersistentDataProtectionExtensions
 
 public sealed class DataProtectionSetupResult
 {
-    /// <summary>
-    /// Hiçbir aday yazılabilir değilse null kalır ve anahtarlar bellekte tutulur.
-    /// </summary>
+    /// <summary>Hiçbir aday yazılabilir değilse null kalır ve anahtarlar bellekte tutulur.</summary>
     public string? KeyPath { get; internal set; }
 
     public List<string> AttemptedPaths { get; } = [];
@@ -107,21 +67,7 @@ public sealed class DataProtectionSetupResult
 
 internal static class DataProtectionPathResolver
 {
-    /// <summary>
-    /// Adaylar şu sırayla denenir: açık yapılandırma, sitenin kendi ağacındaki App_Data, ardından
-    /// makine geneli ortak veri klasörü. Sıra dayanıklılığa göre değil erişilebilirliğe göredir;
-    /// makine geneli yol yayın klasöründen bağımsız olduğu için daha dayanıklıdır ama paylaşımlı
-    /// barındırmada çoğunlukla kapalıdır, bu yüzden sonda durur.
-    ///
-    /// App_Data'nın tarayıcıdan okunamamasının gerçek güvencesi statik dosya sınırıdır: yalnızca
-    /// wwwroot servis edilir, App_Data ise içerik kökünde, onun dışında durur. Bu adın IIS'in
-    /// varsayılan gizli segment listesinde bulunması ayrı bir gerekçe sayılmaz; o liste sunucunun
-    /// genel yapılandırmasına bağlıdır ve bu projede kendi ayarımızla zorlanmaz.
-    ///
-    /// Başarılı adayda yeni bir sonuç nesnesi üretilmez, aynı nesne döndürülür: önceki adayların
-    /// neden elendiğini anlatan uyarılar korunsun diye. Paylaşımlı barındırmada teşhis için asıl
-    /// gereken bilgi odur.
-    /// </summary>
+    /// <summary>Adaylar şu sırayla denenir: açık yapılandırma, sitenin kendi ağacındaki App_Data, ardından makine geneli ortak veri klasörü. Sıra dayanıklılığa göre değil erişilebilirliğe göredir; makine geneli yol yayın klasöründen bağımsız olduğu için daha dayanıklıdır ama paylaşımlı barındırmada çoğunlukla kapalıdır, bu yüzden sonda durur.<para>App_Data'nın tarayıcıdan okunamamasının gerçek güvencesi statik dosya sınırıdır: yalnızca wwwroot servis edilir, App_Data ise içerik kökünde, onun dışında durur. Bu adın IIS'in varsayılan gizli segment listesinde bulunması ayrı bir gerekçe sayılmaz; o liste sunucunun genel yapılandırmasına bağlıdır ve bu projede kendi ayarımızla zorlanmaz.</para><para>Başarılı adayda yeni bir sonuç nesnesi üretilmez, aynı nesne döndürülür: önceki adayların neden elendiğini anlatan uyarılar korunsun diye. Paylaşımlı barındırmada teşhis için asıl gereken bilgi odur.</para></summary>
     public static DataProtectionSetupResult Resolve(
         IConfiguration configuration,
         IWebHostEnvironment environment,
@@ -155,11 +101,7 @@ internal static class DataProtectionPathResolver
         return result;
     }
 
-    /// <summary>
-    /// Klasörün oluşturulabilmesi tek başına yeterli değildir; bazı ortamlarda klasör açılır ama
-    /// içine dosya yazılamaz. Bu yüzden geçici bir dosya gerçekten yazılıp silinir. Aday ancak bu
-    /// denemeden geçerse kabul edilir.
-    /// </summary>
+    /// <summary>Klasörün oluşturulabilmesi tek başına yeterli değildir; bazı ortamlarda klasör açılır ama içine dosya yazılamaz. Bu yüzden geçici bir dosya gerçekten yazılıp silinir. Aday ancak bu denemeden geçerse kabul edilir.</summary>
     private static bool TryPrepare(string path, out string error)
     {
         try

@@ -9,12 +9,7 @@ using FurkanTural_Portfolio.Services;
 
 namespace FurkanTural_Portfolio.Tests;
 
-/// <summary>
-/// Unit tests for PortfolioContactClient.SubmitContactAsync.
-///
-/// PortfolioContactClient takes a pre-built HttpClient (primary-handler pattern), so we inject
-/// a real HttpClient whose inner handler is mocked - letting the JSON serialisation path run.
-/// </summary>
+/// <summary>Unit tests for PortfolioContactClient.SubmitContactAsync.<para>PortfolioContactClient takes a pre-built HttpClient (primary-handler pattern), so we inject a real HttpClient whose inner handler is mocked - letting the JSON serialisation path run.</para></summary>
 public class PortfolioContactClientTests
 {
     private static (PortfolioContactClient sut, Mock<HttpMessageHandler> handler) CreateSut()

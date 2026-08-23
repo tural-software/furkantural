@@ -5,19 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// Eşikler <c>Auth:LoginThrottle</c> altındaki MaxAttempts (5), WindowSeconds (300) ve
-/// LockoutSeconds (300) değerlerinden okunur; sıfır veya negatif verilen ayar yok sayılıp varsayılana
-/// düşülür.
-///
-/// Anahtarın IP yarısı istek bağlamından gelir. Bağlam yoksa — arka plan çağrısı veya birim testi —
-/// anahtar yalnızca kullanıcı adına iner ve sınır o çağrılar arasında paylaşılır.
-///
-/// Sözlükten girdi yalnızca başarılı girişte veya kilit dolduğunda silinir; kilide hiç ulaşmamış
-/// denemeler kendiliğinden temizlenmezdi. Bu yüzden periyodik bir süpürme çalışır ve penceresi dolmuş
-/// kilitsiz girdileri atar: her başarısız denemede yeni bir kullanıcı adı üreten saldırı aksi hâlde
-/// sözlüğü sınırsız büyütürdü.
-/// </summary>
+/// <summary>Eşikler <c>Auth:LoginThrottle</c> altındaki MaxAttempts (5), WindowSeconds (300) ve LockoutSeconds (300) değerlerinden okunur; sıfır veya negatif verilen ayar yok sayılıp varsayılana düşülür.<para>Anahtarın IP yarısı istek bağlamından gelir. Bağlam yoksa — arka plan çağrısı veya birim testi — anahtar yalnızca kullanıcı adına iner ve sınır o çağrılar arasında paylaşılır.</para><para>Sözlükten girdi yalnızca başarılı girişte veya kilit dolduğunda silinir; kilide hiç ulaşmamış denemeler kendiliğinden temizlenmezdi. Bu yüzden periyodik bir süpürme çalışır ve penceresi dolmuş kilitsiz girdileri atar: her başarısız denemede yeni bir kullanıcı adı üreten saldırı aksi hâlde sözlüğü sınırsız büyütürdü.</para></summary>
 public sealed class LoginThrottle : ILoginThrottle
 {
     private readonly int _maxAttempts;

@@ -20,33 +20,25 @@ public class UserController : JwtBaseController
         _fileService = fileService;
     }
 
-    /// <summary>
-    /// Kullanıcıyı ID ile getir
-    /// </summary>
+    /// <summary>Kullanıcıyı ID ile getir</summary>
     [HttpGet("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _userService.GetByIdAsync(id, cancellationToken));
 
-    /// <summary>
-    /// Tüm kullanıcıları listele
-    /// </summary>
+    /// <summary>Tüm kullanıcıları listele</summary>
     [HttpGet]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _userService.GetAllAsync(cancellationToken));
 
-    /// <summary>
-    /// Kullanıcıları sayfalı listele
-    /// </summary>
+    /// <summary>Kullanıcıları sayfalı listele</summary>
     [HttpGet("paged")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _userService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
-    /// <summary>
-    /// Kullanıcı ara (üyeler arkadaş eklemek için kullanır)
-    /// </summary>
+    /// <summary>Kullanıcı ara (üyeler arkadaş eklemek için kullanır)</summary>
     [HttpGet("search")]
     [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Search([FromQuery] string query, CancellationToken cancellationToken)
@@ -56,33 +48,25 @@ public class UserController : JwtBaseController
         return ToActionResult(await _userService.SearchAsync(query ?? string.Empty, userId.Value, cancellationToken));
     }
 
-    /// <summary>
-    /// Tüm kullanıcıları (admin) listele
-    /// </summary>
+    /// <summary>Tüm kullanıcıları (admin) listele</summary>
     [HttpGet("admin")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _userService.GetAllForAdminAsync(cancellationToken));
 
-    /// <summary>
-    /// Kullanıcıyı ID ile getir (admin)
-    /// </summary>
+    /// <summary>Kullanıcıyı ID ile getir (admin)</summary>
     [HttpGet("admin/{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _userService.GetByIdForAdminAsync(id, cancellationToken));
 
-    /// <summary>
-    /// Kullanıcı adına göre kullanıcıyı getir
-    /// </summary>
+    /// <summary>Kullanıcı adına göre kullanıcıyı getir</summary>
     [HttpGet("by-username/{username}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByUsername(string username, CancellationToken cancellationToken)
         => ToActionResult(await _userService.GetByUsernameAsync(username, cancellationToken));
 
-    /// <summary>
-    /// Yeni kullanıcı oluştur
-    /// </summary>
+    /// <summary>Yeni kullanıcı oluştur</summary>
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
@@ -97,9 +81,7 @@ public class UserController : JwtBaseController
             CreatedBy = SortUserId()
         }, cancellationToken));
 
-    /// <summary>
-    /// Kullanıcı bilgilerini güncelle
-    /// </summary>
+    /// <summary>Kullanıcı bilgilerini güncelle</summary>
     [HttpPut]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
@@ -115,49 +97,37 @@ public class UserController : JwtBaseController
             UpdatedBy = SortUserId()
         }, cancellationToken));
 
-    /// <summary>
-    /// Kullanıcıyı sil
-    /// </summary>
+    /// <summary>Kullanıcıyı sil</summary>
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _userService.DeleteAsync(id, cancellationToken));
 
-    /// <summary>
-    /// Kullanıcının aktiflik durumunu değiştir
-    /// </summary>
+    /// <summary>Kullanıcının aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
         => ToActionResult(await _userService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
-    /// <summary>
-    /// Silinen kullanıcıyı geri yükle
-    /// </summary>
+    /// <summary>Silinen kullanıcıyı geri yükle</summary>
     [HttpPatch("{id:int}/restore")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _userService.RestoreAsync(id, SortUserId(), cancellationToken));
 
-    /// <summary>
-    /// Yönetici paneli için kullanıcı özetini getir (toplam + son işlem tarihi)
-    /// </summary>
+    /// <summary>Yönetici paneli için kullanıcı özetini getir (toplam + son işlem tarihi)</summary>
     [HttpGet("admin/summary")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _userService.GetAdminSummaryAsync(cancellationToken));
 
-    /// <summary>
-    /// Bir kullanıcının avatar fotoğrafını yükle (admin)
-    /// </summary>
+    /// <summary>Bir kullanıcının avatar fotoğrafını yükle (admin)</summary>
     [HttpPost("{id:int}/avatar")]
     [Authorize(Policy = "AdminOnly")]
     public Task<IActionResult> UploadAvatar(int id, [FromBody] UserAvatarRequest request, CancellationToken cancellationToken)
         => SaveAvatarAsync(id, request, cancellationToken);
 
-    /// <summary>
-    /// Giriş yapan kullanıcının kendi avatarını yükle
-    /// </summary>
+    /// <summary>Giriş yapan kullanıcının kendi avatarını yükle</summary>
     [HttpPost("me/avatar")]
     [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> UploadMyAvatar([FromBody] UserAvatarRequest request, CancellationToken cancellationToken)
@@ -167,9 +137,7 @@ public class UserController : JwtBaseController
         return await SaveAvatarAsync(userId.Value, request, cancellationToken);
     }
 
-    /// <summary>
-    /// Giriş yapan kullanıcı üyelik sözleşmesini kabul eder (eski üyeler için tek seferlik onay).
-    /// </summary>
+    /// <summary>Giriş yapan kullanıcı üyelik sözleşmesini kabul eder (eski üyeler için tek seferlik onay).</summary>
     [HttpPost("me/accept-agreement")]
     [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> AcceptAgreement(CancellationToken cancellationToken)
@@ -200,9 +168,7 @@ public class UserController : JwtBaseController
         return ToActionResult(await _userService.UpdateAvatarAsync(targetUserId, fileName, SortUserId(), cancellationToken));
     }
 
-    /// <summary>
-    /// Sistemde hiç kullanıcı yoksa ilk admin kullanıcısını oluştur
-    /// </summary>
+    /// <summary>Sistemde hiç kullanıcı yoksa ilk admin kullanıcısını oluştur</summary>
     [AllowAnonymous]
     [HttpPost("seed-admin")]
     public async Task<IActionResult> SeedAdmin([FromBody] SeedAdminRequest request, CancellationToken cancellationToken)

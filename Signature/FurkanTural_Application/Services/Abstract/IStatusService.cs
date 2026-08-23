@@ -4,13 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-/// <summary>
-/// Uygulama genelinde kullanılan durum satırları. Gerçek anahtar Id değil Group ve Code ikilisidir;
-/// servisler statüyü <see cref="FurkanTural_Domain.Constants.StatusDefinitions"/> sabitleri üzerinden
-/// çözer, böylece Id'ler ortamlar arasında farklı olabilir. GetIdByCodeAsync
-/// <see cref="Wrappers.Result"/> zarfı kullanmaz: bulunamazsa null döner ve eksik statünün ne anlama
-/// geldiğine çağıran karar verir.
-/// </summary>
+/// <summary>Uygulama genelinde kullanılan durum satırları. Gerçek anahtar Id değil Group ve Code ikilisidir; servisler statüyü <see cref="FurkanTural_Domain.Constants.StatusDefinitions"/> sabitleri üzerinden çözer, böylece Id'ler ortamlar arasında farklı olabilir. GetIdByCodeAsync <see cref="Wrappers.Result"/> zarfı kullanmaz: bulunamazsa null döner ve eksik statünün ne anlama geldiğine çağıran karar verir.</summary>
 public interface IStatusService : IService<StatusDto, CreateStatusDto, UpdateStatusDto>
 {
     Task<Result<IEnumerable<StatusDto>>> GetByGroupAsync(string group, CancellationToken cancellationToken = default);

@@ -10,11 +10,7 @@ using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// Üye tarafındaki listeler kullanıcıları tek sorguda toplu çeker, satır başına arama yapmaz.
-/// Yönetim tarafı ise süzgeçsiz okumaya geçer: silinmiş veya pasif kullanıcıların kayıtları da
-/// listelendiği için normal okuma o satırlarda adı boş bırakırdı.
-/// </summary>
+/// <summary>Üye tarafındaki listeler kullanıcıları tek sorguda toplu çeker, satır başına arama yapmaz. Yönetim tarafı ise süzgeçsiz okumaya geçer: silinmiş veya pasif kullanıcıların kayıtları da listelendiği için normal okuma o satırlarda adı boş bırakırdı.</summary>
 public class UserFriendService(
     IUnitOfWork unitOfWork,
     IStatusService statusService,

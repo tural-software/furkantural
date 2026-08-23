@@ -10,19 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
-/// <summary>
-/// Sözleşmenin melez uygulaması. Ayrımı belirleyen kural şudur: sabit bir SQL cümlesine çevrilebilen
-/// okumalar Dapper'a, yüklem alanlar EF Core'a gider. Yüklem EF'de kalmak zorundadır çünkü ifade
-/// ağacını SQL'e çeviren şey EF'in kendisidir; Dapper böyle bir girdiyi tüketemez.
-///
-/// İki yol da aynı DbConnection üzerinden koşar, Dapper ayrı bağlantı açmaz. Bunun görünür sonucu
-/// şudur: henüz SaveChangesAsync görmemiş bir değişiklik Dapper okumasına yansımaz, çünkü o değişiklik
-/// hâlâ değişiklik izleyicisinde durur ve veri tabanına yazılmamıştır.
-///
-/// Tablo adı sabit yazılmaz, EF modelinden çalışma anında okunur — konfigürasyondaki ToTable değişimi
-/// ham SQL'lere kendiliğinden yansır. Yumuşak silme süzgeci ise <see cref="LiveRows"/> üzerinden gelir.
-/// Bağlam alanı, türetilmiş repo'lar başka entity'lerin Set'lerine ulaşabilsin diye korumalıdır.
-/// </summary>
+/// <summary>Sözleşmenin melez uygulaması. Ayrımı belirleyen kural şudur: sabit bir SQL cümlesine çevrilebilen okumalar Dapper'a, yüklem alanlar EF Core'a gider. Yüklem EF'de kalmak zorundadır çünkü ifade ağacını SQL'e çeviren şey EF'in kendisidir; Dapper böyle bir girdiyi tüketemez.<para>İki yol da aynı DbConnection üzerinden koşar, Dapper ayrı bağlantı açmaz. Bunun görünür sonucu şudur: henüz SaveChangesAsync görmemiş bir değişiklik Dapper okumasına yansımaz, çünkü o değişiklik hâlâ değişiklik izleyicisinde durur ve veri tabanına yazılmamıştır.</para><para>Tablo adı sabit yazılmaz, EF modelinden çalışma anında okunur — konfigürasyondaki ToTable değişimi ham SQL'lere kendiliğinden yansır. Yumuşak silme süzgeci ise <see cref="LiveRows"/> üzerinden gelir. Bağlam alanı, türetilmiş repo'lar başka entity'lerin Set'lerine ulaşabilsin diye korumalıdır.</para></summary>
 public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where T : BaseEntity
 {
     protected readonly FurkanTuralDbContext _context = context;

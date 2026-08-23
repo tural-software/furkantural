@@ -4,11 +4,7 @@ using FurkanTural_Portfolio.Helpers;
 
 namespace FurkanTural_Portfolio.Tests;
 
-/// <summary>
-/// Unit tests for MarkdownRenderer (pure static helper - no mocking required).
-/// Verifies: empty-input guard, basic HTML output, XSS prevention (DisableHtml),
-/// auto-links, pipe tables and soft-line-break-as-hard-line-break pipeline settings.
-/// </summary>
+/// <summary>Unit tests for MarkdownRenderer (pure static helper - no mocking required). Verifies: empty-input guard, basic HTML output, XSS prevention (DisableHtml), auto-links, pipe tables and soft-line-break-as-hard-line-break pipeline settings.</summary>
 public class MarkdownRendererTests
 {
     // -----------------------------------------------------------------------

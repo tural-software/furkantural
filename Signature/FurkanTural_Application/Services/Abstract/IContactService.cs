@@ -4,13 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-/// <summary>
-/// İletişim formu mesajları. <see cref="IService{TDto, TCreateDto, TUpdateDto}"/>'ten türemez çünkü
-/// dışarıdan güncelleme yoktur ve oluşturma tek kapıdan geçer: SubmitAsync anonim ziyaretçiye açıktır
-/// ve alan doğrulamasından önce Turnstile'dan geçirir (bkz. <see cref="ITurnstileVerifier"/>).
-/// Yönetim tarafı yalnızca okur, okundu işaretler ve siler; MarkAsReadAsync tek yönlüdür, okunmadı
-/// durumuna döndüren bir uç yoktur.
-/// </summary>
+/// <summary>İletişim formu mesajları. <see cref="IService{TDto, TCreateDto, TUpdateDto}"/>'ten türemez çünkü dışarıdan güncelleme yoktur ve oluşturma tek kapıdan geçer: SubmitAsync anonim ziyaretçiye açıktır ve alan doğrulamasından önce Turnstile'dan geçirir (bkz. <see cref="ITurnstileVerifier"/>). Yönetim tarafı yalnızca okur, okundu işaretler ve siler; MarkAsReadAsync tek yönlüdür, okunmadı durumuna döndüren bir uç yoktur.</summary>
 public interface IContactService
 {
     Task<Result> SubmitAsync(SubmitContactDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default);

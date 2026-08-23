@@ -2,11 +2,7 @@ using FurkanTural_Application.Services.Abstract;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// Gösterim saat dilimi süreç başına bir kez çözülür ve iki ad sırayla denenir: önce IANA kimliği
-/// (<c>Europe/Istanbul</c>), sonra Windows karşılığı. İkisi de bulunamazsa sabit +03:00'lük bir dilim
-/// üretilir; Türkiye yaz saati uygulamadığı için bu son çare pratikte doğru sonucu verir.
-/// </summary>
+/// <summary>Gösterim saat dilimi süreç başına bir kez çözülür ve iki ad sırayla denenir: önce IANA kimliği (<c>Europe/Istanbul</c>), sonra Windows karşılığı. İkisi de bulunamazsa sabit +03:00'lük bir dilim üretilir; Türkiye yaz saati uygulamadığı için bu son çare pratikte doğru sonucu verir.</summary>
 public sealed class SystemClock : IClock
 {
     private static readonly TimeZoneInfo TurkeyTimeZone = ResolveTurkeyTimeZone();

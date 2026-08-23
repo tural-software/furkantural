@@ -2,12 +2,7 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Domain.Entities;
 
-/// <summary>
-/// Uygulama kullanıcısı; RoleId <see cref="Role"/>'e bakar. Password düz metin değil PBKDF2
-/// türetimidir. MembershipAgreementVersion kabul anındaki
-/// <see cref="Constants.AgreementDefinitions.CurrentVersion"/> değerini saklar; sabit ilerletilirse
-/// eşleşme bozulur ve mevcut üyeden yeniden onay istenir. LastSeenAt son çevrimdışı olunan andır.
-/// </summary>
+/// <summary>Uygulama kullanıcısı; RoleId <see cref="Role"/>'e bakar. Password düz metin değil PBKDF2 türetimidir. MembershipAgreementVersion kabul anındaki <see cref="Constants.AgreementDefinitions.CurrentVersion"/> değerini saklar; sabit ilerletilirse eşleşme bozulur ve mevcut üyeden yeniden onay istenir. LastSeenAt son çevrimdışı olunan andır.</summary>
 public class User : BaseEntity
 {
     public string? Username { get; set; }

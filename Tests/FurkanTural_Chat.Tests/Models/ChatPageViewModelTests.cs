@@ -3,10 +3,7 @@ using FurkanTural_Chat.Models.Chat;
 
 namespace FurkanTural_Chat.Tests.Models;
 
-/// <summary>
-/// ChatPageViewModel davranis testleri.
-/// ViewModel pure data holder; hesaplamasi olmayan ama varsayilan degerleri kontrol ediyoruz.
-/// </summary>
+/// <summary>ChatPageViewModel davranis testleri. ViewModel pure data holder; hesaplamasi olmayan ama varsayilan degerleri kontrol ediyoruz.</summary>
 public class ChatPageViewModelTests
 {
     [Fact]

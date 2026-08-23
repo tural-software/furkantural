@@ -9,18 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FurkanTural_API.Controllers;
 
-/// <summary>
-/// Kayıtlı ön-yüz uygulamalarının (app-token sahibi) istemci-tarafı hata/uyarı/bilgi
-/// loglarını alır ve sistem log tablosuna yazar. Proje adı app_source claim'inden gelir,
-/// böylece kaynak (Chat, Portfolio…) güvenilir biçimde damgalanır.
-///
-/// Aşağıdaki kırpma sınırları günlük tablosunun kolon genişliklerini yansıtır. Hizasız kalırlarsa
-/// uzun bir değer kaydetme anında hata doğurur ve istemcinin gönderdiği günlük, uygulamanın kendi
-/// 500'üne dönüşür.
-///
-/// Yazma başarısız olsa da istemciye 204 döner: tarayıcı kendi hatasını bildirmeye çalışırken
-/// ikinci bir hatayla oyalanmamalıdır.
-/// </summary>
+/// <summary>Kayıtlı ön-yüz uygulamalarının (app-token sahibi) istemci-tarafı hata/uyarı/bilgi loglarını alır ve sistem log tablosuna yazar. Proje adı app_source claim'inden gelir, böylece kaynak (Chat, Portfolio…) güvenilir biçimde damgalanır.<para>Aşağıdaki kırpma sınırları günlük tablosunun kolon genişliklerini yansıtır. Hizasız kalırlarsa uzun bir değer kaydetme anında hata doğurur ve istemcinin gönderdiği günlük, uygulamanın kendi 500'üne dönüşür.</para><para>Yazma başarısız olsa da istemciye 204 döner: tarayıcı kendi hatasını bildirmeye çalışırken ikinci bir hatayla oyalanmamalıdır.</para></summary>
 [ApiVersion("1.0")]
 [Authorize(Policy = "AppClient")]
 public class ClientLogController(ILogService logService, IClock clock) : BaseApiController
@@ -58,12 +47,7 @@ public class ClientLogController(ILogService logService, IClock clock) : BaseApi
         return result.Success ? NoContent() : ToActionResult(result);
     }
 
-    /// <summary>
-    /// Ziyaretçinin IP'si gövdede taşınır, çünkü isteği tarayıcı değil aradaki sunum projesi
-    /// iletir ve bağlantı IP'si onu gösterir. Gövdeden gelen değer yalnızca gerçekten
-    /// ayrıştırılabiliyorsa kabul edilir; aksi hâlde bağlantı IP'sine düşülür. Bu eleme olmasa
-    /// günlük tablosuna istenen her şey IP diye yazdırılabilirdi.
-    /// </summary>
+    /// <summary>Ziyaretçinin IP'si gövdede taşınır, çünkü isteği tarayıcı değil aradaki sunum projesi iletir ve bağlantı IP'si onu gösterir. Gövdeden gelen değer yalnızca gerçekten ayrıştırılabiliyorsa kabul edilir; aksi hâlde bağlantı IP'sine düşülür. Bu eleme olmasa günlük tablosuna istenen her şey IP diye yazdırılabilirdi.</summary>
     private string? ResolveIpAddress(string? candidate)
     {
         if (!string.IsNullOrWhiteSpace(candidate))
@@ -75,14 +59,7 @@ public class ClientLogController(ILogService logService, IClock clock) : BaseApi
         return HttpContext.Connection.RemoteIpAddress?.ToString();
     }
 
-    /// <summary>
-    /// Kontrol karakterleri temizlenir. Satır sonu taşıyan bir mesaj düz metin günlükte veya bir
-    /// SIEM aktarımında sahte satır üretebilir, yani istemci kendi kaydının yanına uydurma kayıtlar
-    /// ekleyebilirdi. keepWhitespace verildiğinde sekme ve satır sonu korunur; yığın izleri
-    /// okunabilir kalsın diye yalnızca ayrıntı alanında kullanılır.
-    ///
-    /// Temizlenecek bir şey yoksa dize kopyalanmaz, olduğu gibi geri döner.
-    /// </summary>
+    /// <summary>Kontrol karakterleri temizlenir. Satır sonu taşıyan bir mesaj düz metin günlükte veya bir SIEM aktarımında sahte satır üretebilir, yani istemci kendi kaydının yanına uydurma kayıtlar ekleyebilirdi. keepWhitespace verildiğinde sekme ve satır sonu korunur; yığın izleri okunabilir kalsın diye yalnızca ayrıntı alanında kullanılır.<para>Temizlenecek bir şey yoksa dize kopyalanmaz, olduğu gibi geri döner.</para></summary>
     private static string? StripControls(string? value, bool keepWhitespace = false)
     {
         if (string.IsNullOrEmpty(value)) return value;

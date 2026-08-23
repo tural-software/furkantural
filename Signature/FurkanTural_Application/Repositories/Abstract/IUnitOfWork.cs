@@ -3,18 +3,7 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Application.Repositories.Abstract;
 
-/// <summary>
-/// Tüm repo'ları tek bir veri tabanı bağlamında toplar ve kaydetme anını sahiplenir. Repo'lar örnek
-/// başına önbelleklenir, bu yüzden buradan alınan repo'lar aynı değişiklik izleyicisini paylaşır:
-/// farklı repo'lara yazılan değişiklikler tek SaveChangesAsync ile birlikte kaydedilir. Açık bir
-/// transaction arayüzü yoktur; atomik olan tek şey bir SaveChangesAsync çağrısıdır, iki ayrı çağrı iki
-/// ayrı transaction demektir — blog kaydı ile kategori bağlarının ayrı kaydedilmesi buna örnektir,
-/// ikincisi başarısız olursa yazı kategorisiz kalır.
-///
-/// Adı verilmiş özellikler ile GetRepository&lt;T&gt; aynı şey değildir: Blogs ve ChatMessages özelleşmiş
-/// sözleşmeler döndürür, GetRepository&lt;Blog&gt; ise yalnızca genel repo'yu verir ve blog'a özgü metotları
-/// içermez.
-/// </summary>
+/// <summary>Tüm repo'ları tek bir veri tabanı bağlamında toplar ve kaydetme anını sahiplenir. Repo'lar örnek başına önbelleklenir, bu yüzden buradan alınan repo'lar aynı değişiklik izleyicisini paylaşır: farklı repo'lara yazılan değişiklikler tek SaveChangesAsync ile birlikte kaydedilir. Açık bir transaction arayüzü yoktur; atomik olan tek şey bir SaveChangesAsync çağrısıdır, iki ayrı çağrı iki ayrı transaction demektir — blog kaydı ile kategori bağlarının ayrı kaydedilmesi buna örnektir, ikincisi başarısız olursa yazı kategorisiz kalır.<para>Adı verilmiş özellikler ile GetRepository&lt;T&gt; aynı şey değildir: Blogs ve ChatMessages özelleşmiş sözleşmeler döndürür, GetRepository&lt;Blog&gt; ise yalnızca genel repo'yu verir ve blog'a özgü metotları içermez.</para></summary>
 public interface IUnitOfWork
 {
     IRepository<T> GetRepository<T>() where T : BaseEntity;

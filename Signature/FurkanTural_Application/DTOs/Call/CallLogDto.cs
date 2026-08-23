@@ -1,10 +1,6 @@
 namespace FurkanTural_Application.DTOs.Call;
 
-/// <summary>
-/// Arama geçmişi satırının, isteği yapan kullanıcıya göre düzleştirilmiş hâli. Kayıtta arayan ve aranan
-/// ayrı alanlarda durur; buradaki Other* alanları ile Direction ise çağırana göre hesaplanır, dolayısıyla
-/// aynı arama iki taraf için farklı DTO üretir.
-/// </summary>
+/// <summary>Arama geçmişi satırının, isteği yapan kullanıcıya göre düzleştirilmiş hâli. Kayıtta arayan ve aranan ayrı alanlarda durur; buradaki Other* alanları ile Direction ise çağırana göre hesaplanır, dolayısıyla aynı arama iki taraf için farklı DTO üretir.</summary>
 public class CallLogDto
 {
     public int Id { get; set; }

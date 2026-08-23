@@ -6,10 +6,7 @@ namespace FurkanTural_Admin.Services;
 
 internal static class ApiCallResultExtensions
 {
-    /// <summary>
-    /// HttpResponse → ApiCallResult. Başarısızsa API'nin Result zarfından mesajı (errors[0] veya
-    /// message) çıkarır; gövde JSON değilse durum kodu yine de korunur.
-    /// </summary>
+    /// <summary>HttpResponse → ApiCallResult. Başarısızsa API'nin Result zarfından mesajı (errors[0] veya message) çıkarır; gövde JSON değilse durum kodu yine de korunur.</summary>
     public static async Task<ApiCallResult> ToApiCallResultAsync(this HttpResponseMessage response, CancellationToken ct = default)
     {
         if (response.IsSuccessStatusCode)
@@ -38,10 +35,7 @@ internal static class ApiCallResultExtensions
         return ApiCallResult.Fail((int)response.StatusCode, message);
     }
 
-    /// <summary>
-    /// ApiCallResult → IActionResult. 401 → Unauthorized (form-modal.js login'e yönlendirir),
-    /// diğer hatalar → gerçek durum kodu + mesaj (yoksa fallback). Generic 500 maskelemesini bitirir.
-    /// </summary>
+    /// <summary>ApiCallResult → IActionResult. 401 → Unauthorized (form-modal.js login'e yönlendirir), diğer hatalar → gerçek durum kodu + mesaj (yoksa fallback). Generic 500 maskelemesini bitirir.</summary>
     public static IActionResult ToActionResult(this ApiCallResult result, string fallbackMessage)
     {
         if (result.Success)

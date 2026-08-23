@@ -106,14 +106,7 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
         return PartialView("_ChatMessageTable", BuildViewModel(all, search, usernameFilter, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
-    /// <summary>
-    /// Sohbet ekini API'nin yetkili ucundan akış olarak sunar. Ekler API'de statik sunulmadığı için
-    /// panel önizlemesi bu vekil üzerinden çalışır.
-    ///
-    /// Dosya adı API'ye geçmeden önce burada da elenir: üst dizine çıkma işaretleri ve yol
-    /// ayraçları reddedilir, uzantı beyaz listeye sokulur. Asıl yetki denetimini API yapar; buradaki
-    /// eleme onun yerine geçmez, adres çubuğundan gelen bir değerin ağa çıkmasını engeller.
-    /// </summary>
+    /// <summary>Sohbet ekini API'nin yetkili ucundan akış olarak sunar. Ekler API'de statik sunulmadığı için panel önizlemesi bu vekil üzerinden çalışır.<para>Dosya adı API'ye geçmeden önce burada da elenir: üst dizine çıkma işaretleri ve yol ayraçları reddedilir, uzantı beyaz listeye sokulur. Asıl yetki denetimini API yapar; buradaki eleme onun yerine geçmez, adres çubuğundan gelen bir değerin ağa çıkmasını engeller.</para></summary>
     [HttpGet]
     public async Task<IActionResult> Attachment(string file, CancellationToken cancellationToken = default)
     {

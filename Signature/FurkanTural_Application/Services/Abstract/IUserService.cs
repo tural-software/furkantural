@@ -4,15 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-/// <summary>
-/// Kullanıcı CRUD'una ek olarak kimlik ve profil işlemleri. SeedAdminAsync yalnızca tablo tamamen
-/// boşken çalışır, tek bir kullanıcı bile varsa 409 döner: ilk kurulum içindir, admin eklemek için
-/// değil. SearchAsync en az iki karakter ister, sonucu kırpar ve iki yönden herhangi biri engellenmiş
-/// kullanıcıyı listeden düşürür. UpdateAvatarAsync'e adres değil dosya adı verilir.
-/// UpdateLastSeenAsync tek istisnadır: <see cref="Wrappers.Result"/> zarfı kullanmaz, kullanıcı
-/// bulunamasa bile hata üretmeden o anki UTC değerini döndürür — her istekte çağrıldığı için sessiz
-/// kalması istenir.
-/// </summary>
+/// <summary>Kullanıcı CRUD'una ek olarak kimlik ve profil işlemleri. SeedAdminAsync yalnızca tablo tamamen boşken çalışır, tek bir kullanıcı bile varsa 409 döner: ilk kurulum içindir, admin eklemek için değil. SearchAsync en az iki karakter ister, sonucu kırpar ve iki yönden herhangi biri engellenmiş kullanıcıyı listeden düşürür. UpdateAvatarAsync'e adres değil dosya adı verilir. UpdateLastSeenAsync tek istisnadır: <see cref="Wrappers.Result"/> zarfı kullanmaz, kullanıcı bulunamasa bile hata üretmeden o anki UTC değerini döndürür — her istekte çağrıldığı için sessiz kalması istenir.</summary>
 public interface IUserService : IService<UserDto, CreateUserDto, UpdateUserDto>
 {
     Task<Result<UserDto>> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);

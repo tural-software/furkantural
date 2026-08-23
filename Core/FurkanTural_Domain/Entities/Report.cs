@@ -2,11 +2,7 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Domain.Entities;
 
-/// <summary>
-/// Kullanıcı/mesaj/medya/arama şikayeti; ReporterId ve ReportedUserId <see cref="User"/>'a bakar.
-/// TargetType ve Status <see cref="Constants.ReportDefinitions"/> sabitlerinden gelir. TargetId'nin
-/// foreign key'i yoktur: hangi tablonun kaydını gösterdiğini TargetType belirler.
-/// </summary>
+/// <summary>Kullanıcı/mesaj/medya/arama şikayeti; ReporterId ve ReportedUserId <see cref="User"/>'a bakar. TargetType ve Status <see cref="Constants.ReportDefinitions"/> sabitlerinden gelir. TargetId'nin foreign key'i yoktur: hangi tablonun kaydını gösterdiğini TargetType belirler.</summary>
 public class Report : BaseEntity
 {
     public int ReporterId { get; set; }

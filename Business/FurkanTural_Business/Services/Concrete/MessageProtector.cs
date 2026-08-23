@@ -5,18 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// AES-256-GCM; saklanan değer <c>ENC1:</c> önekinin ardından tek base64 blokta nonce, şifreli metin
-/// ve doğrulama etiketini taşır. Anahtar <c>ChatEncryption:Key</c>'ten okunur, herhangi bir uzunlukta
-/// olabilir ve SHA-256 ile 32 bayta indirgenir.
-///
-/// Yapıcı, anahtar yoksa veya hâlâ depodaki yer tutucuysa istisna fırlatır: herkesin görebildiği bir
-/// dizeden türetilmiş anahtarla şifrelemek, hiç şifrelememekten daha yanıltıcıdır.
-///
-/// Çözme başarısız olursa saklanan değer olduğu gibi geri döner, istisna fırlamaz. Bu, anahtar
-/// değişmişse veya kullanıcı gerçekten <c>ENC1:</c> ile başlayan bir metin yazmışsa veri kaybını
-/// önler; karşılığında bozuk çözme ile düz metin çağıran tarafından ayırt edilemez.
-/// </summary>
+/// <summary>AES-256-GCM; saklanan değer <c>ENC1:</c> önekinin ardından tek base64 blokta nonce, şifreli metin ve doğrulama etiketini taşır. Anahtar <c>ChatEncryption:Key</c>'ten okunur, herhangi bir uzunlukta olabilir ve SHA-256 ile 32 bayta indirgenir.<para>Yapıcı, anahtar yoksa veya hâlâ depodaki yer tutucuysa istisna fırlatır: herkesin görebildiği bir dizeden türetilmiş anahtarla şifrelemek, hiç şifrelememekten daha yanıltıcıdır.</para><para>Çözme başarısız olursa saklanan değer olduğu gibi geri döner, istisna fırlamaz. Bu, anahtar değişmişse veya kullanıcı gerçekten <c>ENC1:</c> ile başlayan bir metin yazmışsa veri kaybını önler; karşılığında bozuk çözme ile düz metin çağıran tarafından ayırt edilemez.</para></summary>
 public sealed class MessageProtector : IMessageProtector
 {
     private const string Prefix = "ENC1:";

@@ -20,11 +20,7 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         return View(new LoginRequestModel());
     }
 
-    /// <summary>
-    /// Oturum, kimlik doğrulandıktan sonra ve yeni değerler yazılmadan önce boşaltılır. Böylece
-    /// girişten önce oluşturulmuş bir oturum kimliği doğrulanmış kullanıcıyı taşıyamaz. Yalnızca
-    /// içerik sıfırlanır; oturum ve çerez yapılandırmasına dokunulmaz.
-    /// </summary>
+    /// <summary>Oturum, kimlik doğrulandıktan sonra ve yeni değerler yazılmadan önce boşaltılır. Böylece girişten önce oluşturulmuş bir oturum kimliği doğrulanmış kullanıcıyı taşıyamaz. Yalnızca içerik sıfırlanır; oturum ve çerez yapılandırmasına dokunulmaz.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginRequestModel model, CancellationToken cancellationToken)
@@ -52,9 +48,7 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         return View(new RegisterRequestModel());
     }
 
-    /// <summary>
-    /// Giriş akışındaki gibi, yeni hesabın oturumu yazılmadan önce mevcut oturum boşaltılır.
-    /// </summary>
+    /// <summary>Giriş akışındaki gibi, yeni hesabın oturumu yazılmadan önce mevcut oturum boşaltılır.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterRequestModel model, CancellationToken cancellationToken)

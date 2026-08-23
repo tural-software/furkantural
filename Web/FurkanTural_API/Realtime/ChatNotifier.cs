@@ -6,11 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace FurkanTural_API.Realtime;
 
-/// <summary>
-/// Hedefleme bağlantıya değil kullanıcıya yapılır, dolayısıyla bildirim o kullanıcının açık olan
-/// bütün sekme ve cihazlarına birden gider. Business katmanının SignalR'a bağlanmadan bildirim
-/// gönderebilmesi bu sınıf sayesindedir; soyutlama orada, uygulaması burada durur.
-/// </summary>
+/// <summary>Hedefleme bağlantıya değil kullanıcıya yapılır, dolayısıyla bildirim o kullanıcının açık olan bütün sekme ve cihazlarına birden gider. Business katmanının SignalR'a bağlanmadan bildirim gönderebilmesi bu sınıf sayesindedir; soyutlama orada, uygulaması burada durur.</summary>
 public class ChatNotifier(IHubContext<ChatHub> hubContext) : IChatNotifier
 {
     private readonly IHubContext<ChatHub> _hubContext = hubContext;

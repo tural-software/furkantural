@@ -4,15 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-/// <summary>
-/// Arama kayıtları. İlk dört metot SignalR hub akışından çağrılır ve bilinçli olarak
-/// <see cref="Wrappers.Result"/> zarfı kullanmaz: hub'ın kullanıcıya döndüreceği bir hata yüzeyi
-/// yoktur, kayıt bulunamazsa sessizce geçilir. MarkAnsweredAsync ve MarkEndedAsync sonlanmış bir
-/// aramayı yeniden yazmaz, böylece geç gelen kapanış sinyalleri süreyi bozmaz; süre yalnızca arama
-/// yanıtlanmışsa hesaplanır. Arama türü ve durumu serbest metin değil
-/// <see cref="FurkanTural_Domain.Constants.CallDefinitions"/> değerleridir, geçersiz gelen değer
-/// hata yerine sessizce varsayılana çekilir.
-/// </summary>
+/// <summary>Arama kayıtları. İlk dört metot SignalR hub akışından çağrılır ve bilinçli olarak <see cref="Wrappers.Result"/> zarfı kullanmaz: hub'ın kullanıcıya döndüreceği bir hata yüzeyi yoktur, kayıt bulunamazsa sessizce geçilir. MarkAnsweredAsync ve MarkEndedAsync sonlanmış bir aramayı yeniden yazmaz, böylece geç gelen kapanış sinyalleri süreyi bozmaz; süre yalnızca arama yanıtlanmışsa hesaplanır. Arama türü ve durumu serbest metin değil <see cref="FurkanTural_Domain.Constants.CallDefinitions"/> değerleridir, geçersiz gelen değer hata yerine sessizce varsayılana çekilir.</summary>
 public interface ICallLogService
 {
     Task<int> CreateRingingAsync(int callerId, int calleeId, string callType, CancellationToken cancellationToken = default);

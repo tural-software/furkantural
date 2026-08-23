@@ -12,10 +12,7 @@ using FurkanTural_Blog.Services;
 
 namespace FurkanTural_Blog.Tests;
 
-/// <summary>
-/// BlogApiService testleri — HttpMessageHandler mock'u ile HttpClient'i ele geçirir.
-/// Bağımlılık: yalnızca HttpClient (handler mock) + NullLogger. Ağ/DB gerektirmez.
-/// </summary>
+/// <summary>BlogApiService testleri — HttpMessageHandler mock'u ile HttpClient'i ele geçirir. Bağımlılık: yalnızca HttpClient (handler mock) + NullLogger. Ağ/DB gerektirmez.</summary>
 public class BlogApiServiceTests
 {
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };

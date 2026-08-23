@@ -6,12 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
-/// <summary>
-/// Toplu sonuç tek sorgudan değil ikiden gelir: önce karşı kullanıcı başına son mesaj zamanı ve
-/// okunmamış sayısı bir GROUP BY ile, ardından o zaman damgalarına düşen mesajların içerik ve türü
-/// ayrı bir sorguyla alınır. İkisi de EF üzerindedir, dolayısıyla canlı satır süzgeci kendiliğinden
-/// uygulanır.
-/// </summary>
+/// <summary>Toplu sonuç tek sorgudan değil ikiden gelir: önce karşı kullanıcı başına son mesaj zamanı ve okunmamış sayısı bir GROUP BY ile, ardından o zaman damgalarına düşen mesajların içerik ve türü ayrı bir sorguyla alınır. İkisi de EF üzerindedir, dolayısıyla canlı satır süzgeci kendiliğinden uygulanır.</summary>
 public class ChatMessageRepository(FurkanTuralDbContext context) : Repository<ChatMessage>(context), IChatMessageRepository
 {
     public async Task<List<ConversationAggregateDto>> GetConversationAggregatesAsync(int userId, CancellationToken cancellationToken = default)

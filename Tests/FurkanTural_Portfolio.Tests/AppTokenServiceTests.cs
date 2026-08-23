@@ -9,24 +9,14 @@ using System.Text.Json;
 
 namespace FurkanTural_Portfolio.Tests;
 
-/// <summary>
-/// Unit tests for AppTokenService.
-///
-/// Strategy: AppTokenService constructor takes IHttpClientFactory.  We supply a real
-/// HttpClient backed by a mocked HttpMessageHandler so the JSON deserialisation pipeline
-/// runs end-to-end without exposing the private nested AppTokenResponse/TokenData types.
-/// </summary>
+/// <summary>Unit tests for AppTokenService.<para>Strategy: AppTokenService constructor takes IHttpClientFactory.  We supply a real HttpClient backed by a mocked HttpMessageHandler so the JSON deserialisation pipeline runs end-to-end without exposing the private nested AppTokenResponse/TokenData types.</para></summary>
 public class AppTokenServiceTests
 {
     // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 
-    /// <summary>
-    /// Produces the JSON shape the production code expects to deserialise.
-    /// Matches private nested class AppTokenResponse { TokenData Data }:
-    ///   { "data": { "token": "...", "expiresAt": "..." } }
-    /// </summary>
+    /// <summary>Produces the JSON shape the production code expects to deserialise. Matches private nested class AppTokenResponse { TokenData Data }: { "data": { "token": "...", "expiresAt": "..." } }</summary>
     private static string BuildTokenJson(string token, DateTime expiresAt) =>
         JsonSerializer.Serialize(new
         {

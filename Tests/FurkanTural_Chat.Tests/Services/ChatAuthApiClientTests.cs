@@ -11,10 +11,7 @@ using FurkanTural_Chat.Services;
 
 namespace FurkanTural_Chat.Tests.Services;
 
-/// <summary>
-/// ChatAuthApiClient unit testleri.
-/// HttpMessageHandler Moq ile stub'lanir; gercek HTTP istegi gitmez.
-/// </summary>
+/// <summary>ChatAuthApiClient unit testleri. HttpMessageHandler Moq ile stub'lanir; gercek HTTP istegi gitmez.</summary>
 public class ChatAuthApiClientTests
 {
     // ---- Fabrika yardimcilari ----

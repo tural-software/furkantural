@@ -1,10 +1,6 @@
 namespace FurkanTural_Chat.Models.Chat;
 
-/// <summary>
-/// Burada kasıtlı olarak bulunmayan bir alan var: kullanıcının jetonu. Tarayıcıya hiç
-/// gönderilmez, oturumda kalır ve isteklere ters vekil tarafından eklenir. Bu modele bir jeton
-/// alanı eklemek o kurulumu tek satırda geçersiz kılar.
-/// </summary>
+/// <summary>Burada kasıtlı olarak bulunmayan bir alan var: kullanıcının jetonu. Tarayıcıya hiç gönderilmez, oturumda kalır ve isteklere ters vekil tarafından eklenir. Bu modele bir jeton alanı eklemek o kurulumu tek satırda geçersiz kılar.</summary>
 public class ChatPageViewModel
 {
     public string ApiBaseUrl { get; set; } = string.Empty;

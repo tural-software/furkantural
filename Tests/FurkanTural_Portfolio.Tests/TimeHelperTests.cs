@@ -3,23 +3,10 @@ using FurkanTural_Portfolio.Helpers;
 
 namespace FurkanTural_Portfolio.Tests;
 
-/// <summary>
-/// Unit tests for TimeHelper (pure static helper).
-///
-/// TimeHelper.NowIstanbul converts UTC to Europe/Istanbul (UTC+3, no DST since 2016).
-/// We verify offset invariants and basic conversion correctness.
-///
-/// Note: TimeHelper.Resolve() is private and its logic (trying "Europe/Istanbul" then
-/// "Turkey Standard Time" then a manual UTC+3 zone) is transparent to tests - the
-/// important observable is the UTC+3 offset on the returned DateTime.
-/// </summary>
+/// <summary>Unit tests for TimeHelper (pure static helper).<para>TimeHelper.NowIstanbul converts UTC to Europe/Istanbul (UTC+3, no DST since 2016). We verify offset invariants and basic conversion correctness.</para><para>Note: TimeHelper.Resolve() is private and its logic (trying "Europe/Istanbul" then "Turkey Standard Time" then a manual UTC+3 zone) is transparent to tests - the important observable is the UTC+3 offset on the returned DateTime.</para></summary>
 public class TimeHelperTests
 {
-    /// <summary>
-    /// Turkey has been on permanent UTC+3 (no DST) since 2016.
-    /// NowIstanbul must always be 3 hours ahead of UtcNow.
-    /// We allow ±1 minute tolerance for test execution time.
-    /// </summary>
+    /// <summary>Turkey has been on permanent UTC+3 (no DST) since 2016. NowIstanbul must always be 3 hours ahead of UtcNow. We allow ±1 minute tolerance for test execution time.</summary>
     [Fact]
     public void NowIstanbul_IsAlwaysThreeHoursAheadOfUtc()
     {

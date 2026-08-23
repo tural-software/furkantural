@@ -16,9 +16,7 @@ public class AuthController(IAuthService authService) : BaseApiController
 {
     private readonly IAuthService _authService = authService;
 
-    /// <summary>
-    /// Kullanıcı girişi yap ve JWT token al
-    /// </summary>
+    /// <summary>Kullanıcı girişi yap ve JWT token al</summary>
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
@@ -30,9 +28,7 @@ public class AuthController(IAuthService authService) : BaseApiController
             TurnstileToken = request.TurnstileToken
         }, cancellationToken));
 
-    /// <summary>
-    /// Uygulama varsayılan token'ı al (Visitor rolü, uzun süreli)
-    /// </summary>
+    /// <summary>Uygulama varsayılan token'ı al (Visitor rolü, uzun süreli)</summary>
     [HttpPost("app-token")]
     [AllowAnonymous]
     public async Task<IActionResult> AppToken([FromBody] AppTokenRequest request, CancellationToken cancellationToken)
@@ -42,10 +38,7 @@ public class AuthController(IAuthService authService) : BaseApiController
             AppName = request.AppName
         }, cancellationToken));
 
-    /// <summary>
-    /// Geçerli kullanıcı token'ını aynı kimlik ve app_source ile yenile
-    /// (BFF oturumu sürerken kısa ömürlü JWT yüzünden kullanıcı düşmesin)
-    /// </summary>
+    /// <summary>Geçerli kullanıcı token'ını aynı kimlik ve app_source ile yenile (BFF oturumu sürerken kısa ömürlü JWT yüzünden kullanıcı düşmesin)</summary>
     [HttpPost("refresh")]
     [Authorize(Policy = "UserOrAdmin")]
     public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
@@ -59,9 +52,7 @@ public class AuthController(IAuthService authService) : BaseApiController
         return ToActionResult(await _authService.RefreshAsync(userId, appSource, cancellationToken));
     }
 
-    /// <summary>
-    /// Yeni üye kaydı oluştur ve giriş token'ı al
-    /// </summary>
+    /// <summary>Yeni üye kaydı oluştur ve giriş token'ı al</summary>
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)

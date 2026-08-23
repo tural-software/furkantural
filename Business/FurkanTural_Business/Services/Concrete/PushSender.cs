@@ -9,15 +9,7 @@ using LibPushSubscription = WebPush.PushSubscription;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// VAPID ile Web Push. Anahtarlar <c>Push:Vapid</c> altındaki Subject, PublicKey ve PrivateKey'den
-/// okunur; değer boşsa ya da yer tutucu deseni taşıyorsa push kapalı sayılır. Gönderim tarayıcının
-/// kendi push servisine dışarı HTTPS isteğiyle yapılır, araya ayrı bir servis girmez.
-///
-/// Push istemcisi süreç boyunca tek örnektir — abonelik başına yeni istemci soket tüketirdi. 404 veya
-/// 410 dönen abonelikler tarayıcı tarafında düşmüş demektir ve aynı tur içinde silinir; diğer hatalar
-/// yalnızca günlüğe yazılır.
-/// </summary>
+/// <summary>VAPID ile Web Push. Anahtarlar <c>Push:Vapid</c> altındaki Subject, PublicKey ve PrivateKey'den okunur; değer boşsa ya da yer tutucu deseni taşıyorsa push kapalı sayılır. Gönderim tarayıcının kendi push servisine dışarı HTTPS isteğiyle yapılır, araya ayrı bir servis girmez.<para>Push istemcisi süreç boyunca tek örnektir — abonelik başına yeni istemci soket tüketirdi. 404 veya 410 dönen abonelikler tarayıcı tarafında düşmüş demektir ve aynı tur içinde silinir; diğer hatalar yalnızca günlüğe yazılır.</para></summary>
 public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, ILogger<PushSender> logger) : IPushSender
 {
     private static readonly WebPushClient _client = new();

@@ -4,11 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FurkanTural_Persistence.Configurations;
 
-/// <summary>
-/// Endpoint üzerindeki indeks tekil değildir, oysa abonelik akışı endpoint'i cihazın kimliği gibi
-/// kullanıp tek satır bekler. Aynı endpoint için eş zamanlı gelen iki kayıt isteği veri tabanınca
-/// engellenmez; böyle bir durumda okuma satırlardan yalnızca birini görür.
-/// </summary>
+/// <summary>Endpoint üzerindeki indeks tekil değildir, oysa abonelik akışı endpoint'i cihazın kimliği gibi kullanıp tek satır bekler. Aynı endpoint için eş zamanlı gelen iki kayıt isteği veri tabanınca engellenmez; böyle bir durumda okuma satırlardan yalnızca birini görür.</summary>
 public class PushSubscriptionConfiguration : BaseEntityConfiguration<PushSubscription>
 {
     public override void Configure(EntityTypeBuilder<PushSubscription> builder)

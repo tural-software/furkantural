@@ -3,16 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FurkanTural_Chat.Controllers;
 
-/// <summary>
-/// Tarayıcıdan gelen istemci-tarafı logları (hata/uyarı/bilgi) app-token ile API'ye iletir.
-/// App-token tarayıcıya sızmaz; relay sunucu tarafında "ApiClient" (DefaultTokenHandler) ekler.
-/// Anonim erişilebilir → login/kayıt sayfalarındaki hatalar da loglanabilir.
-///
-/// Uç her koşulda 204 döner ve iletim hatası yutulur: tarayıcı kendi hatasını bildirmeye
-/// çalışırken ikinci bir hatayla karşılaşmamalıdır. Kullanıcı kimliği ve tarayıcı bilgisi
-/// ayrıntıya burada eklenir, çünkü API tarafında istek artık tarayıcıdan değil bu projeden gelmiş
-/// görünür.
-/// </summary>
+/// <summary>Tarayıcıdan gelen istemci-tarafı logları (hata/uyarı/bilgi) app-token ile API'ye iletir. App-token tarayıcıya sızmaz; relay sunucu tarafında "ApiClient" (DefaultTokenHandler) ekler. Anonim erişilebilir → login/kayıt sayfalarındaki hatalar da loglanabilir.<para>Uç her koşulda 204 döner ve iletim hatası yutulur: tarayıcı kendi hatasını bildirmeye çalışırken ikinci bir hatayla karşılaşmamalıdır. Kullanıcı kimliği ve tarayıcı bilgisi ayrıntıya burada eklenir, çünkü API tarafında istek artık tarayıcıdan değil bu projeden gelmiş görünür.</para></summary>
 public class ClientLogController(IHttpClientFactory httpClientFactory) : Controller
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;

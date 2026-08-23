@@ -5,18 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FurkanTural_Blog.Controllers;
 
-/// <summary>
-/// Arama motorlarının ve besleme okuyucularının beklediği üç dosyayı üretir: robots.txt,
-/// sitemap.xml ve feed.xml. Adresler yapılandırmadan değil isteğin kendi host'undan kurulur, yani
-/// site hangi alan adından sunuluyorsa çıktı da onu gösterir.
-///
-/// Üçü de API'ye bağımlıdır ama hiçbiri API'ye bağlı kalmaz: yazılar alınamazsa sitemap yalnızca
-/// statik sayfaları, besleme ise boş bir kanal döner. Arama motoruna hata vermek, eksik ama geçerli
-/// bir dosya vermekten kötüdür.
-///
-/// XML çıktıları metin olarak değil bayt olarak döndürülür. Bir metin oluşturucuya yazıldığında
-/// bildirim her zaman utf-16 çıkar ve dosyanın kendi başlığı gerçek kodlamasıyla çelişirdi.
-/// </summary>
+/// <summary>Arama motorlarının ve besleme okuyucularının beklediği üç dosyayı üretir: robots.txt, sitemap.xml ve feed.xml. Adresler yapılandırmadan değil isteğin kendi host'undan kurulur, yani site hangi alan adından sunuluyorsa çıktı da onu gösterir.<para>Üçü de API'ye bağımlıdır ama hiçbiri API'ye bağlı kalmaz: yazılar alınamazsa sitemap yalnızca statik sayfaları, besleme ise boş bir kanal döner. Arama motoruna hata vermek, eksik ama geçerli bir dosya vermekten kötüdür.</para><para>XML çıktıları metin olarak değil bayt olarak döndürülür. Bir metin oluşturucuya yazıldığında bildirim her zaman utf-16 çıkar ve dosyanın kendi başlığı gerçek kodlamasıyla çelişirdi.</para></summary>
 public class SeoController(IBlogApiService blogApi) : Controller
 {
     private readonly IBlogApiService _blogApi = blogApi;
@@ -35,11 +24,7 @@ public class SeoController(IBlogApiService blogApi) : Controller
         return Content(sb.ToString(), "text/plain", Encoding.UTF8);
     }
 
-    /// <summary>
-    /// Anasayfanın son değişiklik tarihi en güncel yazınınkinden alınır, çünkü sayfa yazıları
-    /// listeler ve kendi başına bir değişiklik tarihi yoktur. Gizlilik sayfası sabit bir tarih
-    /// taşır; içeriği değişirse buradaki değer de elle güncellenmelidir.
-    /// </summary>
+    /// <summary>Anasayfanın son değişiklik tarihi en güncel yazınınkinden alınır, çünkü sayfa yazıları listeler ve kendi başına bir değişiklik tarihi yoktur. Gizlilik sayfası sabit bir tarih taşır; içeriği değişirse buradaki değer de elle güncellenmelidir.</summary>
     [HttpGet("sitemap.xml")]
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
@@ -83,10 +68,7 @@ public class SeoController(IBlogApiService blogApi) : Controller
         return File(ms.ToArray(), "application/xml; charset=utf-8");
     }
 
-    /// <summary>
-    /// Beslemede en yeni yirmi yazı yer alır. Sınır okuyucu tarafında bir gereklilik değil, dosya
-    /// boyutunu sabit tutmak içindir; arşivin tamamı sitemap üzerinden zaten erişilebilir.
-    /// </summary>
+    /// <summary>Beslemede en yeni yirmi yazı yer alır. Sınır okuyucu tarafında bir gereklilik değil, dosya boyutunu sabit tutmak içindir; arşivin tamamı sitemap üzerinden zaten erişilebilir.</summary>
     [HttpGet("feed.xml")]
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> Feed(CancellationToken cancellationToken)

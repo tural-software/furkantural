@@ -7,17 +7,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace FurkanTural_API.Hubs;
 
-/// <summary>
-/// Çağıran her metotta jetondan çözülür. Kimlik çözülemezse metot hata üretmeden sessizce döner:
-/// istemci bir yanıt bekliyorsa cevapsız kalır, beklemiyorsa hiçbir şey olmamış gibi görünür.
-///
-/// Hata bildirimi istisnayla değil istemci olayıyla yapılır. Mesajlaşmada <c>MessageError</c>,
-/// aramada <c>CallError</c> olayı çağırana geri gönderilir; hub metodu yine başarıyla tamamlanır.
-///
-/// Arama metotlarının yetkisi taraf olmaya bağlıdır ve her biri farklıdır: yanıtlama ile reddetmeyi
-/// yalnızca aranan, iptali yalnızca arayan yapabilir, kapatmayı ise iki taraf da yapabilir. Taraf
-/// olmayan çağrı sessizce düşer.
-/// </summary>
+/// <summary>Çağıran her metotta jetondan çözülür. Kimlik çözülemezse metot hata üretmeden sessizce döner: istemci bir yanıt bekliyorsa cevapsız kalır, beklemiyorsa hiçbir şey olmamış gibi görünür.<para>Hata bildirimi istisnayla değil istemci olayıyla yapılır. Mesajlaşmada <c>MessageError</c>, aramada <c>CallError</c> olayı çağırana geri gönderilir; hub metodu yine başarıyla tamamlanır.</para><para>Arama metotlarının yetkisi taraf olmaya bağlıdır ve her biri farklıdır: yanıtlama ile reddetmeyi yalnızca aranan, iptali yalnızca arayan yapabilir, kapatmayı ise iki taraf da yapabilir. Taraf olmayan çağrı sessizce düşer.</para></summary>
 [Authorize(Policy = "UserOrAdmin")]
 public class ChatHub(
     IChatMessageService chatMessageService,
@@ -41,11 +31,7 @@ public class ChatHub(
         return int.TryParse(sub, out var id) ? id : null;
     }
 
-    /// <summary>
-    /// Bağlanana o an çevrimiçi olan arkadaşlarının listesi tek seferde gönderilir; istemci
-    /// açılışta kimin çevrimiçi olduğunu ayrıca sormaz. Arkadaşlara "çevrimiçi oldu" bildirimi
-    /// yalnızca ilk bağlantıda gider, ikinci sekme açıldığında tekrarlanmaz.
-    /// </summary>
+    /// <summary>Bağlanana o an çevrimiçi olan arkadaşlarının listesi tek seferde gönderilir; istemci açılışta kimin çevrimiçi olduğunu ayrıca sormaz. Arkadaşlara "çevrimiçi oldu" bildirimi yalnızca ilk bağlantıda gider, ikinci sekme açıldığında tekrarlanmaz.</summary>
     public override async Task OnConnectedAsync()
     {
         var userId = CurrentUserId();
@@ -71,14 +57,7 @@ public class ChatHub(
         await base.OnConnectedAsync();
     }
 
-    /// <summary>
-    /// Son görülme damgası ve çevrimdışı bildirimi yalnızca kullanıcının son bağlantısı kapandığında
-    /// üretilir; açık başka sekmesi varsa hiçbiri olmaz.
-    ///
-    /// Buradaki yazmalar isteğin iptal jetonuyla değil iptal edilemez bir jetonla yapılır: bağlantı
-    /// zaten koptuğu için istek jetonu iptal edilmiş durumdadır ve onunla yazmak son görülme
-    /// damgasını hiç kaydettirmezdi.
-    /// </summary>
+    /// <summary>Son görülme damgası ve çevrimdışı bildirimi yalnızca kullanıcının son bağlantısı kapandığında üretilir; açık başka sekmesi varsa hiçbiri olmaz.<para>Buradaki yazmalar isteğin iptal jetonuyla değil iptal edilemez bir jetonla yapılır: bağlantı zaten koptuğu için istek jetonu iptal edilmiş durumdadır ve onunla yazmak son görülme damgasını hiç kaydettirmezdi.</para></summary>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userId = CurrentUserId();
@@ -118,11 +97,7 @@ public class ChatHub(
         }
     }
 
-    /// <summary>
-    /// Arkadaşlık burada ayrıca doğrulanır. Yalnızca gürültüyü kesmek için değil: doğrulama olmasa
-    /// rastgele bir kimliğe yazma sinyali gönderip yanıtına bakarak o hesabın var olup olmadığı
-    /// anlaşılabilirdi.
-    /// </summary>
+    /// <summary>Arkadaşlık burada ayrıca doğrulanır. Yalnızca gürültüyü kesmek için değil: doğrulama olmasa rastgele bir kimliğe yazma sinyali gönderip yanıtına bakarak o hesabın var olup olmadığı anlaşılabilirdi.</summary>
     public async Task Typing(int receiverId)
     {
         var senderId = CurrentUserId();
@@ -135,15 +110,7 @@ public class ChatHub(
         await Clients.User(receiverId.ToString()).SendAsync("UserTyping", senderId.Value);
     }
 
-    /// <summary>
-    /// WebRTC sinyalleşmesinin giriş kapısı. Dört koşul sırayla denetlenir: kendini arama, arkadaşlık,
-    /// engel ve hız sınırı. Hız sınırı en sonda durur, çünkü geçen her çağrı kotadan düşer; önce
-    /// denetlenseydi zaten reddedilecek çağrılar da kotayı tüketirdi.
-    ///
-    /// Dönen değer arama kimliğidir ve sonraki bütün sinyal metotları onu bekler. Koşullardan biri
-    /// tutmazsa hata <c>CallError</c> olayıyla gider ve dönüş sıfır olur; çağıran bunu geçerli bir
-    /// kimlik sanmamalıdır.
-    /// </summary>
+    /// <summary>WebRTC sinyalleşmesinin giriş kapısı. Dört koşul sırayla denetlenir: kendini arama, arkadaşlık, engel ve hız sınırı. Hız sınırı en sonda durur, çünkü geçen her çağrı kotadan düşer; önce denetlenseydi zaten reddedilecek çağrılar da kotayı tüketirdi.<para>Dönen değer arama kimliğidir ve sonraki bütün sinyal metotları onu bekler. Koşullardan biri tutmazsa hata <c>CallError</c> olayıyla gider ve dönüş sıfır olur; çağıran bunu geçerli bir kimlik sanmamalıdır.</para></summary>
     public async Task<int> CallUser(int receiverId, string callType, string offer)
     {
         var callerId = CurrentUserId();
@@ -188,11 +155,7 @@ public class ChatHub(
         return callId;
     }
 
-    /// <summary>
-    /// Yalnızca hâlâ çalan bir arama yanıtlanabilir. Bu denetim yarışa ve yeniden oynatmaya karşıdır:
-    /// iptal edilmiş, reddedilmiş veya bitmiş bir arama, eski bir yanıt paketi tekrar gönderilerek
-    /// canlandırılamaz.
-    /// </summary>
+    /// <summary>Yalnızca hâlâ çalan bir arama yanıtlanabilir. Bu denetim yarışa ve yeniden oynatmaya karşıdır: iptal edilmiş, reddedilmiş veya bitmiş bir arama, eski bir yanıt paketi tekrar gönderilerek canlandırılamaz.</summary>
     public async Task AnswerCall(int callId, string answer)
     {
         var userId = CurrentUserId();
@@ -245,10 +208,7 @@ public class ChatHub(
         await Clients.User(call.CallerId.ToString()).SendAsync("CallRejected", new { callId });
     }
 
-    /// <summary>
-    /// Arayan vazgeçtiğinde kayda "iptal edildi" değil "cevapsız" yazılır. Arananın gözünden olan da
-    /// budur; arama kayıtlarında bu satırlar kaçırılmış aramalarla aynı kovada görünür.
-    /// </summary>
+    /// <summary>Arayan vazgeçtiğinde kayda "iptal edildi" değil "cevapsız" yazılır. Arananın gözünden olan da budur; arama kayıtlarında bu satırlar kaçırılmış aramalarla aynı kovada görünür.</summary>
     public async Task CancelCall(int callId)
     {
         var userId = CurrentUserId();

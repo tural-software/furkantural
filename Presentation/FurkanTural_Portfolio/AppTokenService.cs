@@ -5,15 +5,7 @@ public interface IAppTokenService
     Task<string> GetTokenAsync(CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// Uygulama jetonunu API'den alır ve süresi dolana dek elde tutar. Başarısızlık da kısa süre
-/// hatırlanır: uç ulaşılamaz durumdayken her sayfa isteğinin yeniden denemesi, zaten düşmüş bir
-/// servise yük bindirmekten başka işe yaramaz ve her ziyaretçiyi zaman aşımı kadar bekletirdi.
-///
-/// Bekleme süresince istisna fırlatılmaz; elde eski bir jeton varsa o, yoksa boş dize döner.
-/// Böylece jeton alınamadığında sayfa açılmaya devam eder ve yalnızca API'den beslenen bölümler
-/// boş kalır.
-/// </summary>
+/// <summary>Uygulama jetonunu API'den alır ve süresi dolana dek elde tutar. Başarısızlık da kısa süre hatırlanır: uç ulaşılamaz durumdayken her sayfa isteğinin yeniden denemesi, zaten düşmüş bir servise yük bindirmekten başka işe yaramaz ve her ziyaretçiyi zaman aşımı kadar bekletirdi.<para>Bekleme süresince istisna fırlatılmaz; elde eski bir jeton varsa o, yoksa boş dize döner. Böylece jeton alınamadığında sayfa açılmaya devam eder ve yalnızca API'den beslenen bölümler boş kalır.</para></summary>
 public class AppTokenService : IAppTokenService
 {
     private readonly HttpClient _httpClient;
@@ -33,13 +25,7 @@ public class AppTokenService : IAppTokenService
         _logger = logger;
     }
 
-    /// <summary>
-    /// Jeton, bildirilen bitiş anından bir saat önce süresi dolmuş sayılır. Bu pay, uzun süren bir
-    /// isteğin tam da geçerlilik sınırında yakalanıp yetkisiz dönmesini önler.
-    ///
-    /// Önbellek hem kilitten önce hem sonra denetlenir; aynı anda gelen istekler aksi hâlde hepsi
-    /// birden jeton isterdi.
-    /// </summary>
+    /// <summary>Jeton, bildirilen bitiş anından bir saat önce süresi dolmuş sayılır. Bu pay, uzun süren bir isteğin tam da geçerlilik sınırında yakalanıp yetkisiz dönmesini önler.<para>Önbellek hem kilitten önce hem sonra denetlenir; aynı anda gelen istekler aksi hâlde hepsi birden jeton isterdi.</para></summary>
     public async Task<string> GetTokenAsync(CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrWhiteSpace(_cachedToken) && DateTime.UtcNow < _tokenExpiry)

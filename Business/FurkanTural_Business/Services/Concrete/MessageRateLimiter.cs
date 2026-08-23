@@ -4,11 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// Eşikler <c>Chat:RateLimit</c> altındaki MaxPerWindow (20) ve WindowSeconds (10) değerlerinden
-/// okunur. Pencere kayandır: sabit dilimlere bölünmediği için dilim sınırında iki katı mesaj
-/// gönderilemez.
-/// </summary>
+/// <summary>Eşikler <c>Chat:RateLimit</c> altındaki MaxPerWindow (20) ve WindowSeconds (10) değerlerinden okunur. Pencere kayandır: sabit dilimlere bölünmediği için dilim sınırında iki katı mesaj gönderilemez.</summary>
 public sealed class MessageRateLimiter : IMessageRateLimiter
 {
     private readonly int _max;

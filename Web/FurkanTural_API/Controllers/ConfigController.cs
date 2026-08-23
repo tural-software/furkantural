@@ -6,20 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FurkanTural_API.Controllers;
 
-/// <summary>
-/// Kayıtlı ön-yüz uygulamalarına (app-token sahibi) yalnızca izin verilen
-/// config değerlerini (startup'ta çözülmüş halde) sunar. Şifre çözme mantığı
-/// ön-yüzlere taşınmaz; her app yalnızca kendisine allowlist'lenen anahtarları görür.
-/// </summary>
+/// <summary>Kayıtlı ön-yüz uygulamalarına (app-token sahibi) yalnızca izin verilen config değerlerini (startup'ta çözülmüş halde) sunar. Şifre çözme mantığı ön-yüzlere taşınmaz; her app yalnızca kendisine allowlist'lenen anahtarları görür.</summary>
 [ApiVersion("1.0")]
 [Authorize(Policy = "AppClient")]
 public class ConfigController(IConfiguration configuration) : BaseApiController
 {
     private readonly IConfiguration _configuration = configuration;
 
-    /// <summary>
-    /// Çağıran uygulamanın (app_source) izinli config anahtarlarını çözülmüş halde döndürür.
-    /// </summary>
+    /// <summary>Çağıran uygulamanın (app_source) izinli config anahtarlarını çözülmüş halde döndürür.</summary>
     [HttpGet("app")]
     public IActionResult GetAppConfig()
     {

@@ -3,9 +3,7 @@ using FurkanTural_Chat.Models.Wrappers;
 
 namespace FurkanTural_Chat.Tests.Models;
 
-/// <summary>
-/// ApiResult ve ApiResult-T factory metodlarinin davranis testleri.
-/// </summary>
+/// <summary>ApiResult ve ApiResult-T factory metodlarinin davranis testleri.</summary>
 public class ApiResultTests
 {
     // ---- ApiResult.Fail ----

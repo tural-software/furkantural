@@ -15,34 +15,22 @@ public class BlogPostViewModel
 
     public DateTime? UpdatedAt { get; set; }
 
-    /// <summary>
-    /// Denetleyici tarafından doldurulur; API'den gelen görselin göreli yolu burada tam adrese
-    /// çevrilmiş hâlde durur.
-    /// </summary>
+    /// <summary>Denetleyici tarafından doldurulur; API'den gelen görselin göreli yolu burada tam adrese çevrilmiş hâlde durur.</summary>
     public string? CoverImageUrl { get; set; }
 
     public string? CoverAltText { get; set; }
 
     public List<CategoryViewModel> Categories { get; set; } = [];
 
-    /// <summary>
-    /// Okunabilir tarih Türkçe kültürle biçimlenir; sunucunun kültür ayarından bağımsız olsun diye
-    /// kültür koda sabitlenmiştir.
-    /// </summary>
+    /// <summary>Okunabilir tarih Türkçe kültürle biçimlenir; sunucunun kültür ayarından bağımsız olsun diye kültür koda sabitlenmiştir.</summary>
     public string PublishedDisplay =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("d MMMM yyyy", Tr);
 
-    /// <summary>
-    /// Makine tarafında okunan biçim; sayfadaki tarih etiketleri ve yapılandırılmış veri bunu
-    /// kullanır, ekranda görünen metni değil.
-    /// </summary>
+    /// <summary>Makine tarafında okunan biçim; sayfadaki tarih etiketleri ve yapılandırılmış veri bunu kullanır, ekranda görünen metni değil.</summary>
     public string PublishedIso =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("yyyy-MM-dd");
 
-    /// <summary>
-    /// Hiç düzenlenmemiş yazıda yayın tarihine düşer, boş kalmaz: arama motorları bu alanın
-    /// yokluğunu değil değerini bekler.
-    /// </summary>
+    /// <summary>Hiç düzenlenmemiş yazıda yayın tarihine düşer, boş kalmaz: arama motorları bu alanın yokluğunu değil değerini bekler.</summary>
     public string ModifiedIso
     {
         get
@@ -54,10 +42,7 @@ public class BlogPostViewModel
 
     public IHtmlContent ContentHtml => MarkdownRenderer.ToHtml(Content);
 
-    /// <summary>
-    /// Dakikada iki yüz kelime varsayımıyla hesaplanır ve hiçbir zaman sıfır dönmez; çok kısa bir
-    /// yazı da "1 dakika" gösterir.
-    /// </summary>
+    /// <summary>Dakikada iki yüz kelime varsayımıyla hesaplanır ve hiçbir zaman sıfır dönmez; çok kısa bir yazı da "1 dakika" gösterir.</summary>
     public int ReadingMinutes
     {
         get
@@ -69,10 +54,7 @@ public class BlogPostViewModel
         }
     }
 
-    /// <summary>
-    /// Markdown işaretleri atılıp düz metne indirgenir, sonra yüz altmış karakterde kesilir. Kesme
-    /// son boşluğa çekilir ki özet kelimenin ortasında bitmesin.
-    /// </summary>
+    /// <summary>Markdown işaretleri atılıp düz metne indirgenir, sonra yüz altmış karakterde kesilir. Kesme son boşluğa çekilir ki özet kelimenin ortasında bitmesin.</summary>
     public string Excerpt
     {
         get

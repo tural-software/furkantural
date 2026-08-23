@@ -8,19 +8,7 @@ using Microsoft.AspNetCore.StaticFiles;
 
 namespace FurkanTural_API.Controllers;
 
-/// <summary>
-/// Ekler statik dosya olarak sunulmaz; her indirme bu denetleyiciden ve yetki kontrolünden geçer.
-/// Yanıt yalnızca isteyenin kendi tarayıcısında önbelleklenebilir olarak işaretlenir, çünkü içerik
-/// iki kişiye özeldir ve paylaşımlı bir ara sunucuda tutulmamalıdır.
-///
-/// İstek boyutu sınırları taşınan verinin base64 büyümesine göre konur ve asıl sınır değildir;
-/// gerçek üst sınır dosya katmanına geçilen bayt değeridir. Buradaki sınır yalnızca gövdenin
-/// okunmadan reddedilmesini sağlar.
-///
-/// Yükleme sırasında dosya diske kaydedildikten sonra mesaj yazılamazsa dosya geri silinir, aksi
-/// hâlde diskte hiçbir kaydın işaret etmediği bir ek kalırdı. Silme ve düzenleme ise iki tarafa
-/// birden bildirilir: alıcının açık istemcileri kadar gönderenin diğer sekmeleri de eşitlenir.
-/// </summary>
+/// <summary>Ekler statik dosya olarak sunulmaz; her indirme bu denetleyiciden ve yetki kontrolünden geçer. Yanıt yalnızca isteyenin kendi tarayıcısında önbelleklenebilir olarak işaretlenir, çünkü içerik iki kişiye özeldir ve paylaşımlı bir ara sunucuda tutulmamalıdır.<para>İstek boyutu sınırları taşınan verinin base64 büyümesine göre konur ve asıl sınır değildir; gerçek üst sınır dosya katmanına geçilen bayt değeridir. Buradaki sınır yalnızca gövdenin okunmadan reddedilmesini sağlar.</para><para>Yükleme sırasında dosya diske kaydedildikten sonra mesaj yazılamazsa dosya geri silinir, aksi hâlde diskte hiçbir kaydın işaret etmediği bir ek kalırdı. Silme ve düzenleme ise iki tarafa birden bildirilir: alıcının açık istemcileri kadar gönderenin diğer sekmeleri de eşitlenir.</para></summary>
 [Authorize(Policy = "UserOrAdmin")]
 [ApiVersion("1.0")]
 public class MessageController(IChatMessageService chatMessageService, IChatNotifier chatNotifier, IFileService fileService) : JwtBaseController
@@ -126,11 +114,7 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
         return ToActionResult(await _chatMessageService.GetConversationsAsync(userId.Value, cancellationToken));
     }
 
-    /// <summary>
-    /// Sohbet ekini (ses/foto/video) yetki doğrulayarak servis eder.
-    /// Chat ekleri statik dosya olarak sunulmaz; üye yalnızca taraf olduğu mesajların eklerine,
-    /// admin tüm eklere erişebilir. Range desteklidir (ses/video oynatma için).
-    /// </summary>
+    /// <summary>Sohbet ekini (ses/foto/video) yetki doğrulayarak servis eder. Chat ekleri statik dosya olarak sunulmaz; üye yalnızca taraf olduğu mesajların eklerine, admin tüm eklere erişebilir. Range desteklidir (ses/video oynatma için).</summary>
     [HttpGet("attachment")]
     public async Task<IActionResult> GetAttachment([FromQuery] string file, CancellationToken cancellationToken)
     {
@@ -236,9 +220,7 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _chatMessageService.GetAdminSummaryAsync(cancellationToken));
 
-    /// <summary>
-    /// At-rest şifreleme öncesinden kalan düz metin mesajları toplu şifreler (tek seferlik, idempotent).
-    /// </summary>
+    /// <summary>At-rest şifreleme öncesinden kalan düz metin mesajları toplu şifreler (tek seferlik, idempotent).</summary>
     [HttpPost("admin/encrypt-legacy")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> EncryptLegacy(CancellationToken cancellationToken)

@@ -4,10 +4,7 @@ using FurkanTural_Chat.Models.Auth;
 
 namespace FurkanTural_Chat.Tests.Models;
 
-/// <summary>
-/// LoginRequestModel ve RegisterRequestModel DataAnnotations attribute testleri.
-/// Validator.TryValidateObject ile model-level validation davranisi dogrulanir.
-/// </summary>
+/// <summary>LoginRequestModel ve RegisterRequestModel DataAnnotations attribute testleri. Validator.TryValidateObject ile model-level validation davranisi dogrulanir.</summary>
 public class ValidationTests
 {
     private static IList<ValidationResult> Validate(object model)

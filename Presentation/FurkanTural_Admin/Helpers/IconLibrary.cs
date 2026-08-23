@@ -1,11 +1,6 @@
 using System.Text.Json;
 namespace FurkanTural_Admin.Helpers;
-/// <summary>
-/// Tek kaynak (single source of truth) — tüm admin paneli SVG ikonları.
-/// Sunucu tarafı <c>_Icons.cshtml</c> partial'ı ve istemci tarafı <c>detail-modal.js</c>
-/// (window.__ICONS üzerinden) AYNI bu sözlükten beslenir; böylece ikon kopukluğu olmaz.
-/// Yeni ikon eklemek için yalnızca buraya bir giriş ekleyin.
-/// </summary>
+/// <summary>Tek kaynak (single source of truth) — tüm admin paneli SVG ikonları. Sunucu tarafı <c>_Icons.cshtml</c> partial'ı ve istemci tarafı <c>detail-modal.js</c> (window.__ICONS üzerinden) AYNI bu sözlükten beslenir; böylece ikon kopukluğu olmaz. Yeni ikon eklemek için yalnızca buraya bir giriş ekleyin.</summary>
 public static class IconLibrary
 {
     public static readonly IReadOnlyDictionary<string, string> Icons = new Dictionary<string, string>
@@ -78,10 +73,7 @@ public static class IconLibrary
     /// <summary>Verilen anahtarın SVG'sini döndürür; bulunamazsa boş string.</summary>
     public static string Render(string? key)
         => key is not null && Icons.TryGetValue(key, out var svg) ? svg : string.Empty;
-    /// <summary>
-    /// Bir kez üretilip saklanır. Varsayılan kodlayıcı açılı ayraçları kaçırdığı için çıktı inline
-    /// bir betik bloğuna güvenle basılabilir; kodlayıcı gevşetilirse ikon markup’ı betiği kapatabilir.
-    /// </summary>
+    /// <summary>Bir kez üretilip saklanır. Varsayılan kodlayıcı açılı ayraçları kaçırdığı için çıktı inline bir betik bloğuna güvenle basılabilir; kodlayıcı gevşetilirse ikon markup’ı betiği kapatabilir.</summary>
     private static readonly Lazy<string> _json = new(() => JsonSerializer.Serialize(Icons));
     /// <summary>İstemcideki window.__ICONS bu değerden beslenir.</summary>
     public static string Json => _json.Value;

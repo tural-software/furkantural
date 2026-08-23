@@ -4,12 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace FurkanTural_API.Json;
 
-/// <summary>
-/// Tel üzerindeki biçimi sabitler: her tarih <c>yyyy-MM-ddTHH:mm:ss.fffZ</c> olarak yazılır, yani
-/// çıktı daima 'Z' ile biter ve milisaniye alanı hep üç hanedir. Okurken belirsiz gelen değer UTC
-/// sayılır, yerel gelen değer çevrilir; böylece hangi istemci ne gönderirse göndersin bağlam
-/// içeriye tek bir biçimde girer.
-/// </summary>
+/// <summary>Tel üzerindeki biçimi sabitler: her tarih <c>yyyy-MM-ddTHH:mm:ss.fffZ</c> olarak yazılır, yani çıktı daima 'Z' ile biter ve milisaniye alanı hep üç hanedir. Okurken belirsiz gelen değer UTC sayılır, yerel gelen değer çevrilir; böylece hangi istemci ne gönderirse göndersin bağlam içeriye tek bir biçimde girer.</summary>
 public sealed class UtcDateTimeJsonConverter : JsonConverter<DateTime>
 {
     public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

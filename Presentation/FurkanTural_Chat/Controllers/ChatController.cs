@@ -30,10 +30,7 @@ public class ChatController(IOptions<ApiOptions> apiOptions) : Controller
         return View(model);
     }
 
-    /// <summary>
-    /// Üyelik sözleşmesi API üzerinden kabul edildikten sonra, sunum oturumunu da işaretler.
-    /// Böylece sayfa yenilense bile zorunlu onay modalı tekrar açılmaz (oturum içi kalıcılık).
-    /// </summary>
+    /// <summary>Üyelik sözleşmesi API üzerinden kabul edildikten sonra, sunum oturumunu da işaretler. Böylece sayfa yenilense bile zorunlu onay modalı tekrar açılmaz (oturum içi kalıcılık).</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult AgreementAccepted()

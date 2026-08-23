@@ -2,9 +2,7 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Domain.Entities;
 
-/// <summary>
-/// Portfolyodaki müzik kaydı; görsellerini <see cref="MusicImage"/> taşır.
-/// </summary>
+/// <summary>Portfolyodaki müzik kaydı; görsellerini <see cref="MusicImage"/> taşır.</summary>
 public class Music : BaseEntity
 {
     public string? Name { get; set; }

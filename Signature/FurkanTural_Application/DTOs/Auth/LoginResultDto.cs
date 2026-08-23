@@ -1,10 +1,6 @@
 namespace FurkanTural_Application.DTOs.Auth;
 
-/// <summary>
-/// Başarılı girişin ve uygulama token'ının ortak yanıtı. MembershipAgreementAccepted "onayladı mı"
-/// değil "geçerli sürümü onayladı mı" sorusunu yanıtlar: sözleşme sürümü artırıldığında eski onaylar
-/// kabul edilmemiş sayılır ve alan bütün kullanıcılar için false'a döner.
-/// </summary>
+/// <summary>Başarılı girişin ve uygulama token'ının ortak yanıtı. MembershipAgreementAccepted "onayladı mı" değil "geçerli sürümü onayladı mı" sorusunu yanıtlar: sözleşme sürümü artırıldığında eski onaylar kabul edilmemiş sayılır ve alan bütün kullanıcılar için false'a döner.</summary>
 public class LoginResultDto
 {
     public string? Token { get; set; }

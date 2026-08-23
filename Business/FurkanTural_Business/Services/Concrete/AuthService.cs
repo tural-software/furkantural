@@ -15,20 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde
-/// gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı
-/// hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir
-/// kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.
-///
-/// Başarılı giriş kayda yazabilir: parola eski geri çözülebilir biçimde saklanıyorsa doğrulandığı
-/// anda özet biçimine taşınır (bkz. <see cref="IPasswordHasher"/>). Böylece havuz ayrı bir taşıma işi
-/// olmadan zamanla dönüşür, ama okuma gibi görünen bir uç yazma yapar.
-///
-/// Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için
-/// geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her
-/// çağrıda doğrulama uygular.
-/// </summary>
+/// <summary>Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.<para>Başarılı giriş kayda yazabilir: parola eski geri çözülebilir biçimde saklanıyorsa doğrulandığı anda özet biçimine taşınır (bkz. <see cref="IPasswordHasher"/>). Böylece havuz ayrı bir taşıma işi olmadan zamanla dönüşür, ama okuma gibi görünen bir uç yazma yapar.</para><para>Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her çağrıda doğrulama uygular.</para></summary>
 public class AuthService(
     IUnitOfWork unitOfWork,
     IEncryptionService encryptionService,

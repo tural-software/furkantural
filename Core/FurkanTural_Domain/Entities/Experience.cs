@@ -2,9 +2,7 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Domain.Entities;
 
-/// <summary>
-/// Portfolyodaki iş deneyimi kaydı; EndDate null ise görev sürüyor kabul edilip öyle gösterilir.
-/// </summary>
+/// <summary>Portfolyodaki iş deneyimi kaydı; EndDate null ise görev sürüyor kabul edilip öyle gösterilir.</summary>
 public class Experience : BaseEntity
 {
     public string? Position { get; set; }

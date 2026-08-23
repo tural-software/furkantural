@@ -1,9 +1,6 @@
 namespace FurkanTural_Admin.Helpers;
 
-/// <summary>
-/// Sunucu render'ında UTC zamanları Europe/Istanbul'a çevirir (sunucu saat diliminden bağımsız).
-/// API tüm tarihleri UTC 'Z' olarak döndürür; burada gelen değer her zaman UTC kabul edilir.
-/// </summary>
+/// <summary>Sunucu render'ında UTC zamanları Europe/Istanbul'a çevirir (sunucu saat diliminden bağımsız). API tüm tarihleri UTC 'Z' olarak döndürür; burada gelen değer her zaman UTC kabul edilir.</summary>
 public static class TimeHelper
 {
     private static readonly TimeZoneInfo Tz = Resolve();

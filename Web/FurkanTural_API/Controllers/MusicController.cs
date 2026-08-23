@@ -13,47 +13,37 @@ public class MusicController(IMusicService musicService) : JwtBaseController
 {
     private readonly IMusicService _musicService = musicService;
 
-    /// <summary>
-    /// Müziği ID ile getir
-    /// </summary>
+    /// <summary>Müziği ID ile getir</summary>
     [HttpGet("{id:int}")]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicService.GetByIdAsync(id, cancellationToken));
 
-    /// <summary>
-    /// Tüm müzikleri listele
-    /// </summary>
+    /// <summary>Tüm müzikleri listele</summary>
     [HttpGet]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _musicService.GetAllAsync(cancellationToken));
 
-    /// <summary>
-    /// Müzikleri sayfalı listele
-    /// </summary>
+    /// <summary>Müzikleri sayfalı listele</summary>
     [HttpGet("paged")]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _musicService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
-    /// <summary>    /// Tüm müzikleri yönetici paneli için listele (silinmişler dahil)
-    /// </summary>
+    /// <summary>Tüm müzikleri yönetici paneli için listele (silinmişler dahil)</summary>
     [HttpGet("admin")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _musicService.GetAllForAdminAsync(cancellationToken));
 
-    /// <summary>
-    /// Müzii yönetici paneli için ID ile getir (silinmiş dahil)
-    /// </summary>
+    /// <summary>Müzii yönetici paneli için ID ile getir (silinmiş dahil)</summary>
     [HttpGet("admin/{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicService.GetByIdForAdminAsync(id, cancellationToken));
 
-    /// <summary>    /// Yeni müzik ekle
-    /// </summary>
+    /// <summary>Yeni müzik ekle</summary>
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateMusicRequest request, CancellationToken cancellationToken)
@@ -71,9 +61,7 @@ public class MusicController(IMusicService musicService) : JwtBaseController
             CreatedBy = SortUserId()
         }, cancellationToken));
 
-    /// <summary>
-    /// Müziği güncelle
-    /// </summary>
+    /// <summary>Müziği güncelle</summary>
     [HttpPut]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateMusicRequest request, CancellationToken cancellationToken)
@@ -92,33 +80,25 @@ public class MusicController(IMusicService musicService) : JwtBaseController
             UpdatedBy = SortUserId()
         }, cancellationToken));
 
-    /// <summary>
-    /// Müziği sil
-    /// </summary>
+    /// <summary>Müziği sil</summary>
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicService.DeleteAsync(id, cancellationToken));
 
-    /// <summary>
-    /// Müziin aktiflik durumunu değiştir
-    /// </summary>
+    /// <summary>Müziin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
-    /// <summary>
-    /// Silinen müzii geri yükle
-    /// </summary>
+    /// <summary>Silinen müzii geri yükle</summary>
     [HttpPatch("{id:int}/restore")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _musicService.RestoreAsync(id, SortUserId(), cancellationToken));
 
-    /// <summary>
-    /// Yönetici paneli için müzik özetini getir (toplam + son işlem tarihi)
-    /// </summary>
+    /// <summary>Yönetici paneli için müzik özetini getir (toplam + son işlem tarihi)</summary>
     [HttpGet("admin/summary")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)

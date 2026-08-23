@@ -9,12 +9,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// Mesaj kaydedildikten sonra iki bildirim e-postası gönderilir: biri site sahibine, biri gönderene.
-/// Gövdeleri koda gömülü değildir, veri tabanındaki şablonlardan gelir ve yalnızca etkin şablon
-/// kullanılır — şablon yoksa o e-posta hiç gönderilmez. Gönderim hatası yutulur; form yanıtı zaten
-/// kaydedilmiş mesaja göre verilir, posta kutusuna göre değil.
-/// </summary>
+/// <summary>Mesaj kaydedildikten sonra iki bildirim e-postası gönderilir: biri site sahibine, biri gönderene. Gövdeleri koda gömülü değildir, veri tabanındaki şablonlardan gelir ve yalnızca etkin şablon kullanılır — şablon yoksa o e-posta hiç gönderilmez. Gönderim hatası yutulur; form yanıtı zaten kaydedilmiş mesaja göre verilir, posta kutusuna göre değil.</summary>
 public class ContactService(
     IUnitOfWork unitOfWork,
     IEmailService emailService,

@@ -9,14 +9,7 @@ using System.Text;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
-/// <summary>
-/// Kategori bağı kuran okumalar EF üzerinden, sayfalama Dapper üzerinden koşar. Dapper tarafında
-/// global sorgu süzgeci geçerli olmadığı için canlı satır koşulu <see cref="LiveRows"/> ile elle
-/// eklenir; EF tarafında aynı koşul kendiliğinden uygulanır.
-///
-/// GetSitemapDataAsync yalnızca Id ile tarihleri projekte eder, dolayısıyla blog gövdesi veri
-/// tabanından hiç çıkmaz.
-/// </summary>
+/// <summary>Kategori bağı kuran okumalar EF üzerinden, sayfalama Dapper üzerinden koşar. Dapper tarafında global sorgu süzgeci geçerli olmadığı için canlı satır koşulu <see cref="LiveRows"/> ile elle eklenir; EF tarafında aynı koşul kendiliğinden uygulanır.<para>GetSitemapDataAsync yalnızca Id ile tarihleri projekte eder, dolayısıyla blog gövdesi veri tabanından hiç çıkmaz.</para></summary>
 public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(context), IBlogRepository
 {
     public async Task<(IReadOnlyList<Blog> Items, int Total)> GetPublishedPageAsync(

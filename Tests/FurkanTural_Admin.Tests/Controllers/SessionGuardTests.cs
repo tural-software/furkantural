@@ -8,10 +8,7 @@ using Moq;
 
 namespace FurkanTural_Admin.Tests.Controllers;
 
-/// <summary>
-/// Token olmadan erişildiğinde her controller'ın
-/// yetkisiz erişimi engellediğini (redirect veya 401) doğrular.
-/// </summary>
+/// <summary>Token olmadan erişildiğinde her controller'ın yetkisiz erişimi engellediğini (redirect veya 401) doğrular.</summary>
 public class SessionGuardTests
 {
     // ── SkillController ──────────────────────────────────────────────────────

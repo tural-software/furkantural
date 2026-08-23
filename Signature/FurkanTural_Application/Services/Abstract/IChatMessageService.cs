@@ -4,17 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-/// <summary>
-/// Sohbet mesajlarının tüm yaşam döngüsü. İçerik veri tabanında şifreli durur
-/// (<see cref="IMessageProtector"/>); şifreleme ve çözme bu servisin içinde yapılır, mapper'lar ham
-/// değeri taşır. GetConversationAsync arkadaş olmayan çiftte 403 döner; take verilirse en yeni N
-/// mesaj alınır. DeleteOwnAsync ve EditOwnAsync yalnızca gönderene açıktır, düzenleme ayrıca sadece
-/// metin mesajlarında ve gönderimden sonraki dar bir pencere içinde geçerlidir.
-/// ValidateAttachmentAccessAsync dosya adından yola çıkıp çağıranın o mesajın tarafı olduğunu
-/// doğrular; ek dosyaları korumasız statik yolla servis edilmesin diye vardır.
-/// EncryptLegacyContentAsync tek seferlik bir taşıma işidir: şifresiz kalmış eski kayıtları gruplar
-/// hâlinde şifreleyip kaç kaydın taşındığını döndürür.
-/// </summary>
+/// <summary>Sohbet mesajlarının tüm yaşam döngüsü. İçerik veri tabanında şifreli durur (<see cref="IMessageProtector"/>); şifreleme ve çözme bu servisin içinde yapılır, mapper'lar ham değeri taşır. GetConversationAsync arkadaş olmayan çiftte 403 döner; take verilirse en yeni N mesaj alınır. DeleteOwnAsync ve EditOwnAsync yalnızca gönderene açıktır, düzenleme ayrıca sadece metin mesajlarında ve gönderimden sonraki dar bir pencere içinde geçerlidir. ValidateAttachmentAccessAsync dosya adından yola çıkıp çağıranın o mesajın tarafı olduğunu doğrular; ek dosyaları korumasız statik yolla servis edilmesin diye vardır. EncryptLegacyContentAsync tek seferlik bir taşıma işidir: şifresiz kalmış eski kayıtları gruplar hâlinde şifreleyip kaç kaydın taşındığını döndürür.</summary>
 public interface IChatMessageService
 {
     Task<Result<ChatMessageDto>> SendAsync(int senderId, int receiverId, string? content, CancellationToken cancellationToken = default);

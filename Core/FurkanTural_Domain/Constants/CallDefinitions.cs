@@ -1,9 +1,6 @@
 namespace FurkanTural_Domain.Constants;
 
-/// <summary>
-/// <see cref="Entities.CallLog"/> için tür ve durum sabitleri; <see cref="PolicyDefaults"/> ise
-/// tekil <see cref="Entities.CallPolicy"/> satırının tohum değerlerini taşır.
-/// </summary>
+/// <summary><see cref="Entities.CallLog"/> için tür ve durum sabitleri; <see cref="PolicyDefaults"/> ise tekil <see cref="Entities.CallPolicy"/> satırının tohum değerlerini taşır.</summary>
 public static class CallDefinitions
 {
     public static class Types

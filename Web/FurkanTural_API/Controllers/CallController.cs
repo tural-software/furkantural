@@ -22,10 +22,7 @@ public class CallController(
     private readonly ICallPolicyService _callPolicyService = callPolicyService;
     private readonly IConfiguration _configuration = configuration;
 
-    /// <summary>
-    /// WebRTC arama yapılandırması: ICE sunucuları + efektif video politikası + relay zorunluluğu.
-    /// Kaynak <c>Calls:Ice:Mode</c> ile seçilir — "Static" (STUN/yerel, token'sız) veya "Cloudflare" (TURN).
-    /// </summary>
+    /// <summary>WebRTC arama yapılandırması: ICE sunucuları + efektif video politikası + relay zorunluluğu. Kaynak <c>Calls:Ice:Mode</c> ile seçilir — "Static" (STUN/yerel, token'sız) veya "Cloudflare" (TURN).</summary>
     [HttpGet("config")]
     public async Task<IActionResult> GetConfig(CancellationToken cancellationToken)
     {

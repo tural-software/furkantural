@@ -14,73 +14,55 @@ public class ProjectImageController(IProjectImageService projectImageService, IF
     private readonly IProjectImageService _projectImageService = projectImageService;
     private readonly IFileService _fileService = fileService;
 
-    /// <summary>
-    /// Proje görselini ID ile getir
-    /// </summary>
+    /// <summary>Proje görselini ID ile getir</summary>
     [HttpGet("{id:int}")]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectImageService.GetByIdAsync(id, cancellationToken));
 
-    /// <summary>
-    /// Tüm proje görsellerini listele
-    /// </summary>
+    /// <summary>Tüm proje görsellerini listele</summary>
     [HttpGet]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => ToActionResult(await _projectImageService.GetAllAsync(cancellationToken));
 
-    /// <summary>
-    /// Admin için tüm proje görsellerini listele (soft-deleted dahil)
-    /// </summary>
+    /// <summary>Admin için tüm proje görsellerini listele (soft-deleted dahil)</summary>
     [HttpGet("admin")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
         => ToActionResult(await _projectImageService.GetAllForAdminAsync(cancellationToken));
 
-    /// <summary>
-    /// Proje görselini yönetici paneli için ID ile getir (silinmiş dahil)
-    /// </summary>
+    /// <summary>Proje görselini yönetici paneli için ID ile getir (silinmiş dahil)</summary>
     [HttpGet("admin/{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectImageService.GetByIdForAdminAsync(id, cancellationToken));
 
-    /// <summary>
-    /// Proje görselinin aktiflik durumunu değiştir
-    /// </summary>
+    /// <summary>Proje görselinin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectImageService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
 
-    /// <summary>
-    /// Silinmiş proje görselini geri yükle
-    /// </summary>
+    /// <summary>Silinmiş proje görselini geri yükle</summary>
     [HttpPatch("{id:int}/restore")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectImageService.RestoreAsync(id, SortUserId(), cancellationToken));
 
-    /// <summary>
-    /// Proje görsellerini sayfalı listele
-    /// </summary>
+    /// <summary>Proje görsellerini sayfalı listele</summary>
     [HttpGet("paged")]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _projectImageService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
-    /// <summary>
-    /// Belirli bir projeye ait görselleri getir
-    /// </summary>
+    /// <summary>Belirli bir projeye ait görselleri getir</summary>
     [HttpGet("by-project/{projectId:int}")]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> GetByProjectId(int projectId, CancellationToken cancellationToken)
         => ToActionResult(await _projectImageService.GetByProjectIdAsync(projectId, cancellationToken));
 
-    /// <summary>
-    /// Proje görseli yükle ve kaydet
-    /// </summary>
+    /// <summary>Proje görseli yükle ve kaydet</summary>
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateProjectImageRequest request, CancellationToken cancellationToken)
@@ -103,9 +85,7 @@ public class ProjectImageController(IProjectImageService projectImageService, IF
         return ToActionResult(await _projectImageService.CreateAsync(dto, cancellationToken));
     }
 
-    /// <summary>
-    /// Proje görselini güncelle
-    /// </summary>
+    /// <summary>Proje görselini güncelle</summary>
     [HttpPut]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateProjectImageRequest request, CancellationToken cancellationToken)
@@ -176,17 +156,13 @@ public class ProjectImageController(IProjectImageService projectImageService, IF
         return ToActionResult(updateResult);
     }
 
-    /// <summary>
-    /// Proje görselini sil
-    /// </summary>
+    /// <summary>Proje görselini sil</summary>
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         => ToActionResult(await _projectImageService.DeleteAsync(id, cancellationToken));
 
-    /// <summary>
-    /// Yönetici paneli için proje görseli özetini getir (toplam + son işlem tarihi)
-    /// </summary>
+    /// <summary>Yönetici paneli için proje görseli özetini getir (toplam + son işlem tarihi)</summary>
     [HttpGet("admin/summary")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)

@@ -3,13 +3,7 @@ using FurkanTural_Application.DTOs.UserFriend;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-/// <summary>
-/// Gerçek zamanlı sohbet bildirimlerinin soyutlaması; iş katmanı gerçek zamanlı altyapıya doğrudan
-/// bağlanmasın diye vardır, uygulaması sunum tarafında durur. Hedefleme bağlantı kimliğiyle değil
-/// kullanıcı kimliğiyle yapılır, yani kullanıcının açık tüm oturumları aynı bildirimi alır. Teslim
-/// garantisi yoktur: alıcı çevrim dışıysa bildirim düşer, kalıcı olan yalnızca veri tabanına yazılan
-/// kayıttır — bu yüzden bildirim gönderimi kayıt işleminin yerine geçmez.
-/// </summary>
+/// <summary>Gerçek zamanlı sohbet bildirimlerinin soyutlaması; iş katmanı gerçek zamanlı altyapıya doğrudan bağlanmasın diye vardır, uygulaması sunum tarafında durur. Hedefleme bağlantı kimliğiyle değil kullanıcı kimliğiyle yapılır, yani kullanıcının açık tüm oturumları aynı bildirimi alır. Teslim garantisi yoktur: alıcı çevrim dışıysa bildirim düşer, kalıcı olan yalnızca veri tabanına yazılan kayıttır — bu yüzden bildirim gönderimi kayıt işleminin yerine geçmez.</summary>
 public interface IChatNotifier
 {
     Task NotifyFriendRequestReceivedAsync(int addresseeUserId, FriendRequestDto request);

@@ -7,14 +7,7 @@ public interface IAppConfigService
     Task<string?> GetTurnstileSiteKeyAsync(CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// Bu uygulamaya açılmış yapılandırma değerlerini API'den çeker. Şifre çözme mantığı sunum
-/// tarafında durmaz; değerler çözülmüş olarak gelir ve anahtarın kendisi buraya hiç inmez.
-///
-/// Sonuç yarım saat önbelleklenir ve önbellek süreç belleğindedir. Hata durumunda istisna
-/// fırlatılmaz, elde ne varsa o döner: yapılandırma alınamadı diye sayfa açılmamazlık etmez, ilgili
-/// alan yalnızca boş kalır.
-/// </summary>
+/// <summary>Bu uygulamaya açılmış yapılandırma değerlerini API'den çeker. Şifre çözme mantığı sunum tarafında durmaz; değerler çözülmüş olarak gelir ve anahtarın kendisi buraya hiç inmez.<para>Sonuç yarım saat önbelleklenir ve önbellek süreç belleğindedir. Hata durumunda istisna fırlatılmaz, elde ne varsa o döner: yapılandırma alınamadı diye sayfa açılmamazlık etmez, ilgili alan yalnızca boş kalır.</para></summary>
 public class AppConfigService : IAppConfigService
 {
     private readonly IHttpClientFactory _httpClientFactory;

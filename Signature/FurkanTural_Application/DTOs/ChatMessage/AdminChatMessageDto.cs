@@ -1,9 +1,6 @@
 namespace FurkanTural_Application.DTOs.ChatMessage;
 
-/// <summary>
-/// Mesajın yönetim paneli görünümü. Content burada da çözülmüş olarak döner, yani yönetici kullanıcıların
-/// yazışmalarını düz metin okur; şifreleme yalnızca veri tabanındaki saklamayı korur.
-/// </summary>
+/// <summary>Mesajın yönetim paneli görünümü. Content burada da çözülmüş olarak döner, yani yönetici kullanıcıların yazışmalarını düz metin okur; şifreleme yalnızca veri tabanındaki saklamayı korur.</summary>
 public class AdminChatMessageDto
 {
     public int Id { get; set; }

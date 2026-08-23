@@ -5,16 +5,10 @@ using Moq;
 
 namespace FurkanTural_Admin.Tests.Infrastructure;
 
-/// <summary>
-/// Controller testleri için HttpContext, Session ve UrlHelper stublarını
-/// tek noktadan hazırlayan yardımcı.
-/// </summary>
+/// <summary>Controller testleri için HttpContext, Session ve UrlHelper stublarını tek noktadan hazırlayan yardımcı.</summary>
 public static class ControllerTestHelper
 {
-    /// <summary>
-    /// Verilen token değeriyle (null ise boş session) bir ControllerContext hazırlar.
-    /// Controller'a atanmaya hazır döner.
-    /// </summary>
+    /// <summary>Verilen token değeriyle (null ise boş session) bir ControllerContext hazırlar. Controller'a atanmaya hazır döner.</summary>
     public static ControllerContext BuildControllerContext(string? sessionToken)
     {
         var session = new MockSession();
@@ -32,9 +26,7 @@ public static class ControllerTestHelper
         };
     }
 
-    /// <summary>
-    /// Session'a birden fazla key/value çifti set edilmiş bir ControllerContext hazırlar.
-    /// </summary>
+    /// <summary>Session'a birden fazla key/value çifti set edilmiş bir ControllerContext hazırlar.</summary>
     public static ControllerContext BuildControllerContext(Dictionary<string, string> sessionValues)
     {
         var session = new MockSession();
@@ -52,9 +44,7 @@ public static class ControllerTestHelper
         };
     }
 
-    /// <summary>
-    /// IUrlHelper mock'u — Url.Action(...) çağrılarının null dönmesi yerine sabit string döndürmesi için.
-    /// </summary>
+    /// <summary>IUrlHelper mock'u — Url.Action(...) çağrılarının null dönmesi yerine sabit string döndürmesi için.</summary>
     public static IUrlHelper BuildUrlHelper(string? returnValue = "/Dashboard/Index")
     {
         var mock = new Mock<IUrlHelper>();

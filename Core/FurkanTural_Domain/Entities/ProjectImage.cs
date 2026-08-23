@@ -2,10 +2,7 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Domain.Entities;
 
-/// <summary>
-/// <see cref="Project"/> görseli (ProjectId). Url tam adres değil, wwwroot/images/uploads altındaki
-/// dosya adıdır.
-/// </summary>
+/// <summary><see cref="Project"/> görseli (ProjectId). Url tam adres değil, wwwroot/images/uploads altındaki dosya adıdır.</summary>
 public class ProjectImage : BaseEntity
 {
     public string? Url { get; set; }

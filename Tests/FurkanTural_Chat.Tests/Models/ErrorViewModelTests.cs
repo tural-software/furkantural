@@ -3,9 +3,7 @@ using FurkanTural_Chat.Models;
 
 namespace FurkanTural_Chat.Tests.Models;
 
-/// <summary>
-/// ErrorViewModel.ShowRequestId hesaplanan property testleri.
-/// </summary>
+/// <summary>ErrorViewModel.ShowRequestId hesaplanan property testleri.</summary>
 public class ErrorViewModelTests
 {
     [Fact]

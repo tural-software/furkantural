@@ -4,14 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace FurkanTural_Persistence.Contexts;
 
-/// <summary>
-/// Yapılandırma sınıfları tek tek kaydedilmez, derlemeden taranarak toplanır — yeni bir yapılandırma
-/// dosyası eklemek onu devreye almaya yeter.
-///
-/// Ardından bütün DateTime alanlarına UTC dönüştürücüsü takılır: okurken Kind=Utc damgalanır, yazarken
-/// değer olduğu gibi geçer. Serileştirme bu sayede daima 'Z' ile biten metin üretir. Kendi
-/// dönüştürücüsü tanımlanmış alanlar bu turda atlanır, üzerlerine yazılmaz.
-/// </summary>
+/// <summary>Yapılandırma sınıfları tek tek kaydedilmez, derlemeden taranarak toplanır — yeni bir yapılandırma dosyası eklemek onu devreye almaya yeter.<para>Ardından bütün DateTime alanlarına UTC dönüştürücüsü takılır: okurken Kind=Utc damgalanır, yazarken değer olduğu gibi geçer. Serileştirme bu sayede daima 'Z' ile biten metin üretir. Kendi dönüştürücüsü tanımlanmış alanlar bu turda atlanır, üzerlerine yazılmaz.</para></summary>
 public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options) : DbContext(options)
 {
     public DbSet<Blog> Blogs => Set<Blog>();

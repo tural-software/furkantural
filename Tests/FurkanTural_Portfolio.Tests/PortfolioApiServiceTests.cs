@@ -11,12 +11,7 @@ using FurkanTural_Portfolio.Services;
 
 namespace FurkanTural_Portfolio.Tests;
 
-/// <summary>
-/// Unit tests for PortfolioApiService.
-///
-/// Each test method covers one public API (GetSkillsAsync, GetProjectsAsync, etc.).
-/// Scenarios: successful deserialisation, empty-data response, HTTP error, and network exception.
-/// </summary>
+/// <summary>Unit tests for PortfolioApiService.<para>Each test method covers one public API (GetSkillsAsync, GetProjectsAsync, etc.). Scenarios: successful deserialisation, empty-data response, HTTP error, and network exception.</para></summary>
 public class PortfolioApiServiceTests
 {
     // -----------------------------------------------------------------------

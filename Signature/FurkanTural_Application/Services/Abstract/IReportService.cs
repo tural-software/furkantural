@@ -4,13 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-/// <summary>
-/// Kullanıcı şikayetleri. Hedef türü ve durum serbest metin gibi görünse de
-/// <see cref="FurkanTural_Domain.Constants.ReportDefinitions"/> ile doğrulanır, listede olmayan değer
-/// reddedilir. Şikayet edilen kaydın kendisi TargetId ile tutulur ve bu alanın foreign key'i yoktur;
-/// hangi tabloya baktığını yalnızca hedef türü söyler. UpdateStatusAsync'e boş not gönderilirse
-/// mevcut not korunur, üzerine boş yazılmaz.
-/// </summary>
+/// <summary>Kullanıcı şikayetleri. Hedef türü ve durum serbest metin gibi görünse de <see cref="FurkanTural_Domain.Constants.ReportDefinitions"/> ile doğrulanır, listede olmayan değer reddedilir. Şikayet edilen kaydın kendisi TargetId ile tutulur ve bu alanın foreign key'i yoktur; hangi tabloya baktığını yalnızca hedef türü söyler. UpdateStatusAsync'e boş not gönderilirse mevcut not korunur, üzerine boş yazılmaz.</summary>
 public interface IReportService
 {
     Task<Result> CreateAsync(int reporterId, CreateReportDto dto, CancellationToken cancellationToken = default);

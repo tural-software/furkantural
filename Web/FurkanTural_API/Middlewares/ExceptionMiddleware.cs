@@ -5,11 +5,7 @@ using FurkanTural_Application.Services.Abstract;
 
 namespace FurkanTural_API.Middlewares;
 
-/// <summary>
-/// Yakalanmamış her istisnayı sabit metinli bir 500'e çevirir. İstemciye tür, mesaj veya yığın
-/// bilgisi geçmez; bu yüzden birbirinden çok farklı sebepler dışarıdan aynı yanıtı üretir ve ayrım
-/// yalnızca kaydedilen günlükte kalır.
-/// </summary>
+/// <summary>Yakalanmamış her istisnayı sabit metinli bir 500'e çevirir. İstemciye tür, mesaj veya yığın bilgisi geçmez; bu yüzden birbirinden çok farklı sebepler dışarıdan aynı yanıtı üretir ve ayrım yalnızca kaydedilen günlükte kalır.</summary>
 public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
 {
     private readonly RequestDelegate _next = next;
@@ -29,17 +25,7 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
         }
     }
 
-    /// <summary>
-    /// Günlük kaydı isteğin kendi kapsamından değil, yeni açılan bir kapsamdan yazılır. Sebebi:
-    /// istisna bir kayıt hatasıysa isteğin veri bağlamı bozulmuş durumdadır ve aynı bağlam üzerinden
-    /// yazma denemesi de düşerdi. O hâlde istek 500 dönerdi ama geriye hiçbir kayıt kalmazdı.
-    ///
-    /// Mesaj ve yol, hedef kolonların genişliğine kırpılır; aksi hâlde günlüğü yazma denemesi ikinci
-    /// bir kayıt hatası doğururdu. Detay alanı sınırsız olduğundan kırpılmaz.
-    ///
-    /// Kaydın kendisi başarısız olursa yutulur ve yanıt yine döner: hata yanıtı, günlüğün yazılıp
-    /// yazılamadığına bağlı kalmamalıdır.
-    /// </summary>
+    /// <summary>Günlük kaydı isteğin kendi kapsamından değil, yeni açılan bir kapsamdan yazılır. Sebebi: istisna bir kayıt hatasıysa isteğin veri bağlamı bozulmuş durumdadır ve aynı bağlam üzerinden yazma denemesi de düşerdi. O hâlde istek 500 dönerdi ama geriye hiçbir kayıt kalmazdı.<para>Mesaj ve yol, hedef kolonların genişliğine kırpılır; aksi hâlde günlüğü yazma denemesi ikinci bir kayıt hatası doğururdu. Detay alanı sınırsız olduğundan kırpılmaz.</para><para>Kaydın kendisi başarısız olursa yutulur ve yanıt yine döner: hata yanıtı, günlüğün yazılıp yazılamadığına bağlı kalmamalıdır.</para></summary>
     private static async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
         try

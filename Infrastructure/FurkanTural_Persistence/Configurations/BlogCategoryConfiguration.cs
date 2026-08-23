@@ -4,11 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FurkanTural_Persistence.Configurations;
 
-/// <summary>
-/// Blog ile kategori arasındaki bağ tablosu. Silme davranışı iki yönde farklıdır: blog satırı gerçekten
-/// silinirse bağlar da gider, kategori ise bağlıyken silinemez. Bağ satırları yumuşak silinmez, servis
-/// katmanı onları gerçekten siler.
-/// </summary>
+/// <summary>Blog ile kategori arasındaki bağ tablosu. Silme davranışı iki yönde farklıdır: blog satırı gerçekten silinirse bağlar da gider, kategori ise bağlıyken silinemez. Bağ satırları yumuşak silinmez, servis katmanı onları gerçekten siler.</summary>
 public class BlogCategoryConfiguration : BaseEntityConfiguration<BlogCategory>
 {
     public override void Configure(EntityTypeBuilder<BlogCategory> builder)

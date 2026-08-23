@@ -3,10 +3,7 @@ using FurkanTural_Application.DTOs.UserFriend;
 
 namespace FurkanTural_Business.Mappers;
 
-/// <summary>
-/// ToAdminDto yalnızca StatusId'yi taşır; StatusCode ve StatusName boş kalır. Bunlar statü
-/// sözlüğünden okunduğu için servis katmanında doldurulur.
-/// </summary>
+/// <summary>ToAdminDto yalnızca StatusId'yi taşır; StatusCode ve StatusName boş kalır. Bunlar statü sözlüğünden okunduğu için servis katmanında doldurulur.</summary>
 public static class UserFriendMapper
 {
     public static UserFriendDto ToDto(this UserFriend entity) => new()

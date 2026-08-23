@@ -1,11 +1,6 @@
 namespace FurkanTural_Application.DTOs.UserFriend;
 
-/// <summary>
-/// Arkadaş listesi satırı; engellenenler listesi de aynı DTO ile döner. IsOnline veri tabanından değil
-/// bellekteki bağlantı takibinden gelir, dolayısıyla sunucu yeniden başladığında herkes çevrimdışı
-/// görünür; LastSeenAt ise kalıcı kayıttan okunur. Since isteğin yanıtlandığı tarihtir, o boşsa ilişki
-/// satırının açıldığı tarihe düşer.
-/// </summary>
+/// <summary>Arkadaş listesi satırı; engellenenler listesi de aynı DTO ile döner. IsOnline veri tabanından değil bellekteki bağlantı takibinden gelir, dolayısıyla sunucu yeniden başladığında herkes çevrimdışı görünür; LastSeenAt ise kalıcı kayıttan okunur. Since isteğin yanıtlandığı tarihtir, o boşsa ilişki satırının açıldığı tarihe düşer.</summary>
 public class FriendDto
 {
     public int FriendshipId { get; set; }

@@ -5,14 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// SMTP ile HTML e-posta gönderimi. <see cref="FurkanTural_Application.Wrappers.Result"/> zarfı
-/// kullanılmaz; gönderim başarısızsa istisna fırlar ve çağıran ne yapacağına kendi karar verir.
-///
-/// Ayarlar <c>Smtp</c> bölümünden okunur ve her değer şifrelenmiş olabilir: beklenen desene uyanlar
-/// çözülür, uymayanlar olduğu gibi kullanılır. Host, port, kullanıcı ve gönderen adresi için koda
-/// gömülü varsayılanlar vardır — yalnızca parolanın karşılığı yoktur, o eksikse gönderim yapılmaz.
-/// </summary>
+/// <summary>SMTP ile HTML e-posta gönderimi. <see cref="FurkanTural_Application.Wrappers.Result"/> zarfı kullanılmaz; gönderim başarısızsa istisna fırlar ve çağıran ne yapacağına kendi karar verir.<para>Ayarlar <c>Smtp</c> bölümünden okunur ve her değer şifrelenmiş olabilir: beklenen desene uyanlar çözülür, uymayanlar olduğu gibi kullanılır. Host, port, kullanıcı ve gönderen adresi için koda gömülü varsayılanlar vardır — yalnızca parolanın karşılığı yoktur, o eksikse gönderim yapılmaz.</para></summary>
 public class EmailService(IConfiguration configuration, IEncryptionService encryptionService) : IEmailService
 {
     private readonly IConfiguration _configuration = configuration;

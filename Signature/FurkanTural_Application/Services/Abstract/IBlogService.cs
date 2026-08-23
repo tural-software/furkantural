@@ -4,13 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-/// <summary>
-/// Blog yazıları. Ayrı bir "yayınlandı" alanı yoktur, yayın durumu canlı satır olmakla aynı şeydir;
-/// bu yüzden tabandan gelen GetAllPagedAsync doğrudan GetPublishedPagedAsync'e filtresiz devreder ve
-/// yazıyı pasife almak onu siteden kaldırmakla eşdeğerdir. Sıralama ile kategori ve arama filtreleri
-/// veri tabanında, sayfalama ile aynı sorguda uygulanır. GetSitemapAsync yalnızca kimlik ve tarih
-/// taşıyan dar bir izdüşümdür, içerik çekmez.
-/// </summary>
+/// <summary>Blog yazıları. Ayrı bir "yayınlandı" alanı yoktur, yayın durumu canlı satır olmakla aynı şeydir; bu yüzden tabandan gelen GetAllPagedAsync doğrudan GetPublishedPagedAsync'e filtresiz devreder ve yazıyı pasife almak onu siteden kaldırmakla eşdeğerdir. Sıralama ile kategori ve arama filtreleri veri tabanında, sayfalama ile aynı sorguda uygulanır. GetSitemapAsync yalnızca kimlik ve tarih taşıyan dar bir izdüşümdür, içerik çekmez.</summary>
 public interface IBlogService : IService<BlogDto, CreateBlogDto, UpdateBlogDto>
 {
     Task<PagedResult<BlogDto>> GetPublishedPagedAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default);

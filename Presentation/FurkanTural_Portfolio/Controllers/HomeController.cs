@@ -11,11 +11,7 @@ public class HomeController(IPortfolioApiService apiService, IPortfolioContactCl
     private readonly IPortfolioContactClient _contactClient = contactClient;
     private readonly IAppConfigService _appConfigService = appConfigService;
 
-    /// <summary>
-    /// Anasayfanın beş bölümü birbirinden bağımsız uçlardan beslenir ve hepsi aynı anda başlatılır.
-    /// Sırayla beklenseydi sayfanın açılma süresi beş çağrının toplamı olurdu; böyle en yavaş
-    /// olanın süresi kadardır.
-    /// </summary>
+    /// <summary>Anasayfanın beş bölümü birbirinden bağımsız uçlardan beslenir ve hepsi aynı anda başlatılır. Sırayla beklenseydi sayfanın açılma süresi beş çağrının toplamı olurdu; böyle en yavaş olanın süresi kadardır.</summary>
     public async Task<IActionResult> Index(CancellationToken ct)
     {
         var skillsTask = _apiService.GetSkillsAsync(ct);
@@ -39,10 +35,7 @@ public class HomeController(IPortfolioApiService apiService, IPortfolioContactCl
         return View(vm);
     }
 
-    /// <summary>
-    /// Bot doğrulaması burada da denetlenir. Asıl doğrulamayı API yapar; buradaki erken ret onun
-    /// yerine geçmez, yalnızca jeton hiç gönderilmemiş istekleri ağa çıkmadan eler.
-    /// </summary>
+    /// <summary>Bot doğrulaması burada da denetlenir. Asıl doğrulamayı API yapar; buradaki erken ret onun yerine geçmez, yalnızca jeton hiç gönderilmemiş istekleri ağa çıkmadan eler.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Contact([FromForm] ContactFormModel model, CancellationToken ct)

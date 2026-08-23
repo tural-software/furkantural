@@ -10,17 +10,7 @@ using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>
-/// Yeni gönderilen mesajın düz metni çağırana elde olan değerden verilir, kaydedilen şifreli değer
-/// tekrar çözülmez. Yönetim görünümleri de içeriği çözülmüş alır — panel araması düz metin üzerinde
-/// çalışsın diye — dolayısıyla mesaj içeriği yönetim uçlarından da okunabilir.
-///
-/// Kullanıcı adları yönetim tarafında süzgeçsiz okumayla çözülür: silinmiş kullanıcı normal okumada
-/// görünmez ve tam da yöneticinin görmesi gereken satırlarda ad boş kalırdı.
-///
-/// GetConversationsAsync arkadaş başına sorgu açmaz; konuşma sayaçları tek toplulaştırma sorgusundan
-/// gelir.
-/// </summary>
+/// <summary>Yeni gönderilen mesajın düz metni çağırana elde olan değerden verilir, kaydedilen şifreli değer tekrar çözülmez. Yönetim görünümleri de içeriği çözülmüş alır — panel araması düz metin üzerinde çalışsın diye — dolayısıyla mesaj içeriği yönetim uçlarından da okunabilir.<para>Kullanıcı adları yönetim tarafında süzgeçsiz okumayla çözülür: silinmiş kullanıcı normal okumada görünmez ve tam da yöneticinin görmesi gereken satırlarda ad boş kalırdı.</para><para>GetConversationsAsync arkadaş başına sorgu açmaz; konuşma sayaçları tek toplulaştırma sorgusundan gelir.</para></summary>
 public class ChatMessageService(
     IUnitOfWork unitOfWork,
     IUserFriendService userFriendService,
