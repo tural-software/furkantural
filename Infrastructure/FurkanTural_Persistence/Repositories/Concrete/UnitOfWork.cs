@@ -2,6 +2,8 @@ using FurkanTural_Domain.Entities.Common;
 using FurkanTural_Domain.Entities;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Persistence.Contexts;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 
 namespace FurkanTural_Persistence.Repositories.Concrete;
 
@@ -46,6 +48,18 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     public IRepository<CallPolicy> CallPolicies => GetRepository<CallPolicy>();
     public IRepository<PushSubscription> PushSubscriptions => GetRepository<PushSubscription>();
 
-    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        => context.SaveChangesAsync(cancellationToken);
+    /// <summary>Her yazmanın tek boğazı burasıdır, bu yüzden veri tabanı kısıtlarının çevirisi de burada durur. Kayıt akışlarındaki "önce ara, yoksa ekle" deseni yarışı kapatamaz: iki istek aynı anda aramadan geçip ikisi de yazmaya gidebilir. Yarışı uygulama kodunda önlemenin yolu yoktur, son sözü indeks söyler — buradaki iş o sözü çağıranın anlayabileceği bir istisnaya çevirmek, böylece dışarıya 500 yerine anlamlı bir yanıt dönebilmektir.<para>Yalnızca <see cref="PersistenceConflictTranslator"/>'ın tanıdığı numaralar çevrilir; gerisi <c>throw;</c> ile olduğu gibi, yığın izi bozulmadan yükselir.</para><para>Çeviri değişiklik izleyicisine dokunmaz, başarısız satır <c>Added</c> durumunda kalır. Bu istisnayı yakalayıp aynı kapsamda yazmaya devam eden bir çağıran o satırı yeniden göndermiş olur; dolayısıyla istisna yutulmamalı, isteği sonlandırmalıdır.</para></summary>
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException sql)
+        {
+            var conflict = PersistenceConflictTranslator.Translate(sql.Number, sql.Message, ex);
+            if (conflict is null) throw;
+            throw conflict;
+        }
+    }
 }
