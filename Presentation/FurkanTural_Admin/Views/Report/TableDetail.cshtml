@@ -87,7 +87,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @* Id *@
                     <tr>
                         <td><span class="field-name field-name--pk">@await Html.PartialAsync("_Icons", "field-key") Id</span></td>
                         <td><span class="type-tag">int</span></td>
@@ -98,7 +97,6 @@
                         <td>Yok</td>
                         <td>Benzersiz şikayet tanımlayıcısı</td>
                     </tr>
-                    @* ReporterId *@
                     <tr>
                         <td><span class="field-name field-name--fk">@await Html.PartialAsync("_Icons", "link") ReporterId</span></td>
                         <td><span class="type-tag">int</span></td>
@@ -109,7 +107,6 @@
                         <td>Yok</td>
                         <td>FK → Users.Id (şikayet eden)</td>
                     </tr>
-                    @* ReportedUserId *@
                     <tr>
                         <td><span class="field-name field-name--fk">@await Html.PartialAsync("_Icons", "link") ReportedUserId</span></td>
                         <td><span class="type-tag">int</span></td>
@@ -120,7 +117,6 @@
                         <td>NULL</td>
                         <td>FK → Users.Id (şikayet edilen, varsa)</td>
                     </tr>
-                    @* TargetType *@
                     <tr>
                         <td><span class="field-name">@await Html.PartialAsync("_Icons", "field-text") TargetType</span></td>
                         <td><span class="type-tag">nvarchar</span></td>
@@ -131,7 +127,6 @@
                         <td>NULL</td>
                         <td>User / Message / Media / Call</td>
                     </tr>
-                    @* TargetId *@
                     <tr>
                         <td><span class="field-name">@await Html.PartialAsync("_Icons", "hash-icon") TargetId</span></td>
                         <td><span class="type-tag">int</span></td>
@@ -142,7 +137,6 @@
                         <td>NULL</td>
                         <td>Hedef kaydın Id'si (ör. ChatMessage.Id / CallLog.Id)</td>
                     </tr>
-                    @* Reason *@
                     <tr>
                         <td><span class="field-name">@await Html.PartialAsync("_Icons", "field-text") Reason</span></td>
                         <td><span class="type-tag">nvarchar</span></td>
@@ -153,7 +147,6 @@
                         <td>NULL</td>
                         <td>Şikayet gerekçesi</td>
                     </tr>
-                    @* Status *@
                     <tr>
                         <td><span class="field-name">@await Html.PartialAsync("_Icons", "field-text") Status</span></td>
                         <td><span class="type-tag">nvarchar</span></td>
@@ -164,7 +157,6 @@
                         <td>NULL</td>
                         <td>Pending / Reviewed / Dismissed / ActionTaken</td>
                     </tr>
-                    @* AdminNote *@
                     <tr>
                         <td><span class="field-name">@await Html.PartialAsync("_Icons", "field-text") AdminNote</span></td>
                         <td><span class="type-tag">nvarchar</span></td>
@@ -175,7 +167,6 @@
                         <td>NULL</td>
                         <td>Admin inceleme notu</td>
                     </tr>
-                    @* CreatedAt *@
                     <tr>
                         <td><span class="field-name field-name--date">@await Html.PartialAsync("_Icons", "calendar") CreatedAt</span></td>
                         <td><span class="type-tag">datetime2</span></td>
@@ -186,7 +177,6 @@
                         <td>GETUTCDATE()</td>
                         <td>Oluşturulma tarihi (UTC)</td>
                     </tr>
-                    @* CreatedBy *@
                     <tr>
                         <td><span class="field-name">@await Html.PartialAsync("_Icons", "user") CreatedBy</span></td>
                         <td><span class="type-tag">int</span></td>
@@ -197,7 +187,6 @@
                         <td>NULL</td>
                         <td>Kaydı oluşturan ID</td>
                     </tr>
-                    @* UpdatedAt *@
                     <tr>
                         <td><span class="field-name field-name--date">@await Html.PartialAsync("_Icons", "calendar") UpdatedAt</span></td>
                         <td><span class="type-tag">datetime2</span></td>
@@ -208,7 +197,6 @@
                         <td>NULL</td>
                         <td>Son güncellenme tarihi (UTC)</td>
                     </tr>
-                    @* UpdatedBy *@
                     <tr>
                         <td><span class="field-name">@await Html.PartialAsync("_Icons", "user") UpdatedBy</span></td>
                         <td><span class="type-tag">int</span></td>
@@ -219,7 +207,6 @@
                         <td>NULL</td>
                         <td>Güncelleyen ID</td>
                     </tr>
-                    @* IsActive *@
                     <tr>
                         <td><span class="field-name field-name--bool">@await Html.PartialAsync("_Icons", "check-circle") IsActive</span></td>
                         <td><span class="type-tag">bit</span></td>
@@ -230,7 +217,6 @@
                         <td>1</td>
                         <td>Aktiflik durumu</td>
                     </tr>
-                    @* IsDeleted *@
                     <tr>
                         <td><span class="field-name field-name--bool">@await Html.PartialAsync("_Icons", "check-circle") IsDeleted</span></td>
                         <td><span class="type-tag">bit</span></td>
@@ -241,7 +227,6 @@
                         <td>0</td>
                         <td>Silinme durumu (soft-delete)</td>
                     </tr>
-                    @* DeletedAt *@
                     <tr>
                         <td><span class="field-name field-name--date">@await Html.PartialAsync("_Icons", "calendar") DeletedAt</span></td>
                         <td><span class="type-tag">datetime2</span></td>

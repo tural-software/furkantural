@@ -20,7 +20,7 @@
     var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 }
 
-@* rows JSON *@
+@* Satırlar JSON olarak gömülür; application/json türü tarayıcının bu bloğu betik gibi çalıştırmasını engeller. *@
 <script id="__blog-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
 
 <div class="data-table-wrap">
