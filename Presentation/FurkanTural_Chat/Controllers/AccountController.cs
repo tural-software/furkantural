@@ -66,6 +66,41 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         return Json(new { ok = true, redirect = Url.Action("Index", "Chat") });
     }
 
+    /// <summary>Sayfayı açmak hesabı açmaz; jeton yalnızca onay gönderiminde harcanır (bkz. <see cref="ActivateAccountModel"/>).</summary>
+    [HttpGet]
+    public IActionResult Activate(string? token)
+    {
+        if (IsAuthenticated())
+            return RedirectToAction("Index", "Chat");
+
+        return View(new ActivateAccountModel
+        {
+            Token = token,
+            State = string.IsNullOrWhiteSpace(token) ? ActivationState.MissingToken : ActivationState.Confirm
+        });
+    }
+
+    /// <summary>Başarılı açılışta oturum kurulmaz. Jetonu elinde tutan kişi hesabın adresine erişebiliyor demektir, ama bu parolayı bildiğini göstermez; hesabı açmak ile hesaba girmek ayrı kalır.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Activate(ActivateAccountModel model, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(model.Token))
+        {
+            model.State = ActivationState.MissingToken;
+            return View(model);
+        }
+
+        var result = await _authApiClient.ActivateAsync(model.Token, cancellationToken);
+
+        model.State = result.Success ? ActivationState.Success : ActivationState.Failed;
+        model.Message = result.Success
+            ? (!string.IsNullOrWhiteSpace(result.Message) ? result.Message : "Hesabınız yeniden etkinleştirildi.")
+            : ApiErrors(result.Errors, result.Message, "Doğrulama bağlantısı geçersiz.")[0];
+
+        return View(model);
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Logout()

@@ -1,0 +1,75 @@
+@model ActivateAccountModel
+@{
+    ViewData["Title"] = "Hesabı Yeniden Aç";
+}
+<button type="button" class="theme-toggle-btn theme-toggle-btn--floating" data-theme-toggle aria-label="Temayı değiştir">
+    <span data-theme-icon aria-hidden="true">🌙</span>
+</button>
+
+<div class="auth-wrap">
+    <div class="auth-card landing-card">
+        <div class="auth-brand">
+            <img src="~/img/chatural-logo.png" alt="Chatural" class="auth-logo" width="76" height="76" />
+            <div class="auth-name" aria-label="Chatural">Cha<span>tural</span></div>
+        </div>
+
+        @if (Model.State == ActivationState.Confirm)
+        {
+            <div class="activate-mark activate-mark--pending" aria-hidden="true">↻</div>
+
+            <h1 class="activate-title">Hesabınızı yeniden açalım mı?</h1>
+            <p class="auth-sub">
+                Onayladığınızda hesabınız yeniden etkinleşir; sohbetleriniz ve arkadaş listeniz
+                bıraktığınız gibi durur.
+            </p>
+
+            <form asp-action="Activate" method="post" class="landing-actions" aria-label="Hesap açma onayı">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Token" />
+                <button type="submit" class="btn-primary">Hesabımı yeniden aç</button>
+            </form>
+
+            <p class="landing-foot">Bu isteği siz yapmadıysanız bu sayfayı kapatmanız yeterli.</p>
+        }
+        else if (Model.State == ActivationState.Success)
+        {
+            <div class="activate-mark activate-mark--ok" aria-hidden="true">✓</div>
+
+            <h1 class="activate-title">Tekrar hoş geldiniz!</h1>
+            <p class="auth-sub">@Model.Message</p>
+
+            <div class="landing-actions">
+                <a asp-action="Login" class="btn-primary landing-btn">Giriş yap</a>
+            </div>
+        }
+        else if (Model.State == ActivationState.MissingToken)
+        {
+            <div class="activate-mark activate-mark--bad" aria-hidden="true">!</div>
+
+            <h1 class="activate-title">Bağlantı eksik görünüyor</h1>
+            <p class="auth-sub">
+                Adres doğrulama kodunu taşımıyor. Postadaki bağlantıyı tarayıcınızın adres
+                çubuğuna eksiksiz yapıştırdığınızdan emin olun.
+            </p>
+
+            <div class="landing-actions">
+                <a asp-action="Login" class="btn-outline landing-btn">Giriş sayfasına dön</a>
+            </div>
+        }
+        else
+        {
+            <div class="activate-mark activate-mark--bad" aria-hidden="true">!</div>
+
+            <h1 class="activate-title">Bu bağlantı çalışmadı</h1>
+            <p class="auth-sub" role="alert">@Model.Message</p>
+            <p class="landing-foot">
+                Giriş yapmayı denediğinizde hesabınız hâlâ kapalıysa adresinize yeni bir
+                doğrulama bağlantısı gönderilir.
+            </p>
+
+            <div class="landing-actions">
+                <a asp-action="Login" class="btn-primary landing-btn">Giriş sayfasına dön</a>
+            </div>
+        }
+    </div>
+</div>
