@@ -116,7 +116,7 @@ builder.Services.AddHttpClient<IContactApiClient, ContactApiClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-builder.Services.AddHttpClient<IContactTemplateApiClient, ContactTemplateApiClient>(client =>
+builder.Services.AddHttpClient<IMailTemplateApiClient, MailTemplateApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);

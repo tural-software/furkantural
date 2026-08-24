@@ -27,7 +27,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
         "project-images",
         "roles",
         "contact",
-        "contact-template",
+        "mail-template",
         "statuses",
         "friends",
         "messages",
@@ -97,7 +97,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
             "Ziyaretçi mesajlarını görüntüleyin ve yönetin.",
             [EntityAction.Read, EntityAction.Delete],
             "mesaj"),
-        new("contact-template", "contacttemplate", "İletişim Şablonları",
+        new("mail-template", "mailtemplate", "Posta Şablonları",
             "E-posta şablonlarını görüntüleyin ve CRUD işlemlerini yönetin.",
             [EntityAction.Create, EntityAction.Read, EntityAction.Update, EntityAction.Delete],
             "şablon"),
@@ -159,7 +159,7 @@ public class DashboardController(IAdminSummaryClient summaryClient) : Controller
                           : m.Slug == "project-images" ? Url.Action("Index", "ProjectImage")
                           : m.Slug == "roles"            ? Url.Action("Index", "Role")
                           : m.Slug == "contact"           ? Url.Action("Index", "Contact")
-                          : m.Slug == "contact-template"  ? Url.Action("Index", "ContactTemplate")
+                          : m.Slug == "mail-template"  ? Url.Action("Index", "MailTemplate")
                           : m.Slug == "statuses"          ? Url.Action("Index", "Status")
                           : m.Slug == "friends"           ? Url.Action("Index", "UserFriend")
                           : m.Slug == "messages"          ? Url.Action("Index", "ChatMessage")

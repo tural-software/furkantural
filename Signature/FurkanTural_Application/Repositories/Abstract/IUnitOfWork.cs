@@ -21,7 +21,8 @@ public interface IUnitOfWork
     IRepository<Subscriber> Subscribers { get; }
     IUserRepository Users { get; }
     IRepository<Contact> Contacts { get; }
-    IRepository<ContactTemplate> ContactTemplates { get; }
+    IRepository<MailTemplateType> MailTemplateTypes { get; }
+    IRepository<MailTemplate> MailTemplates { get; }
     IRepository<Status> Statuses { get; }
     IRepository<UserFriend> UserFriends { get; }
     IChatMessageRepository ChatMessages { get; }

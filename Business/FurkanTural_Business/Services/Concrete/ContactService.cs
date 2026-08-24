@@ -4,22 +4,24 @@ using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
 using FurkanTural_Business.Helpers;
+using FurkanTural_Application.DTOs.Mail;
 using FurkanTural_Business.Mappers;
+using FurkanTural_Domain.Constants;
 using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>Mesaj kaydedildikten sonra iki bildirim e-postası gönderilir: biri site sahibine, biri gönderene. Gövdeleri koda gömülü değildir, veri tabanındaki şablonlardan gelir ve yalnızca etkin şablon kullanılır — şablon yoksa o e-posta hiç gönderilmez. Gönderim hatası yutulur; form yanıtı zaten kaydedilmiş mesaja göre verilir, posta kutusuna göre değil.</summary>
+/// <summary>Mesaj kaydedildikten sonra iki bildirim gönderilir: biri site sahibine, biri gönderene. Konu ve gövde koda gömülü değildir, <see cref="IMailSender"/> üzerinden veri tabanındaki şablondan gelir; şablon yoksa o posta gönderilmez.<para>Gönderim hatası akışı düşürmez — form yanıtı kaydedilmiş mesaja göre verilir, posta kutusuna göre değil — ama sessizce yutulmaz da: başarısızlığın gerekçesi denetim kaydına yazılır, yoksa gönderilmeyen postanın hiçbir izi kalmazdı.</para></summary>
 public class ContactService(
     IUnitOfWork unitOfWork,
-    IEmailService emailService,
+    IMailSender mailSender,
     IConfiguration configuration,
     ActivityLogger activityLogger,
     ITurnstileVerifier turnstileVerifier,
     IClock clock) : IContactService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly IEmailService _emailService = emailService;
+    private readonly IMailSender _mailSender = mailSender;
     private readonly IConfiguration _configuration = configuration;
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
@@ -58,52 +60,45 @@ public class ContactService(
 
     private async Task SendEmailsAsync(SubmitContactDto dto, string? ipAddress, string? userAgent, CancellationToken ct)
     {
-        var ownerEmail   = _configuration["Contact:OwnerEmail"]   ?? "furkanturalofficial@outlook.com";
-        var formPageUrl  = _configuration["Contact:FormPageUrl"]  ?? "";
-        var linkedInUrl  = _configuration["Contact:LinkedInUrl"]  ?? "";
-        var gitHubUrl    = _configuration["Contact:GitHubUrl"]    ?? "";
-        var instagramUrl = _configuration["Contact:InstagramUrl"] ?? "";
-        var contactEmail = _configuration["Contact:ContactEmail"] ?? "";
         var now = _clock.UtcNow;
+        var createdAt = now.ToString("dd.MM.yyyy HH:mm");
 
-        var templates = await _unitOfWork.ContactTemplates.GetAllAsync(ct);
+        var ownerResult = await _mailSender.SendAsync(
+            MailTemplateDefinitions.ContactOwner,
+            _configuration["Contact:OwnerEmail"] ?? "furkanturalofficial@outlook.com",
+            new ContactOwnerMailDto
+            {
+                FullName = dto.Name,
+                Email = dto.Email,
+                Message = dto.Message,
+                CreatedAt = createdAt,
+                IpAddress = ipAddress,
+                Browser = userAgent,
+                FormPageUrl = _configuration["Contact:FormPageUrl"] ?? ""
+            }, ct);
 
-        var ownerTemplate = templates.FirstOrDefault(t => t.TemplateType == "Owner" && t.IsActive);
-        if (ownerTemplate?.HtmlContent is not null)
-        {
-            var ownerBody = ReplacePlaceholders(ownerTemplate.HtmlContent, dto.Name, dto.Email, dto.Message,
-                now, ipAddress, userAgent, formPageUrl, linkedInUrl, gitHubUrl, instagramUrl, contactEmail);
-            try { await _emailService.SendAsync(ownerEmail, $"Yeni İletişim Mesajı - {dto.Name}", ownerBody, ct); }
-            catch { }
-        }
+        if (ownerResult.IsFailure)
+            await _activityLogger.LogAsync($"İletişim bildirimi gönderilemedi (site sahibi): {ownerResult.InternalMessage}", ct);
 
-        var userTemplate = templates.FirstOrDefault(t => t.TemplateType == "User" && t.IsActive);
-        if (userTemplate?.HtmlContent is not null && !string.IsNullOrWhiteSpace(dto.Email))
-        {
-            var userBody = ReplacePlaceholders(userTemplate.HtmlContent, dto.Name, dto.Email, dto.Message,
-                now, ipAddress, userAgent, formPageUrl, linkedInUrl, gitHubUrl, instagramUrl, contactEmail);
-            try { await _emailService.SendAsync(dto.Email!, "Mesajınız Alındı - Furkan Tural", userBody, ct); }
-            catch { }
-        }
+        var userResult = await _mailSender.SendAsync(
+            MailTemplateDefinitions.ContactUser,
+            dto.Email,
+            new ContactUserMailDto
+            {
+                FullName = dto.Name,
+                Email = dto.Email,
+                Message = dto.Message,
+                CreatedAt = createdAt,
+                CurrentYear = now.Year.ToString(),
+                ContactEmail = _configuration["Contact:ContactEmail"] ?? "",
+                LinkedInUrl = _configuration["Contact:LinkedInUrl"] ?? "",
+                GitHubUrl = _configuration["Contact:GitHubUrl"] ?? "",
+                InstagramUrl = _configuration["Contact:InstagramUrl"] ?? ""
+            }, ct);
+
+        if (userResult.IsFailure)
+            await _activityLogger.LogAsync($"İletişim yanıtı gönderilemedi (gönderen): {userResult.InternalMessage}", ct);
     }
-
-    private static string ReplacePlaceholders(
-        string html, string? name, string? email, string? message, DateTime date,
-        string? ip, string? browser, string? formPageUrl,
-        string? linkedInUrl, string? gitHubUrl, string? instagramUrl, string? contactEmail)
-        => html
-            .Replace("{{FullName}}",     name ?? "")
-            .Replace("{{Email}}",        email ?? "")
-            .Replace("{{Message}}",      message ?? "")
-            .Replace("{{CreatedAt}}",    date.ToString("dd.MM.yyyy HH:mm"))
-            .Replace("{{IpAddress}}",    ip ?? "")
-            .Replace("{{Browser}}",      browser ?? "")
-            .Replace("{{FormPageUrl}}",  formPageUrl ?? "")
-            .Replace("{{LinkedInUrl}}",  linkedInUrl ?? "")
-            .Replace("{{GitHubUrl}}",    gitHubUrl ?? "")
-            .Replace("{{InstagramUrl}}", instagramUrl ?? "")
-            .Replace("{{ContactEmail}}", contactEmail ?? "")
-            .Replace("{{CurrentYear}}",  date.Year.ToString());
 
     public async Task<Result<ContactDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {

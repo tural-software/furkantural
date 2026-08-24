@@ -23,7 +23,8 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     public DbSet<Subscriber> Subscribers => Set<Subscriber>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Contact> Contacts => Set<Contact>();
-    public DbSet<ContactTemplate> ContactTemplates => Set<ContactTemplate>();
+    public DbSet<MailTemplateType> MailTemplateTypes => Set<MailTemplateType>();
+    public DbSet<MailTemplate> MailTemplates => Set<MailTemplate>();
     public DbSet<Status> Statuses => Set<Status>();
     public DbSet<UserFriend> UserFriends => Set<UserFriend>();
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();

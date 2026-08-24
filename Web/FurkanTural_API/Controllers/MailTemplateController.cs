@@ -1,0 +1,80 @@
+using Asp.Versioning;
+using FurkanTural_API.Controllers.Base;
+using FurkanTural_API.Models.MailTemplate;
+using FurkanTural_Application.DTOs.MailTemplate;
+using FurkanTural_Application.Services.Abstract;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace FurkanTural_API.Controllers;
+
+[ApiVersion("1.0")]
+public class MailTemplateController(IMailTemplateService mailTemplateService) : JwtBaseController
+{
+    private readonly IMailTemplateService _mailTemplateService = mailTemplateService;
+
+    /// <summary>Posta şablonunu ID ile getir (admin)</summary>
+    [HttpGet("admin/{id:int}")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _mailTemplateService.GetByIdForAdminAsync(id, cancellationToken));
+
+    /// <summary>Tüm posta şablonlarını listele (admin)</summary>
+    [HttpGet("admin")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAllForAdmin(CancellationToken cancellationToken)
+        => ToActionResult(await _mailTemplateService.GetAllForAdminAsync(cancellationToken));
+
+    /// <summary>Yeni posta şablonu oluştur</summary>
+    [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Create([FromBody] CreateMailTemplateRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _mailTemplateService.CreateAsync(new CreateMailTemplateDto
+        {
+            MailTemplateTypeId = request.MailTemplateTypeId,
+            Name = request.Name,
+            Subject = request.Subject,
+            HtmlContent = request.HtmlContent,
+            FileName = request.FileName,
+            CreatedBy = SortUserId()
+        }, cancellationToken));
+
+    /// <summary>Posta şablonunu güncelle</summary>
+    [HttpPut]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Update([FromBody] UpdateMailTemplateRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _mailTemplateService.UpdateAsync(new UpdateMailTemplateDto
+        {
+            Id = request.Id,
+            MailTemplateTypeId = request.MailTemplateTypeId,
+            Name = request.Name,
+            Subject = request.Subject,
+            HtmlContent = request.HtmlContent,
+            FileName = request.FileName,
+            UpdatedBy = SortUserId()
+        }, cancellationToken));
+
+    /// <summary>Posta şablonunu sil</summary>
+    [HttpDelete("{id:int}")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _mailTemplateService.DeleteAsync(id, cancellationToken));
+
+    /// <summary>Posta şablonunun aktiflik durumunu değiştir</summary>
+    [HttpPatch("{id:int}/toggle-active")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _mailTemplateService.ToggleActiveAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>Silinen posta şablonunu geri yükle</summary>
+    [HttpPatch("{id:int}/restore")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _mailTemplateService.RestoreAsync(id, SortUserId(), cancellationToken));
+
+    /// <summary>Admin özeti</summary>
+    [HttpGet("admin/summary")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
+        => ToActionResult(await _mailTemplateService.GetAdminSummaryAsync(cancellationToken));
+}

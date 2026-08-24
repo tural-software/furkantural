@@ -2,7 +2,7 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Domain.Entities;
 
-/// <summary>Ziyaretçinin iletişim formundan bıraktığı mesaj; ardından gönderilen e-postaların gövdesi <see cref="ContactTemplate"/>'ten okunur.</summary>
+/// <summary>Ziyaretçinin iletişim formundan bıraktığı mesaj; ardından gönderilen postaların konusu ve gövdesi <see cref="MailTemplate"/>'ten okunur, türü <see cref="Constants.MailTemplateDefinitions.ContactOwner"/> ve <see cref="Constants.MailTemplateDefinitions.ContactUser"/> ile seçilir.</summary>
 public class Contact : BaseEntity
 {
     public string? Name { get; set; }

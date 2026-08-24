@@ -34,7 +34,10 @@ public static class BusinessServiceRegistration
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<ITurnstileVerifier, TurnstileVerifier>();
-        services.AddScoped<IContactTemplateService, ContactTemplateService>();
+        services.AddScoped<IMailTemplateService, MailTemplateService>();
+        services.AddScoped<IMailTemplateTypeService, MailTemplateTypeService>();
+        services.AddScoped<IMailRenderer, MailRenderer>();
+        services.AddScoped<IMailSender, MailSender>();
         services.AddScoped<IStatusService, StatusService>();
         services.AddScoped<IUserFriendService, UserFriendService>();
         services.AddScoped<IChatMessageService, ChatMessageService>();
