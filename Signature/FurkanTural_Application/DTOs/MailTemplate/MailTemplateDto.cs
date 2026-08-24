@@ -7,6 +7,8 @@ public class MailTemplateDto
     public int MailTemplateTypeId { get; set; }
     public string? TypeCode { get; set; }
     public string? TypeName { get; set; }
+    public int? AppSourceId { get; set; }
+    public string? AppSourceName { get; set; }
     public string? Name { get; set; }
     public string? Subject { get; set; }
     public string? FileName { get; set; }

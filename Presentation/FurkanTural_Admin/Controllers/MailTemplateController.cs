@@ -24,7 +24,8 @@ public class MailTemplateController(IMailTemplateApiClient mailTemplateApiClient
 
         var all = await _mailTemplateApiClient.GetAllForAdminAsync(token, cancellationToken);
         var types = await _mailTemplateApiClient.GetTypesAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, types, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var appSources = await _mailTemplateApiClient.GetAppSourcesAsync(token, cancellationToken);
+        var vm = BuildViewModel(all, types, appSources, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
         return View(vm);
     }
 
@@ -45,7 +46,8 @@ public class MailTemplateController(IMailTemplateApiClient mailTemplateApiClient
 
         var all = await _mailTemplateApiClient.GetAllForAdminAsync(token, cancellationToken);
         var types = await _mailTemplateApiClient.GetTypesAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, types, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var appSources = await _mailTemplateApiClient.GetAppSourcesAsync(token, cancellationToken);
+        var vm = BuildViewModel(all, types, appSources, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
         return PartialView("_MailTemplateTable", vm);
     }
 
@@ -129,6 +131,7 @@ public class MailTemplateController(IMailTemplateApiClient mailTemplateApiClient
     private static MailTemplateIndexViewModel BuildViewModel(
         IReadOnlyList<MailTemplateAdminDto> all,
         IReadOnlyList<MailTemplateTypeOptionDto> types,
+        IReadOnlyList<AppSourceOptionDto> appSources,
         string? name, string? activeFilter, string? deletedFilter,
         string? dateFrom, string? dateTo, int pageNumber, int pageSize)
     {
@@ -168,6 +171,7 @@ public class MailTemplateController(IMailTemplateApiClient mailTemplateApiClient
         {
             Rows = rows,
             Types = types,
+            AppSources = appSources,
             TotalCount = all.Count,
             ActiveCount = all.Count(s => s.IsActive && !s.IsDeleted),
             PassiveCount = all.Count(s => !s.IsActive && !s.IsDeleted),

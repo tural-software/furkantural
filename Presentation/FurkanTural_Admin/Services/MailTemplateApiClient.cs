@@ -79,6 +79,31 @@ public class MailTemplateApiClient(HttpClient httpClient, ILogger<MailTemplateAp
         }
     }
 
+
+    public async Task<IReadOnlyList<AppSourceOptionDto>> GetAppSourcesAsync(string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/appsource");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var response = await _httpClient.SendAsync(request, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Projeler alınamadı: {Status}", (int)response.StatusCode);
+                return [];
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<ApiResult<IEnumerable<AppSourceOptionDto>>>(JsonOptions, ct);
+            return wrapper?.Data?.ToList().AsReadOnly() ?? (IReadOnlyList<AppSourceOptionDto>)[];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Projeler alınırken hata oluştu.");
+            return [];
+        }
+    }
+
     public async Task<bool> CreateAsync(MailTemplateFormDto dto, string token, CancellationToken ct = default)
     {
         try

@@ -9,7 +9,7 @@ using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>Tür bilgisi listelerde tek okumayla toplanıp sözlükten dağıtılır; şablon başına ayrı sorgu açmamak içindir. Yönetim okumaları türleri de filtresiz alır, aksi hâlde pasife alınmış bir türe bağlı şablon adsız görünürdü.<para>Etkinlik değişimi kendi kısıtını taşımaz: "tür başına tek etkin şablon" kuralı veri tabanındadır, dolayısıyla ikinci bir şablonu açma denemesi burada değil kaydetme anında reddedilir ve çakışma yanıtına dönüşür.</para></summary>
+/// <summary>Tür ve proje bilgisi listelerde tek okumayla toplanıp sözlükten dağıtılır; şablon başına ayrı sorgu açmamak içindir. Yönetim okumaları ikisini de filtresiz alır, aksi hâlde pasife alınmış bir türe ya da projeye bağlı şablon adsız görünürdü.<para>Projesi boş bırakılan şablon geçerlidir ve tüm projeler için geçerli genel sürüm anlamına gelir; yalnızca verilen bir proje kimliğinin karşılığı aranır.</para><para>Etkinlik değişimi kendi kısıtını taşımaz: "tür ve proje çifti başına tek etkin şablon" kuralı veri tabanındadır, dolayısıyla ikinci bir şablonu açma denemesi burada değil kaydetme anında reddedilir ve çakışma yanıtına dönüşür.</para></summary>
 public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IMailTemplateService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -26,6 +26,17 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
     private static MailTemplateType? Lookup(Dictionary<int, MailTemplateType> map, int id)
         => map.TryGetValue(id, out var type) ? type : null;
 
+    private async Task<Dictionary<int, AppSource>> AppSourceMapAsync(bool forAdmin, CancellationToken cancellationToken)
+    {
+        var sources = forAdmin
+            ? await _unitOfWork.AppSources.GetAllForAdminAsync(cancellationToken)
+            : await _unitOfWork.AppSources.GetAllAsync(cancellationToken);
+        return sources.ToDictionary(s => s.Id);
+    }
+
+    private static AppSource? LookupApp(Dictionary<int, AppSource> map, int? id)
+        => id is not null && map.TryGetValue(id.Value, out var source) ? source : null;
+
     public async Task<Result<MailTemplateDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.MailTemplates.GetByIdAsync(id, cancellationToken);
@@ -33,14 +44,16 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
             return Result<MailTemplateDto>.Fail("Şablon bulunamadı.", statusCode: 404);
 
         var map = await TypeMapAsync(false, cancellationToken);
-        return Result<MailTemplateDto>.Ok(entity.ToDto(Lookup(map, entity.MailTemplateTypeId)));
+        var appMap = await AppSourceMapAsync(false, cancellationToken);
+        return Result<MailTemplateDto>.Ok(entity.ToDto(Lookup(map, entity.MailTemplateTypeId), LookupApp(appMap, entity.AppSourceId)));
     }
 
     public async Task<Result<IEnumerable<MailTemplateDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _unitOfWork.MailTemplates.GetAllAsync(cancellationToken);
         var map = await TypeMapAsync(false, cancellationToken);
-        return Result<IEnumerable<MailTemplateDto>>.Ok(entities.Select(e => e.ToDto(Lookup(map, e.MailTemplateTypeId))));
+        var appMap = await AppSourceMapAsync(false, cancellationToken);
+        return Result<IEnumerable<MailTemplateDto>>.Ok(entities.Select(e => e.ToDto(Lookup(map, e.MailTemplateTypeId), LookupApp(appMap, e.AppSourceId))));
     }
 
     public async Task<PagedResult<MailTemplateDto>> GetAllPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
@@ -48,8 +61,9 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
         var entities = await _unitOfWork.MailTemplates.GetAllPagedAsync(pageNumber, pageSize, cancellationToken: cancellationToken);
         var total = await _unitOfWork.MailTemplates.CountAsync(cancellationToken: cancellationToken);
         var map = await TypeMapAsync(false, cancellationToken);
+        var appMap = await AppSourceMapAsync(false, cancellationToken);
         return PagedResult<MailTemplateDto>.Ok(
-            entities.Select(e => e.ToDto(Lookup(map, e.MailTemplateTypeId))), total, pageNumber, pageSize);
+            entities.Select(e => e.ToDto(Lookup(map, e.MailTemplateTypeId), LookupApp(appMap, e.AppSourceId))), total, pageNumber, pageSize);
     }
 
     public async Task<Result<MailTemplateDto>> CreateAsync(CreateMailTemplateDto dto, CancellationToken cancellationToken = default)
@@ -63,12 +77,20 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
         if (type is null)
             return Result<MailTemplateDto>.Fail("Posta türü bulunamadı.", statusCode: 404);
 
+        AppSource? appSource = null;
+        if (dto.AppSourceId is not null)
+        {
+            appSource = await _unitOfWork.AppSources.GetByIdAsync(dto.AppSourceId.Value, cancellationToken);
+            if (appSource is null)
+                return Result<MailTemplateDto>.Fail("Proje bulunamadı.", statusCode: 404);
+        }
+
         var entity = dto.ToEntity();
         await _unitOfWork.MailTemplates.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _activityLogger.LogAsync($"Posta şablonu oluşturuldu. Id: {entity.Id}, Tür: {type.Code}", cancellationToken);
+        await _activityLogger.LogAsync($"Posta şablonu oluşturuldu. Id: {entity.Id}, Tür: {type.Code}, Proje: {appSource?.Code ?? "genel"}", cancellationToken);
 
-        return Result<MailTemplateDto>.Ok(entity.ToDto(type));
+        return Result<MailTemplateDto>.Ok(entity.ToDto(type, appSource));
     }
 
     public async Task<Result<MailTemplateDto>> UpdateAsync(UpdateMailTemplateDto dto, CancellationToken cancellationToken = default)
@@ -86,12 +108,20 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
         if (type is null)
             return Result<MailTemplateDto>.Fail("Posta türü bulunamadı.", statusCode: 404);
 
+        AppSource? appSource = null;
+        if (dto.AppSourceId is not null)
+        {
+            appSource = await _unitOfWork.AppSources.GetByIdAsync(dto.AppSourceId.Value, cancellationToken);
+            if (appSource is null)
+                return Result<MailTemplateDto>.Fail("Proje bulunamadı.", statusCode: 404);
+        }
+
         entity.UpdateEntity(dto);
         await _unitOfWork.MailTemplates.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _activityLogger.LogAsync($"Posta şablonu güncellendi. Id: {entity.Id}", cancellationToken);
+        await _activityLogger.LogAsync($"Posta şablonu güncellendi. Id: {entity.Id}, Proje: {appSource?.Code ?? "genel"}", cancellationToken);
 
-        return Result<MailTemplateDto>.Ok(entity.ToDto(type));
+        return Result<MailTemplateDto>.Ok(entity.ToDto(type, appSource));
     }
 
     public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -111,8 +141,9 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
     {
         var entities = await _unitOfWork.MailTemplates.GetAllForAdminAsync(cancellationToken);
         var map = await TypeMapAsync(true, cancellationToken);
+        var appMap = await AppSourceMapAsync(true, cancellationToken);
         return Result<IEnumerable<AdminMailTemplateDto>>.Ok(
-            entities.Select(e => e.ToAdminDto(Lookup(map, e.MailTemplateTypeId))));
+            entities.Select(e => e.ToAdminDto(Lookup(map, e.MailTemplateTypeId), LookupApp(appMap, e.AppSourceId))));
     }
 
     public async Task<Result<AdminMailTemplateDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
@@ -122,7 +153,8 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
             return Result<AdminMailTemplateDto>.Fail("Şablon bulunamadı.", statusCode: 404);
 
         var map = await TypeMapAsync(true, cancellationToken);
-        return Result<AdminMailTemplateDto>.Ok(entity.ToAdminDto(Lookup(map, entity.MailTemplateTypeId)));
+        var appMap = await AppSourceMapAsync(true, cancellationToken);
+        return Result<AdminMailTemplateDto>.Ok(entity.ToAdminDto(Lookup(map, entity.MailTemplateTypeId), LookupApp(appMap, entity.AppSourceId)));
     }
 
     public async Task<Result<AdminMailTemplateDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
@@ -140,7 +172,8 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var map = await TypeMapAsync(true, cancellationToken);
-        return Result<AdminMailTemplateDto>.Ok(entity.ToAdminDto(Lookup(map, entity.MailTemplateTypeId)));
+        var appMap = await AppSourceMapAsync(true, cancellationToken);
+        return Result<AdminMailTemplateDto>.Ok(entity.ToAdminDto(Lookup(map, entity.MailTemplateTypeId), LookupApp(appMap, entity.AppSourceId)));
     }
 
     public async Task<Result<AdminMailTemplateDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
@@ -157,7 +190,8 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var map = await TypeMapAsync(true, cancellationToken);
-        return Result<AdminMailTemplateDto>.Ok(entity.ToAdminDto(Lookup(map, entity.MailTemplateTypeId)));
+        var appMap = await AppSourceMapAsync(true, cancellationToken);
+        return Result<AdminMailTemplateDto>.Ok(entity.ToAdminDto(Lookup(map, entity.MailTemplateTypeId), LookupApp(appMap, entity.AppSourceId)));
     }
 
     public async Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default)

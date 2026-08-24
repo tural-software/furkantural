@@ -30,7 +30,8 @@
             <tbody>
                 <tr><td>Id</td><td>int</td><td>Birincil anahtar</td></tr>
                 <tr><td>Name</td><td>string (200)</td><td>Şablon adı</td></tr>
-                <tr><td>MailTemplateTypeId</td><td>int</td><td>Bağlı olduğu posta türü; tür başına yalnızca bir şablon etkin olabilir</td></tr>
+                <tr><td>MailTemplateTypeId</td><td>int</td><td>Bağlı olduğu posta türü</td></tr>
+                <tr><td>AppSourceId</td><td>int?</td><td>Şablonun ait olduğu sunum projesi; boş bırakılırsa tüm projeler için geçerli genel sürümdür. Gönderim önce isteği yapan projenin şablonunu arar, bulamazsa genel sürüme düşer. Tür ve proje çifti başına yalnızca bir şablon etkin olabilir</td></tr>
                 <tr><td>Subject</td><td>string (300)</td><td>Posta konusu; gövde gibi yer tutucu taşıyabilir</td></tr>
                 <tr><td>FileName</td><td>string (200)</td><td>Yalnızca etiket — HTML'in hangi kaynak dosyadan geldiğini not eder, dosyadan yükleme yapılmaz</td></tr>
                 <tr><td>HtmlContent</td><td>nvarchar(max)</td><td>HTML posta gövdesi. Kullanılabilecek yer tutucular türe göre değişir ve listesi türün gövde DTO'sundan üretilir; şablon düzenleme ekranında gösterilen liste geçerli olandır</td></tr>

@@ -4,26 +4,31 @@ using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Mappers;
 
-/// <summary>Tür bilgisi ayrı parametreyle gelir çünkü entity'ler gezinme özelliği taşımaz; birleştirmeyi servis katmanı yapar. Tür verilmezse kod ve ad boş kalır, yer tutucu listesi de boş döner.</summary>
+/// <summary>Tür ve proje bilgisi ayrı parametrelerle gelir çünkü entity'ler gezinme özelliği taşımaz; birleştirmeyi servis katmanı yapar. Tür verilmezse kod ve ad boş kalır, yer tutucu listesi de boş döner. Proje boş olmak zaten geçerli bir durumdur: şablon tüm projeler için geçerli genel sürümdür.</summary>
 public static class MailTemplateMapper
 {
-    public static MailTemplateDto ToDto(this MailTemplate entity, MailTemplateType? type) => new()
+    public static MailTemplateDto ToDto(this MailTemplate entity, MailTemplateType? type, AppSource? appSource) => new()
     {
         Id = entity.Id,
         MailTemplateTypeId = entity.MailTemplateTypeId,
         TypeCode = type?.Code,
         TypeName = type?.Name,
+        AppSourceId = entity.AppSourceId,
+        AppSourceName = appSource?.Name,
         Name = entity.Name,
         Subject = entity.Subject,
         FileName = entity.FileName
     };
 
-    public static AdminMailTemplateDto ToAdminDto(this MailTemplate entity, MailTemplateType? type) => new()
+    public static AdminMailTemplateDto ToAdminDto(this MailTemplate entity, MailTemplateType? type, AppSource? appSource) => new()
     {
         Id = entity.Id,
         MailTemplateTypeId = entity.MailTemplateTypeId,
         TypeCode = type?.Code,
         TypeName = type?.Name,
+        AppSourceId = entity.AppSourceId,
+        AppSourceCode = appSource?.Code,
+        AppSourceName = appSource?.Name,
         Name = entity.Name,
         Subject = entity.Subject,
         HtmlContent = entity.HtmlContent,
@@ -41,6 +46,7 @@ public static class MailTemplateMapper
     public static MailTemplate ToEntity(this CreateMailTemplateDto dto) => new()
     {
         MailTemplateTypeId = dto.MailTemplateTypeId,
+        AppSourceId = dto.AppSourceId,
         Name = dto.Name,
         Subject = dto.Subject,
         HtmlContent = dto.HtmlContent,
@@ -51,6 +57,7 @@ public static class MailTemplateMapper
     public static void UpdateEntity(this MailTemplate entity, UpdateMailTemplateDto dto)
     {
         entity.MailTemplateTypeId = dto.MailTemplateTypeId;
+        entity.AppSourceId = dto.AppSourceId;
         entity.Name = dto.Name;
         entity.Subject = dto.Subject;
         entity.HtmlContent = dto.HtmlContent;

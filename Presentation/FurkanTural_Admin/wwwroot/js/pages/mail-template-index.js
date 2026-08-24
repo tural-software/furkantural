@@ -45,6 +45,12 @@
                         }
                     },
                     {
+                        label: 'Proje',
+                        icon: 'mail-template',
+                        value: function (r) { return r.appSourceName || 'Tüm projeler (genel)'; },
+                        badgeVariant: function (r) { return r.appSourceId ? 'primary' : 'neutral'; }
+                    },
+                    {
                         label: 'Konu',
                         icon: 'field-text',
                         value: function (r) { return r.subject || '—'; }
@@ -149,6 +155,19 @@
         });
     }
 
+    function allAppSources() {
+        var meta = window.__mailTemplateMeta || {};
+        return meta.appSources || [];
+    }
+
+    function appSourceOptions() {
+        var options = [{ value: '', label: 'Tüm projeler (genel)' }];
+        allAppSources().forEach(function (a) {
+            options.push({ value: String(a.id), label: a.name || a.code });
+        });
+        return options;
+    }
+
     function placeholderHint(base) {
         var names = allTypes().reduce(function (acc, t) {
             (t.placeholders || []).forEach(function (p) { if (acc.indexOf(p) === -1) acc.push(p); });
@@ -174,6 +193,14 @@
             required: true,
             placeholder: 'Tür seçin...',
             options: typeOptions()
+        },
+        {
+            name: 'appSourceId',
+            label: 'Proje',
+            type: 'searchable-select',
+            required: false,
+            placeholder: 'Tüm projeler (genel)',
+            options: appSourceOptions()
         },
         {
             name: 'subject',
@@ -434,6 +461,7 @@
         }), {
             name:               record.name               || '',
             mailTemplateTypeId: String(record.mailTemplateTypeId || ''),
+            appSourceId:        record.appSourceId ? String(record.appSourceId) : '',
             subject:            record.subject            || '',
             fileName:           record.fileName           || '',
             htmlContent:        record.htmlContent        || ''

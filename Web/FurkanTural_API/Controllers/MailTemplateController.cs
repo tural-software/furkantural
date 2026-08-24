@@ -32,6 +32,7 @@ public class MailTemplateController(IMailTemplateService mailTemplateService) : 
         => ToActionResult(await _mailTemplateService.CreateAsync(new CreateMailTemplateDto
         {
             MailTemplateTypeId = request.MailTemplateTypeId,
+            AppSourceId = request.AppSourceId,
             Name = request.Name,
             Subject = request.Subject,
             HtmlContent = request.HtmlContent,
@@ -47,6 +48,7 @@ public class MailTemplateController(IMailTemplateService mailTemplateService) : 
         {
             Id = request.Id,
             MailTemplateTypeId = request.MailTemplateTypeId,
+            AppSourceId = request.AppSourceId,
             Name = request.Name,
             Subject = request.Subject,
             HtmlContent = request.HtmlContent,

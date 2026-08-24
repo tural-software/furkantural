@@ -24,6 +24,12 @@
                 name         = t.Name,
                 description  = t.Description,
                 placeholders = t.Placeholders
+            }),
+            appSources    = Model.AppSources.Select(a => new {
+                id          = a.Id,
+                code        = a.Code,
+                name        = a.Name,
+                description = a.Description
             })
         }));
     </script>

@@ -4,6 +4,7 @@ public class UpdateMailTemplateDto
 {
     public int Id { get; set; }
     public int MailTemplateTypeId { get; set; }
+    public int? AppSourceId { get; set; }
     public string? Name { get; set; }
     public string? Subject { get; set; }
     public string? HtmlContent { get; set; }

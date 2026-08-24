@@ -4,6 +4,7 @@ public sealed class MailTemplateIndexViewModel
 {
     public IReadOnlyList<MailTemplateAdminDto> Rows { get; init; } = [];
     public IReadOnlyList<MailTemplateTypeOptionDto> Types { get; init; } = [];
+    public IReadOnlyList<AppSourceOptionDto> AppSources { get; init; } = [];
 
     public int TotalCount { get; init; }
     public int ActiveCount { get; init; }

@@ -35,6 +35,7 @@ public static class BusinessServiceRegistration
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<ITurnstileVerifier, TurnstileVerifier>();
         services.AddScoped<IMailTemplateService, MailTemplateService>();
+        services.AddScoped<IAppSourceService, AppSourceService>();
         services.AddScoped<IMailTemplateTypeService, MailTemplateTypeService>();
         services.AddScoped<IMailRenderer, MailRenderer>();
         services.AddScoped<IMailSender, MailSender>();

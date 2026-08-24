@@ -16,6 +16,7 @@
                 <th class="col-id">ID</th>
                 <th>Ad</th>
                 <th>Tip</th>
+                <th>Proje</th>
                 <th>Durum</th>
                 <th>Tarih</th>
                 <th class="col-actions">İşlemler</th>
@@ -32,6 +33,16 @@
                         @if (row.Placeholders.Count == 0)
                         {
                             <span class="badge badge--warning" title="Bu türü gönderen bir kod yolu yok">gönderilmiyor</span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.AppSourceId.HasValue)
+                        {
+                            <span class="badge badge--primary">@(row.AppSourceName ?? row.AppSourceCode)</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge--neutral">Genel</span>
                         }
                     </td>
                     <td>
