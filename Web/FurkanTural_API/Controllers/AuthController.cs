@@ -27,7 +27,7 @@ public class AuthController(IAuthService authService, IAccountActivationService 
             Password = request.Password,
             AppSource = request.AppSource,
             TurnstileToken = request.TurnstileToken
-        }, cancellationToken));
+        }, ClientIp(), ClientAgent(), cancellationToken));
 
     /// <summary>Uygulama varsayılan token'ı al (Visitor rolü, uzun süreli)</summary>
     [HttpPost("app-token")]
@@ -65,11 +65,18 @@ public class AuthController(IAuthService authService, IAccountActivationService 
             DisplayName = request.DisplayName,
             TurnstileToken = request.TurnstileToken,
             AcceptAgreement = request.AcceptAgreement
-        }, cancellationToken));
+        }, ClientIp(), ClientAgent(), cancellationToken));
 
     /// <summary>Doğrulama bağlantısındaki jeton ile pasif hesabı yeniden etkinleştir</summary>
     [HttpPost("activate")]
     [AllowAnonymous]
     public async Task<IActionResult> Activate([FromBody] ActivateAccountRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _accountActivationService.ConsumeAsync(request.Token, cancellationToken));
+
+    /// <summary>Adres <c>UseRealClientIp</c> middleware'inden sonra okunur, dolayısıyla Cloudflare kenar adresini değil ziyaretçinin kendi adresini verir.</summary>
+    private string? ClientIp()
+        => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? ClientAgent()
+        => HttpContext.Request.Headers.UserAgent.ToString();
 }

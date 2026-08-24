@@ -15,7 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.<para>Başarılı giriş kayda yazabilir: parola eski geri çözülebilir biçimde saklanıyorsa doğrulandığı anda özet biçimine taşınır (bkz. <see cref="IPasswordHasher"/>). Böylece havuz ayrı bir taşıma işi olmadan zamanla dönüşür, ama okuma gibi görünen bir uç yazma yapar.</para><para>Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her çağrıda doğrulama uygular.</para><para>RegisterAsync'in varlık kontrolü global süzgeci atlar (bkz. <see cref="IUserRepository"/>); silinmiş ve pasif satırları da görür, çünkü tekil indeksler o kullanıcı adlarını hâlâ tutuyor. Üç durumun üçü de dışarıya aynı metni döndürür, hangisinin tetiklendiği yalnızca istemciye çıkmayan InternalMessage'da durur — bu ayrımı yanıta taşımak hesabın silinmiş mi pasif mi olduğunu ele verirdi. Pasif dal şimdilik reddediyor; aktivasyon akışı kurulduğunda değişecek yer orasıdır.</para></summary>
+/// <summary>Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.<para>Başarılı giriş kayda yazabilir: parola eski geri çözülebilir biçimde saklanıyorsa doğrulandığı anda özet biçimine taşınır (bkz. <see cref="IPasswordHasher"/>). Böylece havuz ayrı bir taşıma işi olmadan zamanla dönüşür, ama okuma gibi görünen bir uç yazma yapar.</para><para>Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her çağrıda doğrulama uygular.</para><para>Her iki uç da kullanıcıyı global süzgeci atlayarak okur (bkz. <see cref="IUserRepository"/>); silinmiş ve pasif satırları da görürler, çünkü pasif hesabın açılması ancak onu görebilmekle mümkün ve tekil indeksler o kullanıcı adlarını hâlâ tutuyor.</para><para>LoginAsync'te silinmiş hesap, var olmayan kullanıcı adıyla aynı dala düşer: aynı metin, aynı 401 ve aynı kukla özet hesabı. Pasif hesap ise yalnızca parola doğrulandıktan sonra ayrışır ve doğrulama postasını orada tetikler. Sıralama savunmanın kendisidir — parolayı bilmeden tetiklenebilseydi uç, herhangi birinin istediği adrese posta yollatabildiği bir mekanizmaya dönerdi. Doğru parolayı verene hesabın kapalı olduğunu söylemek bir şey ele vermez; zaten kimlik bilgisi elinde olan biri bunu başka yollarla da öğrenir, söylememek ise onu yalnızca çıkışsız bırakırdı.</para><para>RegisterAsync'te üç durumun üçü de dışarıya aynı metni döndürür, hangisinin tetiklendiği yalnızca istemciye çıkmayan InternalMessage'da durur — bu ayrımı yanıta taşımak hesabın silinmiş mi pasif mi olduğunu ele verirdi. Pasif dal yeni satır açmaz, doğrulama postası gönderir; kullanıcı kendi hesabını yeniden kayıt olarak geri istiyorsa alacağı şey eski hesabıdır. Girilen parola bilerek yok sayılır, aksi hâlde adresin sahibi olmayan biri parola değiştirmeyi tetikleyebilirdi.</para></summary>
 public class AuthService(
     IUnitOfWork unitOfWork,
     IEncryptionService encryptionService,
@@ -24,8 +24,10 @@ public class AuthService(
     IOptions<AppTokenSettings> appTokenSettings,
     ITurnstileVerifier turnstileVerifier,
     ILoginThrottle loginThrottle,
+    IAccountActivationService accountActivationService,
     IClock clock) : IAuthService
 {
+    private readonly IAccountActivationService _accountActivationService = accountActivationService;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEncryptionService _encryptionService = encryptionService;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
@@ -39,7 +41,7 @@ public class AuthService(
         new PasswordHasher().Hash("login-timing-defense-placeholder"),
         LazyThreadSafetyMode.ExecutionAndPublication);
 
-    public async Task<Result<LoginResultDto>> LoginAsync(LoginDto dto, CancellationToken cancellationToken = default)
+    public async Task<Result<LoginResultDto>> LoginAsync(LoginDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
         if (IsTurnstileRequired(dto.AppSource) &&
             !await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, null, cancellationToken))
@@ -56,12 +58,13 @@ public class AuthService(
                 $"Çok fazla hatalı deneme yapıldı. Lütfen {Math.Ceiling(remaining.TotalSeconds)} saniye sonra tekrar deneyin.",
                 statusCode: 429);
 
-        var user = await _unitOfWork.Users.GetAsync(x => x.Username == dto.Username, cancellationToken);
-        if (user is null)
+        var user = await _unitOfWork.Users.GetByUsernameForAdminAsync(dto.Username, cancellationToken);
+        if (user is null || user.IsDeleted)
         {
             _passwordHasher.Verify(dto.Password, DummyHash.Value);
             _loginThrottle.RegisterFailure(dto.Username);
-            return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
+            return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.",
+                user is null ? string.Empty : $"Giriş reddedildi: #{user.Id} silinmiş hesap.", 401);
         }
 
         if (string.IsNullOrWhiteSpace(user.Password))
@@ -96,13 +99,25 @@ public class AuthService(
 
         _loginThrottle.Reset(dto.Username);
 
+        if (!user.IsActive)
+        {
+            var issued = await _accountActivationService.IssueAsync(user.Id, "Login", ipAddress, userAgent, cancellationToken);
+
+            return Result<LoginResultDto>.Fail(
+                "Hesabınız kapalı. Kayıtlı e-posta adresinize hesabı yeniden açma bağlantısı gönderdik. Adresinize ulaşamıyorsanız iletişim formundan bize yazın.",
+                issued.IsFailure
+                    ? $"Giriş reddedildi: #{user.Id} pasif hesap; aktivasyon gönderilemedi: {issued.InternalMessage}"
+                    : $"Giriş reddedildi: #{user.Id} pasif hesap; aktivasyon tetiklendi.",
+                403);
+        }
+
         var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId, cancellationToken);
         var roleName = role?.Name ?? "User";
 
         return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, dto.AppSource));
     }
 
-    public async Task<Result<LoginResultDto>> RegisterAsync(RegisterDto dto, CancellationToken cancellationToken = default)
+    public async Task<Result<LoginResultDto>> RegisterAsync(RegisterDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
         if (!await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, null, cancellationToken))
             return Result<LoginResultDto>.Fail("Robot doğrulaması başarısız oldu. Lütfen tekrar deneyin.", statusCode: 400);
@@ -121,11 +136,11 @@ public class AuthService(
 
         var usernameOwner = await _unitOfWork.Users.GetByUsernameForAdminAsync(dto.Username, cancellationToken);
         if (usernameOwner is not null)
-            return RegistrationRefused(usernameOwner, "Bu kullanıcı adı zaten kullanılıyor.");
+            return await RegistrationRefusedAsync(usernameOwner, "Bu kullanıcı adı zaten kullanılıyor.", ipAddress, userAgent, cancellationToken);
 
         var emailOwner = await _unitOfWork.Users.GetByEmailForAdminAsync(dto.Email, cancellationToken);
         if (emailOwner is not null)
-            return RegistrationRefused(emailOwner, "Bu e-posta adresi zaten kullanılıyor.");
+            return await RegistrationRefusedAsync(emailOwner, "Bu e-posta adresi zaten kullanılıyor.", ipAddress, userAgent, cancellationToken);
 
         var role = await _unitOfWork.Roles.GetAsync(x => x.Name == "User", cancellationToken);
         if (role is null)
@@ -160,12 +175,24 @@ public class AuthService(
         return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, appSource));
     }
 
-    private static Result<LoginResultDto> RegistrationRefused(User owner, string message) => owner switch
+    private const string ReopenHint = " Hesap sizinse ve kapalıysa, kayıtlı adresinize hesabı yeniden açma bağlantısı gönderilir.";
+
+    private async Task<Result<LoginResultDto>> RegistrationRefusedAsync(
+        User owner, string message, string? ipAddress, string? userAgent, CancellationToken cancellationToken)
     {
-        { IsDeleted: true } => Result<LoginResultDto>.Fail(message, $"Kayıt reddedildi: #{owner.Id} silinmiş hesap."),
-        { IsActive: false } => Result<LoginResultDto>.Fail(message, $"Kayıt reddedildi: #{owner.Id} pasif hesap; aktivasyon akışı henüz kurulu değil."),
-        _ => Result<LoginResultDto>.Fail(message)
-    };
+        if (owner.IsDeleted)
+            return Result<LoginResultDto>.Fail(message + ReopenHint, $"Kayıt reddedildi: #{owner.Id} silinmiş hesap.");
+
+        if (owner.IsActive)
+            return Result<LoginResultDto>.Fail(message + ReopenHint);
+
+        var issued = await _accountActivationService.IssueAsync(owner.Id, "Register", ipAddress, userAgent, cancellationToken);
+
+        return Result<LoginResultDto>.Fail(message + ReopenHint,
+            issued.IsFailure
+                ? $"Kayıt reddedildi: #{owner.Id} pasif hesap; aktivasyon gönderilemedi: {issued.InternalMessage}"
+                : $"Kayıt reddedildi: #{owner.Id} pasif hesap; aktivasyon tetiklendi.");
+    }
 
     private bool IsTurnstileRequired(string? appSource)
     {
