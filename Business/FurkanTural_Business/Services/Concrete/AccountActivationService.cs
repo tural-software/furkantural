@@ -53,7 +53,7 @@ public class AccountActivationService(
         await _unitOfWork.AccountActivations.AddAsync(activation, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var sent = await _mailSender.SendAsync(MailTemplateDefinitions.AccountActivation, user.Email, new AccountActivationMailDto
+        var sent = await _mailSender.SendAsync(MailTemplateDefinitions.AccountActivation, AppSourceDefinitions.Chat, user.Email, new AccountActivationMailDto
         {
             DisplayName = user.DisplayName ?? user.Username,
             ActivationUrl = $"{landingUrl}?token={Uri.EscapeDataString(token)}",
