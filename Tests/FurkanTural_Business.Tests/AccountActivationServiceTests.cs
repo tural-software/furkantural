@@ -10,6 +10,7 @@ using FurkanTural_Business.Services.Concrete;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace FurkanTural_Business.Tests;
@@ -26,16 +27,21 @@ public class AccountActivationServiceTests
     private readonly List<AccountActivation> _added = [];
     private readonly List<AccountActivationMailDto> _sent = [];
     private readonly Dictionary<string, string?> _settings = new() { ["Activation:LandingUrl"] = Landing };
+    private DateTime _now = Now;
     private AccountActivationService _sut;
 
     public AccountActivationServiceTests()
     {
-        var clock = new Mock<IClock>();
-        clock.SetupGet(c => c.UtcNow).Returns(Now);
-
         _activations.Setup(r => r.AddAsync(It.IsAny<AccountActivation>(), It.IsAny<CancellationToken>()))
-            .Callback<AccountActivation, CancellationToken>((a, _) => _added.Add(a))
+            .Callback<AccountActivation, CancellationToken>((a, _) =>
+            {
+                a.CreatedAt = _now;
+                _added.Add(a);
+            })
             .Returns(Task.CompletedTask);
+
+        _activations.Setup(r => r.GetAsync(It.IsAny<Expression<Func<AccountActivation, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Expression<Func<AccountActivation, bool>> p, CancellationToken _) => _added.FirstOrDefault(p.Compile()));
 
         _mail.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
             .Callback<string, string?, string?, object, CancellationToken>((_, _, _, p, _) => _sent.Add((AccountActivationMailDto)p))
@@ -49,9 +55,15 @@ public class AccountActivationServiceTests
     }
 
     private AccountActivationService Build()
-        => new(_uow.Object, _mail.Object,
+    {
+        var clock = new Mock<IClock>();
+        clock.SetupGet(c => c.UtcNow).Returns(() => _now);
+
+        return new AccountActivationService(_uow.Object, _mail.Object,
             new ConfigurationBuilder().AddInMemoryCollection(_settings).Build(),
-            Mock.Of<IClock>(c => c.UtcNow == Now));
+            NullLogger<AccountActivationService>.Instance,
+            clock.Object);
+    }
 
     private static string Sha256(string value)
         => Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
@@ -63,9 +75,10 @@ public class AccountActivationServiceTests
         => _users.Setup(r => r.GetByIdForAdminAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
 
     private void ActivationIs(AccountActivation? activation)
-        => _activations
-            .Setup(r => r.GetAsync(It.IsAny<Expression<Func<AccountActivation, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(activation);
+    {
+        _added.Clear();
+        if (activation is not null) _added.Add(activation);
+    }
 
     private static User Passive(int id = 7) => new()
     {
@@ -126,14 +139,54 @@ public class AccountActivationServiceTests
     }
 
     [Fact]
-    public async Task Ard_arda_uretilen_jetonlar_ayni_olmaz()
+    public async Task Bekleyen_baglanti_varken_ikincisi_uretilmez()
     {
         UserIs(Passive());
 
         await _sut.IssueAsync(7, "Login", null, null);
+        _now = _now.AddMinutes(4);
+        var result = await _sut.IssueAsync(7, "Login", null, null);
+
+        result.Success.Should().BeTrue("çağıran için sonuç değişmez");
+        _sent.Should().ContainSingle("aynı hesabı kendi gelen kutusunda boğmamak gerekir");
+        _added.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Bekleme_suresi_dolunca_yeni_baglanti_uretilir()
+    {
+        UserIs(Passive());
+
+        await _sut.IssueAsync(7, "Login", null, null);
+        _now = _now.AddMinutes(6);
         await _sut.IssueAsync(7, "Login", null, null);
 
+        _sent.Should().HaveCount(2);
         TokenFrom(_sent[0]).Should().NotBe(TokenFrom(_sent[1]));
+    }
+
+    [Fact]
+    public async Task Harcanmis_baglanti_bekleme_suresi_saymaz()
+    {
+        UserIs(Passive());
+
+        await _sut.IssueAsync(7, "Login", null, null);
+        _added[0].ConsumedAt = _now;
+        await _sut.IssueAsync(7, "Login", null, null);
+
+        _sent.Should().HaveCount(2, "kullanılmış bağlantı kullanıcıyı bir daha içeri almaz");
+    }
+
+    [Fact]
+    public async Task Baska_hesabin_bekleyen_baglantisi_engel_olmaz()
+    {
+        UserIs(Passive());
+        await _sut.IssueAsync(7, "Login", null, null);
+
+        UserIs(Passive(9));
+        await _sut.IssueAsync(9, "Login", null, null);
+
+        _sent.Should().HaveCount(2);
     }
 
     [Fact]

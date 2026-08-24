@@ -7,22 +7,26 @@ using FurkanTural_Application.Wrappers;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>Jeton 32 bayt <see cref="RandomNumberGenerator"/> çıktısının URL'de güvenli base64'üdür; bağlantıda sorgu değeri olarak taşınacağı için standart base64'ün doldurma ve eğik çizgi karakterleri kullanılmaz. Saklanan değer bunun tuzsuz SHA-256 özetidir: tuz aranabilirliği bozardı ve girdi zaten 256 bit rastgele olduğu için sözlük saldırısına açık değildir — parola özetleyicisinin PBKDF2'si burada yanlış araçtır.<para>Jetonun düz hâli yalnızca giden postanın içinde bulunur; ne çağırana döner ne de kayda yazılır. Bu yüzden üretim ile gönderim tek metottadır: ikisini ayırmak, jetonu servis sınırının dışına taşımak demek olurdu.</para><para>Bağlantının adresi <c>Activation:LandingUrl</c>'den okunur ve yoksa posta hiç gönderilmez. Yapılandırılmamış bir adresle üretilen bağlantı kullanıcıyı hiçbir yere götürmez; jetonu harcamadan başarısız olmak, çalışmayan bir bağlantı yollamaktan iyidir.</para><para>Süresi geçmiş ya da harcanmış jeton silinmez, ayrı hatalarla reddedilir. Bağlantıyı elinde tutan kişi zaten meşru kabul edilir, dolayısıyla "süresi doldu" ile "zaten kullanıldı" ayrımı bir hesabın varlığını ele vermez; ayırmamak yalnızca kullanıcıyı ne yapacağını bilmez hâlde bırakırdı.</para><para>Kullanıcı okuması küresel süzgecin arkasından geçmek zorundadır: aktifleştirilecek hesap tanımı gereği pasiftir ve süzgeçli okuma onu hiç görmez.</para></summary>
+/// <summary>Jeton 32 bayt <see cref="RandomNumberGenerator"/> çıktısının URL'de güvenli base64'üdür; bağlantıda sorgu değeri olarak taşınacağı için standart base64'ün doldurma ve eğik çizgi karakterleri kullanılmaz. Saklanan değer bunun tuzsuz SHA-256 özetidir: tuz aranabilirliği bozardı ve girdi zaten 256 bit rastgele olduğu için sözlük saldırısına açık değildir — parola özetleyicisinin PBKDF2'si burada yanlış araçtır.<para>Jetonun düz hâli yalnızca giden postanın içinde bulunur; ne çağırana döner ne de kayda yazılır. Bu yüzden üretim ile gönderim tek metottadır: ikisini ayırmak, jetonu servis sınırının dışına taşımak demek olurdu.</para><para>Bağlantının adresi <c>Activation:LandingUrl</c>'den okunur ve yoksa posta hiç gönderilmez. Yapılandırılmamış bir adresle üretilen bağlantı kullanıcıyı hiçbir yere götürmez; jetonu harcamadan başarısız olmak, çalışmayan bir bağlantı yollamaktan iyidir.</para><para>Süresi geçmiş ya da harcanmış jeton silinmez, ayrı hatalarla reddedilir. Bağlantıyı elinde tutan kişi zaten meşru kabul edilir, dolayısıyla "süresi doldu" ile "zaten kullanıldı" ayrımı bir hesabın varlığını ele vermez; ayırmamak yalnızca kullanıcıyı ne yapacağını bilmez hâlde bırakırdı.</para><para>Aynı hesap için beş dakika içinde üretilmiş, henüz harcanmamış bir bağlantı varsa yenisi üretilmez ve sonuç yine başarılı döner. Tetikleyici doğru parolanın arkasında olsa da her denemede posta yollamak, hesabın sahibini kendi gelen kutusunda boğmanın yolu olurdu; duran bağlantı zaten yirmi dört saat geçerli olduğu için bekleyen kullanıcı bir şey kaybetmez.</para><para>Kullanıcı okuması küresel süzgecin arkasından geçmek zorundadır: aktifleştirilecek hesap tanımı gereği pasiftir ve süzgeçli okuma onu hiç görmez.</para></summary>
 public class AccountActivationService(
     IUnitOfWork unitOfWork,
     IMailSender mailSender,
     IConfiguration configuration,
+    ILogger<AccountActivationService> logger,
     IClock clock) : IAccountActivationService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMailSender _mailSender = mailSender;
     private readonly IConfiguration _configuration = configuration;
+    private readonly ILogger<AccountActivationService> _logger = logger;
     private readonly IClock _clock = clock;
 
     private static readonly TimeSpan Lifetime = TimeSpan.FromHours(24);
+    private static readonly TimeSpan Cooldown = TimeSpan.FromMinutes(5);
 
     public async Task<Result> IssueAsync(int userId, string triggerSource, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
@@ -36,6 +40,18 @@ public class AccountActivationService(
         var landingUrl = _configuration["Activation:LandingUrl"];
         if (string.IsNullOrWhiteSpace(landingUrl))
             return Result.Fail("Aktivasyon gönderilemedi.", "Activation:LandingUrl yapılandırılmamış.", 500);
+
+        var cutoff = _clock.UtcNow.Subtract(Cooldown);
+        var pending = await _unitOfWork.AccountActivations
+            .GetAsync(x => x.UserId == user.Id && x.ConsumedAt == null && x.CreatedAt > cutoff, cancellationToken);
+
+        if (pending is not null)
+        {
+            _logger.LogInformation(
+                "Aktivasyon gönderilmedi: #{UserId} için {Minutes} dakika içinde üretilmiş, henüz harcanmamış bir bağlantı var ({TriggerSource}).",
+                userId, Cooldown.TotalMinutes, triggerSource);
+            return Result.Ok();
+        }
 
         var token = GenerateToken();
         var expiresAt = _clock.UtcNow.Add(Lifetime);
