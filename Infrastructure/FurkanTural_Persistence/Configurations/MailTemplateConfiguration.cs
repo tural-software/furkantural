@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FurkanTural_Persistence.Configurations;
 
-/// <summary>Tür başına tek etkin şablon kuralı buradaki süzgeçli tekil indekstir; servis katmanında değil veri tabanında durur, çünkü aynı türe iki etkin şablon yazıldığında gönderim hangisini seçeceğini bilemez ve seçim sıralamaya göre sessizce değişirdi.<para>Süzgeç yalnızca etkin ve silinmemiş satırları kapsar, dolayısıyla taslak ve arşiv sayısı sınırsızdır. İkinci bir şablonu etkinleştirme denemesi kısıta takılır ve <see cref="FurkanTural_Application.Exceptions.DuplicateEntityException"/> üzerinden temiz bir çakışma yanıtına dönüşür.</para><para>Tür bağı Restrict'tir: şablonu duran bir tür kalıcı olarak silinemez. Yumuşak silme bundan etkilenmez, o yüzden kural yalnızca elle yapılacak bir silmede kendini gösterir.</para></summary>
+/// <summary>Tür ve proje çifti başına tek etkin şablon kuralı buradaki süzgeçli tekil indekstir; servis katmanında değil veri tabanında durur, çünkü aynı çifte iki etkin şablon yazıldığında gönderim hangisini seçeceğini bilemez ve seçim sıralamaya göre sessizce değişirdi.<para>Süzgeç yalnızca etkin ve silinmemiş satırları kapsar, dolayısıyla taslak ve arşiv sayısı sınırsızdır. İkinci bir şablonu etkinleştirme denemesi kısıta takılır ve <see cref="FurkanTural_Application.Exceptions.DuplicateEntityException"/> üzerinden temiz bir çakışma yanıtına dönüşür.</para><para>AppSourceId boş bırakılabilir ve boş değer indekste tek bir satıra izin verir: SQL Server tekil indekste NULL'ları birbirine eşit sayar, dolayısıyla "tür başına tek genel şablon" kuralı ayrı bir kısıt yazmadan aynı indeksten çıkar.</para><para>Her iki bağ da Restrict'tir: şablonu duran bir tür ya da proje kalıcı olarak silinemez. Yumuşak silme bundan etkilenmez, o yüzden kural yalnızca elle yapılacak bir silmede kendini gösterir.</para></summary>
 public class MailTemplateConfiguration : BaseEntityConfiguration<MailTemplate>
 {
     public override void Configure(EntityTypeBuilder<MailTemplate> builder)
@@ -22,7 +22,12 @@ public class MailTemplateConfiguration : BaseEntityConfiguration<MailTemplate>
             .HasForeignKey(e => e.MailTemplateTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(e => e.MailTemplateTypeId)
+        builder.HasOne<AppSource>()
+            .WithMany()
+            .HasForeignKey(e => e.AppSourceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(e => new { e.MailTemplateTypeId, e.AppSourceId })
             .IsUnique()
             .HasFilter("[IsActive] = 1 AND [IsDeleted] = 0");
     }

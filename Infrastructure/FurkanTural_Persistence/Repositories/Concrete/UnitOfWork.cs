@@ -39,6 +39,7 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     public IRepository<Subscriber> Subscribers => GetRepository<Subscriber>();
     public IUserRepository Users => _users ??= new UserRepository(context);
     public IRepository<Contact> Contacts => GetRepository<Contact>();
+    public IRepository<AppSource> AppSources => GetRepository<AppSource>();
     public IRepository<MailTemplateType> MailTemplateTypes => GetRepository<MailTemplateType>();
     public IRepository<MailTemplate> MailTemplates => GetRepository<MailTemplate>();
     public IRepository<Status> Statuses => GetRepository<Status>();
