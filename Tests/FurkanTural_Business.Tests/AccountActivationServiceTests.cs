@@ -37,8 +37,8 @@ public class AccountActivationServiceTests
             .Callback<AccountActivation, CancellationToken>((a, _) => _added.Add(a))
             .Returns(Task.CompletedTask);
 
-        _mail.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
-            .Callback<string, string?, object, CancellationToken>((_, _, p, _) => _sent.Add((AccountActivationMailDto)p))
+        _mail.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
+            .Callback<string, string?, string?, object, CancellationToken>((_, _, _, p, _) => _sent.Add((AccountActivationMailDto)p))
             .ReturnsAsync(Result.Ok());
 
         _uow.SetupGet(u => u.Users).Returns(_users.Object);
@@ -203,7 +203,7 @@ public class AccountActivationServiceTests
     public async Task Posta_gonderilemezse_sonuc_basarisiz_doner()
     {
         UserIs(Passive());
-        _mail.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
+        _mail.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Fail("Posta gönderilemedi.", "SMTP kapalı.", 502));
 
         var result = await _sut.IssueAsync(7, "Login", null, null);
@@ -222,6 +222,7 @@ public class AccountActivationServiceTests
 
         _mail.Verify(m => m.SendAsync(
             MailTemplateDefinitions.AccountActivation,
+            AppSourceDefinitions.Chat,
             "deneme@ornek.test",
             It.IsAny<AccountActivationMailDto>(),
             It.IsAny<CancellationToken>()), Times.Once);
