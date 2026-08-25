@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FurkanTural_Persistence.Configurations;
 
-/// <summary>E-posta tekil indeksi yumuşak silmeye göre süzülmez. Abonelikten çıkmak kaydı yumuşak sildiği için satır tabloda kalır; aynı adresle yeniden abone olma girişimi ise varlık kontrolünü global süzgeç yüzünden geçer ve ekleme tekil indekse takılır. Aynı durum <see cref="UserConfiguration"/> için de geçerlidir.</summary>
+/// <summary>E-posta tekil indeksi yumuşak silmeye göre süzülmez ve öyle kalması doğrudur: filtre eklemek, abonelikten çıkmış bir adresin ikinci bir satırla yeniden kaydedilebilmesi demek olurdu.<para>Bunun bedeli varlık kontrolünün indeksle aynı şeyi görmek zorunda olmasıdır; abonelik akışı bu yüzden süzgeçsiz okur ve duran satırı geri açar (bkz. <see cref="FurkanTural_Application.Repositories.Abstract.ISubscriberRepository"/>). Aynı durum <see cref="UserConfiguration"/> için de geçerlidir.</para></summary>
 public class SubscriberConfiguration : BaseEntityConfiguration<Subscriber>
 {
     public override void Configure(EntityTypeBuilder<Subscriber> builder)

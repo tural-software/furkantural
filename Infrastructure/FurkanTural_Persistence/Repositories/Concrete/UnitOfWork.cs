@@ -16,6 +16,7 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     private ILogRepository? _logs;
     private IChatMessageRepository? _chatMessages;
     private IUserRepository? _users;
+    private ISubscriberRepository? _subscribers;
 
     public IRepository<T> GetRepository<T>() where T : BaseEntity
     {
@@ -36,7 +37,7 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     public IRepository<ProjectImage> ProjectImages => GetRepository<ProjectImage>();
     public IRepository<Role> Roles => GetRepository<Role>();
     public IRepository<Skill> Skills => GetRepository<Skill>();
-    public IRepository<Subscriber> Subscribers => GetRepository<Subscriber>();
+    public ISubscriberRepository Subscribers => _subscribers ??= new SubscriberRepository(context);
     public IUserRepository Users => _users ??= new UserRepository(context);
     public IRepository<Contact> Contacts => GetRepository<Contact>();
     public IRepository<AppSource> AppSources => GetRepository<AppSource>();

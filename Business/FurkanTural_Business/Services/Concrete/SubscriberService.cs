@@ -5,8 +5,11 @@ using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
 using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Mappers;
+using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Services.Concrete;
+
+/// <summary>Abonelik akışının varlık kontrolü global süzgeci atlar (bkz. <see cref="ISubscriberRepository"/>); Email tekil indeksi yumuşak silmeye göre süzülmediği için abonelikten çıkmış bir adres indekste hâlâ tutuludur ve süzgeçli bir kontrol onu göremez.<para>Aynı adresle yeniden abone olmak reddedilmez, duran satır geri açılır. Abonelik bir hesap değildir: arkasında parola, veri ya da kimlik yoktur, dolayısıyla hesap akışındaki posta doğrulaması burada karşılıksızdır — geri açmak ilk kez abone olmakla aynı şeydir ve yanıtı da aynıdır.</para><para>Yönetim uçları aynı kontrolü yapar ama sonucu saklamaz: admin zaten tabloyu görebildiği için çakışan kaydın kimliği yanıta yazılır, böylece "yeni kayıt mı açayım, duranı mı geri yükleyeyim" sorusu panelden cevaplanabilir.</para></summary>
 
 public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : ISubscriberService
 {
@@ -40,6 +43,10 @@ public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLo
         if (string.IsNullOrWhiteSpace(dto.Email))
             return Result<SubscriberDto>.Fail("E-posta adresi boş olamaz.");
 
+        var owner = await _unitOfWork.Subscribers.GetByEmailForAdminAsync(dto.Email, cancellationToken);
+        if (owner is not null)
+            return Result<SubscriberDto>.Fail(OccupiedMessage(owner), statusCode: 409);
+
         var entity = dto.ToEntity();
         await _unitOfWork.Subscribers.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -56,6 +63,10 @@ public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLo
 
         if (string.IsNullOrWhiteSpace(dto.Email))
             return Result<SubscriberDto>.Fail("E-posta adresi boş olamaz.");
+
+        var owner = await _unitOfWork.Subscribers.GetByEmailForAdminAsync(dto.Email, cancellationToken);
+        if (owner is not null && owner.Id != entity.Id)
+            return Result<SubscriberDto>.Fail(OccupiedMessage(owner), statusCode: 409);
 
         entity.UpdateEntity(dto);
         await _unitOfWork.Subscribers.UpdateAsync(entity, cancellationToken);
@@ -117,9 +128,19 @@ public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLo
         if (string.IsNullOrWhiteSpace(email))
             return Result.Fail("E-posta adresi boş olamaz.");
 
-        var alreadyExists = await _unitOfWork.Subscribers.AnyAsync(x => x.Email == email, cancellationToken);
-        if (alreadyExists)
+        var existing = await _unitOfWork.Subscribers.GetByEmailForAdminAsync(email, cancellationToken);
+
+        if (existing is { IsDeleted: false, IsActive: true })
             return Result.Fail("Bu e-posta adresi zaten abone listesinde.");
+
+        if (existing is not null)
+        {
+            await _unitOfWork.Subscribers.RestoreAsync(existing, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _activityLogger.LogAsync($"Abonelik yeniden açıldı. Id: {existing.Id}", cancellationToken);
+
+            return Result.Ok("Abonelik başarıyla tamamlandı.");
+        }
 
         var entity = new CreateSubscriberDto { Email = email }.ToEntity();
         await _unitOfWork.Subscribers.AddAsync(entity, cancellationToken);
@@ -167,4 +188,9 @@ public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLo
         var summary = await _unitOfWork.Subscribers.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
+
+    private static string OccupiedMessage(Subscriber owner)
+        => owner.IsDeleted
+            ? $"Bu e-posta adresi silinmiş bir kayıtta duruyor (#{owner.Id}); yeni kayıt açmak yerine onu geri yükleyin."
+            : $"Bu e-posta adresi zaten kayıtlı (#{owner.Id}).";
 }

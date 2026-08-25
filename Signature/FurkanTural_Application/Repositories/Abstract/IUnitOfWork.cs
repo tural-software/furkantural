@@ -18,7 +18,7 @@ public interface IUnitOfWork
     IRepository<ProjectImage> ProjectImages { get; }
     IRepository<Role> Roles { get; }
     IRepository<Skill> Skills { get; }
-    IRepository<Subscriber> Subscribers { get; }
+    ISubscriberRepository Subscribers { get; }
     IUserRepository Users { get; }
     IRepository<Contact> Contacts { get; }
     IRepository<AppSource> AppSources { get; }
