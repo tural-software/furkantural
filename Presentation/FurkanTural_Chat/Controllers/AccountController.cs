@@ -101,6 +101,41 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
         return View(model);
     }
 
+    [HttpGet]
+    public IActionResult Close()
+    {
+        if (!IsAuthenticated())
+            return RedirectToAction(nameof(Login));
+
+        return View(new CloseAccountModel());
+    }
+
+    /// <summary>Oturum, API kapatmayı kabul ettikten sonra boşaltılır. Ters sırada yapılsaydı istek yetkisiz kalır, hesap açık kalır ve kullanıcı kapattığını sanırdı.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Close(CloseAccountModel model, CancellationToken cancellationToken)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return RedirectToAction(nameof(Login));
+
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var result = await _authApiClient.DeactivateAsync(token, model.Password, cancellationToken);
+        if (!result.Success)
+        {
+            model.Error = ApiErrors(result.Errors, result.Message, "Hesap kapatılamadı.")[0];
+            model.Password = null;
+            return View(model);
+        }
+
+        HttpContext.Session.Clear();
+        SetFlash("success", "Hesabınız kapatıldı",
+            "Aynı bilgilerle giriş yapmayı denediğinizde adresinize yeniden açma bağlantısı gönderilir.");
+        return RedirectToAction(nameof(Login));
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Logout()

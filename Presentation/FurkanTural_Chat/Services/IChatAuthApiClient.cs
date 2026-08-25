@@ -8,4 +8,5 @@ public interface IChatAuthApiClient
     Task<ApiResult<AuthResultModel>> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken = default);
     Task<ApiResult<AuthResultModel>> RegisterAsync(RegisterRequestModel request, CancellationToken cancellationToken = default);
     Task<ApiResult> ActivateAsync(string? token, CancellationToken cancellationToken = default);
+    Task<ApiResult> DeactivateAsync(string sessionToken, string? password, CancellationToken cancellationToken = default);
 }

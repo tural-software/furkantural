@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FurkanTural_Chat.Models.Auth;
@@ -35,12 +36,23 @@ public class ChatAuthApiClient(HttpClient httpClient, ILogger<ChatAuthApiClient>
     public Task<ApiResult> ActivateAsync(string? token, CancellationToken cancellationToken = default)
         => PostAsync("/api/v1/Auth/activate", new { token }, ApiResult.Fail, cancellationToken);
 
-    private async Task<TResult> PostAsync<TResult>(string url, object body, Func<string, int, TResult> fail, CancellationToken cancellationToken)
+    public Task<ApiResult> DeactivateAsync(string sessionToken, string? password, CancellationToken cancellationToken = default)
+        => PostAsync("/api/v1/User/me/deactivate", new { password }, ApiResult.Fail, cancellationToken, sessionToken);
+
+    private async Task<TResult> PostAsync<TResult>(string url, object body, Func<string, int, TResult> fail, CancellationToken cancellationToken, string? bearer = null)
         where TResult : ApiResult
     {
         try
         {
-            using var response = await _httpClient.PostAsJsonAsync(url, body, cancellationToken);
+            using var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = JsonContent.Create(body)
+            };
+
+            if (!string.IsNullOrWhiteSpace(bearer))
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
             var result = await response.Content.ReadFromJsonAsync<TResult>(JsonOptions, cancellationToken);
             return result ?? fail("API'den boş yanıt alındı.", (int)response.StatusCode);
         }

@@ -1,0 +1,49 @@
+@model CloseAccountModel
+@{
+    ViewData["Title"] = "Hesabı Kapat";
+}
+<button type="button" class="theme-toggle-btn theme-toggle-btn--floating" data-theme-toggle aria-label="Temayı değiştir">
+    <span data-theme-icon aria-hidden="true">🌙</span>
+</button>
+
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <img src="~/img/chatural-logo.png" alt="Chatural" class="auth-logo" width="76" height="76" />
+            <div class="auth-name" aria-label="Chatural">Cha<span>tural</span></div>
+        </div>
+
+        <h1 class="activate-title">Hesabını kapat</h1>
+        <p class="auth-sub">
+            Hesabın kapandığında kimse seni bulamaz ve sohbetlerine erişemezsin. Silinen bir şey
+            olmaz: sohbetlerin, arkadaş listen ve geçmişin olduğu gibi durur.
+        </p>
+
+        <div class="close-note">
+            Geri açmak için <strong>giriş yapmayı dene</strong> — kayıtlı e-posta adresine hesabı
+            yeniden açan bir bağlantı gönderilir. Bu yüzden adresine erişebildiğinden emin ol.
+        </div>
+
+        <form asp-action="Close" method="post" class="auth-form" aria-label="Hesap kapatma formu">
+            @Html.AntiForgeryToken()
+
+            <label asp-for="Password">Parolanı doğrula</label>
+            <input asp-for="Password" type="password" autocomplete="current-password" autofocus
+                   aria-required="true" aria-describedby="close-password-err" />
+            <span asp-validation-for="Password" class="field-error" id="close-password-err" role="alert"></span>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Error))
+            {
+                <span class="field-error" role="alert">@Model.Error</span>
+            }
+
+            <button type="submit" class="btn-danger">Hesabımı kapat</button>
+        </form>
+
+        <p class="auth-foot"><a asp-controller="Chat" asp-action="Index">Vazgeç, sohbete dön</a></p>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

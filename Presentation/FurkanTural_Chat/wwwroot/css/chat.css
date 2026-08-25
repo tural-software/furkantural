@@ -244,6 +244,37 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 
 .auth-foot { text-align: center; margin-top: 18px; color: var(--text-dim); font-size: var(--fs-md); }
 
+.btn-danger {
+    background: var(--chip-delete-bg);
+    color: var(--chip-delete-fg);
+    border: 1px solid var(--chip-delete-fg);
+    font-weight: 600;
+    font-size: var(--fs-base);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-top: 18px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-danger:hover { background: var(--error); color: #fff; }
+.btn-danger:active { transform: scale(0.98); }
+
+.close-note {
+    margin: 4px 0 6px;
+    padding: 14px 16px;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-md);
+    color: var(--text-dim);
+    font-size: var(--fs-sm);
+    line-height: 1.6;
+}
+
+.me-links { text-align: center; padding: 0 12px 10px; }
+.me-link { font-size: var(--fs-xs); color: var(--text-dim); text-decoration: none; }
+.me-link:hover { color: var(--error); text-decoration: underline; }
+
 .chat-app {
     height: 100vh;
     height: 100dvh;            /* mobil: adres çubuğu yüksekliğini hesaba kat */
