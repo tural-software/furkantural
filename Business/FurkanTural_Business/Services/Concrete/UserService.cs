@@ -278,4 +278,26 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
 
         return Result.Ok();
     }
+
+    public async Task<Result> DeactivateMyAccountAsync(int userId, string? password, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+            return Result.Fail("Hesabınızı kapatmak için parolanızı girmeniz gerekiyor.");
+
+        var entity = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
+        if (entity is null)
+            return Result.Fail("Kullanıcı bulunamadı.", $"Hesap kapatma reddedildi: #{userId} etkin değil ya da silinmiş.", 404);
+
+        if (string.IsNullOrWhiteSpace(entity.Password) || !_passwordHasher.Verify(password, entity.Password))
+            return Result.Fail("Parola hatalı.", $"Hesap kapatma reddedildi: #{userId} parola doğrulanamadı.", 401);
+
+        entity.IsActive = false;
+        entity.UpdatedBy = userId;
+
+        await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _activityLogger.LogAsync($"Kullanıcı kendi hesabını kapattı. Id: {userId}", cancellationToken);
+
+        return Result.Ok("Hesabınız kapatıldı.");
+    }
 }

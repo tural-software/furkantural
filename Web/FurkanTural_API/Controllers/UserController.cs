@@ -147,6 +147,17 @@ public class UserController : JwtBaseController
         return ToActionResult(await _userService.AcceptAgreementAsync(userId.Value, cancellationToken));
     }
 
+
+    /// <summary>Giriş yapan kullanıcı kendi hesabını kapatır; geri açmak e-posta doğrulaması ister</summary>
+    [HttpPost("me/deactivate")]
+    [Authorize(Policy = "UserOrAdmin")]
+    public async Task<IActionResult> DeactivateMyAccount([FromBody] DeactivateAccountRequest request, CancellationToken cancellationToken)
+    {
+        var userId = SortUserId();
+        if (userId is null) return Unauthorized();
+        return ToActionResult(await _userService.DeactivateMyAccountAsync(userId.Value, request.Password, cancellationToken));
+    }
+
     private const long AvatarMaxBytes = 5L * 1024 * 1024;
 
     private async Task<IActionResult> SaveAvatarAsync(int targetUserId, UserAvatarRequest request, CancellationToken cancellationToken)
