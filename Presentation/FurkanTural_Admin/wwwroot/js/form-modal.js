@@ -399,6 +399,9 @@
 
     function buildModal(config, initialValues) {
         var fieldsHtml = config.fields.map(function (f) { return buildField(f, initialValues); }).join('');
+        var note = config.footerNote === undefined
+            ? 'Kaydedilen değişiklikler sistem kayıtlarına yazılır.'
+            : config.footerNote;
         // İçerik-yoğun formlar için geniş varyant (config.size === 'large').
         var sizeClass = config.size === 'large' ? ' fm--large' : '';
 
@@ -413,6 +416,7 @@
             '<div class="fm-body">' + fieldsHtml + '</div>' +
             '<p class="fm-error-banner" id="fm-error-banner"></p>' +
             '<div class="fm-footer">' +
+            (note ? '<p class="fm-footer__note">' + escHtml(note) + '</p>' : '') +
             '<button class="btn-outline" id="fm-cancel">İptal</button>' +
             '<button class="btn-primary" id="fm-submit">' + escHtml(config.submitLabel || 'Kaydet') + '</button>' +
             '</div>' +
