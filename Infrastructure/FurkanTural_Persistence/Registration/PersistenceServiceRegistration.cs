@@ -22,6 +22,7 @@ public static class PersistenceServiceRegistration
                    .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>()));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<ISchemaMetadataReader, SchemaMetadataReader>();
 
         return services;
     }
