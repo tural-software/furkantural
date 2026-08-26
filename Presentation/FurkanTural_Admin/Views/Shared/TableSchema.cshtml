@@ -1,0 +1,171 @@
+@using FurkanTural_Admin.Models.Schema
+@using FurkanTural_Admin.Helpers
+@model TableSchemaViewModel
+@{
+    ViewData["Title"] = $"{Model.ModuleTitle} — Tablo Şeması";
+
+    string IconFor(TableColumnModel c)
+    {
+        if (c.IsPrimaryKey) return "field-key";
+        if (c.ColumnType.StartsWith("datetime", StringComparison.OrdinalIgnoreCase)) return "calendar";
+        if (c.ColumnType.StartsWith("bit", StringComparison.OrdinalIgnoreCase)) return "field-bool";
+        if (c.ColumnType.StartsWith("int", StringComparison.OrdinalIgnoreCase)) return "field-number";
+        if (c.Name.EndsWith("By", StringComparison.Ordinal) || c.Name.EndsWith("Id", StringComparison.Ordinal)) return "user";
+        return "field-text";
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/components/schema-page.css" asp-append-version="true" />
+}
+
+<div class="container">
+
+    @await Html.PartialAsync("_Breadcrumb", "Tablo Şeması")
+
+    <div class="pg-header">
+        <div>
+            <div class="pg-header__title-row">
+                <h1 class="section-title">@Model.ModuleTitle</h1>
+                <span class="page-badge">ŞEMA</span>
+            </div>
+            <p class="section-desc">
+                @if (Model.Schema is not null)
+                {
+                    <text><code>@Model.Schema.TableName</code> tablosunun alan yapısı. Değerler veri tabanı modelinden okunur.</text>
+                }
+                else
+                {
+                    <text>Tablo yapısı görüntülenemedi.</text>
+                }
+            </p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Model.ModuleUrl" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "arrow-left")
+                Verilere Dön
+            </a>
+        </div>
+    </div>
+
+    @if (Model.Schema is null)
+    {
+        <div class="card schema-empty">
+            @await Html.PartialAsync("_Icons", "triangle-alert")
+            <p>@(Model.ErrorMessage ?? "Tablo şeması alınamadı.")</p>
+        </div>
+    }
+    else
+    {
+        <div class="stats-row">
+            <div class="card stat-box stat-box--total">
+                <div class="stat-box__icon stat-box__icon--total">@await Html.PartialAsync("_Icons", "database")</div>
+                <div>
+                    <p class="stat-box__label">Toplam Alan</p>
+                    <div class="stat-box__value">@Model.TotalCount</div>
+                    <span class="stat-box__unit">alan</span>
+                </div>
+            </div>
+            <div class="card stat-box stat-box--active">
+                <div class="stat-box__icon stat-box__icon--active">@await Html.PartialAsync("_Icons", "field-key")</div>
+                <div>
+                    <p class="stat-box__label">Birincil Anahtar</p>
+                    <div class="stat-box__value">@Model.PrimaryKeyCount</div>
+                    <span class="stat-box__unit">alan</span>
+                </div>
+            </div>
+            <div class="card stat-box stat-box--passive">
+                <div class="stat-box__icon stat-box__icon--passive">@await Html.PartialAsync("_Icons", "lock-icon")</div>
+                <div>
+                    <p class="stat-box__label">Zorunlu Alan</p>
+                    <div class="stat-box__value">@Model.RequiredCount</div>
+                    <span class="stat-box__unit">alan</span>
+                </div>
+            </div>
+            <div class="card stat-box stat-box--deleted">
+                <div class="stat-box__icon stat-box__icon--deleted">@await Html.PartialAsync("_Icons", "circle-outline")</div>
+                <div>
+                    <p class="stat-box__label">Boş Geçilebilir</p>
+                    <div class="stat-box__value">@Model.NullableCount</div>
+                    <span class="stat-box__unit">alan</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="data-table-wrap">
+                <table class="data-table schema-table">
+                    <thead>
+                        <tr>
+                            <th class="col-field">Alan Adı</th>
+                            <th>Veri Tipi</th>
+                            <th class="col-drop-1024">Maks. Uzunluk</th>
+                            <th>Boş Geçilebilir</th>
+                            <th class="col-drop-768">Birincil Anahtar</th>
+                            <th class="col-drop-768">Identity</th>
+                            <th class="col-drop-1024">Varsayılan</th>
+                            <th>Açıklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var column in Model.Columns)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="field-name@(column.IsPrimaryKey ? " field-name--pk" : "")">
+                                        @await Html.PartialAsync("_Icons", IconFor(column))
+                                        @column.Name
+                                    </span>
+                                </td>
+                                <td><span class="type-tag">@column.ColumnType</span></td>
+                                <td class="col-drop-1024">@(column.MaxLength?.ToString() ?? "—")</td>
+                                <td>
+                                    @if (column.IsNullable)
+                                    {
+                                        <span class="sbadge sbadge--muted">Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="sbadge sbadge--active">Hayır</span>
+                                    }
+                                </td>
+                                <td class="col-drop-768">
+                                    @if (column.IsPrimaryKey)
+                                    {
+                                        <span class="sbadge sbadge--active">Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="schema-dash">—</span>
+                                    }
+                                </td>
+                                <td class="col-drop-768">
+                                    @if (column.IsIdentity)
+                                    {
+                                        <span class="sbadge sbadge--active">Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="schema-dash">—</span>
+                                    }
+                                </td>
+                                <td class="col-drop-1024">
+                                    @if (column.DefaultValue is null)
+                                    {
+                                        <span class="schema-dash">—</span>
+                                    }
+                                    else
+                                    {
+                                        <code class="schema-default">@column.DefaultValue</code>
+                                    }
+                                </td>
+                                <td class="schema-desc">@SchemaDescriptions.For(Model.Schema.Entity, column.Name)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+</div>

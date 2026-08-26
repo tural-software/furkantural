@@ -1,3 +1,4 @@
+using FurkanTural_Admin.Helpers;
 using FurkanTural_Admin.Models.Role;
 using FurkanTural_Admin.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -171,13 +172,16 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
         return Json(options);
     }
 
-    public IActionResult TableDetail()
+    public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        return View();
+        var vm = await TableSchemaBuilder.BuildAsync(
+            schemaApiClient, Url, ControllerContext.ActionDescriptor.ControllerName, token, cancellationToken);
+
+        return View("TableSchema", vm);
     }
 
     [HttpPost]

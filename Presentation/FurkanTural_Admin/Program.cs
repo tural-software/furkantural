@@ -26,6 +26,12 @@ builder.Services.AddHttpClient<IAdminSummaryClient, AdminSummaryClient>(client =
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 
+builder.Services.AddHttpClient<ISchemaApiClient, SchemaApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+
 builder.Services.AddHttpClient<ISubscriberApiClient, SubscriberApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);

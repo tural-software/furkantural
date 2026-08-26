@@ -1,3 +1,4 @@
+using FurkanTural_Admin.Helpers;
 using FurkanTural_Admin.Models.Call;
 using FurkanTural_Admin.Models.Common;
 using FurkanTural_Admin.Services;
@@ -97,12 +98,16 @@ public class CallLogController(ICallLogApiClient callLogApiClient, ICallPolicyAp
         return ok ? Ok() : StatusCode(500, new { message = "Ayar kaydedilemedi." });
     }
 
-    public IActionResult TableDetail()
+    public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)
     {
         var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+        if (string.IsNullOrEmpty(token))
+            return RedirectToAction("Login", "Auth");
 
-        return View();
+        var vm = await TableSchemaBuilder.BuildAsync(
+            schemaApiClient, Url, ControllerContext.ActionDescriptor.ControllerName, token, cancellationToken);
+
+        return View("TableSchema", vm);
     }
 
     [HttpGet]

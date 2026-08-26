@@ -1,0 +1,24 @@
+.page-badge { display: inline-flex; align-items: center; padding: .18rem .5rem; border-radius: var(--radius-sm); background: var(--accent-soft); color: var(--accent); font-size: var(--fs-3xs); font-weight: 700; letter-spacing: .08em; }
+
+.schema-table .col-field { min-width: 190px; }
+.schema-table td { white-space: nowrap; }
+
+.field-name { display: inline-flex; align-items: center; gap: .45rem; font-weight: 600; color: var(--text-main); }
+.field-name svg { width: .85rem; height: .85rem; color: var(--text-dim); flex-shrink: 0; }
+.field-name--pk { color: var(--accent); }
+.field-name--pk svg { color: var(--accent); }
+
+.type-tag { display: inline-block; padding: .16rem .5rem; border-radius: var(--radius-sm); background: var(--bg-inset); border: 1px solid var(--border-color); color: var(--text-dim); font-size: var(--fs-2xs); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+.schema-dash { color: var(--text-dim); opacity: .5; }
+.schema-default { font-size: var(--fs-2xs); color: var(--text-dim); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.schema-desc { white-space: normal; min-width: 220px; max-width: 420px; color: var(--text-dim); font-size: var(--fs-xs); }
+
+.schema-empty { display: flex; flex-direction: column; align-items: center; gap: .75rem; padding: 3rem 1.5rem; text-align: center; color: var(--text-dim); }
+.schema-empty svg { width: 2rem; height: 2rem; color: var(--chip-update-fg); }
+.schema-empty p { margin: 0; font-size: var(--fs-md); }
+
+@media (max-width: 767px) {
+    .schema-table .col-field { min-width: 0; }
+    .schema-desc { min-width: 160px; }
+}

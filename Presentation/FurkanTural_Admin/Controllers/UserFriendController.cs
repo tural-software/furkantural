@@ -1,3 +1,4 @@
+using FurkanTural_Admin.Helpers;
 using FurkanTural_Admin.Models.UserFriend;
 using FurkanTural_Admin.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -70,12 +71,16 @@ public class UserFriendController(IUserFriendApiClient userFriendApiClient) : Co
         return View(BuildViewModel(all, statusFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
-    public IActionResult TableDetail()
+    public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)
     {
         var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+        if (string.IsNullOrEmpty(token))
+            return RedirectToAction("Login", "Auth");
 
-        return View();
+        var vm = await TableSchemaBuilder.BuildAsync(
+            schemaApiClient, Url, ControllerContext.ActionDescriptor.ControllerName, token, cancellationToken);
+
+        return View("TableSchema", vm);
     }
 
     [HttpGet]
