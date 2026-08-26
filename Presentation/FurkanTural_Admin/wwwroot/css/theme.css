@@ -47,9 +47,12 @@
     --fs-3xl: 1.875rem;   /* 30px — istatistik sayısı */
     --fs-title: clamp(1.75rem, 4vw, 2.5rem); /* bölüm ve detay başlığı */
     --fs-hero: clamp(2.5rem, 6vw, 4rem); /* açılış başlığı — Portfolio esas alındı */
+    --fs-page: clamp(1.375rem, 1.28rem + 0.38vw, 1.625rem);
     --radius-sm: .5rem;
     --radius-md: .75rem;
     --radius-lg: 1rem;
+    --radius-xl: 1.125rem;
+    --radius-pill: 999px;
     --z-content: 10;
     --z-chrome: 999;
     --error: #ef4444;
@@ -69,6 +72,10 @@
     --accent-soft: rgba(56, 189, 248, 0.16);
     --border-color: rgba(255, 255, 255, 0.07);
     --divider: rgba(255, 255, 255, 0.08);
+    --bg-inset: #262933;
+    --on-accent: #0f172a;
+    --shadow-overlay: 0 18px 40px rgba(0, 0, 0, 0.45);
+    --scrim: rgba(8, 10, 14, 0.66);
     --toast-bg: rgba(15, 17, 23, 0.9);
     --toast-text: #f9fafb;
     --toast-border-success: rgba(56, 189, 248, .6);
@@ -83,6 +90,10 @@
     --chip-update-fg: #fbbf24;
     --chip-delete-bg: rgba(239, 68, 68, 0.16);
     --chip-delete-fg: #f87171;
+    --chip-info-bg: rgba(34, 211, 238, 0.16);
+    --chip-info-fg: #22d3ee;
+    --chip-feature-bg: rgba(139, 92, 246, 0.16);
+    --chip-feature-fg: #a78bfa;
 
     /* "Yakında" rozeti */
     --pending-bg: rgba(148, 163, 184, 0.15);
@@ -102,6 +113,10 @@
     --accent-soft: rgba(14, 165, 233, 0.12);
     --border-color: rgba(0, 0, 0, 0.08);
     --divider: rgba(15, 23, 42, 0.08);
+    --bg-inset: #eef2f7;
+    --on-accent: #0f172a;
+    --shadow-overlay: 0 18px 40px rgba(15, 23, 42, 0.14);
+    --scrim: rgba(15, 23, 42, 0.35);
     --toast-bg: rgba(255, 255, 255, 0.95);
     --toast-text: #0f172a;
     --toast-border-success: rgba(14, 165, 233, .6);
@@ -115,6 +130,10 @@
     --chip-update-fg: #b45309;
     --chip-delete-bg: rgba(239, 68, 68, 0.12);
     --chip-delete-fg: #b91c1c;
+    --chip-info-bg: rgba(6, 182, 212, 0.12);
+    --chip-info-fg: #0e7490;
+    --chip-feature-bg: rgba(124, 58, 237, 0.12);
+    --chip-feature-fg: #6d28d9;
 
     --pending-bg: rgba(15, 23, 42, 0.06);
     --pending-fg: #475569;
@@ -129,4 +148,11 @@ html, body, .navbar, .bottombar, .card, .tag, .btn-primary, .btn-outline,
         border-color 0.25s ease,
         color 0.25s ease,
         box-shadow 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html, body, .navbar, .bottombar, .tabbar, .card, .tag, .btn-primary, .btn-outline,
+    .theme-toggle-btn, .nav-btn, .user-chip, input, button, #toastBox {
+        transition: none;
+    }
 }

@@ -13,3 +13,10 @@
     opacity: 1;
     transform: translateY(0);
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .theme-toggle-btn:hover [data-theme-icon] { animation: none; }
+    .brand:hover { transform: none; }
+    html { scroll-behavior: auto; }
+}

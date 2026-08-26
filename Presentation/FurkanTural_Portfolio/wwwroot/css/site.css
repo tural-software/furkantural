@@ -70,6 +70,7 @@
     --fs-3xl: 1.875rem;   /* 30px — istatistik sayısı */
     --fs-title: clamp(1.75rem, 4vw, 2.5rem); /* bölüm ve detay başlığı */
     --fs-hero: clamp(2.5rem, 6vw, 4rem); /* açılış başlığı — Portfolio esas alındı */
+    --fs-page: clamp(1.375rem, 1.28rem + 0.38vw, 1.625rem);
 }
 
 [data-theme="light"] {
@@ -87,6 +88,24 @@
     --color-accent-glow: rgba(14, 165, 233, 0.12);
     --accent-rgb: 14, 165, 233;
 }
+/* Ortak renk rolleri — DÖRT PROJEDE ORTAK ADLAR.
+   Bu site kendi sözlüğünü (--color-bg, --color-text …) korur; aşağıdakiler yalnızca
+   aynı rolün ortak adıdır. Özel değer takma adla çözüldüğü için tema değişince
+   (data-theme="light") bunlar da kendiliğinden değişir; ikinci bir yerde
+   güncellenmeleri gerekmez. Ortak bir bileşen CSS'i bu adlarla yazılırsa dört
+   projede de çalışır. */
+:root {
+    --bg-main: var(--color-bg);
+    --bg-card: var(--color-bg-card-translucent);
+    --bg-card-solid: var(--color-bg-card);
+    --text-main: var(--color-text);
+    --text-dim: var(--color-text-muted);
+    --border-color: var(--color-border);
+    --divider: var(--color-divider);
+    --accent: var(--color-accent);
+    --accent-soft: var(--color-accent-glow);
+}
+
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
