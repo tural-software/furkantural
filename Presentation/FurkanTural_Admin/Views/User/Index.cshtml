@@ -2,7 +2,6 @@
 @using FurkanTural_Admin.Models.User
 @model UserIndexViewModel
 @{
-    ViewData["Title"] = "Kullanıcılar";
     var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 }
 
@@ -36,11 +35,7 @@
 
 <div class="container">
 
-    <nav class="bc">
-        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
-        <span class="bc__sep">›</span>
-        <span>Kullanıcılar</span>
-    </nav>
+    @await Html.PartialAsync("_Breadcrumb", "")
 
     <div class="pg-header">
         <div>

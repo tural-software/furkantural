@@ -1,6 +1,8 @@
 @{
     var hideChrome = ViewData["HideChrome"] as bool? ?? false;
     var username = Context.Session.GetString("username");
+    var pageTitle = ViewData["Title"] as string
+                    ?? FurkanTural_Admin.Helpers.AdminModules.ByController(ViewContext.RouteData.Values["controller"] as string)?.Title;
 }
 <!DOCTYPE html>
 <html lang="tr">
@@ -9,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     @* Yönetim paneli — arama motorlarınca indekslenmemeli. *@
     <meta name="robots" content="noindex, nofollow" />
-    <title>@ViewData["Title"] - FurkanTural Admin</title>
+    <title>@pageTitle - FurkanTural Admin</title>
 
     <link rel="icon" href="~/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="~/icons/favicon-32x32.png" />
@@ -40,12 +42,14 @@
     <link rel="stylesheet" href="~/css/components/tags.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/section.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/toast.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/list-skeleton.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/entity-card.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/detail-modal.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/form-modal.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/html-preview-modal.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layout/base.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layout/chrome.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/module-launcher.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -63,6 +67,12 @@
         }
     </div>
 
+    @if (!hideChrome)
+    {
+        @await Html.PartialAsync("~/Views/Shared/_LayoutSections/_ModuleLauncher.cshtml")
+        @await Html.PartialAsync("~/Views/Shared/_LayoutSections/_TabBar.cshtml")
+    }
+
     <div id="toastBox" role="status" aria-live="polite">
         <div id="toastTitle"></div>
         <div id="toastMsg"></div>
@@ -75,6 +85,8 @@
     <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/toast.js" asp-append-version="true"></script>
     <script src="~/js/reveal.js" asp-append-version="true"></script>
+    <script src="~/js/module-launcher.js" asp-append-version="true"></script>
+    <script src="~/js/mobile-list.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

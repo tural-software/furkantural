@@ -1,8 +1,5 @@
 @using FurkanTural_Admin.Models.Call
 @model CallLogIndexViewModel
-@{
-    ViewData["Title"] = "Aramalar";
-}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/call-log/call-log-index.css" asp-append-version="true" />
@@ -30,11 +27,7 @@
 @Html.AntiForgeryToken()
 
 <div class="container">
-    <nav class="bc">
-        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
-        <span class="bc__sep">›</span>
-        <span>Aramalar</span>
-    </nav>
+    @await Html.PartialAsync("_Breadcrumb", "")
 
     <div class="pg-header">
         <div>

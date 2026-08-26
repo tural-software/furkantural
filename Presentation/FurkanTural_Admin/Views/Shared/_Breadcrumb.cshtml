@@ -1,0 +1,30 @@
+@using FurkanTural_Admin.Helpers
+@model string
+@{
+    var module = AdminModules.ByController(ViewContext.RouteData.Values["controller"] as string);
+    var leaf = Model;
+}
+<nav class="bc" aria-label="Kırıntı yolu">
+    <a href="@Url.Action("Index", "Dashboard")">Panel</a>
+    @if (module is not null)
+    {
+        <span class="bc__sep" aria-hidden="true">›</span>
+        <span class="bc__group">@module.Group</span>
+        <span class="bc__sep" aria-hidden="true">›</span>
+        @if (string.IsNullOrEmpty(leaf))
+        {
+            <span aria-current="page">@module.Title</span>
+        }
+        else
+        {
+            <a href="@Url.Action("Index", module.Controller)">@module.Title</a>
+            <span class="bc__sep" aria-hidden="true">›</span>
+            <span aria-current="page">@leaf</span>
+        }
+    }
+    else if (!string.IsNullOrEmpty(leaf))
+    {
+        <span class="bc__sep" aria-hidden="true">›</span>
+        <span aria-current="page">@leaf</span>
+    }
+</nav>

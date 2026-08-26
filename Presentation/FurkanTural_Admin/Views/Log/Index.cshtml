@@ -1,8 +1,5 @@
 @using FurkanTural_Admin.Models.Log
 @model LogIndexViewModel
-@{
-    ViewData["Title"] = "Sistem Logları";
-}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/log/log-index.css" asp-append-version="true" />
@@ -26,16 +23,12 @@
 
 <div class="container">
 
-    <nav class="bc">
-        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
-        <span class="bc__sep">›</span>
-        <span>Sistem Logları</span>
-    </nav>
+    @await Html.PartialAsync("_Breadcrumb", "")
 
     <div class="pg-header">
         <div>
-            <h1 class="section-title">Sistem Logları</h1>
-            <p class="section-desc">API tarafından üretilen sistem loglarını görüntüleyin. Salt okunur kayıtlardır.</p>
+            <h1 class="section-title">Sistem Kayıtları</h1>
+            <p class="section-desc">API tarafından üretilen sistem kayıtlarını görüntüleyin. Salt okunur kayıtlardır.</p>
         </div>
         <div class="pg-header__actions">
             <a href="@Url.Action("Index")" class="btn-outline">

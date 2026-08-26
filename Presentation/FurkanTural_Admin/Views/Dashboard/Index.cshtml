@@ -1,14 +1,39 @@
 @using FurkanTural_Admin.Models.Dashboard
 @model DashboardViewModel
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Panel";
 }
 
 <div class="container">
-    <div class="dashboard-grid">
-        @foreach (var card in Model.Modules)
-        {
-            <partial name="_EntityCard" model="card" />
-        }
+    <div class="pg-header">
+        <div>
+            <h1 class="section-title">Panel</h1>
+            <p class="section-desc">
+                @Model.ModuleCount modül@(Model.TotalRecordCount.HasValue ? $" · {Model.TotalRecordCount.Value:N0} kayıt" : "")
+                <span class="dash-hint">— modüller arasında <kbd>Ctrl</kbd>+<kbd>K</kbd> ile dolaşabilirsiniz.</span>
+            </p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "refresh")
+                Yenile
+            </a>
+        </div>
     </div>
+
+    @foreach (var group in Model.Groups)
+    {
+        <section class="dash-group">
+            <h2 class="dash-group__title">
+                @group.Name
+                <span class="dash-group__count">@group.Modules.Count</span>
+            </h2>
+            <div class="dashboard-grid">
+                @foreach (var card in group.Modules)
+                {
+                    <partial name="_EntityCard" model="card" />
+                }
+            </div>
+        </section>
+    }
 </div>

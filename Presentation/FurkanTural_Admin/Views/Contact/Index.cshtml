@@ -1,8 +1,5 @@
 @using FurkanTural_Admin.Models.Contact
 @model ContactIndexViewModel
-@{
-    ViewData["Title"] = "İletişim Mesajları";
-}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/contact/contact-index.css" asp-append-version="true" />
@@ -30,11 +27,7 @@
 
 <div class="container">
 
-    <nav class="bc">
-        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
-        <span class="bc__sep">›</span>
-        <span>İletişim Mesajları</span>
-    </nav>
+    @await Html.PartialAsync("_Breadcrumb", "")
 
     <div class="pg-header">
         <div>

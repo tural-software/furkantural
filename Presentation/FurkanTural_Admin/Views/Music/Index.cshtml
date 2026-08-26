@@ -1,8 +1,5 @@
 @using FurkanTural_Admin.Models.Music
 @model MusicIndexViewModel
-@{
-    ViewData["Title"] = "Müzikler";
-}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/music/music-index.css" asp-append-version="true" />
@@ -34,11 +31,7 @@
 
 <div class="container">
 
-    <nav class="bc">
-        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
-        <span class="bc__sep">›</span>
-        <span>Müzikler</span>
-    </nav>
+    @await Html.PartialAsync("_Breadcrumb", "")
 
     <div class="pg-header">
         <div>

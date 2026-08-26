@@ -1,8 +1,5 @@
 @using FurkanTural_Admin.Models.MailTemplate
 @model MailTemplateIndexViewModel
-@{
-    ViewData["Title"] = "Posta Şablonları";
-}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/mail-template/mail-template-index.css" asp-append-version="true" />
@@ -44,15 +41,11 @@
 
 <div class="container">
 
-    <nav class="bc">
-        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
-        <span class="bc__sep">›</span>
-        <span>İletişim Şablonları</span>
-    </nav>
+    @await Html.PartialAsync("_Breadcrumb", "")
 
     <div class="pg-header">
         <div>
-            <h1 class="section-title">İletişim Şablonları</h1>
+            <h1 class="section-title">Posta Şablonları</h1>
             <p class="section-desc">Owner ve User e-posta şablonlarını yönetin.</p>
         </div>
         <div class="pg-header__actions">

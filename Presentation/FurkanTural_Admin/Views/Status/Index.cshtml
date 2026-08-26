@@ -1,8 +1,5 @@
 @using FurkanTural_Admin.Models.Status
 @model StatusIndexViewModel
-@{
-    ViewData["Title"] = "Durumlar";
-}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/status/status-index.css" asp-append-version="true" />
@@ -30,11 +27,7 @@
 @Html.AntiForgeryToken()
 
 <div class="container">
-    <nav class="bc">
-        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
-        <span class="bc__sep">›</span>
-        <span>Durumlar</span>
-    </nav>
+    @await Html.PartialAsync("_Breadcrumb", "")
 
     <div class="pg-header">
         <div>

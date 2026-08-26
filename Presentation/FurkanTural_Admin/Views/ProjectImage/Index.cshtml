@@ -1,8 +1,5 @@
 @using FurkanTural_Admin.Models.ProjectImage
 @model ProjectImageIndexViewModel
-@{
-    ViewData["Title"] = "Proje Görselleri";
-}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/project-image/project-image-index.css" asp-append-version="true" />
@@ -35,13 +32,7 @@
 
 <div class="container">
 
-    <nav class="bc">
-        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
-        <span class="bc__sep">›</span>
-        <a href="@Url.Action("Index", "Project")">Projeler</a>
-        <span class="bc__sep">›</span>
-        <span>Proje Görselleri</span>
-    </nav>
+    @await Html.PartialAsync("_Breadcrumb", "")
 
     <div class="pg-header">
         <div>

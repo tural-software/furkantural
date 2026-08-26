@@ -1,8 +1,5 @@
 @using FurkanTural_Admin.Models.Education
 @model EducationIndexViewModel
-@{
-    ViewData["Title"] = "Eğitimler";
-}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/education/education-index.css" asp-append-version="true" />
@@ -31,11 +28,7 @@
 
 <div class="container">
 
-    <nav class="bc">
-        <a href="@Url.Action("Index", "Dashboard")">Ana Sayfa</a>
-        <span class="bc__sep">›</span>
-        <span>Eğitimler</span>
-    </nav>
+    @await Html.PartialAsync("_Breadcrumb", "")
 
     <div class="pg-header">
         <div>
