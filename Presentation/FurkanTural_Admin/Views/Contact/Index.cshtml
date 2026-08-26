@@ -32,12 +32,16 @@
     <div class="pg-header">
         <div>
             <h1 class="section-title">İletişim Mesajları</h1>
-            <p class="section-desc">Porfolio iletişim formu üzerinden gönderilen mesajları görüntüleyin ve yönetin.</p>
+            <p class="section-desc">Portfolyo iletişim formu üzerinden gönderilen mesajları görüntüleyin ve yönetin.</p>
         </div>
         <div class="pg-header__actions">
             <a href="@Url.Action("Index")" class="btn-outline">
                 @await Html.PartialAsync("_Icons", "refresh")
                 Yenile
+            </a>
+            <a href="@Url.Action("TableDetail")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "table-icon")
+                Tablo Detayları
             </a>
         </div>
     </div>
