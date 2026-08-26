@@ -49,23 +49,6 @@
                         icon: 'check-circle',
                         value: function (r) { return r.isRead ? 'Okundu' : 'Okunmadı'; },
                         badgeVariant: function (r) { return r.isRead ? 'success' : 'warning'; }
-                    },
-                    {
-                        label: 'Aktif',
-                        icon: 'check-circle',
-                        value: function (r) { return r.isActive ? 'Aktif' : 'Pasif'; },
-                        badgeVariant: function (r) { return r.isActive ? 'success' : 'danger'; }
-                    },
-                    {
-                        label: 'Silinmiş',
-                        icon: 'shield',
-                        value: function (r) { return r.isDeleted ? 'Evet' : 'Hayır'; },
-                        badgeVariant: function (r) { return r.isDeleted ? 'danger' : 'neutral'; }
-                    },
-                    {
-                        label: 'Oluşturulma Tarihi',
-                        icon: 'calendar',
-                        value: function (r) { return DmFmt.date(r.createdAt); }
                     }
                 ]
             },
@@ -85,6 +68,7 @@
             {
                 title: 'Teknik Bilgiler',
                 icon: 'database',
+                tab: 'system',
                 columns: 2,
                 fields: [
                     {
@@ -97,24 +81,10 @@
                         icon: 'logs',
                         value: function (r) { return r.userAgent || '—'; },
                         isCode: true
-                    },
-                    {
-                        label: 'CreatedAt (UTC)',
-                        icon: 'clock',
-                        value: function (r) { return DmFmt.dateUtc(r.createdAt); }
-                    },
-                    {
-                        label: 'UpdatedAt (UTC)',
-                        icon: 'clock',
-                        value: function (r) { return DmFmt.dateUtc(r.updatedAt); }
-                    },
-                    {
-                        label: 'DeletedAt',
-                        icon: 'clock',
-                        value: function (r) { return r.deletedAt ? DmFmt.date(r.deletedAt) : '—'; }
                     }
                 ]
-            }
+            },
+            DmAudit.section()
         ],
 
         actions: [

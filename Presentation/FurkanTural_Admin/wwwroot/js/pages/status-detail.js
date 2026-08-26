@@ -25,11 +25,10 @@
                     { label: 'Ad', icon: 'field-text', value: function (r) { return r.name || '—'; } },
                     { label: 'Renk', icon: 'field-text', value: function (r) { return r.color || '—'; } },
                     { label: 'Sıra', icon: 'field-text', value: function (r) { return (r.sortOrder != null ? r.sortOrder : '—'); } },
-                    { label: 'Açıklama', icon: 'field-text', value: function (r) { return r.description || '—'; } },
-                    { label: 'Oluşturulma Tarihi', icon: 'calendar', value: function (r) { return DmFmt.date(r.createdAt); } },
-                    { label: 'Güncellenme Tarihi', icon: 'calendar', value: function (r) { return DmFmt.date(r.updatedAt); } }
+                    { label: 'Açıklama', icon: 'field-text', value: function (r) { return r.description || '—'; } }
                 ]
-            }
+            },
+            DmAudit.section()
         ],
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' },

@@ -39,7 +39,8 @@
                     { label: 'Cevaplanma', icon: 'calendar', value: function (r) { return r.answeredAt ? DmFmt.date(r.answeredAt) : '—'; } },
                     { label: 'Bitiş', icon: 'calendar', value: function (r) { return r.endedAt ? DmFmt.date(r.endedAt) : '—'; } }
                 ]
-            }
+            },
+            DmAudit.section()
         ],
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' }

@@ -67,63 +67,10 @@
                         label: 'Dosya Adı',
                         icon: 'file-text',
                         value: function (r) { return r.fileName || '—'; }
-                    },
-                    {
-                        label: 'Aktif',
-                        icon: 'check-circle',
-                        value: function (r) { return r.isActive ? 'Aktif' : 'Pasif'; },
-                        badgeVariant: function (r) { return r.isActive ? 'success' : 'danger'; }
-                    },
-                    {
-                        label: 'Silinmiş',
-                        icon: 'shield',
-                        value: function (r) { return r.isDeleted ? 'Evet' : 'Hayır'; },
-                        badgeVariant: function (r) { return r.isDeleted ? 'danger' : 'neutral'; }
-                    },
-                    {
-                        label: 'Oluşturulma Tarihi',
-                        icon: 'calendar',
-                        value: function (r) { return DmFmt.date(r.createdAt); }
-                    },
-                    {
-                        label: 'Oluşturan',
-                        icon: 'user',
-                        value: function (r) { return r.createdBy ? 'Admin (ID: ' + r.createdBy + ')' : '—'; }
-                    },
-                    {
-                        label: 'Güncellenme Tarihi',
-                        icon: 'calendar',
-                        value: function (r) { return DmFmt.date(r.updatedAt); }
-                    },
-                    {
-                        label: 'Güncelleyen',
-                        icon: 'user',
-                        value: function (r) { return r.updatedBy ? 'Admin (ID: ' + r.updatedBy + ')' : '—'; }
                     }
                 ]
             },
-            {
-                title: 'Sistem Bilgileri',
-                icon: 'database',
-                columns: 2,
-                fields: [
-                    {
-                        label: 'CreatedAt (UTC)',
-                        icon: 'clock',
-                        value: function (r) { return DmFmt.dateUtc(r.createdAt); }
-                    },
-                    {
-                        label: 'UpdatedAt (UTC)',
-                        icon: 'clock',
-                        value: function (r) { return DmFmt.dateUtc(r.updatedAt); }
-                    },
-                    {
-                        label: 'DeletedAt',
-                        icon: 'clock',
-                        value: function (r) { return r.deletedAt ? DmFmt.date(r.deletedAt) : '—'; }
-                    }
-                ]
-            }
+            DmAudit.section()
         ],
 
         actions: [

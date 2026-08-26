@@ -34,60 +34,10 @@
                         label: 'E-posta',
                         icon: 'mail',
                         value: function (r) { return r.email || '—'; }
-                    },
-                    {
-                        label: 'Oluşturulma Tarihi',
-                        icon: 'calendar',
-                        value: function (r) { return DmFmt.date(r.createdAt); }
-                    },
-                    {
-                        label: 'Aktif',
-                        icon: 'check-circle',
-                        value: function (r) { return r.isActive ? 'Aktif' : 'Pasif'; },
-                        badgeVariant: function (r) { return r.isActive ? 'success' : 'danger'; }
-                    },
-                    {
-                        label: 'Oluşturan',
-                        icon: 'user',
-                        value: function (r) { return r.createdBy ? 'Admin (ID: ' + r.createdBy + ')' : '—'; }
-                    },
-                    {
-                        label: 'Silinmiş',
-                        icon: 'shield',
-                        value: function (r) { return r.isDeleted ? 'Evet' : 'Hayır'; },
-                        badgeVariant: function (r) { return r.isDeleted ? 'danger' : 'neutral'; }
-                    },
-                    {
-                        label: 'Güncellenme Tarihi',
-                        icon: 'calendar',
-                        value: function (r) { return DmFmt.date(r.updatedAt); }
-                    },
-                    // empty slot — keeps grid aligned
-                    null,
-                    {
-                        label: 'Güncelleyen',
-                        icon: 'user',
-                        value: function (r) { return r.updatedBy ? 'Admin (ID: ' + r.updatedBy + ')' : '—'; }
                     }
                 ]
             },
-            {
-                title: 'Sistem Bilgileri',
-                icon: 'database',
-                columns: 2,
-                fields: [
-                    {
-                        label: 'CreatedAt (UTC)',
-                        icon: 'clock',
-                        value: function (r) { return DmFmt.dateUtc(r.createdAt); }
-                    },
-                    {
-                        label: 'UpdatedAt (UTC)',
-                        icon: 'clock',
-                        value: function (r) { return DmFmt.dateUtc(r.updatedAt); }
-                    }
-                ]
-            }
+            DmAudit.section()
         ],
 
         actions: [

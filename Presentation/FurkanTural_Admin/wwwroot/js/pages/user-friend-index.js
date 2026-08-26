@@ -30,11 +30,10 @@
                     { label: 'Alıcı (Addressee)', icon: 'user', value: function (r) { return userLabel(r.addresseeUsername, r.addresseeId); } },
                     { label: 'Durum', icon: 'field-text', value: function (r) { return r.statusName || r.statusCode || '—'; } },
                     { label: 'Durum Kodu', icon: 'field-text', value: function (r) { return r.statusCode || '—'; } },
-                    { label: 'Yanıt Tarihi', icon: 'calendar', value: function (r) { return r.respondedAt ? DmFmt.date(r.respondedAt) : '—'; } },
-                    { label: 'Oluşturulma Tarihi', icon: 'calendar', value: function (r) { return DmFmt.date(r.createdAt); } },
-                    { label: 'Güncellenme Tarihi', icon: 'calendar', value: function (r) { return DmFmt.date(r.updatedAt); } }
+                    { label: 'Yanıt Tarihi', icon: 'calendar', value: function (r) { return r.respondedAt ? DmFmt.date(r.respondedAt) : '—'; } }
                 ]
-            }
+            },
+            DmAudit.section()
         ],
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' }

@@ -30,8 +30,7 @@
                     { label: 'Hedef Kullanıcı', icon: 'user', value: function (r) { return r.reportedUserName || (r.reportedUserId ? '#' + r.reportedUserId : '—'); } },
                     { label: 'Tür', icon: 'field-text', value: function (r) { return r.targetType || '—'; } },
                     { label: 'Hedef Id', icon: 'hash-icon', value: function (r) { return r.targetId != null ? r.targetId : '—'; } },
-                    { label: 'Durum', icon: 'field-text', value: function (r) { return r.status || '—'; } },
-                    { label: 'Oluşturulma Tarihi', icon: 'calendar', value: function (r) { return DmFmt.date(r.createdAt); } }
+                    { label: 'Durum', icon: 'field-text', value: function (r) { return r.status || '—'; } }
                 ]
             },
             {
@@ -42,7 +41,8 @@
                     { label: 'Neden', icon: 'field-text', html: true, value: function (r) { return r.reason ? esc(r.reason) : '—'; } },
                     { label: 'Yönetici Notu', icon: 'field-text', html: true, value: function (r) { return r.adminNote ? esc(r.adminNote) : '—'; } }
                 ]
-            }
+            },
+            DmAudit.section()
         ],
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' }

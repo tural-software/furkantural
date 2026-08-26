@@ -67,11 +67,6 @@
                         label: 'Yol',
                         icon: 'field-text',
                         value: function (r) { return r.path || '—'; }
-                    },
-                    {
-                        label: 'Oluşturulma Tarihi',
-                        icon: 'calendar',
-                        value: function (r) { return DmFmt.date(r.createdAt); }
                     }
                 ]
             },
@@ -99,7 +94,8 @@
                         value: function (r) { return r.detail || '—'; }
                     }
                 ]
-            }
+            },
+            DmAudit.section()
         ],
 
         actions: [

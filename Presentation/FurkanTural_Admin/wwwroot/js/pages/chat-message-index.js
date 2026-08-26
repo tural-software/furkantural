@@ -41,8 +41,7 @@
                     { label: 'Alıcı', icon: 'user', html: true, value: function (r) { return userLabel(r.receiverUsername, r.receiverId); } },
                     { label: 'Tür', icon: 'field-text', value: function (r) { return typeLabel(r.messageType); } },
                     { label: 'Okundu', icon: 'check-circle', value: function (r) { return r.isRead ? 'Evet' : 'Hayır'; } },
-                    { label: 'Okunma Tarihi', icon: 'calendar', value: function (r) { return r.readAt ? DmFmt.date(r.readAt) : '—'; } },
-                    { label: 'Oluşturulma Tarihi', icon: 'calendar', value: function (r) { return DmFmt.date(r.createdAt); } }
+                    { label: 'Okunma Tarihi', icon: 'calendar', value: function (r) { return r.readAt ? DmFmt.date(r.readAt) : '—'; } }
                 ]
             },
             {
@@ -72,7 +71,8 @@
                         }
                     }
                 ]
-            }
+            },
+            DmAudit.section()
         ],
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' }
