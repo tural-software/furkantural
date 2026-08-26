@@ -1,6 +1,6 @@
 .btn-primary {
     background: var(--accent);
-    color: #0f172a;
+    color: var(--on-accent);
     font-weight: 600;
     font-size: var(--fs-md);
     border: 0;

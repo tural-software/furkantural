@@ -54,7 +54,7 @@
                     <td>@(row.TargetType ?? "—")</td>
                     <td>@Reason(row)</td>
                     <td>
-                        <form class="status-form" method="post" action="@Url.Action("UpdateStatus")" style="display:inline">
+                        <form class="status-form" method="post" action="@Url.Action("UpdateStatus")">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@row.Id" />
                             <select name="status" class="status-sel" data-current="@row.Status" @(row.IsDeleted ? "disabled" : "")>

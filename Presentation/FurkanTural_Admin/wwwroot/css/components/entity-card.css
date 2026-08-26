@@ -205,6 +205,15 @@
     box-shadow: none;
 }
 
-[data-theme="light"] .entity-card__cta {
-    color: #ffffff;
+
+.dash-group { margin-bottom: 2.25rem; }
+.dash-group:last-child { margin-bottom: 0; }
+.dash-group__title { display: flex; align-items: center; gap: .5rem; margin: 0; font-size: var(--fs-2xs); font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .09em; }
+.dash-group__count { display: inline-grid; place-items: center; min-width: 1.15rem; height: 1.15rem; padding: 0 .3rem; border-radius: var(--radius-pill); background: var(--bg-inset); font-size: var(--fs-3xs); letter-spacing: 0; }
+.dash-group .dashboard-grid { margin-top: .875rem; }
+
+.dash-hint kbd { padding: .1rem .3rem; margin: 0 .05rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-inset); font-family: var(--font-sans); font-size: var(--fs-3xs); }
+
+@media (max-width: 767px) {
+    .dash-hint { display: none; }
 }

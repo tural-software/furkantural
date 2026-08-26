@@ -20,8 +20,8 @@
     left: 0;
     right: 0;
     z-index: 30;
-    background: var(--bg-card-solid, #fff);
-    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm, 6px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, .10);
     max-height: 210px;
@@ -36,7 +36,7 @@
 .fbs-option {
     padding: .45rem .75rem;
     font-size: var(--fs-sm);
-    color: var(--text-main, #1a202c);
+    color: var(--text-main);
     cursor: pointer;
     transition: background .12s;
     white-space: nowrap;
@@ -47,20 +47,20 @@
 .fbs-option:hover,
 .fbs-option:focus {
     background: rgba(var(--accent-rgb, 99 102 241), .10);
-    color: var(--accent, #6366f1);
+    color: var(--accent);
     outline: none;
 }
 
 .fbs-option.fbs-option--active {
     background: rgba(var(--accent-rgb, 99 102 241), .12);
-    color: var(--accent, #6366f1);
+    color: var(--accent);
     font-weight: 500;
 }
 
 .fbs-hint {
     padding: .45rem .75rem;
     font-size: var(--fs-sm);
-    color: var(--text-dim, #718096);
+    color: var(--text-dim);
     font-style: italic;
     cursor: default;
     user-select: none;
