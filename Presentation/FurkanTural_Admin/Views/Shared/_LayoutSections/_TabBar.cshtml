@@ -1,0 +1,18 @@
+<nav class="tabbar" aria-label="Hızlı gezinme">
+    <a class="tabbar__btn" href="@Url.Action("Index", "Dashboard")">
+        @await Html.PartialAsync("_Icons", "home")
+        <span>Panel</span>
+    </a>
+    <button type="button" class="tabbar__btn" data-ml-open>
+        @await Html.PartialAsync("_Icons", "grid")
+        <span>Modüller</span>
+    </button>
+    <a class="tabbar__btn" href="@Url.Action("Index", "Report")">
+        @await Html.PartialAsync("_Icons", "reports")
+        <span>Şikayet</span>
+    </a>
+    <button type="button" class="tabbar__btn" data-theme-toggle aria-label="Temayı değiştir">
+        <span class="tabbar__emoji" data-theme-icon>🌙</span>
+        <span>Tema</span>
+    </button>
+</nav>

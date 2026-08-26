@@ -5,6 +5,13 @@
             <img class="brand-logo brand-logo--dark" src="~/img/furkan-tural-wordmark-dark.png" alt="" width="148" height="40" />
             <img class="brand-logo brand-logo--light" src="~/img/furkan-tural-wordmark-light.png" alt="" width="148" height="40" />
         </a>
+        <nav class="nav-nav" aria-label="Modül gezinmesi">
+            <button type="button" class="nav-btn" data-ml-open aria-haspopup="dialog" aria-controls="moduleLauncher">
+                @await Html.PartialAsync("_Icons", "grid")
+                Modüller
+                <span class="nav-btn__kbd"><kbd>Ctrl</kbd><kbd>K</kbd></span>
+            </button>
+        </nav>
         <div class="nav-actions">
             <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Temayı değiştir">
                 <span data-theme-icon>🌙</span>
