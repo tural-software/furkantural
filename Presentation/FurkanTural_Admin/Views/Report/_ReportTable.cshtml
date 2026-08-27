@@ -1,22 +1,8 @@
 @using System.Text.Json
+@using FurkanTural_Admin.Models.Common
 @using FurkanTural_Admin.Models.Report
 @model ReportIndexViewModel
 @{
-    int rangeStart = Model.TotalFiltered > 0 ? (Model.PageNumber - 1) * Model.PageSize + 1 : 0;
-    int rangeEnd = Math.Min(Model.PageNumber * Model.PageSize, Model.TotalFiltered);
-
-    string PageUrl(int p) => Url.Action("Index", new
-    {
-        search = Model.Search,
-        typeFilter = Model.TypeFilter,
-        statusFilter = Model.StatusFilter,
-        deletedFilter = Model.DeletedFilter,
-        dateFrom = Model.DateFrom,
-        dateTo = Model.DateTo,
-        pageNumber = p,
-        pageSize = Model.PageSize
-    }) ?? "#";
-
     var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     var statuses = new[] { "Pending", "Reviewed", "Dismissed", "ActionTaken" };
 
@@ -118,64 +104,13 @@
     </table>
 </div>
 
-<div class="tbl-footer">
-    <div class="tbl-footer__left">
-        <form method="get" action="@Url.Action("Index")" id="pageSizeForm">
-            <input type="hidden" name="search" value="@Model.Search" />
-            <input type="hidden" name="typeFilter" value="@Model.TypeFilter" />
-            <input type="hidden" name="statusFilter" value="@Model.StatusFilter" />
-            <input type="hidden" name="deletedFilter" value="@Model.DeletedFilter" />
-            <input type="hidden" name="dateFrom" value="@Model.DateFrom" />
-            <input type="hidden" name="dateTo" value="@Model.DateTo" />
-            <input type="hidden" name="pageNumber" value="1" />
-            Sayfa başına
-            <select name="pageSize" class="page-size-sel" onchange="this.form.submit()">
-                @foreach (var s in new[] { 10, 25, 50, 100 })
-                {
-                    <option value="@s" selected="@(Model.PageSize == s)">@s</option>
-                }
-            </select>
-            kayıt gösteriliyor
-        </form>
-    </div>
-    <div class="tbl-footer__right">
-        <span class="tbl-footer__range">
-            @if (Model.TotalFiltered > 0)
-            {
-                @($"{rangeStart} - {rangeEnd} / {Model.TotalFiltered:N0} kayıt")
-            }
-            else
-            {
-                <text>0 kayıt</text>
-            }
-        </span>
-        <nav class="pagination" aria-label="Sayfalama">
-            @{
-                var prevOff = Model.PageNumber <= 1 ? "pag-btn--off" : "";
-                var nextOff = Model.PageNumber >= Model.TotalPages ? "pag-btn--off" : "";
-            }
-            <a href="@PageUrl(Model.PageNumber - 1)" class="pag-btn @prevOff" aria-label="Önceki">@await Html.PartialAsync("_Icons", "chevron-left")</a>
-            @{
-                const int maxVis = 5;
-                int sp = Math.Max(1, Model.PageNumber - maxVis / 2);
-                int ep = Math.Min(Model.TotalPages, sp + maxVis - 1);
-                if (ep - sp < maxVis - 1) sp = Math.Max(1, ep - maxVis + 1);
-            }
-            @if (sp > 1)
-            {
-                <a href="@PageUrl(1)" class="pag-btn">1</a>
-                if (sp > 2) { <span class="pag-ellipsis">...</span> }
-            }
-            @for (var i = sp; i <= ep; i++)
-            {
-                <a href="@PageUrl(i)" class="pag-btn @(i == Model.PageNumber ? "pag-btn--active" : "")">@i</a>
-            }
-            @if (ep < Model.TotalPages)
-            {
-                if (ep < Model.TotalPages - 1) { <span class="pag-ellipsis">...</span> }
-                <a href="@PageUrl(Model.TotalPages)" class="pag-btn">@Model.TotalPages</a>
-            }
-            <a href="@PageUrl(Model.PageNumber + 1)" class="pag-btn @nextOff" aria-label="Sonraki">@await Html.PartialAsync("_Icons", "chevron-right")</a>
-        </nav>
-    </div>
-</div>
+@await Html.PartialAsync("_TableFooter", new TableFooterModel(
+    Model.PageNumber, Model.PageSize, Model.TotalPages, Model.TotalFiltered,
+    [
+        new("search",        Model.Search),
+        new("typeFilter",    Model.TypeFilter),
+        new("statusFilter",  Model.StatusFilter),
+        new("deletedFilter", Model.DeletedFilter),
+        new("dateFrom",      Model.DateFrom),
+        new("dateTo",        Model.DateTo),
+    ]))

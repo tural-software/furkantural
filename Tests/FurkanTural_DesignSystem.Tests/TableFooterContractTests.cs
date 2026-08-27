@@ -74,38 +74,46 @@ public class TableFooterContractTests
     }
 
     [Fact]
-    public void Alt_bant_paylasilan_sayfalama_bilesenidir()
+    public void Alt_bandi_her_liste_ortak_parcadan_cizer()
     {
         var sapan = new List<string>();
 
         foreach (var (name, content) in TablePartials())
         {
-            foreach (var beklenen in new[] { @"class=""tbl-footer""", @"class=""page-size-sel""", @"class=""pag-btn" })
-            {
-                if (!content.Contains(beklenen))
-                    sapan.Add($"{name}: {beklenen} yok");
-            }
+            if (!content.Contains(@"Html.PartialAsync(""_TableFooter"""))
+                sapan.Add($"{name}: _TableFooter kullanmıyor");
 
-            foreach (var eski in new[] { "pagination-bar", "page-btn" })
+            foreach (var kendi in new[] { "pagination-bar", "page-btn", "class=\"tbl-footer\"", "string PageUrl(int p)" })
             {
-                if (content.Contains(eski))
-                    sapan.Add($"{name}: kendi sayfalama kopyasını taşıyor ({eski})");
+                if (content.Contains(kendi))
+                    sapan.Add($"{name}: alt bandın kendi kopyasını taşıyor ({kendi})");
             }
         }
 
         sapan.Should().BeEmpty(
-            "sayfa boyutu seçici ve sayfa düğmeleri iskeletin bileşeni; kendi kopyasını taşıyan modül geride kalır");
+            "yirmi bir kopya tek parçaya indirildi; kendi kopyasını geri getiren modül sessizce geride kalır");
     }
 
     [Fact]
-    public void Sayfalama_baglantilari_suzgecleri_tasir()
+    public void Ortak_parca_sayfalama_bilesenini_tasir()
     {
-        var sapan = TablePartials()
-            .Where(t => !t.Content.Contains("string PageUrl(int p)"))
-            .Select(t => t.Name)
-            .ToList();
+        var footer = File.ReadAllText(Path.Combine(
+            FindSolutionRoot(), "Presentation", "FurkanTural_Admin", "Views", "Shared", "_TableFooter.cshtml"));
 
-        sapan.Should().BeEmpty(
-            "sayfa değişince süzgeçler düşmemeli; her partial kendi route değerlerini PageUrl'de toplar");
+        foreach (var beklenen in new[] { @"class=""tbl-footer""", @"class=""page-size-sel""", @"class=""pag-btn" })
+            footer.Should().Contain(beklenen);
+    }
+
+    [Fact]
+    public void Sayfa_baglantisi_ve_boyut_formu_ayni_suzgec_listesini_kullanir()
+    {
+        var footer = File.ReadAllText(Path.Combine(
+            FindSolutionRoot(), "Presentation", "FurkanTural_Admin", "Views", "Shared", "_TableFooter.cshtml"));
+
+        var kullanim = Regex.Matches(footer, @"foreach \(var filter in Model\.Filters\)").Count;
+
+        kullanim.Should().Be(2,
+            "biri sayfa bağlantısının sorgu dizesini biri gizli alanları üretir; "
+          + "ikisi ayrı listeden beslenirse sayfa değişince süzgeç düşer");
     }
 }
