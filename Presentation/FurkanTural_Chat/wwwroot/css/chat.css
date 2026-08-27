@@ -256,7 +256,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.btn-danger:hover { background: var(--error); color: #fff; }
+.btn-danger:hover { background: var(--error-solid); color: #fff; }
 .btn-danger:active { transform: scale(0.98); }
 
 .close-note {
@@ -280,11 +280,13 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     height: 100dvh;            /* mobil: adres çubuğu yüksekliğini hesaba kat */
     display: grid;
     grid-template-columns: 320px 1fr;
-    grid-template-rows: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     overflow: hidden;
 }
 
 .sidebar {
+    grid-row: 2;
+    grid-column: 1;
     background: var(--bg-card-solid);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -327,7 +329,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     letter-spacing: .6px; color: var(--text-dim);
 }
 .badge {
-    background: var(--error); color: #fff; border-radius: 20px; min-width: 20px;
+    background: var(--error-solid); color: #fff; border-radius: 20px; min-width: 20px;
     height: 20px; padding: 0 6px; font-size: var(--fs-xs); font-weight: 700;
     display: inline-grid; place-items: center;
 }
@@ -368,7 +370,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .btn-accept { color: #10b981; }
 .btn-accept:hover { background: #10b981; color: #fff; border-color: #10b981; }
 .btn-reject { color: var(--error); }
-.btn-reject:hover { background: var(--error); color: #fff; border-color: var(--error); }
+.btn-reject:hover { background: var(--error-solid); color: #fff; border-color: var(--error-solid); }
 
 /* Giden (onay bekleyen) istek — salt-okunur "Bekliyor" rozeti */
 .req-pending {
@@ -416,7 +418,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .me-name { font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .logout-form { margin: 0; }
 
-.conversation { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--bg-main); }
+.conversation { grid-row: 2; grid-column: 2; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--bg-main); }
 .conv-header {
     display: flex; align-items: center; gap: 12px;
     padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-card-solid);
@@ -707,7 +709,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .rec-btn .ic-stop { display: none; }
 .rec-btn.recording .ic-plus { display: none; }
 .rec-btn.recording .ic-stop { display: block; }
-.rec-btn.recording { background: var(--error) !important; color: #fff !important; border-color: var(--error) !important; animation: pulse 1.2s infinite; }
+.rec-btn.recording { background: var(--error-solid) !important; color: #fff !important; border-color: var(--error-solid) !important; animation: pulse 1.2s infinite; }
 @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.5); } 50% { box-shadow: 0 0 0 7px rgba(239,68,68,0); } }
 .rec-timer { font-size: var(--fs-sm); color: var(--error); font-weight: 600; min-width: 38px; }
 
@@ -725,9 +727,9 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 
 /* Bağlantı durumu */
 .conn-status {
-    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    grid-row: 1; grid-column: 1 / -1; justify-self: center; margin: 10px 0 0;
     background: #f59e0b; color: #1a1205; padding: 7px 16px; border-radius: 20px;
-    font-size: var(--fs-sm); font-weight: 600; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    font-size: var(--fs-sm); font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.3);
 }
 
 .consent-overlay {
@@ -876,7 +878,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 @media (max-width: 768px) {
     /* Tek-pane: liste ↔ sohbet geçişi. Sohbet sağdan kayarak listenin üstünü kaplar. */
     .chat-app { position: relative; grid-template-columns: 1fr; }
-    .sidebar, .conversation { position: absolute; inset: 0; width: 100%; }
+    .sidebar, .conversation { position: absolute; inset: 0; width: 100%; grid-column: 1; }
     .conversation {
         transform: translateX(100%);
         transition: transform .25s ease;

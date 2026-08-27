@@ -15,6 +15,7 @@
 }
 
 <div class="chat-app">
+    <div id="connStatus" class="conn-status" role="status" aria-live="assertive" aria-atomic="true" hidden></div>
     <aside class="sidebar">
         <div class="search">
             <input id="searchInput" type="search" placeholder="Kullanıcı adı veya e-posta ara…" autocomplete="off"
@@ -147,7 +148,6 @@
     </main>
 </div>
 
-<div id="connStatus" class="conn-status" role="status" aria-live="assertive" aria-atomic="true" hidden></div>
 
 @* Üyelik sözleşmesi — yalnızca henüz kabul etmemiş (eski) üyeler için JS açar; kapatılamaz. *@
 <div id="agreementOverlay" class="agreement-overlay">

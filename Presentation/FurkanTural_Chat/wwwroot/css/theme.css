@@ -54,6 +54,7 @@
     --z-content: 10;
     --z-chrome: 999;
     --error: #ef4444;
+    --error-solid: #dc2626;
 }
 
 /* DARK (default) */
