@@ -106,6 +106,39 @@ public class AdminRelationsTests
     }
 
     [Fact]
+    public void Suzgec_anahtari_alt_modulun_gercek_parametresidir()
+    {
+        var sapan = new List<string>();
+
+        foreach (var entity in new[] { "Blog", "Music", "Project", "Role" })
+        {
+            foreach (var relation in AdminRelations.For(entity))
+            {
+                var controller = typeof(AdminModules).Assembly
+                    .GetTypes()
+                    .SingleOrDefault(t => t.Name == $"{relation.ChildController}Controller");
+
+                if (controller is null)
+                {
+                    sapan.Add($"{relation.ChildController}Controller bulunamadı");
+                    continue;
+                }
+
+                var index = controller.GetMethod("Index");
+                var parametreler = index?.GetParameters().Select(p => p.Name).ToArray() ?? [];
+
+                if (!parametreler.Contains(relation.FilterKey))
+                    sapan.Add($"{entity} → {relation.ChildController}: \"{relation.FilterKey}\" "
+                            + $"bir Index parametresi değil (var olanlar: {string.Join(", ", parametreler)})");
+            }
+        }
+
+        sapan.Should().BeEmpty(
+            "süzgeç anahtarı alt listenin tanımadığı bir ad olursa bağlantı sessizce süzmez, "
+          + "kullanıcı tüm kayıtları görür ve hata da almaz");
+    }
+
+    [Fact]
     public void Kayitta_olmayan_modul_icin_iliski_yoktur()
     {
         AdminRelations.For("Skill").Should().BeEmpty();

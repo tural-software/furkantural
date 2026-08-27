@@ -10,7 +10,7 @@ public static class AdminRelations
         new("Blog", "BlogImage", "blogId"),
         new("Music", "MusicImage", "musicId"),
         new("Project", "ProjectImage", "projectId"),
-        new("Role", "User", "roleId")
+        new("Role", "User", "roleFilter")
     ];
 
     public static IReadOnlyList<AdminRelation> For(string? parentEntity) =>
