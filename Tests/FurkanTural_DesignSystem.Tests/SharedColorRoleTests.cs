@@ -20,6 +20,7 @@ public class SharedColorRoleTests
         "--accent",
         "--accent-rgb",
         "--accent-soft",
+        "--on-accent",
     ];
 
     private static readonly (string Project, string RelativePath)[] Stylesheets =

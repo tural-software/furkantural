@@ -57,6 +57,7 @@
   --text: #e6edf3;
   --text-muted: #9aa7b4;
   --accent: #38bdf8;
+  --on-accent: #0f172a;
   --accent-hover: #7dd3fc;
   --accent-2: #8b5cf6;
   --accent-rgb: 56, 189, 248;
@@ -75,6 +76,7 @@
   --text: #0f172a;
   --text-muted: #55617a;
   --accent: #0ea5e9;
+  --on-accent: #0f172a;
   --accent-hover: #0284c7;
   --accent-2: #7c3aed;
   --accent-rgb: 14, 165, 233;
