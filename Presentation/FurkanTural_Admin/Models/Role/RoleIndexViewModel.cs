@@ -10,7 +10,6 @@ public sealed class RoleIndexViewModel
     public int DeletedCount { get; init; }
 
     public string? SearchName { get; init; }
-    public int? RoleIdFilter { get; init; }
     public string? ActiveFilter { get; init; }
     public string? DeletedFilter { get; init; }
     public string? DateFrom { get; init; }

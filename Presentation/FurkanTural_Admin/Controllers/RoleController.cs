@@ -11,7 +11,6 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
 
     public async Task<IActionResult> Index(
         string? name,
-        int? roleId = null,
         string? activeFilter = null,
         string? deletedFilter = null,
         string? dateFrom = null,
@@ -31,9 +30,6 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
         if (!string.IsNullOrWhiteSpace(name))
             filtered = filtered.Where(r => r.Name != null && r.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
 
-        if (roleId.HasValue && roleId.Value > 0)
-            filtered = filtered.Where(r => r.Id == roleId.Value);
-
         if (activeFilter == "active")
             filtered = filtered.Where(r => r.IsActive);
         else if (activeFilter == "passive")
@@ -69,7 +65,6 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
             PassiveCount  = all.Count(r => !r.IsActive && !r.IsDeleted),
             DeletedCount  = all.Count(r => r.IsDeleted),
             SearchName    = name,
-            RoleIdFilter  = roleId,
             ActiveFilter  = activeFilter,
             DeletedFilter = deletedFilter,
             DateFrom      = dateFrom,
@@ -85,7 +80,6 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
     [HttpGet]
     public async Task<IActionResult> TablePartial(
         string? name,
-        int? roleId = null,
         string? activeFilter = null,
         string? deletedFilter = null,
         string? dateFrom = null,
@@ -105,9 +99,6 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
         if (!string.IsNullOrWhiteSpace(name))
             filtered = filtered.Where(r => r.Name != null && r.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
 
-        if (roleId.HasValue && roleId.Value > 0)
-            filtered = filtered.Where(r => r.Id == roleId.Value);
-
         if (activeFilter == "active")
             filtered = filtered.Where(r => r.IsActive);
         else if (activeFilter == "passive")
@@ -143,7 +134,6 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
             PassiveCount  = all.Count(r => !r.IsActive && !r.IsDeleted),
             DeletedCount  = all.Count(r => r.IsDeleted),
             SearchName    = name,
-            RoleIdFilter  = roleId,
             ActiveFilter  = activeFilter,
             DeletedFilter = deletedFilter,
             DateFrom      = dateFrom,

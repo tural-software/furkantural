@@ -92,7 +92,6 @@
         var meta = window.__roleMeta || {};
         var params = new URLSearchParams({
             name:          meta.name          || '',
-            roleId:        meta.roleId        || '',
             activeFilter:  meta.activeFilter  || '',
             deletedFilter: meta.deletedFilter || '',
             dateFrom:      meta.dateFrom      || '',
