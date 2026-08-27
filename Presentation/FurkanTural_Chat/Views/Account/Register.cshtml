@@ -1,7 +1,6 @@
 @model RegisterRequestModel
 @{
     ViewData["Title"] = "Üye Ol";
-    var nonce = Context.Items["csp-nonce"] as string;
 }
 <button type="button" class="theme-toggle-btn theme-toggle-btn--floating" data-theme-toggle aria-label="Temayı değiştir">
     <span data-theme-icon aria-hidden="true">🌙</span>
@@ -41,9 +40,13 @@
 
             @if (!string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string))
             {
-                <div class="cf-turnstile" data-sitekey="@ViewBag.TurnstileSiteKey" data-callback="onTurnstileSuccess"></div>
+                <div class="cf-turnstile" data-sitekey="@ViewBag.TurnstileSiteKey"
+                     data-callback="onTurnstileSuccess"
+                     data-expired-callback="onTurnstileExpired"
+                     data-error-callback="onTurnstileError"></div>
             }
             <input type="hidden" name="TurnstileToken" id="turnstileToken" />
+            <p class="field-error" id="turnstileHint" role="status" aria-live="polite"></p>
 
             <label class="agreement-check">
                 <input asp-for="AcceptAgreement" aria-required="true" aria-describedby="reg-agreement-err" />
@@ -56,7 +59,8 @@
             </label>
             <span asp-validation-for="AcceptAgreement" class="field-error" id="reg-agreement-err" role="alert"></span>
 
-            <button type="submit" class="btn-primary" data-loading-text="Kayıt yapılıyor…">Üye ol</button>
+            <button type="submit" class="btn-primary" data-loading-text="Kayıt yapılıyor…"
+                    disabled="@(!string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string))">Üye ol</button>
         </form>
 
         <p class="auth-foot">Zaten hesabın var mı? <a asp-action="Login">Giriş yap</a></p>
@@ -65,12 +69,7 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script src="~/js/turnstile-gate.js" asp-append-version="true"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script nonce="@nonce">
-        function onTurnstileSuccess(token) {
-            var el = document.getElementById('turnstileToken');
-            if (el) el.value = token;
-        }
-    </script>
     <script src="~/js/auth.js" asp-append-version="true"></script>
 }

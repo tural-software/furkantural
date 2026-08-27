@@ -4,10 +4,20 @@
 
     forms.forEach((form) => {
         const submitBtn = form.querySelector('button[type="submit"]');
+        const tokenInput = form.querySelector('#turnstileToken');
         const failTitle = form.getAttribute('data-fail-title') || 'İşlem başarısız';
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            if (tokenInput && !tokenInput.value) {
+                if (window.showToast) {
+                    window.showToast('error', failTitle,
+                        'Robot doğrulaması henüz tamamlanmadı. Birkaç saniye bekleyip tekrar deneyin.');
+                }
+                return;
+            }
+
             if (submitBtn) {
                 submitBtn.disabled = true;
                 const loadingText = submitBtn.getAttribute('data-loading-text');
@@ -37,7 +47,7 @@
                     const msg = `Sunucu hatası: ${response.status}`;
                     if (window.showToast) window.showToast('error', 'Sunucu hatası', msg);
                     resetBtn();
-                    if (window.turnstile) { try { window.turnstile.reset(); } catch (e) { /* yoksay */ } }
+                    if (window.ftTurnstileReset) window.ftTurnstileReset();
                     return;
                 }
 
@@ -47,7 +57,7 @@
                     const errors = (data.errors && data.errors.length) ? data.errors : ['İşlem başarısız.'];
                     if (window.showToast) window.showToast('error', failTitle, errors.join(' '));
                     resetBtn();
-                    if (window.turnstile) { try { window.turnstile.reset(); } catch (e) { /* yoksay */ } }
+                    if (window.ftTurnstileReset) window.ftTurnstileReset();
                     return;
                 }
 

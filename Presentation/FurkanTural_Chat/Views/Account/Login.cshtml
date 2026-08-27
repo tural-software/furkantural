@@ -1,7 +1,6 @@
 @model LoginRequestModel
 @{
     ViewData["Title"] = "Giriş";
-    var nonce = Context.Items["csp-nonce"] as string;
 }
 <button type="button" class="theme-toggle-btn theme-toggle-btn--floating" data-theme-toggle aria-label="Temayı değiştir">
     <span data-theme-icon aria-hidden="true">🌙</span>
@@ -31,11 +30,16 @@
 
             @if (!string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string))
             {
-                <div class="cf-turnstile" data-sitekey="@ViewBag.TurnstileSiteKey" data-callback="onTurnstileSuccess"></div>
+                <div class="cf-turnstile" data-sitekey="@ViewBag.TurnstileSiteKey"
+                     data-callback="onTurnstileSuccess"
+                     data-expired-callback="onTurnstileExpired"
+                     data-error-callback="onTurnstileError"></div>
             }
             <input type="hidden" name="TurnstileToken" id="turnstileToken" />
+            <p class="field-error" id="turnstileHint" role="status" aria-live="polite"></p>
 
-            <button type="submit" class="btn-primary" data-loading-text="Giriş yapılıyor…">Giriş yap</button>
+            <button type="submit" class="btn-primary" data-loading-text="Giriş yapılıyor…"
+                    disabled="@(!string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string))">Giriş yap</button>
         </form>
 
         <p class="auth-foot">Hesabın yok mu? <a asp-action="Register">Üye ol</a></p>
@@ -44,12 +48,7 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script src="~/js/turnstile-gate.js" asp-append-version="true"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script nonce="@nonce">
-        function onTurnstileSuccess(token) {
-            var el = document.getElementById('turnstileToken');
-            if (el) el.value = token;
-        }
-    </script>
     <script src="~/js/auth.js" asp-append-version="true"></script>
 }
