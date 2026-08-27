@@ -1,0 +1,5 @@
+@using FurkanTural_Admin.Helpers
+@{
+    var module = AdminModules.ByController(ViewContext.RouteData.Values["controller"] as string);
+}
+<h1 class="section-title">@module?.Title</h1>

@@ -39,12 +39,6 @@ public class PageHeaderContractTests
         }
     }
 
-    private static string? Heading(string content)
-    {
-        var match = Regex.Match(content, @"<h1[^>]*>(.*?)</h1>", RegexOptions.Singleline);
-        return match.Success ? Regex.Replace(match.Groups[1].Value, @"<[^>]+>", string.Empty).Trim() : null;
-    }
-
     private static string Description(string content)
     {
         var match = Regex.Match(content, @"<p class=""section-desc""[^>]*>(.*?)</p>", RegexOptions.Singleline);
@@ -58,20 +52,31 @@ public class PageHeaderContractTests
     }
 
     [Fact]
-    public void Baslik_kirinti_yoluyla_ayni_adi_soyler()
+    public void Baslik_kayittan_cizilir()
     {
         var sapan = new List<string>();
 
         foreach (var (module, content) in IndexViews())
         {
-            var heading = Heading(content);
+            if (!content.Contains(@"Html.PartialAsync(""_PageTitle"")"))
+                sapan.Add($"{module.Controller}: _PageTitle kullanmıyor");
 
-            if (heading != module.Title && heading != $"{module.Title} Verileri")
-                sapan.Add($"{module.Controller}: kırıntı yolu \"{module.Title}\", başlık \"{heading}\"");
+            if (Regex.IsMatch(content, @"<h1[^>]*>[^<@]"))
+                sapan.Add($"{module.Controller}: başlığı elle yazıyor");
         }
 
         sapan.Should().BeEmpty(
-            "kırıntı yolu kayıttan okunuyor, başlık elle yazılıyor; ikisi ayrışırsa aynı ekranda modülün iki adı görünür");
+            "kırıntı yolu ile başlık aynı kaydı okumazsa aynı ekranda modülün iki adı görünür");
+    }
+
+    [Fact]
+    public void Baslik_parcasi_kaydin_adini_yazar()
+    {
+        var partial = File.ReadAllText(Path.Combine(
+            FindSolutionRoot(), "Presentation", "FurkanTural_Admin", "Views", "Shared", "_PageTitle.cshtml"));
+
+        partial.Should().Contain("AdminModules.ByController", "başlık tek kaynaktan gelmeli");
+        partial.Should().Contain("module?.Title", "kayıttaki ad kırıntı yolunda da aynen kullanılıyor");
     }
 
     [Fact]

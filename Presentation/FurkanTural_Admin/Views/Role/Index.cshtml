@@ -9,7 +9,6 @@
     <script>
         window.__roleMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             name          = Model.SearchName ?? "",
-            roleId        = Model.RoleIdFilter?.ToString() ?? "",
             activeFilter  = Model.ActiveFilter ?? "",
             deletedFilter = Model.DeletedFilter ?? "",
             dateFrom      = Model.DateFrom ?? "",
@@ -33,7 +32,7 @@
 
     <div class="pg-header">
         <div>
-            <h1 class="section-title">Roller Verileri</h1>
+            @await Html.PartialAsync("_PageTitle")
             <p class="section-desc">Roller tablosundaki kayıtları görüntüleyin, arayın ve yönetin.</p>
         </div>
         <div class="pg-header__actions">
@@ -122,17 +121,6 @@
                         <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
                         <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
                     </select>
-                </div>
-                <div class="filter-group">
-                    <label>Rol</label>
-                    <div class="fbs-wrap"
-                         data-fbs-endpoint="/Role/RoleOptions"
-                         data-fbs-initial="@(Model.RoleIdFilter.HasValue ? Model.RoleIdFilter.Value.ToString() : "")">
-                        <input type="text" class="fbs-search filter-input" autocomplete="off"
-                               placeholder="Rol ara..." />
-                        <input type="hidden" class="fbs-value" name="roleId" value="@Model.RoleIdFilter" />
-                        <div class="fbs-dropdown"></div>
-                    </div>
                 </div>
                 <div class="filter-group">
                     <label>Oluşturulma Tarihi</label>
