@@ -34,8 +34,17 @@
             <span asp-validation-for="DisplayName" class="field-error" id="reg-displayname-err" role="alert"></span>
 
             <label asp-for="Password">Şifre</label>
-            <input asp-for="Password" type="password" autocomplete="new-password"
-                   aria-required="true" aria-describedby="reg-password-err" />
+            <div class="pw-row">
+                <input asp-for="Password" type="password" autocomplete="new-password"
+                       aria-required="true" aria-describedby="reg-password-rules reg-password-err" />
+                <button type="button" class="btn-outline pw-gen"
+                        data-password-generate="#Password" data-password-hint="#reg-password-note">Üret</button>
+            </div>
+            <p class="pw-rules" id="reg-password-rules">
+                En az 6 karakter; bir büyük harf, bir küçük harf, bir rakam ve şu sembollerden biri:
+                <span class="pw-symbols">!#$%()*+,-./:;=?@@[]^_{|}~</span>
+            </p>
+            <p class="pw-note" id="reg-password-note" role="status" aria-live="polite"></p>
             <span asp-validation-for="Password" class="field-error" id="reg-password-err" role="alert"></span>
 
             @if (!string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string))
@@ -71,5 +80,6 @@
     @await Html.PartialAsync("_ValidationScriptsPartial")
     <script src="~/js/turnstile-gate.js" asp-append-version="true"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="~/js/password-gen.js" asp-append-version="true"></script>
     <script src="~/js/auth.js" asp-append-version="true"></script>
 }

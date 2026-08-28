@@ -72,9 +72,16 @@
         var reqClass = field.required ? ' fm-field__label--required' : '';
         var maxLen = field.maxLength ? ' maxlength="' + field.maxLength + '"' : '';
         var ph = field.placeholder ? ' placeholder="' + escAttr(field.placeholder) + '"' : '';
+        var inputId = 'fmpw-' + field.name;
         return '<div class="fm-field" data-field="' + field.name + '">' +
-            '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
-            '<input type="password" class="fm-field__input" name="' + field.name + '"' + maxLen + ph + ' autocomplete="new-password" />' +
+            '<label class="fm-field__label' + reqClass + '" for="' + inputId + '">' + escHtml(field.label) + '</label>' +
+            '<div class="fm-field__pw">' +
+            '<input type="password" id="' + inputId + '" class="fm-field__input" name="' + field.name + '"' + maxLen + ph + ' autocomplete="new-password" />' +
+            '<button type="button" class="fm-pw-gen" data-password-generate="#' + inputId + '" data-password-hint="#fmpwnote-' + field.name + '">Üret</button>' +
+            '</div>' +
+            '<p class="fm-field__hint">En az 6 karakter; bir büyük harf, bir küçük harf, bir rakam ve bir sembol (' +
+            '<span class="fm-field__symbols">!#$%()*+,-./:;=?@[]^_{|}~</span>).</p>' +
+            '<p class="fm-field__note" id="fmpwnote-' + field.name + '" role="status" aria-live="polite"></p>' +
             '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
             '</div>';
     }

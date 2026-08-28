@@ -164,6 +164,39 @@
 }
 .fm-field__error--visible { display: block; }
 
+.fm-field__pw { display: flex; gap: .5rem; align-items: stretch; }
+.fm-field__pw .fm-field__input { flex: 1 1 auto; min-width: 0; }
+.fm-pw-gen {
+    flex: 0 0 auto;
+    padding: 0 .85rem;
+    font-size: var(--fs-2xs);
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--accent-text);
+    background: var(--accent-soft);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+.fm-pw-gen:hover { border-color: var(--accent); }
+.fm-field__hint {
+    font-size: var(--fs-2xs);
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin: .25rem 0 0;
+}
+.fm-field__symbols {
+    font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+    color: var(--text-main);
+    word-break: break-all;
+}
+.fm-field__note {
+    font-size: var(--fs-2xs);
+    color: var(--accent-text);
+    margin: .25rem 0 0;
+    min-height: 1.1em;
+}
+
 .fm-toggle {
     display: flex;
     align-items: center;

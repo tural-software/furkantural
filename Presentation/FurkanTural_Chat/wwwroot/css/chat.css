@@ -179,6 +179,19 @@ select:focus-visible,
 /* Alan hata mesajı */
 .field-error { color: var(--error); font-size: var(--fs-sm); min-height: 1.1em; display: block; }
 
+.pw-row { display: flex; gap: 8px; align-items: stretch; }
+.pw-row input { flex: 1 1 auto; min-width: 0; }
+.pw-gen { flex: 0 0 auto; padding: 0 14px; font-size: var(--fs-sm); white-space: nowrap; }
+.pw-gen:hover { transform: none; }
+.pw-gen:active { transform: scale(0.97); }
+.pw-rules { font-size: var(--fs-xs); color: var(--text-dim); line-height: 1.5; margin: 2px 0 0; }
+.pw-symbols {
+    font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+    color: var(--text-main);
+    word-break: break-all;
+}
+.pw-note { font-size: var(--fs-xs); color: var(--accent-text); margin: 2px 0 0; min-height: 1.1em; }
+
 /* Opsiyonel alan etiketi */
 .auth-optional { font-size: var(--fs-sm); color: var(--text-dim); font-weight: 400; }
 
