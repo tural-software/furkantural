@@ -46,12 +46,83 @@ input, button, .friend-item, .msg .bubble, #toastBox {
 .theme-toggle-btn:hover [data-theme-icon] {
     animation: spin 0.5s ease-in-out;
 }
-.theme-toggle-btn--floating {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: var(--z-chrome);
+body { display: flex; flex-direction: column; }
+
+.shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
 }
+.shell--app { overflow: hidden; }
+
+.topbar {
+    flex: 0 0 auto;
+    min-height: 61px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card-solid);
+}
+.topbar-brand {
+    margin-right: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--text-main);
+}
+.topbar-brand:hover { text-decoration: none; }
+.topbar-logo { display: block; width: 28px; height: 28px; }
+.topbar-name { font-size: 16.5px; font-weight: 700; letter-spacing: -0.2px; }
+.topbar-name span { color: var(--accent-text); }
+.topbar-nav { display: flex; align-items: center; gap: 18px; }
+.topbar-nav a { font-size: var(--fs-md); color: var(--text-dim); }
+.topbar-nav a:hover { color: var(--text-main); }
+.topbar-theme {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 10px;
+}
+.topbar .topbar-cta {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    margin-top: 0;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-size: var(--fs-md);
+    white-space: nowrap;
+}
+.topbar .topbar-cta:hover { text-decoration: none; }
+
+.sitefoot {
+    flex: 0 0 auto;
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 22px;
+    border-top: 1px solid var(--border-color);
+    font-size: 12.5px;
+    color: var(--text-dim);
+}
+.sitefoot-brand { font-weight: 700; color: var(--text-main); }
+.sitefoot-brand span { color: var(--accent-text); }
+.sitefoot-links { display: flex; justify-content: center; gap: 18px; }
+.sitefoot-mail { justify-self: end; }
+.sitefoot a { color: var(--text-dim); }
+.sitefoot a:hover { color: var(--text-main); }
+
+@media (max-width: 1024px) {
+    .topbar-nav { display: none; }
+}
+
 @keyframes spin {
     0%   { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -126,8 +197,7 @@ select:focus-visible,
 }
 
 .auth-wrap {
-    min-height: 100vh;
-    min-height: 100dvh;
+    flex: 1 0 auto;
     display: grid;
     place-items: center;
     padding: 24px;
@@ -289,8 +359,8 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .me-link:hover { color: var(--error); text-decoration: underline; }
 
 .chat-app {
-    height: 100vh;
-    height: 100dvh;            /* mobil: adres çubuğu yüksekliğini hesaba kat */
+    flex: 1 1 auto;
+    min-height: 0;
     display: grid;
     grid-template-columns: 320px 1fr;
     grid-template-rows: auto minmax(0, 1fr);
@@ -875,7 +945,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .agreement-check input { margin-top: 2px; accent-color: var(--accent); }
 .field-error { color: var(--error); font-size: var(--fs-sm); }
 
-.legal-wrap { height: 100%; overflow-y: auto; display: flex; justify-content: center; padding: 48px 20px; }
+.legal-wrap { flex: 1 0 auto; display: flex; justify-content: center; padding: 48px 20px; }
 .legal-card {
     width: 100%; max-width: 760px; height: max-content;
     background: var(--bg-card-solid); border: 1px solid var(--border-color);
@@ -889,6 +959,16 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .legal-actions { margin-top: 28px; }
 
 @media (max-width: 768px) {
+    .topbar { padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); }
+    .sitefoot {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        gap: 10px;
+    }
+    .sitefoot-links { flex-direction: column; gap: 10px; }
+    .sitefoot-mail { justify-self: center; }
+
     /* Tek-pane: liste ↔ sohbet geçişi. Sohbet sağdan kayarak listenin üstünü kaplar. */
     .chat-app { position: relative; grid-template-columns: 1fr; }
     .sidebar, .conversation { position: absolute; inset: 0; width: 100%; grid-column: 1; }

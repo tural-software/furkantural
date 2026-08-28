@@ -7,15 +7,17 @@
     // sayfası için ViewData["Robots"] = "index, follow" ile override edilebilir.
     var robots = ViewData["Robots"] as string ?? "noindex, nofollow";
     var seoTitle = ViewData["Title"] as string ?? "Chatural";
+    var pageTitle = seoTitle == "Chatural" ? "Chatural" : $"{seoTitle} - Chatural";
     // CSP nonce (Program.cs middleware'inde üretilir) — inline <script> blokları bununla çalışır.
     var nonce = Context.Items["csp-nonce"] as string;
+    var appShell = (ViewData["Shell"] as string) == "app";
 }
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>@ViewData["Title"] - Chatural</title>
+    <title>@pageTitle</title>
     <meta name="description" content="@metaDescription" />
     <meta name="robots" content="@robots" />
     <link rel="canonical" href="@canonical" />
@@ -62,7 +64,16 @@
     <meta name="apple-mobile-web-app-title" content="Chatural" />
 </head>
 <body>
-    @RenderBody()
+    @await Html.PartialAsync("_TopBar")
+
+    <div class="shell@(appShell ? " shell--app" : "")">
+        @RenderBody()
+
+        @if (!appShell)
+        {
+            @await Html.PartialAsync("_Footer")
+        }
+    </div>
 
     <div id="toastBox" role="status" aria-live="polite">
         <div id="toastTitle"></div>

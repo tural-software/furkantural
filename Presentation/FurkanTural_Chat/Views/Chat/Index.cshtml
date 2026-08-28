@@ -1,6 +1,7 @@
 @model ChatPageViewModel
 @{
     ViewData["Title"] = "Sohbet";
+    ViewData["Shell"] = "app";
     var initial = string.IsNullOrWhiteSpace(Model.DisplayName) ? "?" : Model.DisplayName.Trim().Substring(0, 1).ToUpperInvariant();
     var chatConfig = System.Text.Json.JsonSerializer.Serialize(new
     {

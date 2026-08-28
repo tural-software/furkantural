@@ -74,4 +74,93 @@ public class ChatShellContractTests
         ChatCss("theme.css").Should().Contain("--error-solid",
             "--error metin rengi olarak da kullanılıyor, koyulaştırılamaz; dolu yüzeyler için ayrı ton gerekir");
     }
+
+    private static string ChatView(params string[] parts) =>
+        File.ReadAllText(Path.Combine([FindSolutionRoot(), "Presentation", "FurkanTural_Chat", "Views", .. parts]));
+
+    private static IEnumerable<string> ContentViews()
+    {
+        var root = Path.Combine(FindSolutionRoot(), "Presentation", "FurkanTural_Chat", "Views");
+
+        return Directory
+            .EnumerateFiles(root, "*.cshtml", SearchOption.AllDirectories)
+            .Where(f => !Path.GetFileName(f).StartsWith('_'));
+    }
+
+    [Fact]
+    public void Hicbir_gorunum_kendi_yuzen_tema_dugmesini_tasimaz()
+    {
+        var sapan = ContentViews()
+            .Where(f => File.ReadAllText(f).Contains("theme-toggle-btn--floating"))
+            .Select(Path.GetFileName)
+            .ToList();
+
+        sapan.Should().BeEmpty(
+            "tema düğmesi ortak üst çubuğa taşındı; sayfa başına kopyalanan düğme sağ üst köşede " +
+            "üst çubuğun üstüne biniyordu");
+
+        ContentViews().Should().HaveCountGreaterThan(5,
+            "görünüm taraması boş dönerse bu test hiçbir şey doğrulamıyor demektir");
+    }
+
+    [Fact]
+    public void Duzen_ust_cubugu_her_sayfada_alt_bilgiyi_yalnizca_icerik_sayfalarinda_cizer()
+    {
+        var layout = ChatView("Shared", "_Layout.cshtml");
+
+        layout.Should().Contain("Html.PartialAsync(\"_TopBar\")",
+            "üst çubuk düzende değilse her görünüme tek tek eklenmesi gerekir");
+
+        var footer = Regex.Match(layout, @"@if \(!appShell\)\s*\{\s*@await Html\.PartialAsync\(""_Footer""\)");
+
+        footer.Success.Should().BeTrue(
+            "alt bilgi koşulsuz çizilirse sabit yükseklikli sohbet ekranında kaydırma alanını yer");
+    }
+
+    [Fact]
+    public void Sohbet_ekrani_uygulama_kabugunu_secer()
+    {
+        ChatView("Chat", "Index.cshtml").Should().Contain("ViewData[\"Shell\"] = \"app\"",
+            "bayrak düşerse sohbet ekranı alt bilgiyi de çizer ve .chat-app kalan yüksekliği aşar");
+    }
+
+    [Fact]
+    public void Ust_cubuk_tema_dugmesini_yalnizca_icerik_sayfalarinda_cizer()
+    {
+        var topbar = ChatView("Shared", "_TopBar.cshtml");
+
+        topbar.Should().Contain("if (!appShell)",
+            "sohbet ekranının alt kullanıcı çubuğu zaten bir tema düğmesi taşıyor; " +
+            "üst çubuk da çizerse aynı ekranda iki özdeş denetim olur");
+
+        var chat = ChatView("Chat", "Index.cshtml");
+
+        Regex.Matches(chat, "data-theme-toggle").Count.Should().Be(1,
+            "sohbet ekranında tek tema düğmesi olmalı");
+    }
+
+    [Fact]
+    public void Ust_cubuk_yuksekligi_sayfadan_sayfaya_degismez()
+    {
+        RuleBody(ChatCss("chat.css"), ".topbar").Should().Contain("min-height",
+            "çubuğun yüksekliği içeriğinden geliyordu: giriş düğmesi olmayan sohbet ekranında 53px, " +
+            "olan içerik sayfalarında 61px ölçüldü; gezinirken marka satırı zıplıyordu");
+    }
+
+    [Fact]
+    public void Sayfa_basligi_site_adini_yinelemez()
+    {
+        var layout = ChatView("Shared", "_Layout.cshtml");
+
+        layout.Should().NotContain("<title>@ViewData[\"Title\"] - Chatural</title>",
+            "açılış sayfası başlığını 'Chatural' olarak veriyordu; düzen site adını ekleyince " +
+            "sekmede 'Chatural - Chatural' yazıyordu");
+    }
+
+    [Fact]
+    public void Giris_sayfasi_ust_cubukta_kayit_onerir()
+    {
+        ChatView("Account", "Login.cshtml").Should().Contain("ViewData[\"TopBarAction\"] = \"register\"",
+            "giriş sayfasının üst çubuğunda 'Giriş yap' düğmesi kullanıcıyı bulunduğu sayfaya gönderir");
+    }
 }

@@ -1,0 +1,32 @@
+@{
+    var appShell = (ViewData["Shell"] as string) == "app";
+    var cta = (ViewData["TopBarAction"] as string) ?? "login";
+}
+<header class="topbar">
+    <a class="topbar-brand" asp-controller="Home" asp-action="Index" aria-label="Chatural ana sayfa">
+        <img src="~/img/chatural-logo.png" alt="" width="28" height="28" class="topbar-logo" />
+        <span class="topbar-name">Cha<span>tural</span></span>
+    </a>
+
+    <nav class="topbar-nav" aria-label="Site bağlantıları">
+        <a asp-controller="Home" asp-action="Privacy">Gizlilik</a>
+        <a asp-controller="Home" asp-action="Agreement">Sözleşme</a>
+    </nav>
+
+    @if (!appShell)
+    {
+        <button type="button" class="theme-toggle-btn topbar-theme" data-theme-toggle
+                aria-label="Temayı değiştir" title="Temayı değiştir">
+            <span data-theme-icon aria-hidden="true">🌙</span>
+        </button>
+
+        if (cta == "register")
+        {
+            <a class="btn-primary topbar-cta" asp-controller="Account" asp-action="Register">Üye ol</a>
+        }
+        else
+        {
+            <a class="btn-primary topbar-cta" asp-controller="Account" asp-action="Login">Giriş yap</a>
+        }
+    }
+</header>
