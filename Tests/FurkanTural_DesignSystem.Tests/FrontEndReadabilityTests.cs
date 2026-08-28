@@ -438,4 +438,69 @@ public class FrontEndReadabilityTests
             $"'{selector}' için {property} sabit bir değere bağlıysa açık temada düzelmez; " +
             "koyu temaya göre seçilmiş yeşil beyaz zeminde 2.28:1, kehribar 2.15:1 kalıyordu");
     }
+
+    private static HashSet<string> ThemeBlockNames(string css, string anchor, bool light)
+    {
+        var names = new HashSet<string>();
+
+        foreach (Match block in Regex.Matches(css, @"([^{}]*)\{([^{}]*)\}", RegexOptions.Singleline))
+        {
+            var selector = block.Groups[1].Value;
+            var body = block.Groups[2].Value;
+
+            if (!Regex.IsMatch(body, $@"^\s*{Regex.Escape(anchor)}\s*:", RegexOptions.Multiline))
+                continue;
+
+            if (selector.Contains("light") != light)
+                continue;
+
+            foreach (Match m in Regex.Matches(body, @"^\s*(--[a-z0-9-]+)\s*:", RegexOptions.Multiline))
+                names.Add(m.Groups[1].Value);
+        }
+
+        return names;
+    }
+
+    [Fact]
+    public void Kullanilan_golge_tokenlari_iki_temada_da_tanimlidir()
+    {
+        var sapan = new List<string>();
+        var olculen = 0;
+
+        foreach (var (project, themeFile, surface) in SemanticSurfaces)
+        {
+            var kullanilan = new HashSet<string>();
+
+            foreach (var path in StyleSheets(project))
+            {
+                foreach (Match m in Regex.Matches(File.ReadAllText(path), @"var\((--[a-z0-9-]*shadow[a-z0-9-]*)\)"))
+                    kullanilan.Add(m.Groups[1].Value);
+            }
+
+            if (kullanilan.Count == 0)
+                continue;
+
+            var css = ThemeCss(project, themeFile);
+            var dark = ThemeBlockNames(css, surface, light: false);
+            var light = ThemeBlockNames(css, surface, light: true);
+
+            foreach (var token in kullanilan.Order())
+            {
+                olculen++;
+
+                if (!dark.Contains(token))
+                    sapan.Add($"{project} koyu temada {token} tanımlı değil");
+
+                if (!light.Contains(token))
+                    sapan.Add($"{project} açık temada {token} tanımlı değil");
+            }
+        }
+
+        sapan.Should().BeEmpty(
+            "tek temada tanımlanan gölge diğerine olduğu gibi düşer; Portfolio'nun rgba(0,0,0,0.5–0.6) " +
+            "gölgeleri açık temada beyaz zemine siyah leke bırakıyordu");
+
+        olculen.Should().BeGreaterThanOrEqualTo(4,
+            "token ya da yüzey adı değiştiyse bu test hiçbir şey ölçmeden yeşil kalır");
+    }
 }
