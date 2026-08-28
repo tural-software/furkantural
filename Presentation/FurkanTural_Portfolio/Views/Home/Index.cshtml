@@ -1,8 +1,4 @@
 ﻿@model IndexViewModel
-@{
-    ViewData["Title"] = "Furkan Tural";
-}
-
 @await Html.PartialAsync("_HeroSection")
 @await Html.PartialAsync("_AboutSection", Model)
 @await Html.PartialAsync("_SkillsSection", Model.Skills)
