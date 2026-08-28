@@ -235,6 +235,55 @@ public class PublicSiteReadabilityTests
     }
 
     [Fact]
+    public void Turnstile_kutusu_bulundugu_her_formda_ortalanir()
+    {
+        var root = FindSolutionRoot();
+        var sapan = new List<string>();
+
+        var stylesheets = new Dictionary<string, string>
+        {
+            ["FurkanTural_Chat"] = Path.Combine("wwwroot", "css", "chat.css"),
+            ["FurkanTural_Portfolio"] = Path.Combine("wwwroot", "css", "site.css"),
+            ["FurkanTural_Blog"] = Path.Combine("wwwroot", "css", "site.css"),
+            ["FurkanTural_Admin"] = Path.Combine("wwwroot", "css", "site.css"),
+        };
+
+        foreach (var (project, relative) in stylesheets)
+        {
+            var views = Path.Combine(root, "Presentation", project, "Views");
+            if (!Directory.Exists(views)) continue;
+
+            var kullanan = Directory
+                .EnumerateFiles(views, "*.cshtml", SearchOption.AllDirectories)
+                .Where(f => File.ReadAllText(f).Contains("cf-turnstile"))
+                .ToList();
+
+            if (kullanan.Count == 0) continue;
+
+            var css = File.ReadAllText(Path.Combine(root, "Presentation", project, relative));
+            var rule = Regex.Match(css, @"[^\n{}]*\.cf-turnstile[^\n{}]*\{([^}]*)\}");
+
+            if (!rule.Success)
+            {
+                sapan.Add($"{project}: {kullanan.Count} görünümde widget var ama .cf-turnstile kuralı yok");
+                continue;
+            }
+
+            var body = rule.Groups[1].Value;
+            var ortalar = Regex.IsMatch(body, @"justify-content:\s*center")
+                       || Regex.IsMatch(body, @"margin:\s*[^;]*auto")
+                       || Regex.IsMatch(body, @"text-align:\s*center");
+
+            if (!ortalar)
+                sapan.Add($"{project}: .cf-turnstile kuralı ortalama yapmıyor → {body.Trim()}");
+        }
+
+        sapan.Should().BeEmpty(
+            "Cloudflare widget'ı sabit 300px genişlikte bir iframe çizer; kapsayıcı formdan dar kaldığı için " +
+            "ortalanmazsa sola yapışır ve formun geri kalanıyla hizasız durur");
+    }
+
+    [Fact]
     public void Api_arizasi_gercekten_bos_icerikten_ayrilir()
     {
         var sapan = new List<string>();
