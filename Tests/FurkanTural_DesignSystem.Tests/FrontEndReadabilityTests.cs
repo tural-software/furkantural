@@ -3,7 +3,7 @@ using FluentAssertions;
 
 namespace FurkanTural_DesignSystem.Tests;
 
-public class PublicSiteReadabilityTests
+public class FrontEndReadabilityTests
 {
     private const string SolutionMarker = "FurkanTural.slnx";
 
@@ -29,30 +29,45 @@ public class PublicSiteReadabilityTests
     private static string BlogCss() => Read("Presentation", "FurkanTural_Blog", "wwwroot", "css", "site.css");
     private static string PortfolioCss() => Read("Presentation", "FurkanTural_Portfolio", "wwwroot", "css", "site.css");
 
-    private static readonly (string Project, string Prefix)[] Sites =
+    private static readonly (string Project, string Prefix, string ThemeFile)[] Sites =
     [
-        ("Blog",      "--"),
-        ("Portfolio", "--color-"),
+        ("FurkanTural_Admin",     "--",       "theme.css"),
+        ("FurkanTural_Chat",      "--",       "theme.css"),
+        ("FurkanTural_Blog",      "--",       "site.css"),
+        ("FurkanTural_Portfolio", "--color-", "site.css"),
     ];
 
-    private static string CssOf(string project) => project == "Blog" ? BlogCss() : PortfolioCss();
+    private static string CssOf(string project) =>
+        project == "Blog" ? BlogCss() : PortfolioCss();
+
+    private static string CssRoot(string project) =>
+        Path.Combine(FindSolutionRoot(), "Presentation", project, "wwwroot", "css");
+
+    private static IEnumerable<string> StyleSheets(string project) =>
+        Directory.EnumerateFiles(CssRoot(project), "*.css", SearchOption.AllDirectories);
+
+    private static string ThemeCss(string project, string file) =>
+        File.ReadAllText(Path.Combine(CssRoot(project), file));
 
     [Fact]
     public void Aksan_rengi_dogrudan_metin_rengi_olarak_kullanilmaz()
     {
         var sapan = new List<string>();
 
-        foreach (var (project, prefix) in Sites)
+        foreach (var (project, _, _) in Sites)
         {
-            var css = CssOf(project);
-
-            foreach (var token in new[] { $"{prefix}accent", $"{prefix}accent-hover" })
+            foreach (var path in StyleSheets(project))
             {
-                var pattern = $@"(^|[^-\w])color:\s*var\({Regex.Escape(token)}\)";
-                foreach (Match m in Regex.Matches(css, pattern, RegexOptions.Multiline))
+                var css = File.ReadAllText(path);
+
+                foreach (var token in new[] { "--accent", "--accent-hover", "--color-accent", "--color-accent-hover" })
                 {
-                    var line = css[..m.Index].Count(c => c == '\n') + 1;
-                    sapan.Add($"{project} site.css:{line} → color: var({token})");
+                    var pattern = $@"(^|[^-\w])color:\s*var\({Regex.Escape(token)}\)";
+                    foreach (Match m in Regex.Matches(css, pattern, RegexOptions.Multiline))
+                    {
+                        var line = css[..m.Index].Count(c => c == '\n') + 1;
+                        sapan.Add($"{project}/{Path.GetFileName(path)}:{line} → color: var({token})");
+                    }
                 }
             }
         }
@@ -67,11 +82,16 @@ public class PublicSiteReadabilityTests
     {
         var eksik = new List<string>();
 
-        foreach (var (project, prefix) in Sites)
+        foreach (var (project, prefix, themeFile) in Sites)
         {
-            var css = CssOf(project);
+            var css = ThemeCss(project, themeFile);
 
-            foreach (var token in new[] { $"{prefix}accent-text", $"{prefix}accent-text-hover" })
+            var gerekli = new List<string> { $"{prefix}accent-text" };
+
+            if (Regex.IsMatch(css, $@"^\s*{Regex.Escape($"{prefix}accent-hover")}\s*:", RegexOptions.Multiline))
+                gerekli.Add($"{prefix}accent-text-hover");
+
+            foreach (var token in gerekli)
             {
                 var count = Regex.Matches(css, $@"^\s*{Regex.Escape(token)}\s*:", RegexOptions.Multiline).Count;
                 if (count < 2)
@@ -103,14 +123,17 @@ public class PublicSiteReadabilityTests
     {
         var sapan = new List<string>();
 
-        foreach (var (project, _) in Sites)
+        foreach (var (project, _, _) in Sites)
         {
-            var css = CssOf(project);
-
-            foreach (Match m in Regex.Matches(css, @"[^\n]*background:\s*var\(--(color-)?accent\)[^\n]*", RegexOptions.Multiline))
+            foreach (var path in StyleSheets(project))
             {
-                if (Regex.IsMatch(m.Value, @"(^|[^-\w])color:\s*(#fff\b|#ffffff\b|white\b)", RegexOptions.IgnoreCase))
-                    sapan.Add($"{project} → {m.Value.Trim()}");
+                var css = File.ReadAllText(path);
+
+                foreach (Match m in Regex.Matches(css, @"[^\n]*background:\s*var\(--(color-)?accent\)[^\n]*", RegexOptions.Multiline))
+                {
+                    if (Regex.IsMatch(m.Value, @"(^|[^-\w])color:\s*(#fff\b|#ffffff\b|white\b)", RegexOptions.IgnoreCase))
+                        sapan.Add($"{project}/{Path.GetFileName(path)} → {m.Value.Trim()}");
+                }
             }
         }
 
@@ -142,41 +165,45 @@ public class PublicSiteReadabilityTests
         return (l1 + 0.05) / (l2 + 0.05);
     }
 
-    private static Dictionary<string, string> TokensIn(string css, string blockPattern)
+    private static Dictionary<string, string> ThemeTokens(string css, string anchor, bool light)
     {
-        var block = Regex.Match(css, blockPattern, RegexOptions.Singleline);
         var map = new Dictionary<string, string>();
 
-        if (!block.Success)
-            return map;
+        foreach (Match block in Regex.Matches(css, @"([^{}]*)\{([^{}]*)\}", RegexOptions.Singleline))
+        {
+            var selector = block.Groups[1].Value;
+            var body = block.Groups[2].Value;
 
-        foreach (Match m in Regex.Matches(block.Groups[1].Value, @"^\s*(--[a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;", RegexOptions.Multiline))
-            map[m.Groups[1].Value] = m.Groups[2].Value;
+            if (!Regex.IsMatch(body, $@"^\s*{Regex.Escape(anchor)}\s*:", RegexOptions.Multiline))
+                continue;
+
+            if (selector.Contains("light") != light)
+                continue;
+
+            foreach (Match m in Regex.Matches(body, @"^\s*(--[a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;", RegexOptions.Multiline))
+                map[m.Groups[1].Value] = m.Groups[2].Value;
+        }
 
         return map;
     }
 
     [Theory]
-    [InlineData("Blog", "--accent", "--on-accent")]
-    [InlineData("Blog", "--accent-hover", "--on-accent")]
-    [InlineData("Portfolio", "--color-accent", "--color-on-accent")]
-    [InlineData("Portfolio", "--color-accent-hover", "--color-on-accent")]
-    public void Aksan_dolgusunun_uzerindeki_metin_esigi_gecer(string project, string fill, string on)
+    [InlineData("FurkanTural_Admin", "theme.css", "--accent", "--on-accent")]
+    [InlineData("FurkanTural_Chat", "theme.css", "--accent", "--on-accent")]
+    [InlineData("FurkanTural_Blog", "site.css", "--accent", "--on-accent")]
+    [InlineData("FurkanTural_Blog", "site.css", "--accent-hover", "--on-accent")]
+    [InlineData("FurkanTural_Portfolio", "site.css", "--color-accent", "--color-on-accent")]
+    [InlineData("FurkanTural_Portfolio", "site.css", "--color-accent-hover", "--color-on-accent")]
+    public void Aksan_dolgusunun_uzerindeki_metin_esigi_gecer(string project, string themeFile, string fill, string on)
     {
-        var css = CssOf(project);
+        var css = ThemeCss(project, themeFile);
 
-        var dark = project == "Blog"
-            ? TokensIn(css, @":root,\s*:root\[data-theme=""dark""\]\s*\{(.*?)\n\}")
-            : TokensIn(css, @":root\s*\{(.*?)\n\}");
-
-        var lightBlock = project == "Blog"
-            ? @":root\[data-theme=""light""\]\s*\{(.*?)\n\}"
-            : @"\[data-theme=""light""\]\s*\{(.*?)\n\}";
-
-        var light = TokensIn(css, lightBlock);
+        var dark = ThemeTokens(css, on, light: false);
+        var light = ThemeTokens(css, on, light: true);
 
         dark.Should().ContainKey(fill, "koyu tema bloğu okunamadıysa test bir şey doğrulamıyor demektir");
         dark.Should().ContainKey(on);
+        light.Should().NotBeEmpty("açık tema bloğu bulunamadıysa test yalnızca koyu temayı denetliyor demektir");
 
         foreach (var (tema, harita) in new[] { ("koyu", dark), ("açık", light) })
         {
