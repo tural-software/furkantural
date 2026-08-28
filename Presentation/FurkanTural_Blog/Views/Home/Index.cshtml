@@ -59,19 +59,19 @@
 
         @if (Model.AvailableCategories.Count > 0)
         {
-            <div class="blog-cats" role="list" aria-label="Kategoriler">
+            <nav class="blog-cats" aria-label="Kategoriler">
                 @{
                     var allActive = Model.CategoryId is null;
                 }
                 @if (allActive)
                 {
                     <a class="filter-chip is-active" aria-current="true"
-                       asp-action="Index" asp-route-search="@Model.Search" role="listitem">Tümü</a>
+                       asp-action="Index" asp-route-search="@Model.Search">Tümü</a>
                 }
                 else
                 {
                     <a class="filter-chip"
-                       asp-action="Index" asp-route-search="@Model.Search" role="listitem">Tümü</a>
+                       asp-action="Index" asp-route-search="@Model.Search">Tümü</a>
                 }
                 @foreach (var cat in Model.AvailableCategories)
                 {
@@ -79,7 +79,7 @@
                     if (catActive)
                     {
                         <a class="filter-chip is-active" style="--chip-color:@cat.DisplayColor"
-                           asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-search="@Model.Search" role="listitem"
+                           asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-search="@Model.Search"
                            aria-label="@cat.Name kategorisini filtrele" aria-current="true">
                             <span class="filter-chip__dot" aria-hidden="true"></span>@cat.Name
                         </a>
@@ -87,13 +87,13 @@
                     else
                     {
                         <a class="filter-chip" style="--chip-color:@cat.DisplayColor"
-                           asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-search="@Model.Search" role="listitem"
+                           asp-action="Index" asp-route-categoryId="@cat.Id" asp-route-search="@Model.Search"
                            aria-label="@cat.Name kategorisini filtrele">
                             <span class="filter-chip__dot" aria-hidden="true"></span>@cat.Name
                         </a>
                     }
                 }
-            </div>
+            </nav>
         }
     </div>
 
