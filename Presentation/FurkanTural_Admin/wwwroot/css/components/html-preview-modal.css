@@ -55,7 +55,7 @@
     height: 2.2rem;
     border-radius: var(--radius-sm);
     background: rgba(var(--accent-rgb), .15);
-    color: var(--accent);
+    color: var(--accent-text);
     flex-shrink: 0;
 }
 .hpm-head__icon svg { width: 1.1rem; height: 1.1rem; }
@@ -91,7 +91,7 @@
 .hpm-close svg { width: .9rem; height: .9rem; }
 .hpm-close:hover {
     border-color: var(--accent);
-    color: var(--accent);
+    color: var(--accent-text);
     background: rgba(var(--accent-rgb), .08);
 }
 
@@ -129,7 +129,7 @@
     transition: opacity .15s;
 }
 .hpm-tab--active {
-    color: var(--accent);
+    color: var(--accent-text);
 }
 .hpm-tab--active::after {
     opacity: 1;
@@ -188,7 +188,7 @@
 .hpm-copy-btn svg { width: .85rem; height: .85rem; flex-shrink: 0; }
 .hpm-copy-btn:hover {
     border-color: var(--accent);
-    color: var(--accent);
+    color: var(--accent-text);
     background: rgba(var(--accent-rgb), .07);
 }
 .hpm-pre {

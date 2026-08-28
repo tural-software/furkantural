@@ -14,6 +14,6 @@
     opacity: .5;
  }
 .sbadge--cover { background:var(--chip-feature-bg);  color:var(--chip-feature-fg);  }
-.sbadge--pk { background:var(--accent-soft);  color:var(--accent);  }
+.sbadge--pk { background:var(--accent-soft);  color:var(--accent-text);  }
 .sbadge--identity { background:var(--chip-update-bg);  color:var(--chip-update-fg);  }
 .sbadge--null { background:var(--pending-bg); color:var(--pending-fg);  }

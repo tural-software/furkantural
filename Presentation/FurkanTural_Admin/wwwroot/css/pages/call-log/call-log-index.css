@@ -1,4 +1,4 @@
-.sbadge--status { background: var(--accent-soft); color: var(--accent);  }
+.sbadge--status { background: var(--accent-soft); color: var(--accent-text);  }
 .call-settings-card { border-left: 3px solid var(--accent);  }
 .cs-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;  }
 .cs-title { font-size: var(--fs-base); font-weight: 700; color: var(--text-main); margin: 0 0 .25rem;  }

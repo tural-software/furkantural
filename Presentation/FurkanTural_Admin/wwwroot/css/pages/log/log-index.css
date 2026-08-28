@@ -12,7 +12,7 @@
  }
 .level-badge--error { background: var(--chip-delete-bg); color: var(--chip-delete-fg);  }
 .level-badge--warning { background: var(--chip-update-bg); color: var(--chip-update-fg);  }
-.level-badge--info { background: var(--accent-soft); color: var(--accent);  }
+.level-badge--info { background: var(--accent-soft); color: var(--accent-text);  }
 .level-badge--debug { background: var(--pending-bg); color: var(--pending-fg);  }
 .level-badge--neutral { background: var(--pending-bg); color: var(--pending-fg);  }
 .col-message {

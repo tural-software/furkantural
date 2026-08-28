@@ -20,7 +20,7 @@ html {
 }
 
 a {
-    color: var(--accent);
+    color: var(--accent-text);
     text-decoration: none;
     transition: all 0.2s ease;
 }

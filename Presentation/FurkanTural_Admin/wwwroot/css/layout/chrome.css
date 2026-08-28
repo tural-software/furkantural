@@ -39,7 +39,7 @@
 }
 
 .brand span {
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 700;
 }
 
@@ -209,7 +209,7 @@
 
 .tabbar__btn:hover,
 .tabbar__btn:active {
-    color: var(--accent);
+    color: var(--accent-text);
     text-decoration: none;
 }
 

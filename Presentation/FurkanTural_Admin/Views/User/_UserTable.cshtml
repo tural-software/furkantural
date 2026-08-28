@@ -32,11 +32,11 @@
                     <td>
                         @if (!string.IsNullOrWhiteSpace(row.AvatarUrl))
                         {
-                            <img src="@(row.AvatarUrl.Contains('/') ? $"{apiBase}/{row.AvatarUrl}" : $"{apiBase}/images/uploads/{row.AvatarUrl}")" alt="avatar" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid rgba(128,128,128,.4)" />
+                            <img src="@(row.AvatarUrl.Contains('/') ? $"{apiBase}/{row.AvatarUrl}" : $"{apiBase}/images/uploads/{row.AvatarUrl}")" alt="avatar" class="user-avatar user-avatar--photo" />
                         }
                         else
                         {
-                            <span style="width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-weight:700;">
+                            <span class="user-avatar user-avatar--initial">
                                 @((row.DisplayName ?? row.Username ?? "?").Trim().Substring(0, 1).ToUpperInvariant())
                             </span>
                         }

@@ -1,12 +1,12 @@
-.page-badge { display: inline-flex; align-items: center; padding: .18rem .5rem; border-radius: var(--radius-sm); background: var(--accent-soft); color: var(--accent); font-size: var(--fs-3xs); font-weight: 700; letter-spacing: .08em; }
+.page-badge { display: inline-flex; align-items: center; padding: .18rem .5rem; border-radius: var(--radius-sm); background: var(--accent-soft); color: var(--accent-text); font-size: var(--fs-3xs); font-weight: 700; letter-spacing: .08em; }
 
 .schema-table .col-field { min-width: 190px; }
 .schema-table td { white-space: nowrap; }
 
 .field-name { display: inline-flex; align-items: center; gap: .45rem; font-weight: 600; color: var(--text-main); }
 .field-name svg { width: .85rem; height: .85rem; color: var(--text-dim); flex-shrink: 0; }
-.field-name--pk { color: var(--accent); }
-.field-name--pk svg { color: var(--accent); }
+.field-name--pk { color: var(--accent-text); }
+.field-name--pk svg { color: var(--accent-text); }
 
 .type-tag { display: inline-block; padding: .16rem .5rem; border-radius: var(--radius-sm); background: var(--bg-inset); border: 1px solid var(--border-color); color: var(--text-dim); font-size: var(--fs-2xs); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 

@@ -12,7 +12,7 @@ html, body {
     -webkit-font-smoothing: antialiased;
 }
 
-a { color: var(--accent); text-decoration: none; }
+a { color: var(--accent-text); text-decoration: none; }
 a:hover { text-decoration: underline; }
 button { font-family: inherit; cursor: pointer; }
 
@@ -41,7 +41,7 @@ input, button, .friend-item, .msg .bubble, #toastBox {
     border-color: var(--accent);
 }
 /* Bildirim zili açıkken vurgulu; engelliyken soluk. */
-#notifyToggleBtn.active { color: var(--accent); border-color: var(--accent); }
+#notifyToggleBtn.active { color: var(--accent-text); border-color: var(--accent); }
 #notifyToggleBtn[data-state="blocked"] { opacity: .5; }
 .theme-toggle-btn:hover [data-theme-icon] {
     animation: spin 0.5s ease-in-out;
@@ -147,7 +147,7 @@ select:focus-visible,
 .auth-brand { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 4px; }
 .auth-logo { width: 76px; height: 76px; object-fit: contain; }
 .auth-name { font-size: var(--fs-2xl); font-weight: 800; letter-spacing: -.5px; }
-.auth-name span { color: var(--accent); }
+.auth-name span { color: var(--accent-text); }
 .auth-sub { color: var(--text-dim); margin: 6px 0 22px; font-size: var(--fs-md); }
 
 .auth-form { display: flex; flex-direction: column; gap: 6px; }
@@ -201,7 +201,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     line-height: 1;
     font-weight: 700;
 }
-.activate-mark--pending { background: var(--accent-soft); color: var(--accent); }
+.activate-mark--pending { background: var(--accent-soft); color: var(--accent-text); }
 .activate-mark--ok { background: var(--chip-create-bg); color: var(--chip-create-fg); }
 .activate-mark--bad { background: var(--chip-delete-bg); color: var(--chip-delete-fg); }
 
@@ -316,7 +316,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .search-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
 .search-item:hover { background: var(--bg-main); }
 .btn-add {
-    background: var(--accent-soft); color: var(--accent); border: 1px solid transparent;
+    background: var(--accent-soft); color: var(--accent-text); border: 1px solid transparent;
     border-radius: var(--radius-sm); padding: 6px 12px; font-size: var(--fs-sm); font-weight: 600;
 }
 .btn-add:hover { background: var(--accent); color: var(--on-accent); }
@@ -424,7 +424,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-card-solid);
     font-weight: 700;
 }
-.typing { font-weight: 400; font-size: var(--fs-sm); color: var(--accent); }
+.typing { font-weight: 400; font-size: var(--fs-sm); color: var(--accent-text); }
 
 /* Listeye dön (yalnızca mobil) — masaüstünde gizli */
 .conv-back {
@@ -462,7 +462,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     font-size: var(--fs-sm); font-weight: 500; cursor: pointer; box-shadow: none !important;
 }
 .conv-menu button svg { width: 16px; height: 16px; flex: 0 0 auto; }
-.conv-menu button:hover { background: var(--bg-main) !important; color: var(--accent) !important; }
+.conv-menu button:hover { background: var(--bg-main) !important; color: var(--accent-text) !important; }
 /* Yıkıcı eylemler (engelle/şikayet) kırmızı; çağrı seçimleri nötr kalır. */
 .conv-menu button.danger:hover { color: var(--error) !important; }
 
@@ -492,7 +492,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .call-overlay[data-type="video"][data-remote-video="off"][data-mode="in-call"] .call-poster { display: flex; }
 .call-avatar {
     width: 120px; height: 120px; border-radius: 50%; background-size: cover; background-position: center;
-    background-color: var(--accent-soft); color: var(--accent);
+    background-color: var(--accent-soft); color: var(--accent-text);
     display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 700;
     border: 2px solid transparent; transition: border-color .12s ease, box-shadow .12s ease;
 }
@@ -577,7 +577,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 }
 .legal-modal-body h2:first-child { margin-top: 0; }
 .legal-modal-body strong { color: var(--text-main); }
-.legal-modal-body a { color: var(--accent); }
+.legal-modal-body a { color: var(--accent-text); }
 .legal-modal-body .legal-meta { font-size: var(--fs-xs); opacity: .8; }
 
 /* Aramayı küçült (PiP) */
@@ -650,7 +650,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .msg.out .bubble { background: var(--accent); color: var(--on-accent); border-bottom-right-radius: 4px; }
 .msg-meta { display: flex; align-items: center; gap: 5px; margin: 2px 4px; font-size: var(--fs-2xs); color: var(--text-dim); }
 .ticks { font-size: var(--fs-xs); letter-spacing: -2px; color: var(--text-dim); }
-.ticks.read { color: var(--accent); }
+.ticks.read { color: var(--accent-text); }
 
 /* Ses mesajı */
 .msg .bubble.audio { padding: 6px 8px; }
@@ -788,7 +788,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     padding: 0;
     font: inherit;
     font-size: inherit;
-    color: var(--accent);
+    color: var(--accent-text);
     cursor: pointer;
     text-decoration: underline;
     display: inline;

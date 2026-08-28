@@ -3,6 +3,6 @@
 .url-cell, .alttext-cell { max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-dim); font-size:var(--fs-sm); display:block;  }
 .url-cell--empty, .alttext-cell--empty { font-style:italic; opacity:.5;  }
 .sbadge--cover { background:var(--chip-feature-bg);  color:var(--chip-feature-fg);  }
-.sbadge--pk { background:var(--accent-soft);  color:var(--accent);  }
+.sbadge--pk { background:var(--accent-soft);  color:var(--accent-text);  }
 .sbadge--identity { background:var(--chip-update-bg);  color:var(--chip-update-fg);  }
 .sbadge--null { background:var(--pending-bg); color:var(--pending-fg);  }

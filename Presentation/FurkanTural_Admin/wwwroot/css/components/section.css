@@ -5,7 +5,7 @@
 .section-eyebrow {
     font-size: var(--fs-2xs);
     font-weight: 500;
-    color: var(--accent);
+    color: var(--accent-text);
     letter-spacing: .08em;
     text-transform: uppercase;
     margin: 0 0 .5rem;

@@ -47,13 +47,13 @@
 .fbs-option:hover,
 .fbs-option:focus {
     background: rgba(var(--accent-rgb, 99 102 241), .10);
-    color: var(--accent);
+    color: var(--accent-text);
     outline: none;
 }
 
 .fbs-option.fbs-option--active {
     background: rgba(var(--accent-rgb, 99 102 241), .12);
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 500;
 }
 
