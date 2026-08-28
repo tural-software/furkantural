@@ -12,6 +12,13 @@
             : 'dark';
     }
 
+    function syncThemeColor() {
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) return;
+        const bg = getComputedStyle(root).getPropertyValue('--bg-main').trim();
+        if (bg) meta.setAttribute('content', bg);
+    }
+
     function syncIcons(theme) {
         document.querySelectorAll('[data-theme-icon]').forEach((el) => {
             el.textContent = theme === 'dark' ? '🌙' : '☀️';
@@ -25,6 +32,7 @@
             try { localStorage.setItem(KEY, theme); } catch (_) {}
         }
         syncIcons(theme);
+        syncThemeColor();
         window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme } }));
     }
 
@@ -46,6 +54,7 @@
             });
         });
         syncIcons(root.dataset.theme);
+        syncThemeColor();
     }
 
     if (document.readyState === 'loading') {
