@@ -182,6 +182,30 @@ public class ValidationTests
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Password)));
     }
 
+    [Fact]
+    public void RegisterRequestModel_PasswordTooLong_HasValidationError()
+    {
+        var model = new RegisterRequestModel
+        {
+            Username = "validuser", Email = "e@e.com",
+            Password = "Abc1!" + new string('x', 60), AcceptAgreement = true
+        };
+        var errors = Validate(model);
+        errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Password)));
+    }
+
+    [Fact]
+    public void RegisterRequestModel_PasswordAtUpperBound_NoValidationError()
+    {
+        var model = new RegisterRequestModel
+        {
+            Username = "validuser", Email = "e@e.com",
+            Password = "Abc1!" + new string('x', 59), AcceptAgreement = true
+        };
+        var errors = Validate(model);
+        errors.Should().BeEmpty();
+    }
+
     [Theory]
     [InlineData("P@ss1234")]
     [InlineData("Abc1!def")]

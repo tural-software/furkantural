@@ -22,6 +22,23 @@ public class PasswordPolicyTests
     public void Alti_karakterden_kisa_parola_reddedilir()
         => PasswordPolicy.Validate("Ab1!c").Should().Be("Parola en az 6 karakter olmalı.");
 
+    private static string UzunlukTa(int uzunluk) => "Abc1!" + new string('x', uzunluk - 5);
+
+    [Fact]
+    public void Ust_sinirin_tam_uzerindeki_parola_kabul_edilir()
+        => PasswordPolicy.Validate(UzunlukTa(PasswordPolicy.MaximumLength)).Should().BeNull();
+
+    [Fact]
+    public void Ust_siniri_asan_parola_reddedilir()
+        => PasswordPolicy.Validate(UzunlukTa(PasswordPolicy.MaximumLength + 1))
+            .Should().Be($"Parola en fazla {PasswordPolicy.MaximumLength} karakter olabilir.");
+
+    [Fact]
+    public void Uzunluk_kontrolu_karakter_taramasindan_once_calisir()
+        => PasswordPolicy.Validate("Abc1!" + new string('ş', 5000))
+            .Should().StartWith("Parola en fazla",
+                "özetleme maliyetine girmeden önce uzunlukta durmalı");
+
     [Theory]
     [InlineData("abc1!def", "bir büyük harf")]
     [InlineData("ABC1!DEF", "bir küçük harf")]

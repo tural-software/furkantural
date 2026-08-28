@@ -14,6 +14,8 @@ public static class PasswordPolicy
 
     public const int MinimumLength = 6;
 
+    public const int MaximumLength = 64;
+
     public const int GeneratedLength = 12;
 
     public const string Symbols = "!#$%()*+,-./:;=?@[]^_{|}~";
@@ -31,6 +33,9 @@ public static class PasswordPolicy
 
         if (password.Length < MinimumLength)
             return $"Parola en az {MinimumLength} karakter olmalı.";
+
+        if (password.Length > MaximumLength)
+            return $"Parola en fazla {MaximumLength} karakter olabilir.";
 
         if (password.Any(karakter => !IsAllowed(karakter)))
             return "Parolada kullanılamayan bir karakter var. Yalnızca İngiliz alfabesindeki harfler, "

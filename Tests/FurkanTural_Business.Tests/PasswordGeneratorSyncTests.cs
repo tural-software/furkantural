@@ -95,4 +95,18 @@ public class PasswordGeneratorSyncTests
         PasswordPolicy.Validate(parola).Should().NotBeNull();
         ChatDeseni().IsMatch(parola).Should().BeFalse();
     }
+
+    [Fact]
+    public void Chat_kayit_deseni_ust_siniri_politikayla_ayni_yerde_ceker()
+    {
+        var desen = ChatDeseni();
+        var tamSinirda = "Abc1!" + new string('x', PasswordPolicy.MaximumLength - 5);
+        var birFazla = tamSinirda + "x";
+
+        desen.IsMatch(tamSinirda).Should().BeTrue();
+        PasswordPolicy.Validate(tamSinirda).Should().BeNull();
+
+        desen.IsMatch(birFazla).Should().BeFalse();
+        PasswordPolicy.Validate(birFazla).Should().NotBeNull();
+    }
 }

@@ -97,7 +97,6 @@
                 label: 'Şifre',
                 type: 'password',
                 required: true,
-                maxLength: 100,
                 placeholder: 'Şifre giriniz'
             },
             {
@@ -141,7 +140,6 @@
                 label: 'Şifre',
                 type: 'password',
                 required: false,
-                maxLength: 100,
                 placeholder: 'Boş bırakılırsa değiştirilmez'
             },
             {
