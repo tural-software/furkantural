@@ -56,8 +56,8 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         if (string.IsNullOrWhiteSpace(dto.Username))
             return Result<UserDto>.Fail("Kullanıcı adı boş olamaz.");
 
-        if (string.IsNullOrWhiteSpace(dto.Password))
-            return Result<UserDto>.Fail("Şifre boş olamaz.");
+        if (!PasswordPolicy.TryValidate(dto.Password, out var parolaHatasi))
+            return Result<UserDto>.Fail(parolaHatasi);
 
         var usernameExists = await _unitOfWork.Users.AnyAsync(x => x.Username == dto.Username, cancellationToken);
         if (usernameExists)
@@ -86,6 +86,15 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         if (usernameExists)
             return Result<UserDto>.Fail("Bu kullanıcı adı zaten kullanılıyor.");
 
+        string? yeniParolaOzeti = null;
+        if (!string.IsNullOrWhiteSpace(dto.Password))
+        {
+            if (!PasswordPolicy.TryValidate(dto.Password, out var parolaHatasi))
+                return Result<UserDto>.Fail(parolaHatasi);
+
+            yeniParolaOzeti = _passwordHasher.Hash(dto.Password);
+        }
+
         entity.Username = dto.Username;
         entity.RoleId = dto.RoleId;
         entity.Email = dto.Email;
@@ -93,8 +102,8 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         entity.AvatarUrl = dto.AvatarUrl;
         entity.UpdatedBy = dto.UpdatedBy;
 
-        if (!string.IsNullOrWhiteSpace(dto.Password))
-            entity.Password = _passwordHasher.Hash(dto.Password);
+        if (yeniParolaOzeti is not null)
+            entity.Password = yeniParolaOzeti;
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -178,8 +187,8 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         if (string.IsNullOrWhiteSpace(username))
             return Result<UserDto>.Fail("Kullanıcı adı boş olamaz.");
 
-        if (string.IsNullOrWhiteSpace(password))
-            return Result<UserDto>.Fail("Şifre boş olamaz.");
+        if (!PasswordPolicy.TryValidate(password, out var parolaHatasi))
+            return Result<UserDto>.Fail(parolaHatasi);
 
         var anyUser = await _unitOfWork.Users.AnyAsync(_ => true, cancellationToken);
         if (anyUser)

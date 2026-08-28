@@ -112,7 +112,7 @@ public class AuthServiceActivationTests
         {
             Username = "deneme",
             Email = "deneme@ornek.test",
-            Password = "yeni-parola",
+            Password = "Yeni-Parola7",
             AcceptAgreement = true
         }, "203.0.113.9", "Firefox");
 
@@ -316,5 +316,27 @@ public class AuthServiceActivationTests
         _logged.Should().OnlyContain(
             l => !l.Message!.Contains(Password) && !l.Message!.Contains("yanlis-parola"),
             "denetim kaydı yönetim panelinde okunabiliyor; denenen parolayı oraya yazmak onu ikinci bir yerde saklamak olur");
+    }
+
+    [Theory]
+    [InlineData("Ksa1!")]
+    [InlineData("yalnizcakucuk1!")]
+    [InlineData("Rakamsiz!Parola")]
+    [InlineData("Sembolsuz1Parola")]
+    public async Task Politikayi_gecmeyen_parolayla_kayit_reddedilir(string parola)
+    {
+        ByUsername(null);
+        ByEmail(null);
+
+        var result = await _sut.RegisterAsync(new RegisterDto
+        {
+            Username = "deneme",
+            Email = "deneme@ornek.test",
+            Password = parola,
+            AcceptAgreement = true
+        }, "203.0.113.9", "Firefox");
+
+        result.IsFailure.Should().BeTrue("parola kuralı sunucuda çalışmazsa istemci doğrulaması atlanabilir");
+        _created.Should().BeEmpty();
     }
 }

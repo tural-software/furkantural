@@ -4,6 +4,9 @@ namespace FurkanTural_Chat.Models.Auth;
 
 public class RegisterRequestModel
 {
+    public const string PasswordPattern =
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!#$%()*+,\-./:;=?@\[\]^_{|}~])[A-Za-z\d!#$%()*+,\-./:;=?@\[\]^_{|}~]{6,}$";
+
     [Required(ErrorMessage = "Kullanıcı adı gereklidir.")]
     [StringLength(100, MinimumLength = 3, ErrorMessage = "Kullanıcı adı 3-100 karakter olmalı.")]
     public string? Username { get; set; }
@@ -16,7 +19,8 @@ public class RegisterRequestModel
     public string? DisplayName { get; set; }
 
     [Required(ErrorMessage = "Şifre gereklidir.")]
-    [MinLength(4, ErrorMessage = "Şifre en az 4 karakter olmalı.")]
+    [RegularExpression(PasswordPattern, ErrorMessage =
+        "Parola en az 6 karakter olmalı; bir büyük harf, bir küçük harf, bir rakam ve bir sembol içermeli.")]
     public string? Password { get; set; }
 
     [Range(typeof(bool), "true", "true", ErrorMessage = "Üyelik sözleşmesini ve Gizlilik Politikasını kabul etmelisiniz.")]

@@ -155,8 +155,8 @@ public class AuthService(
         if (string.IsNullOrWhiteSpace(dto.Email))
             return Result<LoginResultDto>.Fail("E-posta boş olamaz.");
 
-        if (string.IsNullOrWhiteSpace(dto.Password))
-            return Result<LoginResultDto>.Fail("Şifre boş olamaz.");
+        if (!PasswordPolicy.TryValidate(dto.Password, out var parolaHatasi))
+            return Result<LoginResultDto>.Fail(parolaHatasi);
 
         if (!dto.AcceptAgreement)
             return Result<LoginResultDto>.Fail("Üyelik sözleşmesini onaylamadan kayıt olamazsınız.");
