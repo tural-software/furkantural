@@ -4,6 +4,8 @@ namespace FurkanTural_Portfolio.Services;
 
 public interface IPortfolioApiService
 {
+    bool AnyRequestFailed { get; }
+
     Task<IReadOnlyList<SkillViewModel>> GetSkillsAsync(CancellationToken ct = default);
     Task<IReadOnlyList<ProjectViewModel>> GetProjectsAsync(CancellationToken ct = default);
     Task<IReadOnlyList<SongViewModel>> GetSongsAsync(CancellationToken ct = default);

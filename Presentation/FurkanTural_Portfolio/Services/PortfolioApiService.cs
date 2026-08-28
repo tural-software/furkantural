@@ -10,6 +10,8 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
     private readonly HttpClient _httpClient = httpClient;
     private readonly ILogger<PortfolioApiService> _logger = logger;
 
+    public bool AnyRequestFailed { get; private set; }
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -24,6 +26,7 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
         }
         catch (Exception ex)
         {
+            AnyRequestFailed = true;
             _logger.LogWarning(ex, "Yetenekler alınamadı.");
             return [];
         }
@@ -38,6 +41,7 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
         }
         catch (Exception ex)
         {
+            AnyRequestFailed = true;
             _logger.LogWarning(ex, "Projeler alınamadı.");
             return [];
         }
@@ -52,6 +56,7 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
         }
         catch (Exception ex)
         {
+            AnyRequestFailed = true;
             _logger.LogWarning(ex, "Müzikler alınamadı.");
             return [];
         }
@@ -66,6 +71,7 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
         }
         catch (Exception ex)
         {
+            AnyRequestFailed = true;
             _logger.LogWarning(ex, "Deneyimler alınamadı.");
             return [];
         }
@@ -80,6 +86,7 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
         }
         catch (Exception ex)
         {
+            AnyRequestFailed = true;
             _logger.LogWarning(ex, "Eğitimler alınamadı.");
             return [];
         }
@@ -94,6 +101,7 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
         }
         catch (Exception ex)
         {
+            AnyRequestFailed = true;
             _logger.LogWarning(ex, "Proje alınamadı: {Id}", id);
             return null;
         }
@@ -108,6 +116,7 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
         }
         catch (Exception ex)
         {
+            AnyRequestFailed = true;
             _logger.LogWarning(ex, "Proje görselleri alınamadı: {Id}", projectId);
             return [];
         }
@@ -122,6 +131,7 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
         }
         catch (Exception ex)
         {
+            AnyRequestFailed = true;
             _logger.LogWarning(ex, "Müzik alınamadı: {Id}", id);
             return null;
         }
@@ -136,6 +146,7 @@ public class PortfolioApiService(HttpClient httpClient, ILogger<PortfolioApiServ
         }
         catch (Exception ex)
         {
+            AnyRequestFailed = true;
             _logger.LogWarning(ex, "Müzik görselleri alınamadı: {Id}", musicId);
             return [];
         }

@@ -31,6 +31,7 @@ public class HomeController(IPortfolioApiService apiService, IPortfolioContactCl
             Educations = await educationsTask
         };
 
+        ViewData["ApiUnavailable"] = _apiService.AnyRequestFailed;
         ViewBag.TurnstileSiteKey = await _appConfigService.GetTurnstileSiteKeyAsync(ct);
         return View(vm);
     }

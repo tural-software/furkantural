@@ -1,0 +1,11 @@
+@model string
+<p class="section-empty">
+    @if (ViewData["ApiUnavailable"] is true)
+    {
+        @SharedLocalizer["Content_Unavailable"]
+    }
+    else
+    {
+        @Model
+    }
+</p>

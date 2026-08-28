@@ -62,6 +62,7 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
             _logger.LogWarning(ex, "Blog yazıları (sayfalı) alınamadı. Sayfa={Page}", pageNumber);
             return new PagedPostsViewModel
             {
+                LoadFailed = true,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 CategoryId = categoryId,

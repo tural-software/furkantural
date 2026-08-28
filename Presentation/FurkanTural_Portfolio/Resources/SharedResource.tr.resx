@@ -120,6 +120,7 @@
   <data name="Contact_Toast_Error" xml:space="preserve"><value>Mesaj gönderilemedi. Lütfen tekrar deneyin.</value></data>
 
   <!-- Boş durum mesajları -->
+  <data name="Content_Unavailable" xml:space="preserve"><value>İçerik şu anda yüklenemiyor. Kısa süre sonra tekrar deneyin.</value></data>
   <data name="Skills_Empty" xml:space="preserve"><value>Yetenekler yakında eklenecek.</value></data>
   <data name="Projects_Empty" xml:space="preserve"><value>Projeler yakında eklenecek.</value></data>
   <data name="Songs_Empty" xml:space="preserve"><value>Müzik çalışmaları yakında eklenecek.</value></data>

@@ -40,7 +40,7 @@
         }
         else
         {
-            <p class="section-empty">@SharedLocalizer["Projects_Empty"]</p>
+            @await Html.PartialAsync("_SectionEmpty", SharedLocalizer["Projects_Empty"].Value)
         }
     </div>
 </section>

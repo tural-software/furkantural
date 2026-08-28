@@ -100,7 +100,12 @@
     @if (Model.Items.Count == 0)
     {
         <div class="placeholder-card reveal">
-            @if (Model.HasActiveFilter)
+            @if (Model.LoadFailed)
+            {
+                <h2>Yazılar şu anda yüklenemiyor</h2>
+                <p>Geçici bir sorun var; arşiv yerinde duruyor. Kısa süre sonra tekrar deneyin.</p>
+            }
+            else if (Model.HasActiveFilter)
             {
                 <h2>Sonuç bulunamadı</h2>
                 <p>Seçtiğiniz filtreyle eşleşen yazı yok. <a asp-action="Index">Tüm yazıları gör</a>.</p>

@@ -21,6 +21,8 @@ public class PagedPostsViewModel
     /// <summary>Filtre çubuğundaki kategori seçenekleri.</summary>
     public IReadOnlyList<CategoryViewModel> AvailableCategories { get; init; } = [];
 
+    public bool LoadFailed { get; init; }
+
     /// <summary>Herhangi bir filtre aktif mi (boş-sonuç mesajını ayarlamak için).</summary>
     public bool HasActiveFilter => CategoryId.HasValue || !string.IsNullOrWhiteSpace(Search);
 }
