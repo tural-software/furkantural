@@ -343,4 +343,99 @@ public class FrontEndReadabilityTests
         sapan.Should().BeEmpty(
             "API kapalıyken her iki site de 'içerik hazırlanıyor' diyordu; ziyaretçi geçici arızayı kalıcı boşluk sanıyordu");
     }
+
+    private static readonly (string Project, string ThemeFile, string Surface)[] SemanticSurfaces =
+    [
+        ("FurkanTural_Admin",     "theme.css", "--bg-card-solid"),
+        ("FurkanTural_Chat",      "theme.css", "--bg-card-solid"),
+        ("FurkanTural_Blog",      "site.css",  "--bg-elev"),
+        ("FurkanTural_Portfolio", "site.css",  "--color-bg-card"),
+    ];
+
+    private static bool AnlamsalRenkMi(string token)
+    {
+        var ad = token.StartsWith("--color-") ? token["--color-".Length..] : token[2..];
+        return ad is "success" or "error" or "danger" or "warning";
+    }
+
+    [Fact]
+    public void Anlamsal_renkler_iki_temada_da_kart_yuzeyinde_okunur()
+    {
+        var sapan = new List<string>();
+        var olculen = 0;
+
+        foreach (var (project, themeFile, surface) in SemanticSurfaces)
+        {
+            var css = ThemeCss(project, themeFile);
+            var dark = ThemeTokens(css, surface, light: false);
+            var light = ThemeTokens(css, surface, light: true);
+
+            var adlar = dark.Keys.Concat(light.Keys).Where(AnlamsalRenkMi).Distinct().Order().ToList();
+
+            if (adlar.Count == 0)
+                continue;
+
+            dark.Should().ContainKey(surface, $"{project} koyu tema yüzeyi ({surface}) okunamazsa ölçüm anlamsız");
+            light.Should().ContainKey(surface, $"{project} açık tema yüzeyi ({surface}) okunamazsa ölçüm anlamsız");
+
+            foreach (var (tema, harita) in new[] { ("koyu", dark), ("açık", light) })
+            {
+                foreach (var token in adlar)
+                {
+                    if (!harita.TryGetValue(token, out var renk))
+                    {
+                        sapan.Add($"{project} {tema} temada {token} tanımlı değil");
+                        continue;
+                    }
+
+                    olculen++;
+                    var oran = Contrast(renk, harita[surface]);
+
+                    if (oran < 4.5)
+                        sapan.Add($"{project} {tema} tema: {token} ({renk}) / {surface} ({harita[surface]}) = {oran:F2}:1");
+                }
+            }
+        }
+
+        sapan.Should().BeEmpty(
+            "durum, hata ve uyarı metni her iki temada da kart yüzeyinde okunmalı; tek bir tema-bağımsız değer " +
+            "birinde geçip diğerinde kalıyordu (--error #ef4444 açık temada 3.76:1, koyu kartta 4.32:1)");
+
+        olculen.Should().BeGreaterThanOrEqualTo(14,
+            "token ya da yüzey adı değiştiyse bu test hiçbir şey ölçmeden yeşil kalır");
+    }
+
+    private static string ChatCss() =>
+        File.ReadAllText(Path.Combine(CssRoot("FurkanTural_Chat"), "chat.css"));
+
+    [Theory]
+    [InlineData(".friend-status.online", "color")]
+    [InlineData(".conv-presence.online", "color")]
+    [InlineData(".profile-row .val.online", "color")]
+    [InlineData(".status-dot.online", "background")]
+    [InlineData(".btn-accept", "color")]
+    [InlineData(".btn-accept:hover", "background")]
+    [InlineData(".auth-form input.valid", "border-color")]
+    [InlineData(".requests.has-requests .section-head", "color")]
+    [InlineData(".auth-card", "box-shadow")]
+    [InlineData(".search-results", "box-shadow")]
+    [InlineData("#toastBox", "box-shadow")]
+    public void Chat_durum_renkleri_ham_deger_degil_tokendan_gelir(string selector, string property)
+    {
+        var css = ChatCss();
+        var rule = Regex.Match(css, $@"^\s*{Regex.Escape(selector)}\s*\{{([^}}]*)\}}", RegexOptions.Multiline);
+
+        rule.Success.Should().BeTrue(
+            $"'{selector}' kuralı bulunamadıysa test bir şey doğrulamıyor demektir");
+
+        var declaration = Regex.Match(
+            rule.Groups[1].Value,
+            $@"(^|[^-\w]){Regex.Escape(property)}\s*:\s*([^;]+)");
+
+        declaration.Success.Should().BeTrue($"'{selector}' kuralında {property} bildirimi yok");
+
+        declaration.Groups[2].Value.Trim().Should().StartWith("var(--",
+            $"'{selector}' için {property} sabit bir değere bağlıysa açık temada düzelmez; " +
+            "koyu temaya göre seçilmiş yeşil beyaz zeminde 2.28:1, kehribar 2.15:1 kalıyordu");
+    }
 }

@@ -141,7 +141,7 @@ select:focus-visible,
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 32px 28px;
-    box-shadow: 0 20px 60px -10px rgba(0,0,0,.45);
+    box-shadow: var(--shadow-overlay);
 }
 
 .auth-brand { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 4px; }
@@ -173,7 +173,7 @@ select:focus-visible,
 }
 /* Geçerli alan onay yeşili — opsiyonel */
 .auth-form input.valid {
-    border-color: #10b981;
+    border-color: var(--success);
 }
 
 /* Alan hata mesajı */
@@ -324,7 +324,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .search-results {
     position: absolute; left: 14px; right: 14px; top: 54px; z-index: 5;
     background: var(--bg-card-solid); border: 1px solid var(--border-color); border-radius: var(--radius-md);
-    box-shadow: 0 12px 40px rgba(0,0,0,.4); max-height: 280px; overflow-y: auto;
+    box-shadow: var(--shadow-overlay); max-height: 280px; overflow-y: auto;
 }
 .search-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
 .search-item:hover { background: var(--bg-main); }
@@ -347,7 +347,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     display: inline-grid; place-items: center;
 }
 
-.requests.has-requests .section-head { color: #f59e0b; }
+.requests.has-requests .section-head { color: var(--warning); }
 .requests.flash { animation: flash 1.8s ease; }
 @keyframes flash {
     0%, 100% { background: transparent; }
@@ -380,8 +380,8 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     width: 30px; height: 30px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);
     background: var(--bg-main); font-size: var(--fs-md);
 }
-.btn-accept { color: #10b981; }
-.btn-accept:hover { background: #10b981; color: #fff; border-color: #10b981; }
+.btn-accept { color: var(--success); }
+.btn-accept:hover { background: var(--success-solid); color: #fff; border-color: var(--success-solid); }
 .btn-reject { color: var(--error); }
 .btn-reject:hover { background: var(--error-solid); color: #fff; border-color: var(--error-solid); }
 
@@ -731,7 +731,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     padding: 1rem 1.25rem; background: var(--toast-bg); color: var(--toast-text);
     border: 1px solid var(--toast-border-success); border-radius: var(--radius-md);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 20px 60px -10px rgba(0,0,0,.5); display: none; opacity: 0;
+    box-shadow: var(--shadow-overlay); display: none; opacity: 0;
     transition: opacity .3s ease, transform .3s ease; z-index: 9999;
 }
 #toastBox.error { border-color: var(--toast-border-error); }
@@ -830,7 +830,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .profile-row { display: flex; justify-content: space-between; gap: 12px; font-size: var(--fs-sm); }
 .profile-row .lbl { color: var(--text-dim); }
 .profile-row .val { color: var(--text-main); font-weight: 600; }
-.profile-row .val.online { color: #22c55e; }
+.profile-row .val.online { color: var(--success); }
 .profile-change { width: 100%; }
 
 /* Aşama 2 — fotoğraf büyütme */
@@ -857,9 +857,9 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     width: 12px; height: 12px; border-radius: 50%;
     border: 2px solid var(--bg-card-solid); background: var(--text-dim);
 }
-.status-dot.online { background: #22c55e; }
+.status-dot.online { background: var(--success); }
 .friend-status { font-size: var(--fs-2xs); color: var(--text-dim); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.friend-status.online { color: #22c55e; }
+.friend-status.online { color: var(--success); }
 .conv-avatar {
     width: 38px; height: 38px; border-radius: 50%; flex: 0 0 auto; cursor: pointer;
     background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-weight: 700;
@@ -869,7 +869,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .conv-titlewrap { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
 #convTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .conv-presence { font-size: var(--fs-xs); font-weight: 400; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.conv-presence.online { color: #22c55e; }
+.conv-presence.online { color: var(--success); }
 
 .agreement-check { display: flex; align-items: flex-start; gap: 8px; font-size: var(--fs-sm); color: var(--text-dim); margin: 4px 0 2px; cursor: pointer; }
 .agreement-check input { margin-top: 2px; accent-color: var(--accent); }
