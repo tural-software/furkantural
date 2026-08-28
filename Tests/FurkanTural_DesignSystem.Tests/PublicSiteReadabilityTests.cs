@@ -118,6 +118,76 @@ public class PublicSiteReadabilityTests
             "beyaz metin aksan dolgusunda koyu temada 2.14:1, açık temada 2.77:1 verir; --on-accent kullanılmalı");
     }
 
+    private static double Channel(int v)
+    {
+        var c = v / 255.0;
+        return c <= 0.03928 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4);
+    }
+
+    private static double Luminance(string hex)
+    {
+        var h = hex.TrimStart('#');
+        if (h.Length == 3)
+            h = string.Concat(h.Select(c => new string(c, 2)));
+
+        return 0.2126 * Channel(Convert.ToInt32(h[..2], 16))
+             + 0.7152 * Channel(Convert.ToInt32(h.Substring(2, 2), 16))
+             + 0.0722 * Channel(Convert.ToInt32(h.Substring(4, 2), 16));
+    }
+
+    private static double Contrast(string a, string b)
+    {
+        double l1 = Luminance(a), l2 = Luminance(b);
+        if (l1 < l2) (l1, l2) = (l2, l1);
+        return (l1 + 0.05) / (l2 + 0.05);
+    }
+
+    private static Dictionary<string, string> TokensIn(string css, string blockPattern)
+    {
+        var block = Regex.Match(css, blockPattern, RegexOptions.Singleline);
+        var map = new Dictionary<string, string>();
+
+        if (!block.Success)
+            return map;
+
+        foreach (Match m in Regex.Matches(block.Groups[1].Value, @"^\s*(--[a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;", RegexOptions.Multiline))
+            map[m.Groups[1].Value] = m.Groups[2].Value;
+
+        return map;
+    }
+
+    [Theory]
+    [InlineData("Blog", "--accent", "--on-accent")]
+    [InlineData("Blog", "--accent-hover", "--on-accent")]
+    [InlineData("Portfolio", "--color-accent", "--color-on-accent")]
+    [InlineData("Portfolio", "--color-accent-hover", "--color-on-accent")]
+    public void Aksan_dolgusunun_uzerindeki_metin_esigi_gecer(string project, string fill, string on)
+    {
+        var css = CssOf(project);
+
+        var dark = project == "Blog"
+            ? TokensIn(css, @":root,\s*:root\[data-theme=""dark""\]\s*\{(.*?)\n\}")
+            : TokensIn(css, @":root\s*\{(.*?)\n\}");
+
+        var lightBlock = project == "Blog"
+            ? @":root\[data-theme=""light""\]\s*\{(.*?)\n\}"
+            : @"\[data-theme=""light""\]\s*\{(.*?)\n\}";
+
+        var light = TokensIn(css, lightBlock);
+
+        dark.Should().ContainKey(fill, "koyu tema bloğu okunamadıysa test bir şey doğrulamıyor demektir");
+        dark.Should().ContainKey(on);
+
+        foreach (var (tema, harita) in new[] { ("koyu", dark), ("açık", light) })
+        {
+            var dolgu = harita.GetValueOrDefault(fill, dark[fill]);
+            var metin = harita.GetValueOrDefault(on, dark[on]);
+
+            Contrast(metin, dolgu).Should().BeGreaterThanOrEqualTo(4.5,
+                $"{project} {tema} temada {on} ({metin}) rengi {fill} ({dolgu}) dolgusunun üzerinde okunmalı");
+        }
+    }
+
     [Fact]
     public void Blog_on_accent_tokenini_gercekten_kullanir()
     {
