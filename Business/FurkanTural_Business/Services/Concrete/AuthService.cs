@@ -7,6 +7,7 @@ using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Settings;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,7 @@ public class AuthService(
     ITurnstileVerifier turnstileVerifier,
     ILoginThrottle loginThrottle,
     IAccountActivationService accountActivationService,
+    ActivityLogger activityLogger,
     IClock clock) : IAuthService
 {
     private readonly IAccountActivationService _accountActivationService = accountActivationService;
@@ -35,6 +37,7 @@ public class AuthService(
     private readonly AppTokenSettings _appTokenSettings = appTokenSettings.Value;
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
     private readonly ILoginThrottle _loginThrottle = loginThrottle;
+    private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly IClock _clock = clock;
 
     private static readonly Lazy<string> DummyHash = new(() =>
@@ -45,7 +48,11 @@ public class AuthService(
     {
         if (IsTurnstileRequired(dto.AppSource) &&
             !await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, null, cancellationToken))
+        {
+            await _activityLogger.LogWarningAsync(
+                $"Giriş reddedildi: robot doğrulaması başarısız. Kullanıcı: {Ad(dto.Username)}, uygulama: {Ad(dto.AppSource)}", cancellationToken);
             return Result<LoginResultDto>.Fail("Robot doğrulaması başarısız oldu. Lütfen tekrar deneyin.", statusCode: 400);
+        }
 
         if (string.IsNullOrWhiteSpace(dto.Username))
             return Result<LoginResultDto>.Fail("Kullanıcı adı boş olamaz.");
@@ -54,15 +61,21 @@ public class AuthService(
             return Result<LoginResultDto>.Fail("Şifre boş olamaz.");
 
         if (_loginThrottle.GetRemainingLockout(dto.Username) is { } remaining)
+        {
+            await _activityLogger.LogWarningAsync(
+                $"Giriş reddedildi: çok fazla hatalı deneme. Kullanıcı: {Ad(dto.Username)}", cancellationToken);
             return Result<LoginResultDto>.Fail(
                 $"Çok fazla hatalı deneme yapıldı. Lütfen {Math.Ceiling(remaining.TotalSeconds)} saniye sonra tekrar deneyin.",
                 statusCode: 429);
+        }
 
         var user = await _unitOfWork.Users.GetByUsernameForAdminAsync(dto.Username, cancellationToken);
         if (user is null || user.IsDeleted)
         {
             _passwordHasher.Verify(dto.Password, DummyHash.Value);
             _loginThrottle.RegisterFailure(dto.Username);
+            await _activityLogger.LogWarningAsync(
+                $"Giriş reddedildi: kullanıcı bulunamadı veya silinmiş. Kullanıcı: {Ad(dto.Username)}", cancellationToken);
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.",
                 user is null ? string.Empty : $"Giriş reddedildi: #{user.Id} silinmiş hesap.", 401);
         }
@@ -70,6 +83,8 @@ public class AuthService(
         if (string.IsNullOrWhiteSpace(user.Password))
         {
             _loginThrottle.RegisterFailure(dto.Username);
+            await _activityLogger.LogWarningAsync(
+                $"Giriş reddedildi: #{user.Id} hesabında parola kayıtlı değil.", cancellationToken);
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
         }
 
@@ -94,6 +109,8 @@ public class AuthService(
         if (!passwordValid)
         {
             _loginThrottle.RegisterFailure(dto.Username);
+            await _activityLogger.LogWarningAsync(
+                $"Giriş reddedildi: #{user.Id} parola hatalı.", cancellationToken);
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
         }
 
@@ -102,6 +119,9 @@ public class AuthService(
         if (!user.IsActive)
         {
             var issued = await _accountActivationService.IssueAsync(user.Id, "Login", ipAddress, userAgent, cancellationToken);
+
+            await _activityLogger.LogWarningAsync(
+                $"Giriş reddedildi: #{user.Id} hesap pasif.", cancellationToken);
 
             return Result<LoginResultDto>.Fail(
                 "Hesabınız kapalı. Kayıtlı e-posta adresinize hesabı yeniden açma bağlantısı gönderdik. Adresinize ulaşamıyorsanız iletişim formundan bize yazın.",
@@ -114,13 +134,20 @@ public class AuthService(
         var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId, cancellationToken);
         var roleName = role?.Name ?? "User";
 
+        await _activityLogger.LogAsync(
+            $"Giriş yapıldı: #{user.Id} ({roleName}), uygulama: {Ad(dto.AppSource)}", cancellationToken);
+
         return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, dto.AppSource));
     }
 
     public async Task<Result<LoginResultDto>> RegisterAsync(RegisterDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
         if (!await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, null, cancellationToken))
+        {
+            await _activityLogger.LogWarningAsync(
+                $"Kayıt reddedildi: robot doğrulaması başarısız. Kullanıcı: {Ad(dto.Username)}", cancellationToken);
             return Result<LoginResultDto>.Fail("Robot doğrulaması başarısız oldu. Lütfen tekrar deneyin.", statusCode: 400);
+        }
 
         if (string.IsNullOrWhiteSpace(dto.Username))
             return Result<LoginResultDto>.Fail("Kullanıcı adı boş olamaz.");
@@ -193,6 +220,8 @@ public class AuthService(
                 ? $"Kayıt reddedildi: #{owner.Id} pasif hesap; aktivasyon gönderilemedi: {issued.InternalMessage}"
                 : $"Kayıt reddedildi: #{owner.Id} pasif hesap; aktivasyon tetiklendi.");
     }
+
+    private static string Ad(string? deger) => string.IsNullOrWhiteSpace(deger) ? "(boş)" : deger.Trim();
 
     private bool IsTurnstileRequired(string? appSource)
     {

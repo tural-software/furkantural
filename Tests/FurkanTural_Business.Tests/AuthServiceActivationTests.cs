@@ -4,8 +4,11 @@ using FurkanTural_Application.DTOs.User;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Settings;
+using FurkanTural_Application.DTOs.Log;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Services.Concrete;
+using Microsoft.AspNetCore.Http;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -26,6 +29,8 @@ public class AuthServiceActivationTests
     private readonly Mock<ITurnstileVerifier> _turnstile = new();
     private readonly Mock<ILoginThrottle> _throttle = new();
     private readonly Mock<IAccountActivationService> _activation = new();
+    private readonly Mock<ILogService> _logService = new();
+    private readonly List<CreateLogDto> _logged = [];
     private readonly List<User> _created = [];
 
     private readonly AuthService _sut;
@@ -39,6 +44,10 @@ public class AuthServiceActivationTests
 
         _turnstile.Setup(t => t.VerifyAsync(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
+
+        _logService.Setup(l => l.CreateAsync(It.IsAny<CreateLogDto>(), It.IsAny<CancellationToken>()))
+            .Callback<CreateLogDto, CancellationToken>((dto, _) => _logged.Add(dto))
+            .ReturnsAsync(Result<LogDto>.Ok(new LogDto()));
 
         _throttle.Setup(t => t.GetRemainingLockout(It.IsAny<string?>())).Returns((TimeSpan?)null);
 
@@ -73,6 +82,7 @@ public class AuthServiceActivationTests
             _turnstile.Object,
             _throttle.Object,
             _activation.Object,
+            new ActivityLogger(_logService.Object, Mock.Of<IHttpContextAccessor>(), Mock.Of<IClock>()),
             Mock.Of<IClock>(c => c.UtcNow == new DateTime(2026, 8, 24, 12, 0, 0, DateTimeKind.Utc)));
     }
 
@@ -255,5 +265,56 @@ public class AuthServiceActivationTests
         result.Success.Should().BeTrue();
         _created.Should().ContainSingle();
         VerifyNoActivation();
+    }
+
+    [Fact]
+    public async Task Basarisiz_robot_dogrulamasi_kayda_uyari_olarak_dusuyor()
+    {
+        _turnstile.Setup(t => t.VerifyAsync(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var result = await Register();
+
+        result.StatusCode.Should().Be(400);
+        _logged.Should().ContainSingle(l => l.Level == "Warning" && l.Message!.Contains("robot doğrulaması başarısız"),
+            "reddedilen istek sunucuda iz bırakmazsa böyle bir şikâyet geldiğinde bakılacak hiçbir kayıt olmaz");
+    }
+
+    [Fact]
+    public async Task Hatali_parola_kayda_uyari_olarak_dusuyor()
+    {
+        ByUsername(Account(isActive: true, isDeleted: false));
+
+        var result = await Login("yanlis-parola");
+
+        result.StatusCode.Should().Be(401);
+        _logged.Should().ContainSingle(l => l.Level == "Warning" && l.Message!.Contains("parola hatalı"),
+            "arka arkaya hatalı denemeler ancak kayda düşerse fark edilebilir");
+    }
+
+    [Fact]
+    public async Task Basarili_giris_kayda_dusuyor()
+    {
+        ByUsername(Account(isActive: true, isDeleted: false));
+
+        var result = await Login();
+
+        result.Success.Should().BeTrue();
+        _logged.Should().ContainSingle(l => l.Level == "Information" && l.Message!.Contains("Giriş yapıldı"),
+            "denetim kaydı yalnızca reddedilenleri değil, kimin ne zaman girdiğini de taşımalı");
+    }
+
+    [Fact]
+    public async Task Kayda_yazilan_hicbir_satir_parola_tasimaz()
+    {
+        ByUsername(Account(isActive: true, isDeleted: false));
+
+        await Login("yanlis-parola");
+        await Login();
+
+        _logged.Should().NotBeEmpty();
+        _logged.Should().OnlyContain(
+            l => !l.Message!.Contains(Password) && !l.Message!.Contains("yanlis-parola"),
+            "denetim kaydı yönetim panelinde okunabiliyor; denenen parolayı oraya yazmak onu ikinci bir yerde saklamak olur");
     }
 }
