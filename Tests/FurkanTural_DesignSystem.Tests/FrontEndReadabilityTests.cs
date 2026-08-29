@@ -129,10 +129,15 @@ public class FrontEndReadabilityTests
             {
                 var css = File.ReadAllText(path);
 
-                foreach (Match m in Regex.Matches(css, @"[^\n]*background:\s*var\(--(color-)?accent\)[^\n]*", RegexOptions.Multiline))
+                foreach (Match rule in Regex.Matches(css, @"([^{}]*)\{([^{}]*)\}", RegexOptions.Singleline))
                 {
-                    if (Regex.IsMatch(m.Value, @"(^|[^-\w])color:\s*(#fff\b|#ffffff\b|white\b)", RegexOptions.IgnoreCase))
-                        sapan.Add($"{project}/{Path.GetFileName(path)} → {m.Value.Trim()}");
+                    var body = rule.Groups[2].Value;
+
+                    if (!Regex.IsMatch(body, @"background(-color)?:\s*var\(--(color-)?accent\)"))
+                        continue;
+
+                    if (Regex.IsMatch(body, @"(^|[^-\w])color:\s*(#fff\b|#ffffff\b|white\b)", RegexOptions.IgnoreCase))
+                        sapan.Add($"{project}/{Path.GetFileName(path)} → {rule.Groups[1].Value.Trim()}");
                 }
             }
         }

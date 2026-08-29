@@ -1,23 +1,69 @@
-﻿@{
+@{
     ViewData["Title"] = "Chatural";
     ViewData["Robots"] = "index, follow";
     ViewData["MetaDescription"] = "Chatural — arkadaşlarınızla gerçek zamanlı mesajlaşma ve görüntülü görüşme uygulaması.";
 }
-<div class="auth-wrap">
-    <div class="auth-card landing-card">
-        <div class="auth-brand">
-            <img src="~/img/chatural-logo.png" alt="Chatural" class="auth-logo" width="76" height="76" />
-            <div class="auth-name" aria-label="Chatural">Cha<span>tural</span></div>
-        </div>
-        <p class="auth-sub">Arkadaşlarınızla gerçek zamanlı mesajlaşın</p>
 
-        <div class="landing-actions">
-            <a asp-controller="Account" asp-action="Login" class="btn-primary landing-btn">Giriş yap</a>
-            <a asp-controller="Account" asp-action="Register" class="btn-outline landing-btn">Üye ol</a>
-        </div>
+<section class="hero">
+    <div class="hero-col">
+        <p class="hero-chip"><span class="hero-dot" aria-hidden="true"></span>Uçtan uca gerçek zamanlı</p>
 
-        <p class="auth-foot landing-foot">
-            Sohbet başlatmak için giriş yapın veya yeni bir hesap oluşturun.
+        <h1 class="hero-title">Arkadaşlarınızla gerçek zamanlı mesajlaşın</h1>
+
+        <p class="hero-lede">
+            Chatural; yazılı mesaj, sesli mesaj ve görüntülü görüşmeyi tek pencerede toplar.
+            Tarayıcıda çalışır, telefonunuza uygulama olarak kurulur.
         </p>
+
+        <div class="hero-cta">
+            <a class="btn-primary hero-btn" asp-controller="Account" asp-action="Register">Üye ol</a>
+            <a class="btn-outline hero-btn" asp-controller="Account" asp-action="Login">Giriş yap</a>
+        </div>
     </div>
-</div>
+
+    <div class="hero-art">
+        <div class="preview" aria-hidden="true">
+            <div class="preview-head">
+                <span class="preview-avatar">Z</span>
+                <span class="preview-who">
+                    <span class="preview-name">Zeynep Aksoy</span>
+                    <span class="preview-presence">çevrimiçi</span>
+                </span>
+            </div>
+
+            <div class="preview-thread">
+                <span class="preview-bubble preview-bubble--in">Tasarımı gönderdim, bir bakar mısın?</span>
+                <span class="preview-bubble preview-bubble--out">Akşam bakıp döneyim.</span>
+
+                <span class="preview-voice">
+                    <span class="preview-play">▶</span>
+                    <span class="preview-wave">
+                        <i style="height:6px"></i><i style="height:12px"></i><i class="on" style="height:16px"></i><i style="height:9px"></i><i style="height:14px"></i><i style="height:7px"></i>
+                    </span>
+                    <span class="preview-time">0:24</span>
+                </span>
+            </div>
+
+            <div class="preview-composer">
+                <span class="preview-add">+</span>
+                <span class="preview-field">Bir mesaj yaz…</span>
+                <span class="preview-send">➤</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features" aria-label="Öne çıkan özellikler">
+    <div class="feature">
+        <h2 class="feature-title">Anlık mesaj</h2>
+        <p class="feature-text">Yazıyor bilgisi, okundu durumu ve son görülme.</p>
+    </div>
+    <div class="feature">
+        <h2 class="feature-title">Sesli ve görüntülü</h2>
+        <p class="feature-text">Tarayıcıdan doğrudan arama; ek kurulum yok.</p>
+    </div>
+    <div class="feature">
+        <h2 class="feature-title">Sesli mesaj</h2>
+        <p class="feature-text">Kaydet, gönder, hızını değiştirerek dinle.</p>
+    </div>
+</section>
