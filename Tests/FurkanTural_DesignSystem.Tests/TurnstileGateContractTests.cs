@@ -44,12 +44,16 @@ public class TurnstileGateContractTests
 
             if (!button.Success)
                 sapan.Add($"{name}: gönder düğmesi bulunamadı");
-            else if (!button.Value.Contains("disabled="))
+            else if (Regex.IsMatch(button.Value, @"disabled=""@\("))
+                sapan.Add($"{name}: düğme yalnızca site anahtarı VARKEN kilitleniyor; " +
+                          "anahtar alınamadığında kapı açık kalıyordu");
+            else if (!Regex.IsMatch(button.Value, @"(^|\s)disabled(\s|>|=)"))
                 sapan.Add($"{name}: düğme kilitli başlamıyor");
         }
 
         sapan.Should().BeEmpty(
-            "Cloudflare betiği async yüklenir; düğme açık başlarsa kullanıcı token gelmeden gönderir");
+            "Cloudflare betiği async yüklenir; düğme açık başlarsa kullanıcı token gelmeden gönderir. " +
+            "Kapıyı yalnızca doğrulama açar: widget hiç çizilmediyse düğme kilitli kalmalı");
     }
 
     [Fact]
@@ -98,5 +102,18 @@ public class TurnstileGateContractTests
             "token tek kullanımlıktır; başarısızlıktan sonra temizlenmezse tekrar denemede aynısı gider");
         auth.Should().NotContain("window.turnstile.reset()",
             "sıfırlama artık ortak kapıdan geçiyor — widget'ı sıfırlayıp gizli alanı bırakmak eski hatanın kendisiydi");
+    }
+
+    [Fact]
+    public void Site_anahtari_yokken_kullaniciya_sebebi_soylenir()
+    {
+        foreach (var (name, content) in AuthViews())
+        {
+            var ipucu = Regex.Match(content, @"id=""turnstileHint""[^>]*>([^<]*)<");
+
+            ipucu.Success.Should().BeTrue($"{name}: ipucu alanı bulunamadı");
+            ipucu.Groups[1].Value.Should().Contain("TurnstileSiteKey",
+                $"{name}: anahtar alınamadığında kutu boş kalıyordu; kullanıcı kilitli düğmenin sebebini göremiyordu");
+        }
     }
 }

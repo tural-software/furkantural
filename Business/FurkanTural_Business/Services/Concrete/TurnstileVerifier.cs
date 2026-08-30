@@ -14,7 +14,7 @@ public class TurnstileVerifier(IConfiguration configuration, IHttpClientFactory 
         var secret = _configuration["Turnstile:SecretKey"];
 
         if (string.IsNullOrWhiteSpace(secret) || secret.StartsWith("CHANGE_ME", StringComparison.OrdinalIgnoreCase))
-            return true;
+            return false;
 
         if (string.IsNullOrWhiteSpace(token))
             return false;

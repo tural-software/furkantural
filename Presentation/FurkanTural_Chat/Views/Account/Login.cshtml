@@ -38,10 +38,10 @@
                      data-error-callback="onTurnstileError"></div>
             }
             <input type="hidden" name="TurnstileToken" id="turnstileToken" />
-            <p class="field-error" id="turnstileHint" role="status" aria-live="polite"></p>
+            <p class="field-error" id="turnstileHint" role="status" aria-live="polite">@(string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string) ? "Robot doğrulaması şu anda yüklenemiyor; giriş ve kayıt bu doğrulama olmadan tamamlanamaz." : "")</p>
 
             <button type="submit" class="btn-primary" data-loading-text="Giriş yapılıyor…"
-                    disabled="@(!string.IsNullOrEmpty(ViewBag.TurnstileSiteKey as string))">Giriş yap</button>
+                    disabled>Giriş yap</button>
         </form>
 
         <p class="auth-foot">Hesabın yok mu? <a asp-action="Register">Üye ol</a></p>
