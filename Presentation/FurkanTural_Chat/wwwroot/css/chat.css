@@ -311,7 +311,7 @@ body { display: flex; flex-direction: column; }
     border: 1px solid var(--border-color);
     border-radius: 999px;
     padding: 5px 5px 5px 6px;
-    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    box-shadow: var(--shadow-overlay);
 }
 .pwa-install-bar[hidden] { display: none; }
 /* Güncelleme çubuğu yükle çubuğunun üstünde durur (ikisi aynı anda görünebilir). */
@@ -774,7 +774,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 
 .call-overlay {
     position: fixed; inset: 0; z-index: 1100; display: none;
-    align-items: center; justify-content: center; background: rgba(8, 10, 16, .92);
+    align-items: center; justify-content: center; background: var(--scrim-media);
 }
 .call-overlay:not([hidden]) { display: flex; }
 .call-box {
@@ -817,11 +817,11 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     background: rgba(255,255,255,.14) !important; color: #fff !important; box-shadow: none !important;
 }
 .call-btn:hover { background: rgba(255,255,255,.24) !important; }
-.call-btn.off { background: rgba(239,68,68,.85) !important; }
-.call-accept { background: #22c55e !important; }
-.call-accept:hover { background: #16a34a !important; }
-.call-hang { background: #ef4444 !important; }
-.call-hang:hover { background: #dc2626 !important; }
+.call-btn.off { background: var(--error-solid) !important; }
+.call-accept { background: var(--success-solid) !important; }
+.call-accept:hover { filter: brightness(1.12); }
+.call-hang { background: var(--error-solid) !important; }
+.call-hang:hover { filter: brightness(1.12); }
 /* [hidden] gerçekten gizlesin (.call-btn/.call-min display:inline-flex'i ezmesin) */
 .call-btn[hidden], .call-min[hidden] { display: none !important; }
 
@@ -829,13 +829,13 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .device-modal {
     position: fixed; inset: 0; z-index: 1200; display: none;
     align-items: center; justify-content: center; padding: 20px;
-    background: rgba(8, 10, 16, .6);
+    background: var(--scrim);
 }
 .device-modal:not([hidden]) { display: flex; }
 .dev-card {
     width: min(94vw, 420px); background: var(--bg-card-solid);
     border: 1px solid var(--border-color); border-radius: var(--radius-lg, 16px);
-    padding: 18px 20px; box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
+    padding: 18px 20px; box-shadow: var(--shadow-overlay);
 }
 .dev-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; font-weight: 700; color: var(--text-main); }
 .dev-close { background: transparent; border: none; color: var(--text-dim); font-size: 16px; cursor: pointer; }
@@ -898,15 +898,15 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     display: inline-flex; align-items: center; justify-content: center;
 }
 .call-mbtn:hover { background: rgba(255, 255, 255, .3); }
-.call-mbtn.call-mhang { background: #ef4444; }
-.call-mbtn.call-mhang:hover { background: #dc2626; }
-.call-mbtn.off { background: rgba(239, 68, 68, .85); }
+.call-mbtn.call-mhang { background: var(--error-solid); }
+.call-mbtn.call-mhang:hover { filter: brightness(1.12); }
+.call-mbtn.off { background: var(--error-solid); }
 
 /* Minimized (köşe widget) — alttaki chat tıklanabilir; widget sürüklenebilir (JS left/top) */
 .call-overlay[data-min] { background: transparent; pointer-events: none; padding: 0; }
 .call-overlay[data-min] .call-box {
     pointer-events: auto; position: absolute; width: 320px; height: 210px;
-    cursor: move; touch-action: none; box-shadow: 0 12px 38px rgba(0, 0, 0, .6);
+    cursor: move; touch-action: none; box-shadow: var(--shadow-overlay);
 }
 .call-overlay[data-min] .call-actions,
 .call-overlay[data-min] .call-min,
@@ -972,7 +972,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .img-lightbox {
     position: fixed; inset: 0; z-index: 1000; display: none;
     align-items: center; justify-content: center; padding: 24px;
-    background: rgba(0, 0, 0, .82); cursor: zoom-out;
+    background: var(--scrim-media); cursor: zoom-out;
 }
 .img-lightbox.open { display: flex; }
 .img-lightbox img { max-width: 96vw; max-height: 92vh; border-radius: var(--radius-md); box-shadow: 0 10px 40px rgba(0,0,0,.6); }
@@ -1031,20 +1031,20 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 /* Bağlantı durumu */
 .conn-status {
     grid-row: 1; grid-column: 1 / -1; justify-self: center; margin: 10px 0 0;
-    background: #f59e0b; color: #1a1205; padding: 7px 16px; border-radius: 20px;
-    font-size: var(--fs-sm); font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    background: var(--warning-solid); color: var(--on-accent); padding: 7px 16px; border-radius: 999px;
+    font-size: var(--fs-sm); font-weight: 600; box-shadow: var(--shadow-overlay);
 }
 
 .consent-overlay {
     position: fixed; inset: 0; z-index: 10000; display: none;
     align-items: center; justify-content: center; padding: 1rem;
-    background: rgba(8, 10, 16, .7); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    background: var(--scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 .consent-overlay.open { display: flex; }
 .consent-modal {
     width: 100%; max-width: 380px; background: var(--bg-card-solid);
     border: 1px solid var(--border-color); border-radius: var(--radius-lg, 16px);
-    padding: 22px 20px; box-shadow: 0 30px 80px -10px rgba(0,0,0,.6); color: var(--text-main);
+    padding: 22px 20px; box-shadow: var(--shadow-overlay); color: var(--text-main);
 }
 .consent-title { font-size: var(--fs-base); font-weight: 700; margin-bottom: .6rem; }
 .consent-text { font-size: var(--fs-sm); color: var(--text-dim); line-height: 1.5; }
@@ -1071,13 +1071,13 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .agreement-overlay {
     position: fixed; inset: 0; z-index: 1300; display: none;
     align-items: center; justify-content: center; padding: 1rem;
-    background: rgba(8, 10, 16, .82); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    background: var(--scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 .agreement-overlay.open { display: flex; }
 .agreement-card {
     width: 100%; max-width: 460px; max-height: 86vh; overflow-y: auto;
     background: var(--bg-card-solid); border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg, 16px); padding: 24px; box-shadow: 0 30px 80px -10px rgba(0,0,0,.6);
+    border-radius: var(--radius-lg, 16px); padding: 24px; box-shadow: var(--shadow-overlay);
 }
 .agreement-card h2 { margin: 0 0 12px; font-size: var(--fs-lg); }
 .agreement-card p { font-size: var(--fs-md); color: var(--text-dim); line-height: 1.55; margin: 0 0 12px; }
@@ -1100,13 +1100,13 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .profile-overlay {
     position: fixed; inset: 0; z-index: 1250; display: none;
     align-items: center; justify-content: center; padding: 1rem;
-    background: rgba(8, 10, 16, .72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    background: var(--scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 .profile-overlay.open { display: flex; }
 .profile-card {
     width: 100%; max-width: 340px; background: var(--bg-card-solid);
     border: 1px solid var(--border-color); border-radius: var(--radius-lg, 16px);
-    padding: 26px 22px; box-shadow: 0 30px 80px -10px rgba(0,0,0,.6); text-align: center;
+    padding: 26px 22px; box-shadow: var(--shadow-overlay); text-align: center;
 }
 .profile-photo {
     width: 116px; height: 116px; border-radius: 50%; margin: 0 auto 16px;
@@ -1127,7 +1127,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .profile-zoom {
     position: fixed; inset: 0; z-index: 1260; display: none;
     align-items: center; justify-content: center; padding: 24px;
-    background: rgba(0,0,0,.9); cursor: zoom-out;
+    background: var(--scrim-media); cursor: zoom-out;
 }
 .profile-zoom.open { display: flex; }
 .profile-zoom img {

@@ -55,6 +55,8 @@
     --z-chrome: 999;
     --error-solid: #dc2626;
     --success-solid: #15803d;
+    --warning-solid: #f59e0b;
+    --scrim-media: rgba(8, 10, 16, 0.92);
 }
 
 /* DARK (default) */
@@ -72,6 +74,7 @@
     --accent-soft: rgba(56, 189, 248, 0.16);
     --on-accent: #0f172a;
     --bg-inset: #262933;
+    --scrim: rgba(8, 10, 14, 0.66);
     --success: #4ade80;
     --error: #f87171;
     --warning: #fbbf24;
@@ -112,6 +115,7 @@
     --accent-soft: rgba(14, 165, 233, 0.12);
     --on-accent: #0f172a;
     --bg-inset: #eef2f7;
+    --scrim: rgba(15, 23, 42, 0.35);
     --success: #166534;
     --error: #b91c1c;
     --warning: #854d0e;
