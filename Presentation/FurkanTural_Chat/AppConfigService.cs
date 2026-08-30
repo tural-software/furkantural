@@ -11,8 +11,11 @@ public class AppConfigService : IAppConfigService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<AppConfigService> _logger;
 
+    public static readonly TimeSpan FailureBackoff = TimeSpan.FromSeconds(30);
+
     private Dictionary<string, string?>? _cache;
     private DateTime _cacheExpiry = DateTime.MinValue;
+    private DateTime _nextAttempt = DateTime.MinValue;
     private readonly SemaphoreSlim _lock = new(1, 1);
 
     public AppConfigService(IHttpClientFactory httpClientFactory, ILogger<AppConfigService> logger)
@@ -33,10 +36,16 @@ public class AppConfigService : IAppConfigService
         if (_cache is not null && DateTime.UtcNow < _cacheExpiry)
             return _cache;
 
+        if (DateTime.UtcNow < _nextAttempt)
+            return _cache;
+
         await _lock.WaitAsync(cancellationToken);
         try
         {
             if (_cache is not null && DateTime.UtcNow < _cacheExpiry)
+                return _cache;
+
+            if (DateTime.UtcNow < _nextAttempt)
                 return _cache;
 
             var client = _httpClientFactory.CreateClient("ApiClient");
@@ -45,6 +54,7 @@ public class AppConfigService : IAppConfigService
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning("App config alınamadı. Status: {Status}", response.StatusCode);
+                _nextAttempt = DateTime.UtcNow + FailureBackoff;
                 return _cache;
             }
 
@@ -53,6 +63,7 @@ public class AppConfigService : IAppConfigService
             {
                 _cache = result.Data;
                 _cacheExpiry = DateTime.UtcNow.AddMinutes(30);
+                _nextAttempt = DateTime.MinValue;
             }
 
             return _cache;
@@ -60,6 +71,7 @@ public class AppConfigService : IAppConfigService
         catch (Exception ex)
         {
             _logger.LogError(ex, "App config alınırken hata oluştu.");
+            _nextAttempt = DateTime.UtcNow + FailureBackoff;
             return _cache;
         }
         finally

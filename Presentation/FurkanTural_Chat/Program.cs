@@ -26,6 +26,7 @@ builder.Services.AddHttpClient<IChatAuthApiClient, ChatAuthApiClient>(client =>
 builder.Services.AddHttpClient("AppTokenClient", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
 });
 builder.Services.AddSingleton<IAppTokenService, AppTokenService>();
 builder.Services.AddSingleton<IAppConfigService, AppConfigService>();
@@ -33,6 +34,7 @@ builder.Services.AddTransient<DefaultTokenHandler>();
 builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
 }).AddHttpMessageHandler<DefaultTokenHandler>();
 
 // Tarayıcı kimlik doğrulamalı tüm çağrıları same-origin '/bff/*' ile yapar; kullanıcı JWT'si
