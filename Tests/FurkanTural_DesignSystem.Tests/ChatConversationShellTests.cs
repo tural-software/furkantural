@@ -141,4 +141,63 @@ public class ChatConversationShellTests
         dugme.Should().Contain("flex: 0 0 auto",
             "270px listede düğme 28px'e eziliyordu; esneme kapatılmazsa dokunma hedefi bozulur");
     }
+
+    [Fact]
+    public void Her_sayfa_gorunumu_tam_bir_h1_tasir()
+    {
+        var root = Path.Combine(FindSolutionRoot(), "Presentation", "FurkanTural_Chat", "Views");
+        var kismi = new[] { "_AuthAside.cshtml" };
+        var sapan = new List<string>();
+        var olculen = 0;
+
+        foreach (var file in Directory.EnumerateFiles(root, "*.cshtml", SearchOption.AllDirectories))
+        {
+            var ad = Path.GetFileName(file);
+            if (ad.StartsWith('_') && !kismi.Contains(ad)) continue;
+
+            var icerik = File.ReadAllText(file);
+            var sayi = Regex.Matches(icerik, "<h1[ >]").Count;
+
+            if (ad == "_AuthAside.cshtml")
+            {
+                olculen++;
+                if (sayi != 1) sapan.Add($"{ad}: {sayi} adet h1");
+                continue;
+            }
+
+            if (ad == "Login.cshtml" || ad == "Register.cshtml")
+            {
+                olculen++;
+                if (sayi != 0) sapan.Add($"{ad}: başlık yan kolondan gelir, burada {sayi} adet h1 var");
+                continue;
+            }
+
+            olculen++;
+            if (sayi == 0) sapan.Add($"{ad}: hiç h1 yok");
+        }
+
+        sapan.Should().BeEmpty(
+            "sohbet ekranı hiç h1 taşımıyordu; konuşma başlığı sayfanın konusudur ve " +
+            "ekran okuyucu kullanıcısı için tek üst düzey başlıktır. Birden fazla h1 " +
+            "yazılmış olması kusur değildir: Activate dörtü de birbirini dışlayan dalda " +
+            "taşır, çalışma anında bir tanesi çizilir — kesinliği kaynak metni değil " +
+            "tarayıcı taraması doğrular");
+
+        olculen.Should().BeGreaterThan(7, "görünüm taraması boşsa bu test bir şey doğrulamıyor");
+    }
+
+    [Fact]
+    public void Konusma_basligi_handoff_olcusunde()
+    {
+        var css = File.ReadAllText(Path.Combine(
+            FindSolutionRoot(), "Presentation", "FurkanTural_Chat", "wwwroot", "css", "chat.css"));
+
+        var kural = Regex.Match(css, @"#convTitle\s*\{([^{}]*)\}");
+
+        kural.Success.Should().BeTrue("#convTitle kuralı bulunamadı");
+        kural.Groups[1].Value.Should().Contain("font-size: 14.5px",
+            "h1 olunca tarayıcı varsayılanı 2em'e çıkarır; handoff başlığı 14,5px istiyor");
+        kural.Groups[1].Value.Should().Contain("margin: 0",
+            "h1'in varsayılan üst/alt boşluğu başlık çubuğunu şişirir");
+    }
 }

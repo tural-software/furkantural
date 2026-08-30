@@ -152,7 +152,7 @@ app.Use(async (context, next) =>
     // connect-src: same-origin (/bff/* REST + WebSocket), API base, wss: (SignalR WS transport)
     var connectSrc = string.IsNullOrWhiteSpace(apiBase)
         ? "'self' wss: ws:"
-        : $"'self' {apiBase} {apiBase.Replace("https://", "wss://").Replace("http://", "ws:")} wss: ws:";
+        : $"'self' {apiBase} {apiBase.Replace("https://", "wss://").Replace("http://", "ws://")} wss: ws:";
 
     // img-src: avatar/ekler BFF üzerinden same-origin; API'den de doğrudan statik resimler gelebilir.
     var imgSrc = string.IsNullOrWhiteSpace(apiBase)
