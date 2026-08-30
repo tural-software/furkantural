@@ -149,10 +149,14 @@ app.Use(async (context, next) =>
     var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
     context.Items["csp-nonce"] = nonce;
 
-    // connect-src: same-origin (/bff/* REST + WebSocket), API base, wss: (SignalR WS transport)
+    // connect-src: same-origin REST ('self') + same-origin WebSocket (selfSocket) + API tabanı; çıplak şema yok
+    var selfSocket = context.Request.Host.HasValue
+        ? $"{(context.Request.IsHttps ? "wss" : "ws")}://{context.Request.Host.Value}"
+        : "";
+
     var connectSrc = string.IsNullOrWhiteSpace(apiBase)
-        ? "'self' wss: ws:"
-        : $"'self' {apiBase} {apiBase.Replace("https://", "wss://").Replace("http://", "ws://")} wss: ws:";
+        ? $"'self' {selfSocket}".TrimEnd()
+        : $"'self' {apiBase} {apiBase.Replace("https://", "wss://").Replace("http://", "ws://")} {selfSocket}".TrimEnd();
 
     // img-src: avatar/ekler BFF üzerinden same-origin; API'den de doğrudan statik resimler gelebilir.
     var imgSrc = string.IsNullOrWhiteSpace(apiBase)

@@ -56,4 +56,37 @@ public class CspSourceFormatTests
         https.Should().BeLessThan(http,
             "'http://' önce uygulanırsa 'https://' tabanı da ona takılır ve 'wss://' hiç oluşmaz");
     }
+
+    [Fact]
+    public void Connect_src_ciplak_sema_tasimaz()
+    {
+        var program = Program();
+
+        var satir = Regex.Match(program, @"var connectSrc[^;]*;", RegexOptions.Singleline);
+        satir.Success.Should().BeTrue("connectSrc tanımı bulunamadı");
+
+        Regex.IsMatch(satir.Value, @"(?<![\w/])wss:(?!//)").Should().BeFalse(
+            "çıplak 'wss:' her ana bilgisayara soket açılmasına izin verir; script çalıştırmayı " +
+            "engelleyen nonce aşılırsa CSP'nin veri sızdırmayı sınırlama işlevi devrede kalmalı");
+
+        Regex.IsMatch(satir.Value, @"(?<![\w/])ws:(?!//)").Should().BeFalse(
+            "çıplak 'ws:' ayrıca üretimde işlevsizdir: https sayfa düz metin soketi karışık " +
+            "içerik olarak zaten engeller");
+    }
+
+    [Fact]
+    public void Same_origin_soketi_istegin_host_undan_uretilir()
+    {
+        var program = Program();
+
+        program.Should().Contain("context.Request.Host",
+            "'self' ifadesinin same-origin WebSocket'i kapsaması tarayıcıya göre değişir; " +
+            "soketin adresi açıkça yazılmalı");
+
+        Regex.IsMatch(program, @"IsHttps \? ""wss"" : ""ws""").Should().BeTrue(
+            "https sayfada soket wss, http sayfada ws olmalı; sabitlenirse biri sessizce engellenir");
+
+        Regex.IsMatch(program, @"connectSrc[^;]*selfSocket", RegexOptions.Singleline).Should().BeTrue(
+            "üretilen soket adresi connect-src listesine girmeli");
+    }
 }
