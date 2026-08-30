@@ -2,7 +2,13 @@
     ViewData["Title"] = "Üyelik Sözleşmesi";
 }
 <div class="legal-wrap">
+    <nav class="legal-index" aria-label="Bölümler" hidden>
+        <p class="legal-index-title">Bölümler</p>
+        <ol class="legal-index-list"></ol>
+    </nav>
+
     <article class="legal-card">
+        <a class="legal-back" asp-controller="Home" asp-action="Index">‹ Ana sayfa</a>
         <h1>Chatural Üyelik Sözleşmesi</h1>
         <p class="legal-meta">Sürüm 1.0 — Yürürlük: 2026</p>
 
@@ -53,8 +59,15 @@
             Üyeden yeniden onay istenebilir.
         </p>
 
+        @await Html.PartialAsync("_LegalContact")
+
         <div class="legal-actions">
             <a asp-controller="Account" asp-action="Register" class="btn-outline">Kayıt sayfasına dön</a>
         </div>
     </article>
 </div>
+
+@section Scripts {
+    <script src="~/js/legal-index.js" asp-append-version="true"></script>
+}
+
