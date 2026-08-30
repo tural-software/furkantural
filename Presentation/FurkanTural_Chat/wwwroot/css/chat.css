@@ -1483,6 +1483,3 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
     .legal-card { padding: 24px 20px; }
 }
 
-@media (max-width: 480px) {
-    .auth-card { padding: 24px 20px; }
-}
