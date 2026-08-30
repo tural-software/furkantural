@@ -184,6 +184,7 @@ public sealed class LiveSiteFixture : IAsyncLifetime
         var browserPage = await context.NewPageAsync();
         var consoleErrors = new List<string>();
         var failedRequests = new List<string>();
+        var sockets = new List<string>();
 
         browserPage.Console += (_, msg) =>
         {
@@ -198,6 +199,7 @@ public sealed class LiveSiteFixture : IAsyncLifetime
             if (response.Status >= 400 && !Ignored(response.Url))
                 failedRequests.Add($"{response.Status} {response.Url}");
         };
+        browserPage.WebSocket += (_, socket) => sockets.Add(socket.Url);
         browserPage.RequestFailed += (_, request) =>
         {
             if (!Ignored(request.Url)) failedRequests.Add($"failed {request.Url} ({request.Failure})");
@@ -223,7 +225,8 @@ public sealed class LiveSiteFixture : IAsyncLifetime
             return PageSnapshot.From(
                 page, viewport, theme, browserPage.Url, response?.Status ?? 0, probe,
                 consoleErrors.Distinct().ToArray(),
-                failedRequests.Distinct().ToArray());
+                failedRequests.Distinct().ToArray(),
+                sockets.Distinct().ToArray());
         }
         finally
         {

@@ -38,6 +38,7 @@ public sealed class PageSnapshot
     public IReadOnlyList<string> DuplicateIds { get; init; } = [];
     public IReadOnlyList<string> ConsoleErrors { get; init; } = [];
     public IReadOnlyList<string> FailedRequests { get; init; } = [];
+    public IReadOnlyList<string> WebSockets { get; init; } = [];
 
     public string Where => $"{Page.App.Name} {Page.Path} @ {Viewport.Name}/{Theme}";
 
@@ -52,7 +53,8 @@ public sealed class PageSnapshot
         int status,
         JsonElement probe,
         IReadOnlyList<string> consoleErrors,
-        IReadOnlyList<string> failedRequests)
+        IReadOnlyList<string> failedRequests,
+        IReadOnlyList<string> webSockets)
     {
         static IReadOnlyList<string> Strings(JsonElement e, string name) =>
             e.TryGetProperty(name, out var a) && a.ValueKind == JsonValueKind.Array
@@ -98,7 +100,8 @@ public sealed class PageSnapshot
             Unmeasurable = Strings(probe, "unmeasurable"),
             DuplicateIds = Strings(probe, "duplicateIds"),
             ConsoleErrors = consoleErrors,
-            FailedRequests = failedRequests
+            FailedRequests = failedRequests,
+            WebSockets = webSockets
         };
     }
 }
