@@ -1,0 +1,13 @@
+@{
+    var baslik = ViewData["AsideTitle"] as string;
+    var metin = ViewData["AsideText"] as string;
+}
+<aside class="auth-aside">
+    <h1 class="auth-aside-title">@baslik</h1>
+    <p class="auth-aside-text">@metin</p>
+    <ul class="auth-points">
+        <li>Mesajlar ve aramalar anında iletilir</li>
+        <li>Telefonda uygulama olarak kurulabilir</li>
+        <li>Açık ve koyu tema desteği</li>
+    </ul>
+</aside>
