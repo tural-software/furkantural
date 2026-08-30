@@ -109,10 +109,11 @@ public class ChatIdentityFormTests
     {
         var kutu = RuleBody(Css(), ".agreement-check input");
 
-        kutu.Should().Contain("width: 20px");
+        kutu.Should().Contain("width: 24px",
+            "dokunma hedefi en az 24x24 olmalı (WCAG 2.2 - 2.5.8); tarayıcı taraması bunu 20px iken yakaladı");
         kutu.Should().Contain("padding: 0",
-            ".auth-form input kuralı 14px yatay dolgu veriyor; sıfırlanmazsa 20px kutu 30px çiziliyor");
-        kutu.Should().Contain("appearance: none", "yerleşik kutu 20px yarıçap 6 olarak biçimlenemez");
+            ".auth-form input kuralı 14px yatay dolgu veriyor; sıfırlanmazsa kutu 14px daha geniş çiziliyor");
+        kutu.Should().Contain("appearance: none", "yerleşik kutu 24px yarıçap 6 olarak biçimlenemez");
     }
 
     [Theory]

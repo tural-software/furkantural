@@ -67,19 +67,19 @@
                     <label>İçerik ara</label>
                     <div class="filter-input-wrap">
                         @await Html.PartialAsync("_Icons", "search")
-                        <input type="text" name="search" value="@Model.SearchContent" class="filter-input filter-input--search" placeholder="Mesaj içeriği ara..." />
+                        <input aria-label="İçerik ara" type="text" name="search" value="@Model.SearchContent" class="filter-input filter-input--search" placeholder="Mesaj içeriği ara..." />
                     </div>
                 </div>
                 <div class="filter-group">
                     <label>Kullanıcı adı</label>
                     <div class="filter-input-wrap">
                         @await Html.PartialAsync("_Icons", "user")
-                        <input type="text" name="usernameFilter" value="@Model.UsernameFilter" class="filter-input filter-input--search" placeholder="Gönderen/alıcı kullanıcı adı..." />
+                        <input aria-label="Kullanıcı adı" type="text" name="usernameFilter" value="@Model.UsernameFilter" class="filter-input filter-input--search" placeholder="Gönderen/alıcı kullanıcı adı..." />
                     </div>
                 </div>
                 <div class="filter-group">
                     <label>Tür</label>
-                    <select name="typeFilter" class="filter-select">
+                    <select aria-label="Tür" name="typeFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.TypeFilter))">Tümü</option>
                         <option value="Text" selected="@(Model.TypeFilter == "Text")">Metin</option>
                         <option value="Audio" selected="@(Model.TypeFilter == "Audio")">Ses Kaydı</option>
@@ -89,7 +89,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Aktiflik Durumu</label>
-                    <select name="activeFilter" class="filter-select">
+                    <select aria-label="Aktiflik Durumu" name="activeFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.ActiveFilter))">Tümü</option>
                         <option value="active" selected="@(Model.ActiveFilter == "active")">Aktif</option>
                         <option value="passive" selected="@(Model.ActiveFilter == "passive")">Pasif</option>
@@ -97,7 +97,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Silinme Durumu</label>
-                    <select name="deletedFilter" class="filter-select">
+                    <select aria-label="Silinme Durumu" name="deletedFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.DeletedFilter))">Tümü</option>
                         <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
                         <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
@@ -106,9 +106,9 @@
                 <div class="filter-group">
                     <label>Oluşturulma Tarihi</label>
                     <div class="filter-date-row">
-                        <input type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
+                        <input aria-label="Oluşturulma Tarihi başlangıç" type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
                         <span class="filter-date-sep">→</span>
-                        <input type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
+                        <input aria-label="Oluşturulma Tarihi bitiş" type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
                     </div>
                 </div>
                 <input type="hidden" name="pageSize" value="@Model.PageSize" />

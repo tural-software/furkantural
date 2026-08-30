@@ -65,12 +65,12 @@
                     <label>Ara</label>
                     <div class="filter-input-wrap">
                         @await Html.PartialAsync("_Icons", "search")
-                        <input type="text" name="search" value="@Model.Search" class="filter-input filter-input--search" placeholder="Şikayetçi / neden ara..." />
+                        <input aria-label="Ara" type="text" name="search" value="@Model.Search" class="filter-input filter-input--search" placeholder="Şikayetçi / neden ara..." />
                     </div>
                 </div>
                 <div class="filter-group">
                     <label>Tür</label>
-                    <select name="typeFilter" class="filter-select">
+                    <select aria-label="Tür" name="typeFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.TypeFilter))">Tümü</option>
                         @foreach (var t in new[] { "User", "Message", "Media", "Call" })
                         {
@@ -80,7 +80,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Durum</label>
-                    <select name="statusFilter" class="filter-select">
+                    <select aria-label="Durum" name="statusFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.StatusFilter))">Tümü</option>
                         @foreach (var s in new[] { "Pending", "Reviewed", "Dismissed", "ActionTaken" })
                         {
@@ -90,7 +90,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Silinme Durumu</label>
-                    <select name="deletedFilter" class="filter-select">
+                    <select aria-label="Silinme Durumu" name="deletedFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.DeletedFilter))">Tümü</option>
                         <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
                         <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
@@ -99,9 +99,9 @@
                 <div class="filter-group">
                     <label>Oluşturulma Tarihi</label>
                     <div class="filter-date-row">
-                        <input type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
+                        <input aria-label="Oluşturulma Tarihi başlangıç" type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
                         <span class="filter-date-sep">→</span>
-                        <input type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
+                        <input aria-label="Oluşturulma Tarihi bitiş" type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
                     </div>
                 </div>
                 <input type="hidden" name="pageSize" value="@Model.PageSize" />

@@ -19,6 +19,16 @@ html {
     scroll-behavior: smooth;
 }
 
+.skip-link {
+    position: fixed; left: 1rem; top: -4rem; z-index: 5000;
+    background: var(--accent); color: var(--on-accent);
+    padding: 10px 14px; border-radius: var(--radius-md);
+    font-weight: 600; text-decoration: none;
+    transition: top .2s ease;
+}
+.skip-link:focus { top: 1rem; }
+main:focus { outline: none; }
+
 a {
     color: var(--accent-text);
     text-decoration: none;
@@ -45,6 +55,7 @@ img {
 
 .main {
     padding: 1.5rem;
+    min-width: 0;
 }
 
 .container {

@@ -53,12 +53,13 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
+    <a class="skip-link" href="#main">İçeriğe geç</a>
     <div class="app">
         @if (!hideChrome)
         {
             @await Html.PartialAsync("~/Views/Shared/_LayoutSections/_Header.cshtml", username)
         }
-        <main class="main">
+        <main id="main" class="main" tabindex="-1">
             @RenderBody()
         </main>
         @if (!hideChrome)

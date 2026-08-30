@@ -121,7 +121,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Aktiflik Durumu</label>
-                    <select name="activeFilter" class="filter-select">
+                    <select aria-label="Aktiflik Durumu" name="activeFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.ActiveFilter))">Tümü</option>
                         <option value="active" selected="@(Model.ActiveFilter == "active")">Aktif</option>
                         <option value="passive" selected="@(Model.ActiveFilter == "passive")">Pasif</option>
@@ -129,7 +129,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Silinme Durumu</label>
-                    <select name="deletedFilter" class="filter-select">
+                    <select aria-label="Silinme Durumu" name="deletedFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.DeletedFilter))">Tümü</option>
                         <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
                         <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>

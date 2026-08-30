@@ -64,10 +64,13 @@
     <meta name="apple-mobile-web-app-title" content="Chatural" />
 </head>
 <body>
+    <a class="skip-link" href="#main">İçeriğe geç</a>
     @await Html.PartialAsync("_TopBar")
 
     <div class="shell@(appShell ? " shell--app" : "")">
-        @RenderBody()
+        <main id="main" tabindex="-1">
+            @RenderBody()
+        </main>
 
         @if (!appShell)
         {

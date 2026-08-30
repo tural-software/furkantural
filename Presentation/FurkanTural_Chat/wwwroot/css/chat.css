@@ -57,6 +57,18 @@ body { display: flex; flex-direction: column; }
 }
 .shell--app { overflow: hidden; }
 
+.shell > main { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+main:focus { outline: none; }
+
+.skip-link {
+    position: fixed; left: 1rem; top: -4rem; z-index: 5000;
+    background: var(--accent); color: var(--on-accent);
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    font-weight: 600; text-decoration: none;
+    transition: top .2s ease;
+}
+.skip-link:focus { top: 1rem; }
+
 .topbar {
     flex: 0 0 auto;
     min-height: 61px;
@@ -114,6 +126,7 @@ body { display: flex; flex-direction: column; }
 }
 .sitefoot-brand { color: var(--text-dim); }
 .sitefoot-links { display: flex; justify-content: center; gap: 18px; }
+.sitefoot-links a { display: inline-flex; align-items: center; min-height: 24px; }
 .sitefoot-mail { justify-self: end; }
 .sitefoot a { color: var(--text-dim); }
 .sitefoot a:hover { color: var(--text-main); }
@@ -1172,8 +1185,8 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .agreement-check input {
     appearance: none;
     -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     padding: 0;
     flex: 0 0 auto;
     margin: 1px 0 0;
@@ -1190,7 +1203,7 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 }
 .agreement-check input:checked::after {
     content: "✓";
-    font-size: 12px;
+    font-size: 14px;
     color: var(--on-accent);
 }
 .agreement-check input:focus-visible {

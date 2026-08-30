@@ -74,7 +74,7 @@
             <div class="filter-bar">
                 <div class="filter-group">
                     <label>Seviye</label>
-                    <select name="levelFilter" class="filter-select">
+                    <select aria-label="Seviye" name="levelFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.LevelFilter))">Tümü</option>
                         <option value="Error"   selected="@(Model.LevelFilter == "Error")">Error</option>
                         <option value="Warning" selected="@(Model.LevelFilter == "Warning")">Warning</option>
@@ -103,9 +103,9 @@
                 <div class="filter-group">
                     <label>Log Tarihi</label>
                     <div class="filter-date-row">
-                        <input type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
+                        <input aria-label="Log Tarihi başlangıç" type="date" name="dateFrom" value="@Model.DateFrom" class="filter-input" />
                         <span class="filter-date-sep">→</span>
-                        <input type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
+                        <input aria-label="Log Tarihi bitiş" type="date" name="dateTo" value="@Model.DateTo" class="filter-input" />
                     </div>
                 </div>
                 <input type="hidden" name="pageSize" value="@Model.PageSize" />

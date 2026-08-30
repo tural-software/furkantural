@@ -97,6 +97,8 @@
 .pag-btn:focus-visible,
 .bc a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+.filter-input[type="date"]:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+
 @media (max-width: 1023px) {
     .data-table .col-drop-1024 { display: none; }
 }
