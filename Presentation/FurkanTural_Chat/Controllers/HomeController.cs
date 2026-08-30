@@ -8,6 +8,9 @@ public class HomeController : Controller
 {
     public IActionResult Index()
     {
+        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("token")))
+            return RedirectToAction("Index", "Chat");
+
         return View();
     }
 
