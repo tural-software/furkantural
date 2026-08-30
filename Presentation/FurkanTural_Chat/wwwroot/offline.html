@@ -2,36 +2,35 @@
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Çevrimdışı - Chatural</title>
-    <style>
-        :root { color-scheme: dark; }
-        html, body {
-            height: 100%; margin: 0;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: #0f1117; color: #f9fafb;
-        }
-        .wrap {
-            min-height: 100%; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center; padding: 24px;
-        }
-        /* Logo, SHELL precache'indeki ikondur → çevrimdışıyken de yüklenir (offline.html ile aynı cache). */
-        .logo { width: 88px; height: 88px; margin-bottom: 18px; }
-        h1 { font-size: 20px; margin: 0 0 8px; }
-        p { color: #9ca3af; font-size: 14px; margin: 0 0 22px; max-width: 320px; line-height: 1.5; }
-        button {
-            background: #38bdf8; color: #0f172a; border: 0; border-radius: 12px;
-            padding: 11px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
-        }
-        button:hover { filter: brightness(1.05); }
-    </style>
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/chat.css" />
 </head>
 <body>
-    <div class="wrap">
-        <img class="logo" src="/icons/icon-192.png" alt="Chatural" width="88" height="88" />
-        <h1>Çevrimdışısın</h1>
-        <p>İnternet bağlantısı kurulamadı. Bağlantın geri geldiğinde tekrar deneyebilirsin.</p>
-        <button type="button" onclick="location.reload()">Tekrar dene</button>
+    <div class="shell">
+        <section class="status-wrap">
+            <div class="status-icon" aria-hidden="true">⇅</div>
+
+            <p class="status-kicker">Çevrimdışı</p>
+
+            <h1 class="status-title">Çevrimdışısın</h1>
+
+            <p class="status-text">
+                İnternet bağlantısı kurulamadı. Bağlantın geri geldiğinde tekrar deneyebilirsin.
+            </p>
+
+            <div class="status-actions">
+                <button type="button" class="btn-primary status-btn" data-offline-retry>Tekrar dene</button>
+            </div>
+
+            <p class="status-conn" role="status">
+                <span class="status-conn-dot" aria-hidden="true"></span>Bağlantı yok · yeniden deniyor
+            </p>
+        </section>
     </div>
+
+    <script src="/js/theme.js"></script>
+    <script src="/js/offline.js"></script>
 </body>
 </html>

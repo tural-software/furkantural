@@ -1,5 +1,5 @@
 /* PWA kabuğu, çevrimdışı yedek ve bildirimler. */
-const CACHE = 'chatural-v11';
+const CACHE = 'chatural-v12';
 
 // App shell — sade path'ler (sürümsüz). Runtime cache ?v'li istekleri ayrıca yakalar.
 const SHELL = [
@@ -8,6 +8,7 @@ const SHELL = [
     '/css/chat.css',
     '/js/ft-time.js',
     '/js/theme.js',
+    '/js/offline.js',
     '/js/toast.js',
     '/js/auth.js',
     '/js/chat.js',

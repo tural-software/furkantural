@@ -1281,6 +1281,113 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .legal-actions { margin-top: 28px; }
 
 
+.status-wrap {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+    padding: 40px 24px;
+}
+.status-icon {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--bg-card-solid);
+    color: var(--text-dim);
+    font-size: 26px;
+}
+.status-kicker {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+.status-title {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+    line-height: 1.15;
+    text-wrap: balance;
+}
+.status-text {
+    margin: 0;
+    max-width: 44ch;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    text-wrap: pretty;
+}
+.status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+.status-actions .status-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    margin-top: 0;
+    padding: 0 22px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+}
+.status-actions .status-btn:hover { text-decoration: none; }
+.status-request {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card-solid);
+}
+.status-request-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: var(--text-dim);
+}
+.status-request-value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    color: var(--text-main);
+}
+.status-conn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 22px;
+    padding: 9px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--bg-card-solid);
+    font-size: 12.5px;
+    color: var(--text-dim);
+}
+.status-conn-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: var(--error);
+}
+
 @media (max-width: 1024px) {
     .legal-index { display: none; }
     .legal-wrap { gap: 0; }
@@ -1292,6 +1399,8 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 }
 
 @media (max-width: 768px) {
+    .status-title { font-size: 24px; }
+
     .auth-card { padding: 24px 20px; }
 
     .legal-card h1 { font-size: 25px; }
