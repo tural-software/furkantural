@@ -12,6 +12,17 @@ public static class BrowserSweep
 [CollectionDefinition(BrowserSweep.Collection)]
 public sealed class BrowserSweepCollection : ICollectionFixture<LiveSiteFixture>;
 
+public sealed record TabStopRaw(string Name, bool InViewport, string Text, string Href, bool ThirdParty);
+
+public sealed record TabStop(int Index, string Element, string RestingMatch, bool InViewport, string Text, string Href, bool ThirdParty)
+{
+    public bool FocusRingVisible => RestingMatch.Length == 0;
+
+    public override string ToString() =>
+        $"{Index}. {Element}" + (Text.Length > 0 ? $" \"{Text}\"" : "") +
+        (RestingMatch.Length > 0 ? $" [{RestingMatch}]" : "");
+}
+
 public sealed class LiveSiteFixture : IAsyncLifetime
 {
     public const string ConsentSeed = "try { localStorage.setItem('ft.consent', '1'); } catch (e) { }";
@@ -33,6 +44,9 @@ public sealed class LiveSiteFixture : IAsyncLifetime
     private readonly Dictionary<Access, string> _authFailure = [];
     private readonly Dictionary<string, string> _resolvedPaths = [];
     private readonly ConcurrentDictionary<string, Task<string?>> _appDown = [];
+    private readonly Dictionary<string, IReadOnlyList<TabStop>> _walks = [];
+
+    private static readonly JsonSerializerOptions JsonWeb = new(JsonSerializerDefaults.Web);
 
     public string? StartupFailure { get; private set; }
 
@@ -128,17 +142,7 @@ public sealed class LiveSiteFixture : IAsyncLifetime
             var context = await GetContextAsync(page.Access, theme);
             var path = await ResolvePathAsync(page, context);
 
-            PageSnapshot snapshot;
-            try
-            {
-                snapshot = await CaptureAsync(context, page, path, viewport, theme);
-            }
-            catch (PlaywrightException ex) when (IsTransport(ex))
-            {
-                await Task.Delay(1500);
-                snapshot = await CaptureAsync(context, page, path, viewport, theme);
-            }
-
+            var snapshot = await WithRetryAsync(() => CaptureAsync(context, page, path, viewport, theme));
             _snapshots[key] = snapshot;
             return snapshot;
         }
@@ -227,6 +231,26 @@ public sealed class LiveSiteFixture : IAsyncLifetime
         }
     }
 
+    private static async Task<T> WithRetryAsync<T>(Func<Task<T>> capture)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return await capture();
+            }
+            catch (Exception ex) when (attempt < 3 && IsTransient(ex))
+            {
+                await Task.Delay(2000 * attempt);
+            }
+        }
+    }
+
+    private static bool IsTransient(Exception ex) =>
+        (ex is PlaywrightException && IsTransport((PlaywrightException)ex)) ||
+        ex is TimeoutException ||
+        ex.Message.Contains("Timeout", StringComparison.OrdinalIgnoreCase) && ex.Message.Contains("navigating to", StringComparison.OrdinalIgnoreCase);
+
     private static bool IsTransport(PlaywrightException ex) =>
         ex.Message.Contains("ERR_NETWORK_IO_SUSPENDED", StringComparison.Ordinal) ||
         ex.Message.Contains("ERR_CONNECTION_RESET", StringComparison.Ordinal) ||
@@ -235,6 +259,107 @@ public sealed class LiveSiteFixture : IAsyncLifetime
 
     private static bool Ignored(string text) =>
         IgnoredOrigins.Any(o => text.Contains(o, StringComparison.OrdinalIgnoreCase));
+
+    private const string StopScript =
+        """
+        () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => {
+          const el = document.activeElement;
+          if (!el || el === document.body) return resolve(null);
+          window.__ftStops = window.__ftStops || [];
+          window.__ftFocused = window.__ftFocused || [];
+          const cs = getComputedStyle(el);
+          const style = cs.outlineStyle + '|' + cs.outlineWidth + '|' + cs.outlineColor + '|' +
+            cs.boxShadow + '|' + cs.borderColor + '|' + cs.backgroundColor + '|' + cs.color;
+          window.__ftStops.push(el);
+          window.__ftFocused.push(style);
+          const r = el.getBoundingClientRect();
+          let name = el.tagName.toLowerCase();
+          if (el.id) name += '#' + el.id;
+          else if (typeof el.className === 'string' && el.className.trim())
+            name += '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.');
+          if (el.getAttribute('role')) name += '[role=' + el.getAttribute('role') + ']';
+          if (el.hasAttribute('tabindex')) name += '[tabindex=' + el.getAttribute('tabindex') + ']';
+          if (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) name += '[kaydırılabilir]';
+          const owner = el.parentElement && el.parentElement.closest('[class]');
+          if (owner && typeof owner.className === 'string' && owner.className.trim())
+            name += ' < ' + owner.className.trim().split(/\s+/)[0];
+          resolve(JSON.stringify({
+            name: name,
+            inViewport: r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth,
+            text: (el.textContent || '').trim().slice(0, 30),
+            thirdParty: !!el.closest('.cf-turnstile'),
+            href: el.getAttribute('href') || ''
+          }));
+        })));
+        """;
+
+    private const string ReportScript =
+        """
+        () => {
+          if (document.activeElement) document.activeElement.blur();
+          const stops = window.__ftStops || [];
+          const focused = window.__ftFocused || [];
+          return stops.map((el, i) => {
+            const cs = getComputedStyle(el);
+            const resting = cs.outlineStyle + '|' + cs.outlineWidth + '|' + cs.outlineColor + '|' +
+              cs.boxShadow + '|' + cs.borderColor + '|' + cs.backgroundColor + '|' + cs.color;
+            return resting === focused[i] ? 'odaklanınca aynı kaldı -> ' + resting : '';
+          });
+        }
+        """;
+
+    public async Task<IReadOnlyList<TabStop>> TabWalkAsync(SitePage page, int steps = 30)
+    {
+        await RequireAppAsync(page.App);
+
+        await _gate.WaitAsync();
+        try
+        {
+            if (_walks.TryGetValue(page.Id, out var cached)) return cached;
+
+            var context = await GetContextAsync(page.Access, Themes.Dark);
+            var path = await ResolvePathAsync(page, context);
+            var browserPage = await context.NewPageAsync();
+            try
+            {
+                await browserPage.SetViewportSizeAsync(Viewport.Desktop.Width, Viewport.Desktop.Height);
+                await browserPage.GotoAsync(page.App.BaseUrl + path,
+                    new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+                await browserPage.AddStyleTagAsync(new PageAddStyleTagOptions
+                {
+                    Content = "*, *::before, *::after { transition: none !important; animation: none !important; " +
+                              "scroll-behavior: auto !important; }"
+                });
+                await browserPage.EvaluateAsync("() => { window.__ftStops = []; window.__ftFocused = []; }");
+
+                var seen = new List<TabStopRaw>();
+                for (var i = 0; i < steps; i++)
+                {
+                    await browserPage.Keyboard.PressAsync("Tab");
+                    var raw = await browserPage.EvaluateAsync<string?>(StopScript);
+                    if (raw is null) break;
+                    seen.Add(JsonSerializer.Deserialize<TabStopRaw>(raw, JsonWeb)!);
+                }
+
+                var rings = await browserPage.EvaluateAsync<string[]>(ReportScript);
+
+                var walk = seen
+                    .Select((s, i) => new TabStop(i + 1, s.Name, i < rings.Length ? rings[i] : "", s.InViewport, s.Text, s.Href, s.ThirdParty))
+                    .ToArray();
+
+                _walks[page.Id] = walk;
+                return walk;
+            }
+            finally
+            {
+                await browserPage.CloseAsync();
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
 
     public async Task<T> WithFirstTimeVisitorAsync<T>(SiteApp app, string path, Func<IPage, Task<T>> visit)
     {
@@ -405,7 +530,7 @@ public sealed class LiveSiteFixture : IAsyncLifetime
         try
         {
             step = "giriş sayfası açılamadı";
-            await page.GotoAsync(app.BaseUrl + loginPath, new PageGotoOptions { Timeout = 20000 });
+            await page.GotoAsync(app.BaseUrl + loginPath, new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded, Timeout = 45000 });
 
             step = "kullanıcı adı alanı doldurulamadı";
             await page.FillAsync("input[name='Username']", user, new PageFillOptions { Timeout = 15000 });
@@ -432,11 +557,19 @@ public sealed class LiveSiteFixture : IAsyncLifetime
             step = "gönder düğmesine tıklanamadı";
             await submit.ClickAsync(new LocatorClickOptions { Timeout = 15000 });
 
-            step = "gönderimden sonra yönlendirme gelmedi";
+            step = "gönderimden sonra giriş formu ekranda kaldı";
             await page.WaitForFunctionAsync(
-                "path => !location.pathname.toLowerCase().startsWith(path)",
-                loginPath == "/" ? "/auth/login" : loginPath.ToLowerInvariant(),
-                new PageWaitForFunctionOptions { Timeout = 20000 });
+                "() => !document.querySelector('form#loginForm')",
+                null, new PageWaitForFunctionOptions { Timeout = 20000 });
+
+            var guarded = access == Access.AdminUser ? "/Dashboard" : "/Chat";
+
+            step = $"oturum {guarded} sayfasında tutunamadı";
+            await page.GotoAsync(app.BaseUrl + guarded,
+                new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+
+            if (await page.EvaluateAsync<bool>("() => !!document.querySelector('form#loginForm')"))
+                throw new InvalidOperationException($"{guarded} giriş formunu gösterdi, oturum kurulmamış");
 
             return await context.StorageStateAsync();
         }

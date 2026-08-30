@@ -41,6 +41,7 @@ Kimlik bilgileri koda ve depoya yazılmaz; yalnızca ortamdan okunur.
 | `ContrastSweepTests` | Metin kontrastı WCAG AA eşiğini geçer (iki temada da) |
 | `ConsoleSweepTests` | Konsola hata yazılmaz; hiçbir kaynak başarısız olmaz |
 | `NavigationSweepTests` | Yanıt < 400; oturumlu sayfa giriş ekranına düşmez |
+| `KeyboardSweepTests` | Tab ile gezilen her durakta odak görünür değişir; odaklanan öge ekranda kalır; klavye tuzağı yok; pozitif `tabindex` yok; tekrar eden gezinme atlanabilir; sayfanın tek bir `main` bölgesi var |
 | `ConsentGateTests` | Çerez onayı ilk ziyarette çıkar, bir kez kabul edilince bir daha sorulmaz |
 
 Her sayfa (genişlik, tema) başına **bir kez** açılır; ölçüm önbelleğe alınır ve bütün
@@ -62,6 +63,16 @@ kusurdur; iç kutularda yalnızca kullanıcıyı yatay kaydırmaya zorlayan `ove
 veya `scroll` bildirilir. Üç nokta kırpması, ekran-okuyucu metni ve ekran dışında bekleyen
 paneller (`overflow-x: hidden`) kasıtlı olduğu için bildirilmez.
 
+### Klavye yürüyüşü
+
+Odak halkası ölçülürken sayfaya `transition/animation/scroll-behavior: none` enjekte edilir;
+aksi hâlde geçiş henüz başlamadan ölçüm yapılır ve var olan halka yok görünür. Her durağın
+odaklıyken ve odaksızken hesaplanan stili karşılaştırılır, yani halkanın kendisi değil
+**değişim** aranır. Cloudflare Turnstile'ın kendi ögeleri kapsam dışıdır.
+
+Bir sayfa bir alana `autofocus` veriyorsa "ilk Tab durağı atlama bağlantısıdır" iddiası
+atlanır: odak zaten formun içinde başlar.
+
 ## Bilinen sınırlar
 
 - Chat girişi Cloudflare Turnstile'a bağlıdır; Development ortamı her zaman geçen test
@@ -70,3 +81,8 @@ paneller (`overflow-x: hidden`) kasıtlı olduğu için bildirilmez.
   "ölçülemez" sayar ve atlar; bunlar `Unmeasurable` alanında toplanır.
 - Tarama, çerez onayı verilmiş bir ziyaretçiyi taklit eder. Onay katmanının kendisi
   `ConsentGateTests` ile ayrıca denetlenir.
+- Oturum kurulduğu **adresle değil DOM ile** doğrulanır: Admin'in giriş ekranı kök adreste
+  durduğu için adreste "login" geçmez ve adrese bakan bir denetim, giriş sayfasını o sayfa
+  sanarak sahte kapsama üretir.
+- Ağ kaynaklı gezinme hataları (`ERR_NETWORK_IO_SUSPENDED`, gezinme zaman aşımı) iki kez
+  yeniden denenir; kalıcı bir kusur yine kırmızıya döner.

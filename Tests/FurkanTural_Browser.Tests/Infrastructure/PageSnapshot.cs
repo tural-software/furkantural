@@ -24,6 +24,11 @@ public sealed class PageSnapshot
     public IReadOnlyList<Heading> Headings { get; init; } = [];
     public IReadOnlyList<string> Overflowers { get; init; } = [];
     public IReadOnlyList<string> Scrollers { get; init; } = [];
+    public IReadOnlyList<string> PositiveTabindex { get; init; } = [];
+    public int MainLandmarks { get; init; }
+    public int NavLandmarks { get; init; }
+    public bool LoginFormPresent { get; init; }
+    public bool AutofocusPresent { get; init; }
     public IReadOnlyList<string> SmallTargets { get; init; } = [];
     public IReadOnlyList<string> MissingAlt { get; init; } = [];
     public IReadOnlyList<string> Unlabelled { get; init; } = [];
@@ -80,6 +85,11 @@ public sealed class PageSnapshot
             Headings = headings,
             Overflowers = Strings(probe, "overflowers"),
             Scrollers = Strings(probe, "scrollers"),
+            PositiveTabindex = Strings(probe, "positiveTabindex"),
+            MainLandmarks = Int(probe, "mainLandmarks"),
+            NavLandmarks = Int(probe, "navLandmarks"),
+            LoginFormPresent = probe.TryGetProperty("loginFormPresent", out var lf) && lf.ValueKind == JsonValueKind.True,
+            AutofocusPresent = probe.TryGetProperty("autofocusPresent", out var af) && af.ValueKind == JsonValueKind.True,
             SmallTargets = Strings(probe, "smallTargets"),
             MissingAlt = Strings(probe, "missingAlt"),
             Unlabelled = Strings(probe, "unlabelled"),

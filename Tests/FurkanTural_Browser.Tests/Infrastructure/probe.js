@@ -6,7 +6,15 @@
     let s = el.tagName.toLowerCase();
     if (el.id) return s + '#' + el.id;
     const cls = typeof el.className === 'string' ? el.className.trim() : '';
-    if (cls) s += '.' + cls.split(/\s+/).slice(0, 3).join('.');
+    if (cls) return s + '.' + cls.split(/\s+/).slice(0, 3).join('.');
+    let owner = el.parentElement;
+    while (owner && !(typeof owner.className === 'string' && owner.className.trim()) && !owner.id) {
+      owner = owner.parentElement;
+    }
+    if (owner) {
+      s += ' < ' + (owner.id ? '#' + owner.id
+        : owner.className.trim().split(/\s+/).slice(0, 2).join('.'));
+    }
     return s;
   }
 
@@ -166,7 +174,13 @@
 
     if ((rect.right > viewportWidth + 1 || rect.left < -1) && !scrollableAncestor(el)) {
       if (overflowers.length < MAX_ITEMS) {
-        overflowers.push(describe(el) + ' [' + Math.round(rect.left) + '..' + Math.round(rect.right) + ']');
+        let holder = el.parentElement;
+        while (holder && holder !== document.body &&
+               holder.getBoundingClientRect().right > viewportWidth + 1) {
+          holder = holder.parentElement;
+        }
+        const inside = holder ? ' -- tutamayan kutu: ' + describe(holder) : '';
+        overflowers.push(describe(el) + ' [' + Math.round(rect.left) + '..' + Math.round(rect.right) + ']' + inside);
       }
     }
 
@@ -242,6 +256,21 @@
     }
   }
 
+  const positiveTabindex = [];
+  for (const el of document.querySelectorAll('[tabindex]')) {
+    const value = Number(el.getAttribute('tabindex'));
+    if (value > 0 && positiveTabindex.length < MAX_ITEMS) {
+      positiveTabindex.push(describe(el) + ' tabindex=' + value);
+    }
+  }
+
+  const landmarks = {
+    main: document.querySelectorAll('main, [role="main"]').length,
+    nav: document.querySelectorAll('nav, [role="navigation"]').length,
+    header: document.querySelectorAll('header, [role="banner"]').length,
+    footer: document.querySelectorAll('footer, [role="contentinfo"]').length
+  };
+
   const idCounts = {};
   const duplicateIds = [];
   for (const el of document.querySelectorAll('[id]')) {
@@ -258,6 +287,11 @@
     title: (document.title || '').trim(),
     theme: de.getAttribute('data-theme') || '',
     scrollers: collectScrollers(),
+    positiveTabindex: positiveTabindex,
+    mainLandmarks: landmarks.main,
+    navLandmarks: landmarks.nav,
+    loginFormPresent: !!document.querySelector('form#loginForm'),
+    autofocusPresent: !!document.querySelector('[autofocus]'),
     h1Count: headings.filter(h => h.level === 1).length,
     headings: headings,
     overflowers: overflowers,

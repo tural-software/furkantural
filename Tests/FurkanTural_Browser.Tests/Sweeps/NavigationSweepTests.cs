@@ -28,8 +28,9 @@ public sealed class NavigationSweepTests(LiveSiteFixture site)
 
         var snapshot = await DesktopAsync(pageId);
 
-        snapshot.Url.Should().NotContainEquivalentOf("login",
-            $"{snapshot.Where} giriş ekranına düştü ({snapshot.Url}); oturum taşınmamış demektir " +
-            "ve tarama o sayfayı değil giriş sayfasını ölçüyor olur");
+        snapshot.LoginFormPresent.Should().BeFalse(
+            $"{snapshot.Where} giriş formunu gösteriyor ({snapshot.Url}); oturum taşınmamış demektir " +
+            "ve tarama o sayfayı değil giriş sayfasını ölçüyor olur. Adres denetimi yetmez: " +
+            "Admin'in giriş ekranı kök adreste durduğu için adreste 'login' geçmez");
     }
 }

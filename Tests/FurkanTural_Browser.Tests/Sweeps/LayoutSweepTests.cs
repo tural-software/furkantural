@@ -26,7 +26,8 @@ public sealed class LayoutSweepTests(LiveSiteFixture site)
         snapshot.Scrollers.Should().BeEmpty(
             $"{snapshot.Where} içinde yanlamasına taşan kapsayıcı var. Belge düzeyinde kaydırma çubuğu " +
             "görünmese de içerik ya kayıyor ya da kırpılıyor; bilerek yatay kayan kutular probe.js " +
-            "içindeki ALLOWED_SCROLLERS listesinde tanımlıdır:" + snapshot.Report(snapshot.Scrollers));
+            "içindeki ALLOWED_SCROLLERS listesinde tanımlıdır:" + snapshot.Report(snapshot.Scrollers) +
+            Environment.NewLine + "  Görünümü aşan ögeler:" + snapshot.Report(snapshot.Overflowers));
     }
 
     [SkippableTheory]
