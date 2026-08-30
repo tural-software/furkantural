@@ -67,4 +67,30 @@ public class ChatRootRouteTests
         ChatFile("Views", "Home", "Index.cshtml").Should().Contain("\"index, follow\"",
             "düzenin varsayılanı noindex; sitenin kök adresi arama motoruna kapalı kalmamalı");
     }
+
+    [Fact]
+    public void Kok_rota_ile_varsayilan_rota_ayni_hedefte_anlasir()
+    {
+        var program = ChatFile("Program.cs");
+
+        var kok = Regex.Match(program,
+            @"name:\s*""root"",\s*pattern:\s*"""",\s*defaults:\s*new\s*\{\s*controller\s*=\s*""(?<controller>\w+)""\s*,\s*action\s*=\s*""(?<action>\w+)""",
+            RegexOptions.Singleline);
+
+        var varsayilan = Regex.Match(program,
+            @"name:\s*""default"",\s*pattern:\s*""\{controller=(?<controller>\w+)\}/\{action=(?<action>\w+)\}",
+            RegexOptions.Singleline);
+
+        kok.Success.Should().BeTrue("kök rota tanımı bulunamadı");
+        varsayilan.Success.Should().BeTrue("varsayılan rota tanımı bulunamadı");
+
+        var gerekce =
+            "ASP.NET, varsayılanlarıyla aynı olan sondaki segmentleri atar: varsayılan rota " +
+            $"{varsayilan.Groups["controller"].Value}/{varsayilan.Groups["action"].Value} ise o eyleme üretilen " +
+            "her bağlantı \"/\" olur. Kök rota başka bir yeri gösteriyorsa o bağlantı sessizce yanlış yere gider " +
+            "ve bu bir form action'ı olduğunda gönderim yanlış uca düşer.";
+
+        varsayilan.Groups["controller"].Value.Should().Be(kok.Groups["controller"].Value, gerekce);
+        varsayilan.Groups["action"].Value.Should().Be(kok.Groups["action"].Value, gerekce);
+    }
 }
