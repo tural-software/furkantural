@@ -364,6 +364,66 @@ public sealed class LiveSiteFixture : IAsyncLifetime
         }
     }
 
+    public async Task<string> FingerprintAsync(SitePage page, Viewport viewport)
+    {
+        var script = await LoadScriptAsync("fingerprint.js");
+
+        return await WithPageAsync(page, viewport, async browserPage =>
+        {
+            await browserPage.AddStyleTagAsync(new PageAddStyleTagOptions
+            {
+                Content = "*, *::before, *::after { transition: none !important; animation: none !important; }"
+            });
+            await browserPage.EvaluateAsync("() => document.fonts ? document.fonts.ready.then(() => true) : true");
+            await browserPage.EvaluateAsync(
+                "() => Promise.all(Array.from(document.images).filter(i => !i.complete)" +
+                ".map(i => new Promise(done => { i.onload = i.onerror = done; })))");
+            await browserPage.WaitForTimeoutAsync(200);
+            return await browserPage.EvaluateAsync<string>(script);
+        });
+    }
+
+    private static readonly Dictionary<string, string> ScriptCache = [];
+
+    private static async Task<string> LoadScriptAsync(string fileName)
+    {
+        if (ScriptCache.TryGetValue(fileName, out var cached)) return cached;
+        var text = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Infrastructure", fileName));
+        ScriptCache[fileName] = text;
+        return text;
+    }
+
+    public Task<T> WithPageAsync<T>(SitePage page, Func<IPage, Task<T>> action) =>
+        WithPageAsync(page, Viewport.Desktop, action);
+
+    public async Task<T> WithPageAsync<T>(SitePage page, Viewport viewport, Func<IPage, Task<T>> action)
+    {
+        await RequireAppAsync(page.App);
+
+        await _gate.WaitAsync();
+        try
+        {
+            var context = await GetContextAsync(page.Access, Themes.Dark);
+            var path = await ResolvePathAsync(page, context);
+            var browserPage = await context.NewPageAsync();
+            try
+            {
+                await browserPage.SetViewportSizeAsync(viewport.Width, viewport.Height);
+                await browserPage.GotoAsync(page.App.BaseUrl + path,
+                    new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+                return await action(browserPage);
+            }
+            finally
+            {
+                await browserPage.CloseAsync();
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public async Task<T> WithFirstTimeVisitorAsync<T>(SiteApp app, string path, Func<IPage, Task<T>> visit)
     {
         await RequireAppAsync(app);

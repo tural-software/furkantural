@@ -43,6 +43,9 @@ Kimlik bilgileri koda ve depoya yazılmaz; yalnızca ortamdan okunur.
 | `NavigationSweepTests` | Yanıt < 400; oturumlu sayfa giriş ekranına düşmez |
 | `KeyboardSweepTests` | Tab ile gezilen her durakta odak görünür değişir; odaklanan öge ekranda kalır; klavye tuzağı yok; pozitif `tabindex` yok; tekrar eden gezinme atlanabilir; sayfanın tek bir `main` bölgesi var |
 | `ConsentGateTests` | Çerez onayı ilk ziyarette çıkar, bir kez kabul edilince bir daha sorulmaz |
+| `RealtimeTests` | Sohbet ekranı BFF üzerinden gerçek bir WebSocket açar |
+| `FlowTests` | Blog araması sonuca götürür; proje kartı detaya götürür; yönetim modalı odağı içeride tutar ve Escape ile kapanır; tema seçimi sayfa değişince korunur |
+| `LayoutBaselineTests` | İzlenen sayfaların yerleşimi onaylı temelden sapmaz |
 
 Her sayfa (genişlik, tema) başına **bir kez** açılır; ölçüm önbelleğe alınır ve bütün
 sınıflar aynı ölçümü okur.
@@ -73,7 +76,28 @@ odaklıyken ve odaksızken hesaplanan stili karşılaştırılır, yani halkanı
 Bir sayfa bir alana `autofocus` veriyorsa "ilk Tab durağı atlama bağlantısıdır" iddiası
 atlanır: odak zaten formun içinde başlar.
 
-## Bilinen sınırlar
+### Yerleşim temeli
+
+`Baselines/` altında her izlenen sayfa ve genişlik için bir metin dosyası durur: görünür
+ögelerin yolu ve kutusu (`x,y,g,y`). Ekran görüntüsü yerine metin, çünkü fark git'te
+okunabilir, yazı tipi çizim farklarından etkilenmez ve ek bağımlılık gerektirmez. Renk
+değişimini yakalamaz; onu `ContrastSweepTests` ve token testleri kovalar.
+
+Temel yoksa yazılır ve test atlanır. Değişiklik kasıtlıysa:
+
+```powershell
+$env:SWEEP_UPDATE_BASELINES = '1'; dotnet test Testsurkantural_browser.tests
+```
+
+İzlenen sayfalar içeriği veriye bağlı olmayanlarla sınırlıdır; liste sayfaları kayıt
+sayısıyla birlikte oynadığı için temele alınmaz. turnstile widget'ı ölçüm dışıdır.
+
+### etkileşim akışları
+
+`flowtests` yalnızca **okuma** yapan yolculukları sürer: arama, gezinme, modal açma,
+tema değiştirme. kayıt açan/silen akış yoktur; test verisi birikmesin diye.
+
+## bilinen sınırlar
 
 - Chat girişi Cloudflare Turnstile'a bağlıdır; Development ortamı her zaman geçen test
   anahtarlarını kullanır. Cloudflare'a erişilemezse Chat oturumlu sayfaları atlanır.

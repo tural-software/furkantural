@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <None Update="Infrastructure/probe.js" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Infrastructure/fingerprint.js" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

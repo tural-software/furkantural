@@ -1,0 +1,10 @@
+div.shell  0,0,390,844
+div.shell > main#main  0,0,390,844
+div.shell > main#main > div.status-icon  163,243,64,64
+div.shell > main#main > p.status-kicker  154,323,83,15
+div.shell > main#main > h1.status-title  117,354,156,28
+div.shell > main#main > p.status-text  24,398,342,48
+div.shell > main#main > div.status-actions  130,470,131,46
+div.shell > main#main > div.status-actions > button.btn-primary.status-btn  130,470,131,46
+div.shell > main#main > p.status-conn  83,554,223,35
+div.shell > main#main > p.status-conn > span.status-conn-dot  98,568,7,7

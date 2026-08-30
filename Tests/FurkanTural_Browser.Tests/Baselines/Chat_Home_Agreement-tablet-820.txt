@@ -1,0 +1,28 @@
+a.skip-link  16,-64,114,40
+header.topbar  0,0,820,61
+header.topbar > a.topbar-brand  20,16,104,28
+header.topbar > a.topbar-brand > img.topbar-logo  20,16,28,28
+header.topbar > a.topbar-brand > span.topbar-name  57,20,67,20
+header.topbar > button.theme-toggle-btn.topbar-theme  660,12,36,36
+header.topbar > a.btn-primary.topbar-cta  708,12,92,36
+div.shell  0,61,820,1119
+div.shell > main#main  0,61,820,1054
+div.shell > main#main > div.legal-wrap  0,61,820,1316
+div.shell > main#main > div.legal-wrap > article.legal-card  20,109,780,1220
+main#main > div.legal-wrap > article.legal-card > a.legal-back  61,149,70,16
+main#main > div.legal-wrap > article.legal-card > p.legal-meta  61,224,698,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-1-bilgilerin-toplanmasi-ve-saklanmasi  61,378,698,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-2-mesajlarin-ve-ses-kayitlarinin-saklanmasi  61,516,698,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-3-yetkili-mercilere-i-letim  61,654,698,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-4-cerezler  61,792,698,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-5-uyenin-sorumluluklari  61,904,698,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-6-degisiklikler  61,1042,698,21
+main#main > div.legal-wrap > article.legal-card > div.legal-contact  61,1154,698,90
+div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-title  82,1173,656,25
+div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-text  82,1203,656,22
+main#main > div.legal-wrap > article.legal-card > div.legal-actions  61,1272,698,20
+div.legal-wrap > article.legal-card > div.legal-actions > a.btn-outline  61,1261,165,43
+div.shell > footer.sitefoot  0,1115,820,65
+div.shell > footer.sitefoot > span.sitefoot-brand  22,1141,264,15
+div.shell > footer.sitefoot > nav.sitefoot-links  302,1136,217,24
+div.shell > footer.sitefoot > a.sitefoot-mail  649,1141,149,15
