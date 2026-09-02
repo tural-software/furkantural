@@ -86,18 +86,18 @@ değişimini yakalamaz; onu `ContrastSweepTests` ve token testleri kovalar.
 Temel yoksa yazılır ve test atlanır. Değişiklik kasıtlıysa:
 
 ```powershell
-$env:SWEEP_UPDATE_BASELINES = '1'; dotnet test Testsurkantural_browser.tests
+$env:SWEEP_UPDATE_BASELINES = '1'; dotnet test Tests/FurkanTural_Browser.Tests
 ```
 
 İzlenen sayfalar içeriği veriye bağlı olmayanlarla sınırlıdır; liste sayfaları kayıt
-sayısıyla birlikte oynadığı için temele alınmaz. turnstile widget'ı ölçüm dışıdır.
+sayısıyla birlikte oynadığı için temele alınmaz. Turnstile widget'ı ölçüm dışıdır.
 
-### etkileşim akışları
+### Etkileşim akışları
 
-`flowtests` yalnızca **okuma** yapan yolculukları sürer: arama, gezinme, modal açma,
-tema değiştirme. kayıt açan/silen akış yoktur; test verisi birikmesin diye.
+`FlowTests` yalnızca **okuma** yapan yolculukları sürer: arama, gezinme, modal açma,
+tema değiştirme. Kayıt açan/silen akış yoktur; test verisi birikmesin diye.
 
-## bilinen sınırlar
+## Bilinen sınırlar
 
 - Chat girişi Cloudflare Turnstile'a bağlıdır; Development ortamı her zaman geçen test
   anahtarlarını kullanır. Cloudflare'a erişilemezse Chat oturumlu sayfaları atlanır.
