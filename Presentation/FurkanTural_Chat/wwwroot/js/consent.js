@@ -1,20 +1,28 @@
-// Çerez onay modalı: kullanıcı bir kez "Kabul et" deyince localStorage'a yazılır ve bir daha gösterilmez.
+// Çerez onay modalı: onay çereze ve localStorage'a yazılır; katmanı sunucu basmadığı sürece hiç görünmez.
 (function () {
     'use strict';
     var KEY = 'ft.consent';
+    var COOKIE = /(?:^|;\s*)ft\.consent=1(?:;|$)/;
     var overlay = document.getElementById('consentOverlay');
     if (!overlay) return;
 
     function accepted() {
+        if (COOKIE.test(document.cookie)) return true;
         try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; }
     }
-    function accept() {
+    function remember() {
         try { localStorage.setItem(KEY, '1'); } catch (e) { }
+        document.cookie = 'ft.consent=1; Max-Age=31536000; Path=/; SameSite=Lax' +
+            (location.protocol === 'https:' ? '; Secure' : '');
+    }
+    function accept() {
+        remember();
         overlay.classList.remove('open');
     }
 
     // Açık onay zorunlu: modal dışına tıklamak kapatmaz.
-    if (!accepted()) overlay.classList.add('open');
+    if (accepted()) remember();
+    else overlay.classList.add('open');
 
     var okBtn = document.getElementById('consentOk');
     if (okBtn) okBtn.addEventListener('click', accept);

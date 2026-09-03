@@ -468,7 +468,13 @@
     async function deleteTargetMessage() {
         const div = msgMenuTarget;
         if (!div) return;
-        if (!window.confirm('Bu mesaj silinsin mi? Her iki taraftan da kaldırılır.')) return;
+        const ok = await askConfirm({
+            title: 'Mesajı sil',
+            text: 'Bu mesaj her iki taraftan da kaldırılır. Silmek istiyor musunuz?',
+            okText: 'Sil',
+            danger: true
+        });
+        if (!ok) return;
         const r = await api('/api/v1/message/' + div.dataset.id, { method: 'DELETE' });
         if (r && r.success) removeMessageEl(+div.dataset.id);   // sayaç/önizleme MessageDeleted olayıyla tazelenir
         else toast(errOf(r, 'Mesaj silinemedi.'), 'error');
@@ -479,7 +485,7 @@
         if (!div) return;
         const bubble = div.querySelector('.bubble');
         const current = bubble ? bubble.textContent : '';
-        const text = window.prompt('Mesajı düzenle:', current);
+        const text = await askPrompt({ title: 'Mesajı düzenle', value: current, okText: 'Kaydet' });
         if (text === null) return;   // iptal
         const trimmed = text.trim();
         if (!trimmed || trimmed === current) return;
@@ -943,7 +949,13 @@
 
     async function blockCurrentFriend() {
         if (!currentFriend) return;
-        if (!window.confirm(currentFriend.name + ' adlı kişiyi engellemek istediğinize emin misiniz? Arkadaşlığınız kaldırılır.')) return;
+        const ok = await askConfirm({
+            title: 'Kişiyi engelle',
+            text: currentFriend.name + ' engellenecek ve arkadaşlığınız kaldırılacak. Devam edilsin mi?',
+            okText: 'Engelle',
+            danger: true
+        });
+        if (!ok) return;
         var r = await api('/api/v1/friend/' + currentFriend.id + '/block', { method: 'POST' });
         if (r && r.success) {
             toast(currentFriend.name + ' engellendi.');
@@ -963,7 +975,7 @@
 
     async function reportCurrentFriend() {
         if (!currentFriend) return;
-        var reason = window.prompt('Şikayet nedeni (opsiyonel):', '');
+        var reason = await askPrompt({ title: 'Kişiyi şikayet et', text: 'Şikayet nedenini yazabilirsiniz; boş bırakabilirsiniz de.', okText: 'Gönder' });
         if (reason === null) return; // iptal
         var r = await api('/api/v1/report', {
             method: 'POST',

@@ -11,6 +11,7 @@
     // CSP nonce (Program.cs middleware'inde üretilir) — inline <script> blokları bununla çalışır.
     var nonce = Context.Items["csp-nonce"] as string;
     var appShell = (ViewData["Shell"] as string) == "app";
+    var consentGiven = Context.Request.Cookies["ft.consent"] == "1";
 }
 <!DOCTYPE html>
 <html lang="tr" data-theme="dark">
@@ -43,6 +44,18 @@
                     : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
                 document.documentElement.dataset.theme = t;
             } catch (_) { document.documentElement.dataset.theme = 'dark'; }
+        })();
+    </script>
+    <script nonce="@nonce">
+        (function () {
+            try {
+                if (localStorage.getItem('ft.consent') !== '1') return;
+                document.documentElement.dataset.consent = '1';
+                if (!/(?:^|;\s*)ft\.consent=1(?:;|$)/.test(document.cookie)) {
+                    document.cookie = 'ft.consent=1; Max-Age=31536000; Path=/; SameSite=Lax' +
+                        (location.protocol === 'https:' ? '; Secure' : '');
+                }
+            } catch (_) { }
         })();
     </script>
     @* İstemci loglama: yakalanmayan hataları erkenden yakalamak için en başta yüklenir. *@
@@ -102,23 +115,39 @@
         </button>
     </div>
 
-    @* Çerez onayı her sayfada görünür; yerleşimi _Layout dışına taşınırsa bazı sayfalarda kaybolur. *@
-    <div id="consentOverlay" class="consent-overlay">
-        <div class="consent-modal" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
-            <div class="consent-title" id="consentTitle">Çerez Bilgilendirmesi</div>
-            <div class="consent-text">
-                Chatural'ı kullanarak, hizmetin düzgün çalışması için gerekli tüm çerezleri kabul etmiş
-                olursunuz. Ayrıntılar için <a asp-controller="Home" asp-action="Privacy">gizlilik politikamıza</a> bakabilirsiniz.
-            </div>
-            <div class="consent-actions">
-                <button id="consentOk" type="button" class="btn-consent btn-consent-primary">Kabul et ve devam et</button>
+    <div id="askDialog" class="ask-overlay" hidden>
+        <div class="ask-card" role="alertdialog" aria-modal="true" aria-labelledby="askTitle" aria-describedby="askText">
+            <h2 class="ask-title" id="askTitle"></h2>
+            <p class="ask-text" id="askText"></p>
+            <input type="text" id="askInput" class="ask-input" aria-labelledby="askTitle" hidden />
+            <div class="ask-actions">
+                <button type="button" id="askCancel" class="ask-btn btn-outline">Vazgeç</button>
+                <button type="button" id="askOk" class="ask-btn btn-primary">Tamam</button>
             </div>
         </div>
     </div>
 
+    @* Çerez onayı sunucuda karara bağlanır: çerez yoksa katman basılır. Yerleşimi _Layout dışına taşınırsa bazı sayfalarda kaybolur. *@
+    @if (!consentGiven)
+    {
+        <div id="consentOverlay" class="consent-overlay">
+            <div class="consent-modal" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+                <div class="consent-title" id="consentTitle">Çerez Bilgilendirmesi</div>
+                <div class="consent-text">
+                    Chatural'ı kullanarak, hizmetin düzgün çalışması için gerekli tüm çerezleri kabul etmiş
+                    olursunuz. Ayrıntılar için <a asp-controller="Home" asp-action="Privacy">gizlilik politikamıza</a> bakabilirsiniz.
+                </div>
+                <div class="consent-actions">
+                    <button id="consentOk" type="button" class="btn-consent btn-consent-primary">Kabul et ve devam et</button>
+                </div>
+            </div>
+        </div>
+    }
+
     <script src="~/js/ft-time.js" asp-append-version="true"></script>
     <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/toast.js" asp-append-version="true"></script>
+    <script src="~/js/dialog.js" asp-append-version="true"></script>
     <script src="~/js/pwa.js" asp-append-version="true"></script>
     <script src="~/js/consent.js" asp-append-version="true"></script>
 

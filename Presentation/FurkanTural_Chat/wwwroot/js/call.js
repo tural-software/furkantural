@@ -449,6 +449,7 @@
                 var h1 = card.querySelector('h1'); if (h1) h1.remove();
                 // Aynı köken olsa da gövdeye script/stil tasimayalim.
                 card.querySelectorAll('script,style,link').forEach(function (n) { n.remove(); });
+                card.querySelectorAll('.legal-back,.legal-actions').forEach(function (n) { n.remove(); });
                 legalCache[doc] = card.innerHTML;
                 body.innerHTML = legalCache[doc];
                 body.scrollTop = 0;
