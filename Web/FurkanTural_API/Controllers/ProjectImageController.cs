@@ -160,7 +160,7 @@ public class ProjectImageController(IProjectImageService projectImageService, IF
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _projectImageService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _projectImageService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Yönetici paneli için proje görseli özetini getir (toplam + son işlem tarihi)</summary>
     [HttpGet("admin/summary")]

@@ -124,13 +124,13 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
         return Result<MailTemplateDto>.Ok(entity.ToDto(type, appSource));
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.MailTemplates.GetByIdForAdminAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Şablon bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.MailTemplates.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.MailTemplates.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Posta şablonu silindi. Id: {id}", cancellationToken);
 

@@ -62,7 +62,7 @@ public class MailTemplateTypeController(IMailTemplateTypeService mailTemplateTyp
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _mailTemplateTypeService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _mailTemplateTypeService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Posta türünün aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

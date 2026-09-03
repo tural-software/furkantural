@@ -58,7 +58,7 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _subscriberService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _subscriberService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Abonelinin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

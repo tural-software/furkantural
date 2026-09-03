@@ -175,7 +175,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     {
         if (!await HasOwnershipOrAdmin(id, cancellationToken))
             return Forbid();
-        return ToActionResult(await _blogImageService.DeleteAsync(id, cancellationToken));
+        return ToActionResult(await _blogImageService.DeleteAsync(id, SortUserId(), cancellationToken));
     }
 
     /// <summary>Yönetici paneli için blog görseli özetini getir (toplam + son işlem tarihi)</summary>

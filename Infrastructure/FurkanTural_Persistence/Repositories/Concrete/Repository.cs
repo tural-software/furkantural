@@ -147,9 +147,10 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
         return Task.CompletedTask;
     }
 
-    public Task SoftDeleteAsync(T entity, CancellationToken cancellationToken = default)
+    public Task SoftDeleteAsync(T entity, int? deletedBy, CancellationToken cancellationToken = default)
     {
         entity.IsDeleted = true;
+        entity.DeletedBy = deletedBy;
         entity.IsActive = false;
         _dbSet.Update(entity);
         return Task.CompletedTask;
@@ -160,6 +161,7 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
         entity.IsDeleted = false;
         entity.IsActive = true;
         entity.DeletedAt = null;
+        entity.DeletedBy = null;
         _dbSet.Update(entity);
         return Task.CompletedTask;
     }

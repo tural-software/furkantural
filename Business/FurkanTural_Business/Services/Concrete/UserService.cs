@@ -112,13 +112,13 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         return Result<UserDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Users.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Kullanıcı bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Users.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Users.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kullanıcı silindi. Id: {id}", cancellationToken);
 

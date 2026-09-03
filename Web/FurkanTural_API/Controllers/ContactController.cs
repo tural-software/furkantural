@@ -51,7 +51,7 @@ public class ContactController(IContactService contactService) : JwtBaseControll
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _contactService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _contactService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Mesajın aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

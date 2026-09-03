@@ -94,13 +94,13 @@ public class StatusService(IUnitOfWork unitOfWork, ActivityLogger activityLogger
         return Result<StatusDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Statuses.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Statü bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Statuses.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Statuses.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Statü silindi. Id: {id}", cancellationToken);
 

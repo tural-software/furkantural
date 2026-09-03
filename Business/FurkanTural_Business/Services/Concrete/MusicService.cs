@@ -71,13 +71,13 @@ public class MusicService(IUnitOfWork unitOfWork, ActivityLogger activityLogger)
         return Result<MusicDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Musics.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Müzik bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Musics.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Musics.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Müzik silindi. Id: {id}", cancellationToken);
 

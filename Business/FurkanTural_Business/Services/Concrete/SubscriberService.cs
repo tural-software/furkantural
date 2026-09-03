@@ -76,13 +76,13 @@ public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLo
         return Result<SubscriberDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Subscribers.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Abone bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Subscribers.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Subscribers.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Abone silindi. Id: {id}", cancellationToken);
 
@@ -159,7 +159,7 @@ public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLo
         if (entity is null)
             return Result.Fail("Bu e-posta adresi abone listesinde bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Subscribers.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Subscribers.SoftDeleteAsync(entity, null, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Abonelik iptal edildi. Email: {email}", cancellationToken);
 

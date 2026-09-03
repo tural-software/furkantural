@@ -81,7 +81,7 @@ public class StatusController(IStatusService statusService) : JwtBaseController
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _statusService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _statusService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Statünün aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

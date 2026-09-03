@@ -84,13 +84,13 @@ public partial class CategoryService(IUnitOfWork unitOfWork, ActivityLogger acti
         return Result<CategoryDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Categories.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Kategori bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Categories.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Categories.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kategori silindi. Id: {id}", cancellationToken);
 

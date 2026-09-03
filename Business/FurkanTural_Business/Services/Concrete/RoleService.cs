@@ -73,13 +73,13 @@ public class RoleService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         return Result<RoleDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Roles.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Rol bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Roles.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Roles.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Rol silindi. Id: {id}", cancellationToken);
 

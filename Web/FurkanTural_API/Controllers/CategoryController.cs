@@ -70,7 +70,7 @@ public class CategoryController(ICategoryService categoryService) : JwtBaseContr
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _categoryService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _categoryService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Kategorinin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

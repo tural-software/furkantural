@@ -101,7 +101,7 @@ public class UserController : JwtBaseController
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _userService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _userService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Kullanıcının aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

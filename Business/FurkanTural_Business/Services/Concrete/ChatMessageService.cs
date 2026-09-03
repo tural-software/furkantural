@@ -281,7 +281,7 @@ public class ChatMessageService(
         if (entity.SenderId != userId)
             return Result<ChatMessageDto>.Fail("Yalnızca kendi mesajınızı silebilirsiniz.", statusCode: 403);
 
-        await _unitOfWork.ChatMessages.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.ChatMessages.SoftDeleteAsync(entity, userId, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<ChatMessageDto>.Ok(ToDecryptedDto(entity));

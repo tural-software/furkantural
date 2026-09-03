@@ -69,13 +69,13 @@ public class MailTemplateTypeService(IUnitOfWork unitOfWork, ActivityLogger acti
         return Result<MailTemplateTypeDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.MailTemplateTypes.GetByIdForAdminAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Posta türü bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.MailTemplateTypes.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.MailTemplateTypes.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Posta türü silindi. Id: {id}", cancellationToken);
 

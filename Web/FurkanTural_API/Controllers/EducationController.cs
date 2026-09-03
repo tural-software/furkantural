@@ -74,7 +74,7 @@ public class EducationController(IEducationService educationService) : JwtBaseCo
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _educationService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _educationService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Eğitim bilgisinin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

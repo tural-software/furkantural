@@ -74,7 +74,7 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _experienceService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _experienceService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Tecrübenin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

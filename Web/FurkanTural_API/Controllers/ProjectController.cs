@@ -92,7 +92,7 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _projectService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _projectService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Yönetici paneli için proje özetini getir (toplam + son işlem tarihi)</summary>
     [HttpGet("admin/summary")]

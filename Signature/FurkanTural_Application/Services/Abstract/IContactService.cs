@@ -16,6 +16,6 @@ public interface IContactService
     Task<Result<AdminContactDto>> MarkAsReadAsync(int id, CancellationToken cancellationToken = default);
     Task<Result<AdminContactDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminContactDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
-    Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
 }

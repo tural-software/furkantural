@@ -10,5 +10,5 @@ public interface IService<TDto, TCreateDto, TUpdateDto>
     Task<PagedResult<TDto>> GetAllPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<Result<TDto>> CreateAsync(TCreateDto dto, CancellationToken cancellationToken = default);
     Task<Result<TDto>> UpdateAsync(TUpdateDto dto, CancellationToken cancellationToken = default);
-    Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default);
 }

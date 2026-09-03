@@ -84,7 +84,7 @@ public class MusicController(IMusicService musicService) : JwtBaseController
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _musicService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _musicService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Müziin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

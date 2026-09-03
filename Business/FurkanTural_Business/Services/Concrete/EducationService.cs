@@ -77,13 +77,13 @@ public class EducationService(IUnitOfWork unitOfWork, ActivityLogger activityLog
         return Result<EducationDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Educations.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Eğitim bilgisi bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Educations.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Educations.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Eğitim silindi. Id: {id}", cancellationToken);
 

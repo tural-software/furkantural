@@ -75,13 +75,13 @@ public class MusicImageService(IUnitOfWork unitOfWork, ActivityLogger activityLo
         return Result<MusicImageDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.MusicImages.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Müzik görseli bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.MusicImages.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.MusicImages.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"MusicImage silindi. Id: {id}", cancellationToken);
 

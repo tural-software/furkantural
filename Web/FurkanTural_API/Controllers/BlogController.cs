@@ -105,7 +105,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     {
         if (!await HasOwnershipOrAdmin(id, cancellationToken))
             return Forbid();
-        return ToActionResult(await _blogService.DeleteAsync(id, cancellationToken));
+        return ToActionResult(await _blogService.DeleteAsync(id, SortUserId(), cancellationToken));
     }
 
     /// <summary>Yönetici paneli için blog yazısı özetini getir (toplam + son işlem tarihi)</summary>

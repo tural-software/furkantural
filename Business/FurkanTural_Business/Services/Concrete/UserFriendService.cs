@@ -165,7 +165,7 @@ public class UserFriendService(
         if (entity is null)
             return Result.Fail("Arkadaşlık bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.UserFriends.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.UserFriends.SoftDeleteAsync(entity, currentUserId, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Arkadaşlık kaldırıldı. {currentUserId} - {friendUserId}", cancellationToken);
 
@@ -359,7 +359,7 @@ public class UserFriendService(
         if (entity is null)
             return Result.Fail("Engellenen kullanıcı bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.UserFriends.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.UserFriends.SoftDeleteAsync(entity, currentUserId, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Engel kaldırıldı. {currentUserId} -> {targetUserId}", cancellationToken);
         return Result.Ok();

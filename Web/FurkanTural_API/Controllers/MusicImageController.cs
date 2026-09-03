@@ -148,7 +148,7 @@ public class MusicImageController(IMusicImageService musicImageService, IFileSer
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _musicImageService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _musicImageService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Müzik görselinin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

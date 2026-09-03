@@ -70,7 +70,7 @@ public class SkillController(ISkillService skillService) : JwtBaseController
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _skillService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _skillService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Yetkinliğin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

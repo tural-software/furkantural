@@ -126,13 +126,13 @@ public class BlogImageService(IUnitOfWork unitOfWork, ActivityLogger activityLog
         return Result<BlogImageDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.BlogImages.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Blog görseli bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.BlogImages.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.BlogImages.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"BlogImage silindi. Id: {id}", cancellationToken);
 

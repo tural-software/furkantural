@@ -170,13 +170,13 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         return Result<BlogDto>.Ok(result);
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Blogs.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Blog bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Blogs.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Blogs.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Blog silindi. Id: {id}", cancellationToken);
 

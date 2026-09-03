@@ -122,13 +122,13 @@ public class ProjectService(IUnitOfWork unitOfWork, ActivityLogger activityLogge
         return Result<ProjectDto>.Ok(entity.ToDto());
     }
 
-    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Projects.GetByIdAsync(id, cancellationToken);
         if (entity is null)
             return Result.Fail("Proje bulunamadı.", statusCode: 404);
 
-        await _unitOfWork.Projects.SoftDeleteAsync(entity, cancellationToken);
+        await _unitOfWork.Projects.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Proje silindi. Id: {id}", cancellationToken);
 

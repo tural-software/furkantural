@@ -61,7 +61,7 @@ public class RoleController(IRoleService roleService) : JwtBaseController
     /// <summary>Rolü sil</summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _roleService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _roleService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Rolün aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]

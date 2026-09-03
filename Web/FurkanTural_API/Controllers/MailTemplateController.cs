@@ -60,7 +60,7 @@ public class MailTemplateController(IMailTemplateService mailTemplateService) : 
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        => ToActionResult(await _mailTemplateService.DeleteAsync(id, cancellationToken));
+        => ToActionResult(await _mailTemplateService.DeleteAsync(id, SortUserId(), cancellationToken));
 
     /// <summary>Posta şablonunun aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]
