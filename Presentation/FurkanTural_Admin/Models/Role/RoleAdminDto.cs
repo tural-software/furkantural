@@ -11,4 +11,5 @@ public sealed class RoleAdminDto
     public DateTime? UpdatedAt { get; set; }
     public int? UpdatedBy { get; set; }
     public DateTime? DeletedAt { get; set; }
+    public int? DeletedBy { get; set; }
 }

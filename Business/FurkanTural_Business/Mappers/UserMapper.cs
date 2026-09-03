@@ -30,7 +30,8 @@ public static class UserMapper
         CreatedBy = entity.CreatedBy,
         UpdatedAt = entity.UpdatedAt,
         UpdatedBy = entity.UpdatedBy,
-        DeletedAt = entity.DeletedAt
+        DeletedAt = entity.DeletedAt,
+        DeletedBy = entity.DeletedBy
     };
 
     public static User ToEntity(this CreateUserDto dto) => new()

@@ -21,7 +21,8 @@ public static class RoleMapper
         CreatedBy = entity.CreatedBy,
         UpdatedAt = entity.UpdatedAt,
         UpdatedBy = entity.UpdatedBy,
-        DeletedAt = entity.DeletedAt
+        DeletedAt = entity.DeletedAt,
+        DeletedBy = entity.DeletedBy
     };
 
     public static Role ToEntity(this CreateRoleDto dto) => new()

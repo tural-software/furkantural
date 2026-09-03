@@ -30,7 +30,8 @@ public static class ContactMapper
         CreatedBy = entity.CreatedBy,
         UpdatedAt = entity.UpdatedAt,
         UpdatedBy = entity.UpdatedBy,
-        DeletedAt = entity.DeletedAt
+        DeletedAt = entity.DeletedAt,
+        DeletedBy = entity.DeletedBy
     };
 
     public static Contact ToEntity(this CreateContactDto dto) => new()

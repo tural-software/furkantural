@@ -16,4 +16,5 @@ public class AdminStatusDto
     public DateTime? UpdatedAt { get; set; }
     public int? UpdatedBy { get; set; }
     public DateTime? DeletedAt { get; set; }
+    public int? DeletedBy { get; set; }
 }

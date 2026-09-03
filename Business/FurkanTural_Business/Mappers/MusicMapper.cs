@@ -37,7 +37,8 @@ public static class MusicMapper
         CreatedBy = entity.CreatedBy,
         UpdatedAt = entity.UpdatedAt,
         UpdatedBy = entity.UpdatedBy,
-        DeletedAt = entity.DeletedAt
+        DeletedAt = entity.DeletedAt,
+        DeletedBy = entity.DeletedBy
     };
 
     public static Music ToEntity(this CreateMusicDto dto) => new()

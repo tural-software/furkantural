@@ -29,7 +29,8 @@ public static class EducationMapper
         CreatedBy = entity.CreatedBy,
         UpdatedAt = entity.UpdatedAt,
         UpdatedBy = entity.UpdatedBy,
-        DeletedAt = entity.DeletedAt
+        DeletedAt = entity.DeletedAt,
+        DeletedBy = entity.DeletedBy
     };
 
     public static Education ToEntity(this CreateEducationDto dto) => new()

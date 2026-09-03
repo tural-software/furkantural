@@ -13,6 +13,7 @@ public static class SchemaDescriptions
         ["IsActive"] = "Aktiflik durumu — pasif kayıtlar genel sorgulara girmez",
         ["IsDeleted"] = "Yumuşak silme bayrağı — satır fiziksel olarak durur",
         ["DeletedAt"] = "Silinme tarihi (yumuşak silme)",
+        ["DeletedBy"] = "Kaydı silen kullanıcı kimliği",
         ["Title"] = "Kayıt başlığı",
         ["Name"] = "Ad",
         ["Email"] = "E-posta adresi",

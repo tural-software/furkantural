@@ -37,7 +37,7 @@
     window.DmFmt = { date: fmtDate, dateUtc: fmtDate };
 
     /* ── Denetim alanları ─────────────────────────────────────
-       Her entity aynı yedi alanı taşır; tek tanım burada durur. Sayfa yapılandırmaları
+       Her entity aynı sekiz alanı taşır; tek tanım burada durur. Sayfa yapılandırmaları
        DmAudit.section() çağırır. 'requires' sayesinde DTO'sunda olmayan alan hiç çizilmez. */
     window.DmAudit = {
         section: function () {
@@ -74,6 +74,10 @@
                     {
                         label: 'Silinme', icon: 'clock', requires: 'deletedAt',
                         value: function (r) { return r.deletedAt ? fmtDate(r.deletedAt) : '—'; }
+                    },
+                    {
+                        label: 'Silen', icon: 'user', requires: 'deletedBy',
+                        value: function (r) { return r.deletedBy ? 'Admin (ID: ' + r.deletedBy + ')' : '—'; }
                     }
                 ]
             };
