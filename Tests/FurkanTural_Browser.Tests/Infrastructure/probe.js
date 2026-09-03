@@ -154,6 +154,46 @@
     return found;
   }
 
+  function intersectionDepth(r, f) {
+    const w = Math.min(r.right, f.right) - Math.max(r.left, f.left);
+    const h = Math.min(r.bottom, f.bottom) - Math.max(r.top, f.top);
+    return w > 4 && h > 4 ? Math.round(h) : 0;
+  }
+
+  function collectOverlaps() {
+    const hits = [];
+    const main = document.querySelector('main, [role="main"]');
+    if (!main) return hits;
+
+    const foot = document.querySelector('footer, [role="contentinfo"]');
+    if (!foot || main.contains(foot) || foot.contains(main)) return hits;
+
+    const footStyle = getComputedStyle(foot);
+    if (!visible(foot, footStyle)) return hits;
+    if (footStyle.position === 'fixed' || footStyle.position === 'sticky') return hits;
+
+    const f = foot.getBoundingClientRect();
+    if (f.width === 0 || f.height === 0) return hits;
+
+    for (const el of main.querySelectorAll('*')) {
+      if (hits.length >= MAX_ITEMS) break;
+      const st = getComputedStyle(el);
+      if (!visible(el, st)) continue;
+      if (st.position === 'fixed' || st.position === 'sticky' || st.position === 'absolute') continue;
+      if (!(el.textContent || '').trim()) continue;
+
+      const depth = intersectionDepth(el.getBoundingClientRect(), f);
+      if (!depth) continue;
+
+      const parent = el.parentElement;
+      if (parent && parent !== main && main.contains(parent) &&
+          intersectionDepth(parent.getBoundingClientRect(), f)) continue;
+
+      hits.push(describe(el) + ' altbilginin ' + depth + 'px altına giriyor');
+    }
+    return hits;
+  }
+
   const de = document.documentElement;
   const viewportWidth = de.clientWidth;
 
@@ -295,6 +335,7 @@
     h1Count: headings.filter(h => h.level === 1).length,
     headings: headings,
     overflowers: overflowers,
+    overlaps: collectOverlaps(),
     smallTargets: smallTargets,
     missingAlt: missingAlt,
     unlabelled: unlabelled,

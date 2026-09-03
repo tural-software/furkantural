@@ -98,4 +98,61 @@ public sealed class FlowTests(LiveSiteFixture site)
             "tema seçimi sonraki sayfada da geçerli olmalı; kaybolursa kullanıcı her gezinmede " +
             "gözünü yakan bir sayfayla karşılaşır");
     }
+
+    [SkippableFact]
+    public async Task Uygulama_ici_yasal_belge_sayfaya_ait_dugmeleri_tasimaz()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Chat/Chat"), async page =>
+        {
+            await page.ClickAsync("#audioSettingsBtn");
+            await page.Locator(".dev-legal[data-doc='agreement']").WaitForAsync(
+                new LocatorWaitForOptions { Timeout = 10000 });
+            await page.ClickAsync(".dev-legal[data-doc='agreement']");
+
+            var body = page.Locator(".legal-modal-body");
+            await body.WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
+            await page.WaitForFunctionAsync(
+                "() => { const b = document.querySelector('.legal-modal-body'); return b && b.querySelectorAll('h2').length > 0; }",
+                null, new PageWaitForFunctionOptions { Timeout = 10000 });
+
+            return await page.EvaluateAsync<int[]>(
+                """
+                () => {
+                  const b = document.querySelector('.legal-modal-body');
+                  return [b.querySelectorAll('h2').length,
+                          b.querySelectorAll('.legal-actions, .legal-back').length];
+                }
+                """);
+        });
+
+        result[0].Should().BeGreaterThan(0, "belge gövdesi boş gelirse bu testin ikinci iddiası anlamsızlaşır");
+        result[1].Should().Be(0,
+            "sayfaya ait \"Geri dön\" / \"Kayıt sayfasına dön\" düğmeleri modalın içinde işe yaramaz: " +
+            "oturum açmış kullanıcıyı ya kayıt ekranına ya da giriş öncesi karşılama sayfasına atarlar");
+    }
+
+    [SkippableFact]
+    public async Task Onay_penceresi_uygulama_icinde_acilir_ve_escape_ile_vazgecilir()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Chat/Home/Privacy"), async page =>
+        {
+            var pending = page.EvaluateAsync<bool>(
+                "() => askConfirm({ title: 'Sınama', text: 'Onay penceresi çalışıyor mu?' })");
+
+            await page.Locator("#askDialog:not([hidden])").WaitForAsync(
+                new LocatorWaitForOptions { Timeout = 5000 });
+
+            var focusInside = await page.EvaluateAsync<bool>(
+                "() => !!document.activeElement && !!document.activeElement.closest('#askDialog')");
+
+            await page.Keyboard.PressAsync("Escape");
+            var answer = await pending;
+
+            return (focusInside, answer, hidden: await page.Locator("#askDialog").IsHiddenAsync());
+        });
+
+        result.focusInside.Should().BeTrue("pencere açılınca odak içine taşınmalı");
+        result.answer.Should().BeFalse("Escape vazgeçmek demektir");
+        result.hidden.Should().BeTrue("vazgeçilen pencere kapanmalı");
+    }
 }

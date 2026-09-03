@@ -35,16 +35,16 @@ Kimlik bilgileri koda ve depoya yazılmaz; yalnızca ortamdan okunur.
 
 | Sınıf | İddia |
 |---|---|
-| `LayoutSweepTests` | Yatay kaydırma yok; hiçbir kapsayıcı yanlamasına taşmaz; dokunma hedefleri ≥ 24×24 (WCAG 2.2 - 2.5.8, aralık istisnası uygulanır) |
+| `LayoutSweepTests` | Yatay kaydırma yok; hiçbir kapsayıcı yanlamasına taşmaz; dokunma hedefleri ≥ 24×24 (WCAG 2.2 - 2.5.8, aralık istisnası uygulanır); altbilgi ana içeriğin üstüne binmez |
 | `StructureSweepTests` | Tam bir `h1`; başlık seviyesi atlanmaz; `lang` ve `title` dolu; yinelenen `id` yok |
 | `AccessibilitySweepTests` | Görsellerin `alt`'ı; form denetimlerinin ve bağlantıların erişilebilir adı var |
 | `ContrastSweepTests` | Metin kontrastı WCAG AA eşiğini geçer (iki temada da) |
 | `ConsoleSweepTests` | Konsola hata yazılmaz; hiçbir kaynak başarısız olmaz |
 | `NavigationSweepTests` | Yanıt < 400; oturumlu sayfa giriş ekranına düşmez |
 | `KeyboardSweepTests` | Tab ile gezilen her durakta odak görünür değişir; odaklanan öge ekranda kalır; klavye tuzağı yok; pozitif `tabindex` yok; tekrar eden gezinme atlanabilir; sayfanın tek bir `main` bölgesi var |
-| `ConsentGateTests` | Çerez onayı ilk ziyarette çıkar, bir kez kabul edilince bir daha sorulmaz |
+| `ConsentGateTests` | Çerez onayı ilk ziyarette çıkar, bir kez kabul edilince bir daha sorulmaz; onay çerezi yazılır ve katman sunucudan hiç gelmez |
 | `RealtimeTests` | Sohbet ekranı BFF üzerinden gerçek bir WebSocket açar |
-| `FlowTests` | Blog araması sonuca götürür; proje kartı detaya götürür; yönetim modalı odağı içeride tutar ve Escape ile kapanır; tema seçimi sayfa değişince korunur |
+| `FlowTests` | Blog araması sonuca götürür; proje kartı detaya götürür; yönetim modalı odağı içeride tutar ve Escape ile kapanır; tema seçimi sayfa değişince korunur; uygulama içi yasal belge sayfaya ait düğmeleri taşımaz; onay penceresi uygulama içinde açılır ve Escape ile vazgeçilir |
 | `LayoutBaselineTests` | İzlenen sayfaların yerleşimi onaylı temelden sapmaz |
 
 Her sayfa (genişlik, tema) başına **bir kez** açılır; ölçüm önbelleğe alınır ve bütün
@@ -90,7 +90,21 @@ $env:SWEEP_UPDATE_BASELINES = '1'; dotnet test Tests/FurkanTural_Browser.Tests
 ```
 
 İzlenen sayfalar içeriği veriye bağlı olmayanlarla sınırlıdır; liste sayfaları kayıt
-sayısıyla birlikte oynadığı için temele alınmaz. Turnstile widget'ı ölçüm dışıdır.
+sayısıyla birlikte oynadığı için temele alınmaz. Giriş ve kayıt sayfaları da dışarıdadır:
+robot doğrulaması yüklenemediğinde sayfa iki satırlık bir uyarı gösterir ve kart kayar, yani
+yerleşimleri Cloudflare'a erişilip erişilemediğine bağlıdır. Bu sayfalar diğer bütün
+denetimlerde yine taranır. Turnstile widget'ının kendisi ölçüm dışıdır; yüksekliği CSS'te
+ayrıldığı için doğrulama yüklendiğinde form sıçramaz.
+
+### Üst üste binen bölgeler
+
+Taşma denetimi yalnızca **yanlamasına** kaçan içeriği görür. Bir kutu kendi yüksekliğine
+sığmayıp altındaki bölgenin arkasına akarsa sayfa yatay kaydırma üretmez, kapsayıcı da
+yanlamasına taşmaz — ama metin okunmaz olur. `LayoutSweepTests` bu yüzden ana içerik ile
+altbilginin kutularını ayrıca karşılaştırır ve örtüşmenin kaç piksel olduğunu, hangi
+kapsayıcının taştığını söyler. Bildirimde en dıştaki suçlu verilir; ebeveyni de örtüşen
+ögeler tekrar sayılmaz. Kendi katmanında duran (`fixed`, `sticky`, `absolute`) ögeler
+kapsam dışıdır: onların üstte durması tasarımın kendisidir.
 
 ### Etkileşim akışları
 

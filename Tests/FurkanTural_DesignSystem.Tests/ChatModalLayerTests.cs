@@ -55,6 +55,7 @@ public class ChatModalLayerTests
     [InlineData(".consent-overlay")]
     [InlineData(".profile-overlay")]
     [InlineData(".agreement-overlay")]
+    [InlineData(".ask-overlay")]
     public void Iletisim_kutusu_perdeleri_temaya_uyar(string selector)
     {
         RuleBody(ChatCss(), selector).Should().Contain("var(--scrim)",
@@ -132,10 +133,38 @@ public class ChatModalLayerTests
     {
         var css = ChatCss();
 
-        foreach (var kart in new[] { ".dev-card", ".consent-modal", ".agreement-card", ".profile-card" })
+        foreach (var kart in new[] { ".dev-card", ".consent-modal", ".agreement-card", ".profile-card", ".ask-card" })
         {
             RuleBody(css, kart).Should().Contain("var(--shadow-overlay)",
                 $"'{kart}' tema yüzeyinde duruyor; sabit %60 siyah gölge açık temada leke bırakır");
         }
+    }
+
+    [Fact]
+    public void Sunum_katmani_tarayicinin_kendi_kutularini_kullanmaz()
+    {
+        var kok = FindSolutionRoot();
+        var kutu = new Regex(@"\bwindow\.(?:confirm|prompt|alert)\s*\(|(?<![\w.$])(?:confirm|prompt|alert)\s*\(");
+        var sapan = new List<string>();
+        var taranan = 0;
+
+        foreach (var dosya in Directory.EnumerateFiles(
+                     Path.Combine(kok, "Presentation"), "*.js", SearchOption.AllDirectories))
+        {
+            if (dosya.Contains($"{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}")) continue;
+
+            taranan++;
+            var satirlar = File.ReadAllLines(dosya);
+            for (var i = 0; i < satirlar.Length; i++)
+                if (kutu.IsMatch(satirlar[i]))
+                    sapan.Add($"{Path.GetFileName(dosya)}:{i + 1} → {satirlar[i].Trim()}");
+        }
+
+        taranan.Should().BeGreaterThan(10, "tarama boş dönerse bu test hiçbir şey doğrulamıyor");
+
+        sapan.Should().BeEmpty(
+            "tarayıcının confirm/prompt/alert kutuları sayfayı kilitler, tasarımın dışında durur ve " +
+            "odak/klavye davranışımızı takip etmez; yerlerine askConfirm/askPrompt kullanılır:" +
+            Environment.NewLine + string.Join(Environment.NewLine, sapan));
     }
 }

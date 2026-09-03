@@ -23,6 +23,7 @@ public sealed class PageSnapshot
 
     public IReadOnlyList<Heading> Headings { get; init; } = [];
     public IReadOnlyList<string> Overflowers { get; init; } = [];
+    public IReadOnlyList<string> Overlaps { get; init; } = [];
     public IReadOnlyList<string> Scrollers { get; init; } = [];
     public IReadOnlyList<string> PositiveTabindex { get; init; } = [];
     public int MainLandmarks { get; init; }
@@ -86,6 +87,7 @@ public sealed class PageSnapshot
             H1Count = Int(probe, "h1Count"),
             Headings = headings,
             Overflowers = Strings(probe, "overflowers"),
+            Overlaps = Strings(probe, "overlaps"),
             Scrollers = Strings(probe, "scrollers"),
             PositiveTabindex = Strings(probe, "positiveTabindex"),
             MainLandmarks = Int(probe, "mainLandmarks"),

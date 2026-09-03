@@ -7,7 +7,7 @@ header.topbar > nav.topbar-nav  1103,22,125,17
 header.topbar > button.theme-toggle-btn.topbar-theme  1240,12,36,36
 header.topbar > a.btn-primary.topbar-cta  1288,12,92,36
 div.shell  0,61,1400,839
-div.shell > main#main  0,61,1400,774
+div.shell > main#main  0,61,1400,2269
 div.shell > main#main > div.legal-wrap  0,61,1400,2269
 div.shell > main#main > div.legal-wrap > nav.legal-index  85,109,210,407
 main#main > div.legal-wrap > nav.legal-index > p.legal-index-title  85,109,210,14
@@ -31,7 +31,7 @@ div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-title 
 div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-text  409,2134,845,22
 main#main > div.legal-wrap > article.legal-card > div.legal-actions  388,2202,887,43
 div.legal-wrap > article.legal-card > div.legal-actions > button.btn-outline  388,2202,91,43
-div.shell > footer.sitefoot  0,835,1400,65
-div.shell > footer.sitefoot > span.sitefoot-brand  22,861,554,15
-div.shell > footer.sitefoot > nav.sitefoot-links  592,856,217,24
-div.shell > footer.sitefoot > a.sitefoot-mail  1229,861,149,15
+div.shell > footer.sitefoot  0,2330,1400,65
+div.shell > footer.sitefoot > span.sitefoot-brand  22,2356,554,15
+div.shell > footer.sitefoot > nav.sitefoot-links  592,2351,217,24
+div.shell > footer.sitefoot > a.sitefoot-mail  1229,2356,149,15

@@ -55,4 +55,26 @@ public sealed class ConsentGateTests(LiveSiteFixture site)
             "onay katmanı formu gerçekten örtmelidir; örtmüyorsa kullanıcı onay vermeden giriş deneyebilir " +
             "ve bu testin diğer iki iddiası da anlamını yitirir");
     }
+
+    [SkippableFact]
+    public async Task Onay_cerezi_yazilir_ve_katman_sunucudan_hic_gelmez()
+    {
+        var (cookieWritten, stillRendered) = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/", async page =>
+        {
+            await page.ClickAsync("#consentOk");
+            var cookies = await page.EvaluateAsync<string>("() => document.cookie");
+
+            await page.GotoAsync(SiteMap.Chat.BaseUrl + "/Account/Login",
+                new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+
+            return (cookies.Contains("ft.consent=1"), await page.Locator("#consentOverlay").CountAsync());
+        });
+
+        cookieWritten.Should().BeTrue(
+            "onay yalnızca localStorage'da tutulursa sunucu onu göremez; katmanı her sayfada yeniden basar " +
+            "ve localStorage yazılamayan bir tarayıcıda onay hiç yapışmaz");
+        stillRendered.Should().Be(0,
+            "onaydan sonra katman HTML'e hiç girmemeli; girerse görünürlüğü yine JS zamanlamasına kalır " +
+            "ve sayfa açılışında bir görünüp kaybolur");
+    }
 }

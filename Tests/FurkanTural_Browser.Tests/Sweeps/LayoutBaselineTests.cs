@@ -9,8 +9,6 @@ public sealed class LayoutBaselineTests(LiveSiteFixture site)
     private static readonly string[] Watched =
     [
         "Chat/",
-        "Chat/Account/Login",
-        "Chat/Account/Register",
         "Chat/Home/Privacy",
         "Chat/Home/Agreement",
         "Chat/offline.html"

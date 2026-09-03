@@ -40,4 +40,16 @@ public sealed class LayoutSweepTests(LiveSiteFixture site)
             $"{snapshot.Where} üzerinde 24x24'ten küçük dokunma hedefi var (WCAG 2.2 - 2.5.8):" +
             snapshot.Report(snapshot.SmallTargets));
     }
+
+    [SkippableTheory]
+    [MemberData(nameof(SweepData.EveryPageEveryWidth), MemberType = typeof(SweepData))]
+    public async Task Altbilgi_icerigin_ustune_binmez(string pageId, string viewportName)
+    {
+        var snapshot = await site.SnapshotAsync(SweepData.Page(pageId), SweepData.Screen(viewportName), Themes.Dark);
+
+        snapshot.Overlaps.Should().BeEmpty(
+            $"{snapshot.Where} içinde altbilgi, ana içeriğin üstüne biniyor. Sayfa yatay taşmadığı için " +
+            "taşma denetimi bunu görmez; buradaki kusur, içeriğin kendi kutusuna sığmayıp altbilginin " +
+            "arkasına akmasıdır ve metni okunmaz kılar:" + snapshot.Report(snapshot.Overlaps));
+    }
 }
