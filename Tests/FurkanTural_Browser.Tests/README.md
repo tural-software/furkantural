@@ -42,7 +42,7 @@ Kimlik bilgileri koda ve depoya yazılmaz; yalnızca ortamdan okunur.
 | `ConsoleSweepTests` | Konsola hata yazılmaz; hiçbir kaynak başarısız olmaz |
 | `NavigationSweepTests` | Yanıt < 400; oturumlu sayfa giriş ekranına düşmez |
 | `KeyboardSweepTests` | Tab ile gezilen her durakta odak görünür değişir; odaklanan öge ekranda kalır; klavye tuzağı yok; pozitif `tabindex` yok; tekrar eden gezinme atlanabilir; sayfanın tek bir `main` bölgesi var |
-| `ConsentGateTests` | Çerez onayı ilk ziyarette çıkar, bir kez kabul edilince bir daha sorulmaz; onay çerezi yazılır ve katman sunucudan hiç gelmez |
+| `ConsentGateTests` | Çerez onayı ilk ziyarette çıkar, bir kez kabul edilince bir daha sorulmaz; onay çerezi yazılır ve katman sunucudan hiç gelmez; katman hiçbir betik çalışmadan ekrandadır; önceden onay vermiş ziyaretçide hiç görünmez |
 | `RealtimeTests` | Sohbet ekranı BFF üzerinden gerçek bir WebSocket açar |
 | `FlowTests` | Blog araması sonuca götürür; proje kartı detaya götürür; yönetim modalı odağı içeride tutar ve Escape ile kapanır; tema seçimi sayfa değişince korunur; uygulama içi yasal belge sayfaya ait düğmeleri taşımaz; onay penceresi uygulama içinde açılır ve Escape ile vazgeçilir |
 | `LayoutBaselineTests` | İzlenen sayfaların yerleşimi onaylı temelden sapmaz |
@@ -95,6 +95,18 @@ robot doğrulaması yüklenemediğinde sayfa iki satırlık bir uyarı gösterir
 yerleşimleri Cloudflare'a erişilip erişilemediğine bağlıdır. Bu sayfalar diğer bütün
 denetimlerde yine taranır. Turnstile widget'ının kendisi ölçüm dışıdır; yüksekliği CSS'te
 ayrıldığı için doğrulama yüklendiğinde form sıçramaz.
+
+### Çerez onayının zamanı
+
+Katmanı **sunucu** açık basar. Görünürlüğü betiğe bırakmak, pencerenin sayfa boyandıktan
+sonra üstüne düşmesi demekti: kullanıcı önce siteyi görüyor, sonra kutu patlıyordu. Onay
+çerezde durduğu için sunucu kararı isteği alırken verebiliyor; kabul edilmişse katman
+HTML'e hiç girmiyor. `Katman_hicbir_betik_calismadan_ekranda` bunu JavaScript kapalı bir
+ziyaretle ölçer — betik çalışmadan görünüyorsa gecikme de yok demektir.
+
+Onayı yalnızca localStorage'da olan eski ziyaretçi için `<head>`'de tek bir betik var:
+çerezi yazar ve `data-consent` niteliğini koyar, CSS de katmanı ilk boyamadan önce gizler.
+Bu yol `Onceden_onay_vermis_ziyaretcide_katman_hic_gorunmez` ile ayrıca ölçülür.
 
 ### Üst üste binen bölgeler
 

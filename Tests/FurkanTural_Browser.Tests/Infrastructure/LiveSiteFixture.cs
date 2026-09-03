@@ -424,7 +424,7 @@ public sealed class LiveSiteFixture : IAsyncLifetime
         }
     }
 
-    public async Task<T> WithFirstTimeVisitorAsync<T>(SiteApp app, string path, Func<IPage, Task<T>> visit)
+    public async Task<T> WithFirstTimeVisitorAsync<T>(SiteApp app, string path, Func<IPage, Task<T>> visit, bool scripts = true)
     {
         await RequireAppAsync(app);
 
@@ -433,7 +433,8 @@ public sealed class LiveSiteFixture : IAsyncLifetime
         {
             IgnoreHTTPSErrors = true,
             ReducedMotion = ReducedMotion.Reduce,
-            Locale = "tr-TR"
+            Locale = "tr-TR",
+            JavaScriptEnabled = scripts
         });
 
         try
