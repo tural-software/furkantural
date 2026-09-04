@@ -1,3 +1,7 @@
+using Moq;
+using Microsoft.Extensions.Logging;
+using FurkanTural_Application.Services.Abstract;
+using FurkanTural_Application.DTOs.Log;
 using System.Text.Json;
 using FluentAssertions;
 using FurkanTural_API.Middlewares;
@@ -78,5 +82,56 @@ public class ExceptionMiddlewareTests
         root.GetProperty("success").GetBoolean().Should().BeFalse();
         root.GetProperty("statusCode").GetInt32().Should().Be(409);
         root.GetProperty("errors").GetArrayLength().Should().Be(1);
+    }
+
+    private sealed class ListLogger : ILogger<ExceptionMiddleware>
+    {
+        public List<LogLevel> Levels { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Levels.Add(logLevel);
+    }
+
+    private static async Task<(int Status, string Body, ListLogger Logger, Mock<ILogService> Log)> InvokeCancelled(bool clientAborted)
+    {
+        var log = new Mock<ILogService>();
+        var context = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().AddSingleton(log.Object).BuildServiceProvider(),
+            RequestAborted = new CancellationToken(canceled: clientAborted)
+        };
+        context.Request.Path = "/api/v1/friend/me";
+        context.Response.Body = new MemoryStream();
+
+        var logger = new ListLogger();
+        var middleware = new ExceptionMiddleware(_ => throw new TaskCanceledException("A task was canceled."), logger);
+        await middleware.InvokeAsync(context);
+
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        var body = await new StreamReader(context.Response.Body).ReadToEndAsync();
+        return (context.Response.StatusCode, body, logger, log);
+    }
+
+    [Fact]
+    public async Task Istemci_vazgecince_499_doner_ve_hicbir_yere_kayit_dusmez()
+    {
+        var (status, body, logger, log) = await InvokeCancelled(clientAborted: true);
+
+        status.Should().Be(499, "isteği istemci kesti; sunucu arızası değil");
+        body.Should().BeEmpty("giden kimse yokken gövde yazmak boşa iş");
+        logger.Levels.Should().NotContain(LogLevel.Error, "sekme kapatan kullanıcı günlükte arıza gibi görünmemeli");
+        log.Verify(l => l.CreateAsync(It.IsAny<CreateLogDto>(), It.IsAny<CancellationToken>()), Times.Never,
+            "Logs tablosu gerçek arızalar içindir; her vazgeçen istemci bir satır yazdırırsa tablo gürültüye boğulur");
+    }
+
+    [Fact]
+    public async Task Istek_canliyken_gelen_iptal_500_kalir_ve_kaydedilir()
+    {
+        var (status, _, logger, log) = await InvokeCancelled(clientAborted: false);
+
+        status.Should().Be(500, "istemci beklerken içeride biten bir iptal gerçek bir zaman aşımıdır");
+        logger.Levels.Should().Contain(LogLevel.Error);
+        log.Verify(l => l.CreateAsync(It.IsAny<CreateLogDto>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

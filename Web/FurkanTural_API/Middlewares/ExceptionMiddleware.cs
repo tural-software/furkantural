@@ -5,7 +5,7 @@ using FurkanTural_Application.Services.Abstract;
 
 namespace FurkanTural_API.Middlewares;
 
-/// <summary>Yakalanmamış istisnaları sabit metinli bir yanıta çevirir. İstemciye tür, mesaj veya yığın bilgisi geçmez; bu yüzden birbirinden çok farklı sebepler dışarıdan aynı yanıtı üretir ve ayrım yalnızca kaydedilen günlükte kalır.<para>Tek ayrıcalık <see cref="PersistenceConflictException"/> soyundan gelenlerdir: onlar 500 değil 409 üretir ve kayda Error değil Warning düşer. Sebebi, bunların sunucu arızası olmamasıdır — iki isteğin aynı satırı yazmaya çalışması beklenen bir çekişmedir, 500 dönmek hem istemciyi yanıltır hem de gerçek arızaları günlükte görünmez eder. Kısıt adı istisnanın içinde taşınır ve yalnızca kayda yazılır; istemciye şema bilgisi çıkmaz.</para></summary>
+/// <summary>Yakalanmamış istisnaları sabit metinli bir yanıta çevirir. İstemciye tür, mesaj veya yığın bilgisi geçmez; bu yüzden birbirinden çok farklı sebepler dışarıdan aynı yanıtı üretir ve ayrım yalnızca kaydedilen günlükte kalır.<para>Tek ayrıcalık <see cref="PersistenceConflictException"/> soyundan gelenlerdir: onlar 500 değil 409 üretir ve kayda Error değil Warning düşer. Sebebi, bunların sunucu arızası olmamasıdır — iki isteğin aynı satırı yazmaya çalışması beklenen bir çekişmedir, 500 dönmek hem istemciyi yanıltır hem de gerçek arızaları günlükte görünmez eder. Kısıt adı istisnanın içinde taşınır ve yalnızca kayda yazılır; istemciye şema bilgisi çıkmaz.</para><para>İstemcinin kendisinin vazgeçtiği istek (sekme kapandı, gezinme değişti) arıza değildir: iptal istisnası, istek iptal edilmişken yakalanırsa günlüğe Error düşmez, Logs tablosuna satır yazılmaz ve yanıt 499 ile sessizce kapanır. Aynı istisna istek hâlâ canlıyken gelirse iç bir zaman aşımıdır ve 500 olarak kalır.</para></summary>
 public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
 {
     private readonly RequestDelegate _next = next;
@@ -16,6 +16,12 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
         try
         {
             await _next(context);
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            _logger.LogDebug("İstemci isteği yarıda kesti: {Path}", context.Request.Path);
+            if (!context.Response.HasStarted)
+                context.Response.StatusCode = 499;
         }
         catch (Exception ex)
         {
