@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using Asp.Versioning;
 using FurkanTural_Application.DTOs.Project;
 using FurkanTural_Application.Services.Abstract;
@@ -99,4 +100,36 @@ public class ProjectController(IProjectService projectService) : JwtBaseControll
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _projectService.GetAdminSummaryAsync(cancellationToken));
+
+    /// <summary>Yönetici paneli için süzülmüş ve sayfalı proje listesi</summary>
+    [HttpGet("admin/paged")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminPaged(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] bool? isCompleted,
+        [FromQuery] int? projectId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _projectService.GetAllForAdminPagedAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), isCompleted, projectId, cancellationToken));
+
+    /// <summary>Yönetici paneli için proje durum sayaçları; süzgeçler sayfalı listeyle aynıdır</summary>
+    [HttpGet("admin/counts")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminCounts(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] bool? isCompleted,
+        [FromQuery] int? projectId,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _projectService.GetAdminStatusCountsAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), isCompleted, projectId, cancellationToken));
 }

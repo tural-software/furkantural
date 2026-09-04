@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.UserFriend;
 using FurkanTural_Application.Repositories.Abstract;
@@ -527,4 +528,48 @@ public class UserFriendService(
 
         return dto;
     }
+
+    private async Task<Expression<Func<UserFriend, bool>>?> AdminPredicateAsync(AdminListQuery query, string? statusCode, CancellationToken cancellationToken)
+    {
+        var predicate = AdminFilters.Common<UserFriend>(query);
+        if (!string.IsNullOrWhiteSpace(statusCode))
+        {
+            var statusId = await StatusIdAsync(statusCode.Trim(), cancellationToken);
+            var wanted = statusId ?? -1;
+            predicate = predicate.AndAlso(x => x.StatusId == wanted);
+        }
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminUserFriendDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? statusCode, CancellationToken cancellationToken = default)
+    {
+        var predicate = await AdminPredicateAsync(query, statusCode, cancellationToken);
+        var page = (await _unitOfWork.UserFriends.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, true, cancellationToken)).ToList();
+        var total = await _unitOfWork.UserFriends.CountForAdminAsync(predicate, cancellationToken);
+
+        var statuses = (await _unitOfWork.Statuses.GetAllForAdminAsync(cancellationToken)).ToDictionary(s => s.Id);
+        var userIds = page.SelectMany(e => new[] { e.RequesterId, e.AddresseeId }).Distinct().ToList();
+        var users = userIds.Count == 0
+            ? new Dictionary<int, User>()
+            : (await _unitOfWork.Users.GetAllForAdminAsync(u => userIds.Contains(u.Id), cancellationToken)).ToDictionary(u => u.Id);
+
+        var dtos = page.Select(e =>
+        {
+            var dto = e.ToAdminDto();
+            if (statuses.TryGetValue(e.StatusId, out var status))
+            {
+                dto.StatusCode = status.Code;
+                dto.StatusName = status.Name;
+            }
+            if (users.TryGetValue(e.RequesterId, out var requester))
+                dto.RequesterUsername = requester.Username;
+            if (users.TryGetValue(e.AddresseeId, out var addressee))
+                dto.AddresseeUsername = addressee.Username;
+            return dto;
+        });
+        return PagedResult<AdminUserFriendDto>.Ok(dtos, total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? statusCode, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.UserFriends.GetAdminStatusCountsAsync(await AdminPredicateAsync(query, statusCode, cancellationToken), cancellationToken));
 }

@@ -14,4 +14,6 @@ public interface IBlogService : IService<BlogDto, CreateBlogDto, UpdateBlogDto>
     Task<Result<AdminBlogDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminBlogDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminBlogDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? blogId, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? blogId, CancellationToken cancellationToken = default);
 }

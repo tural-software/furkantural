@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Report;
 using FurkanTural_Application.Repositories.Abstract;
@@ -150,4 +151,55 @@ public class ReportService(IUnitOfWork unitOfWork, ActivityLogger activityLogger
 
     private static string? NameOf(Dictionary<int, User?> users, int id)
         => users.TryGetValue(id, out var u) ? (u?.DisplayName ?? u?.Username) : null;
+
+    private async Task<Expression<Func<Report, bool>>?> AdminPredicateAsync(AdminListQuery query, string? targetType, string? status, string[]? statuses, CancellationToken cancellationToken)
+    {
+        var predicate = AdminFilters.Common<Report>(query);
+        if (!string.IsNullOrWhiteSpace(targetType))
+        {
+            var type = targetType.Trim();
+            predicate = predicate.AndAlso(x => x.TargetType == type);
+        }
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            var wanted = status.Trim();
+            predicate = predicate.AndAlso(x => x.Status == wanted);
+        }
+        var wantedSet = (statuses ?? []).Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToList();
+        if (wantedSet.Count > 0)
+            predicate = predicate.AndAlso(x => x.Status != null && wantedSet.Contains(x.Status));
+        if (query.SearchTerm is { } term)
+        {
+            var matched = (await _unitOfWork.Users.GetAllForAdminAsync(u => u.Username != null && u.Username.Contains(term), cancellationToken))
+                .Select(u => u.Id).ToList();
+            Expression<Func<Report, bool>> byReason = x => x.Reason != null && x.Reason.Contains(term);
+            var byReasonOrPerson = byReason.OrElse(x => matched.Contains(x.ReporterId) || (x.ReportedUserId != null && matched.Contains(x.ReportedUserId.Value)));
+            predicate = predicate.AndAlso(byReasonOrPerson);
+        }
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminReportDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? targetType, string? status, string[]? statuses, CancellationToken cancellationToken = default)
+    {
+        var predicate = await AdminPredicateAsync(query, targetType, status, statuses, cancellationToken);
+        var page = (await _unitOfWork.Reports.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, true, cancellationToken)).ToList();
+        var total = await _unitOfWork.Reports.CountForAdminAsync(predicate, cancellationToken);
+
+        var userIds = page.SelectMany(e => new[] { e.ReporterId, e.ReportedUserId ?? 0 }).Where(id => id > 0).Distinct().ToList();
+        var users = userIds.Count == 0
+            ? new Dictionary<int, User?>()
+            : (await _unitOfWork.Users.GetAllForAdminAsync(u => userIds.Contains(u.Id), cancellationToken)).ToDictionary(u => u.Id, u => (User?)u);
+
+        var dtos = page.Select(e =>
+        {
+            var dto = e.ToAdminDto();
+            dto.ReporterName = NameOf(users, e.ReporterId);
+            dto.ReportedUserName = e.ReportedUserId is { } rid ? NameOf(users, rid) : null;
+            return dto;
+        });
+        return PagedResult<AdminReportDto>.Ok(dtos, total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? targetType, string? status, string[]? statuses, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Reports.GetAdminStatusCountsAsync(await AdminPredicateAsync(query, targetType, status, statuses, cancellationToken), cancellationToken));
 }

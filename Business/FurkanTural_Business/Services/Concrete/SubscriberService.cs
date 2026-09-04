@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Subscriber;
 using FurkanTural_Application.Repositories.Abstract;
@@ -193,4 +194,23 @@ public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLo
         => owner.IsDeleted
             ? $"Bu e-posta adresi silinmiş bir kayıtta duruyor (#{owner.Id}); yeni kayıt açmak yerine onu geri yükleyin."
             : $"Bu e-posta adresi zaten kayıtlı (#{owner.Id}).";
+
+    private static Expression<Func<Subscriber, bool>>? AdminPredicate(AdminListQuery query)
+    {
+        var predicate = AdminFilters.Common<Subscriber>(query);
+        if (query.SearchTerm is { } term)
+            predicate = predicate.AndAlso(x => x.Email != null && x.Email.Contains(term));
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminSubscriberDto>> GetAllForAdminPagedAsync(AdminListQuery query, CancellationToken cancellationToken = default)
+    {
+        var predicate = AdminPredicate(query);
+        var entities = await _unitOfWork.Subscribers.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var total = await _unitOfWork.Subscribers.CountForAdminAsync(predicate, cancellationToken);
+        return PagedResult<AdminSubscriberDto>.Ok(entities.Select(e => e.ToAdminDto()), total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Subscribers.GetAdminStatusCountsAsync(AdminPredicate(query), cancellationToken));
 }

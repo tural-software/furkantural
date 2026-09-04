@@ -14,4 +14,6 @@ public interface ISubscriberService : IService<SubscriberDto, CreateSubscriberDt
     Task<Result<AdminSubscriberDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminSubscriberDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminSubscriberDto>> GetAllForAdminPagedAsync(AdminListQuery query, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default);
 }

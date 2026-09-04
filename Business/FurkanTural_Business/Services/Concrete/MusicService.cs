@@ -1,3 +1,5 @@
+using FurkanTural_Domain.Entities;
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Music;
 using FurkanTural_Application.Repositories.Abstract;
@@ -140,4 +142,30 @@ public class MusicService(IUnitOfWork unitOfWork, ActivityLogger activityLogger)
         var summary = await _unitOfWork.Musics.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
+
+    private static Expression<Func<Music, bool>>? AdminPredicate(AdminListQuery query, string? artist, int? musicId)
+    {
+        var predicate = AdminFilters.Common<Music>(query);
+        if (query.SearchTerm is { } term)
+            predicate = predicate.AndAlso(x => x.Name != null && x.Name.Contains(term));
+        if (!string.IsNullOrWhiteSpace(artist))
+        {
+            var artistTerm = artist.Trim();
+            predicate = predicate.AndAlso(x => x.Artist != null && x.Artist.Contains(artistTerm));
+        }
+        if (musicId is { } id)
+            predicate = predicate.AndAlso(x => x.Id == id);
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminMusicDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? artist, int? musicId, CancellationToken cancellationToken = default)
+    {
+        var predicate = AdminPredicate(query, artist, musicId);
+        var entities = await _unitOfWork.Musics.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var total = await _unitOfWork.Musics.CountForAdminAsync(predicate, cancellationToken);
+        return PagedResult<AdminMusicDto>.Ok(entities.Select(e => e.ToAdminDto()), total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? artist, int? musicId, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Musics.GetAdminStatusCountsAsync(AdminPredicate(query, artist, musicId), cancellationToken));
 }

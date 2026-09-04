@@ -14,4 +14,6 @@ public interface IStatusService : IService<StatusDto, CreateStatusDto, UpdateSta
     Task<Result<AdminStatusDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminStatusDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminStatusDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? group, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? group, CancellationToken cancellationToken = default);
 }

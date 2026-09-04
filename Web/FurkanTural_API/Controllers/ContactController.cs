@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using Asp.Versioning;
 using FurkanTural_API.Controllers.Base;
 using FurkanTural_API.Models.Contact;
@@ -70,4 +71,34 @@ public class ContactController(IContactService contactService) : JwtBaseControll
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _contactService.GetAdminSummaryAsync(cancellationToken));
+
+    /// <summary>Yönetici paneli için süzülmüş ve sayfalı iletişim mesajı listesi</summary>
+    [HttpGet("admin/paged")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminPaged(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] bool? isRead,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _contactService.GetAllForAdminPagedAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), isRead, cancellationToken));
+
+    /// <summary>Yönetici paneli için iletişim mesajı durum sayaçları; süzgeçler sayfalı listeyle aynıdır</summary>
+    [HttpGet("admin/counts")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminCounts(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] bool? isRead,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _contactService.GetAdminStatusCountsAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), isRead, cancellationToken));
 }

@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Experience;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_API.Controllers.Base;
@@ -93,4 +94,34 @@ public class ExperienceController(IExperienceService experienceService) : JwtBas
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _experienceService.GetAdminSummaryAsync(cancellationToken));
+
+    /// <summary>Yönetici paneli için süzülmüş ve sayfalı deneyim listesi</summary>
+    [HttpGet("admin/paged")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminPaged(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] string? company,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _experienceService.GetAllForAdminPagedAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), company, cancellationToken));
+
+    /// <summary>Yönetici paneli için deneyim durum sayaçları; süzgeçler sayfalı listeyle aynıdır</summary>
+    [HttpGet("admin/counts")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminCounts(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] string? company,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _experienceService.GetAdminStatusCountsAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), company, cancellationToken));
 }

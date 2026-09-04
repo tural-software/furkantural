@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Role;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_API.Controllers.Base;
@@ -77,4 +78,32 @@ public class RoleController(IRoleService roleService) : JwtBaseController
     [HttpGet("admin/summary")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _roleService.GetAdminSummaryAsync(cancellationToken));
+
+    /// <summary>Yönetici paneli için süzülmüş ve sayfalı rol listesi</summary>
+    [HttpGet("admin/paged")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminPaged(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _roleService.GetAllForAdminPagedAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), cancellationToken));
+
+    /// <summary>Yönetici paneli için rol durum sayaçları; süzgeçler sayfalı listeyle aynıdır</summary>
+    [HttpGet("admin/counts")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminCounts(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _roleService.GetAdminStatusCountsAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), cancellationToken));
 }

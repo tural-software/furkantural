@@ -1,3 +1,5 @@
+using FurkanTural_Domain.Entities;
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Status;
 using FurkanTural_Application.Repositories.Abstract;
@@ -163,4 +165,28 @@ public class StatusService(IUnitOfWork unitOfWork, ActivityLogger activityLogger
         var summary = await _unitOfWork.Statuses.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
+
+    private static Expression<Func<Status, bool>>? AdminPredicate(AdminListQuery query, string? group)
+    {
+        var predicate = AdminFilters.Common<Status>(query);
+        if (query.SearchTerm is { } term)
+            predicate = predicate.AndAlso(x => (x.Name != null && x.Name.Contains(term)) || (x.Code != null && x.Code.Contains(term)));
+        if (!string.IsNullOrWhiteSpace(group))
+        {
+            var groupName = group.Trim();
+            predicate = predicate.AndAlso(x => x.Group == groupName);
+        }
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminStatusDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? group, CancellationToken cancellationToken = default)
+    {
+        var predicate = AdminPredicate(query, group);
+        var entities = await _unitOfWork.Statuses.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var total = await _unitOfWork.Statuses.CountForAdminAsync(predicate, cancellationToken);
+        return PagedResult<AdminStatusDto>.Ok(entities.Select(e => e.ToAdminDto()), total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? group, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Statuses.GetAdminStatusCountsAsync(AdminPredicate(query, group), cancellationToken));
 }

@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Blog;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_API.Controllers.Base;
@@ -113,6 +114,36 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetAdminSummaryAsync(cancellationToken));
+
+    /// <summary>Yönetici paneli için süzülmüş ve sayfalı blog listesi</summary>
+    [HttpGet("admin/paged")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminPaged(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] int? blogId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _blogService.GetAllForAdminPagedAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), blogId, cancellationToken));
+
+    /// <summary>Yönetici paneli için blog durum sayaçları; süzgeçler sayfalı listeyle aynıdır</summary>
+    [HttpGet("admin/counts")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminCounts(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] int? blogId,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _blogService.GetAdminStatusCountsAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), blogId, cancellationToken));
 
     /// <summary>Yetkilendirme politikası yalnızca "üye ya da yönetici" der; kaydın kime ait olduğunu söylemez. Sahiplik bu yüzden ayrıca burada denetlenir ve yönetici koşulsuz geçer.</summary>
     private async Task<bool> HasOwnershipOrAdmin(int blogId, CancellationToken cancellationToken)

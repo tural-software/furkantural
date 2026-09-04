@@ -18,4 +18,6 @@ public interface IContactService
     Task<Result<AdminContactDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result> DeleteAsync(int id, int? deletedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminContactDto>> GetAllForAdminPagedAsync(AdminListQuery query, bool? isRead, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isRead, CancellationToken cancellationToken = default);
 }

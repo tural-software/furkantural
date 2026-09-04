@@ -64,6 +64,46 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
     public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         => await _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
 
+    public async Task<IEnumerable<T>> GetAllForAdminAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        => await _dbSet.AsNoTracking().IgnoreQueryFilters().Where(predicate).ToListAsync(cancellationToken);
+
+    public async Task<IEnumerable<T>> GetAllForAdminPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? predicate = null, bool descending = false, CancellationToken cancellationToken = default)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking().IgnoreQueryFilters();
+        if (predicate != null) query = query.Where(predicate);
+        query = descending ? query.OrderByDescending(e => e.Id) : query.OrderBy(e => e.Id);
+        return await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> CountForAdminAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking().IgnoreQueryFilters();
+        if (predicate != null) query = query.Where(predicate);
+        return await query.CountAsync(cancellationToken);
+    }
+
+    public async Task<AdminStatusCountsDto> GetAdminStatusCountsAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking().IgnoreQueryFilters();
+        if (predicate != null) query = query.Where(predicate);
+        var row = await query
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                Active = g.Count(e => !e.IsDeleted && e.IsActive),
+                Passive = g.Count(e => !e.IsDeleted && !e.IsActive),
+                Deleted = g.Count(e => e.IsDeleted)
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+        return row is null
+            ? new AdminStatusCountsDto(0, 0, 0, 0)
+            : new AdminStatusCountsDto(row.Total, row.Active, row.Passive, row.Deleted);
+    }
+
     public async Task<IEnumerable<T>> GetAllPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? predicate = null, bool descending = false, CancellationToken cancellationToken = default)
     {
         if (predicate != null)

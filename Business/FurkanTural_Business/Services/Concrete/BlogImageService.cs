@@ -1,3 +1,5 @@
+using FurkanTural_Domain.Entities;
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.BlogImage;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
@@ -144,4 +146,27 @@ public class BlogImageService(IUnitOfWork unitOfWork, ActivityLogger activityLog
         var summary = await _unitOfWork.BlogImages.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
+
+    private static Expression<Func<BlogImage, bool>>? AdminPredicate(AdminListQuery query, bool? isCover, int? blogId)
+    {
+        var predicate = AdminFilters.Common<BlogImage>(query);
+        if (query.SearchTerm is { } term)
+            predicate = predicate.AndAlso(x => x.Url != null && x.Url.Contains(term));
+        if (isCover is { } cover)
+            predicate = predicate.AndAlso(x => x.IsCover == cover);
+        if (blogId is { } id)
+            predicate = predicate.AndAlso(x => x.BlogId == id);
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminBlogImageDto>> GetAllForAdminPagedAsync(AdminListQuery query, bool? isCover, int? blogId, CancellationToken cancellationToken = default)
+    {
+        var predicate = AdminPredicate(query, isCover, blogId);
+        var entities = await _unitOfWork.BlogImages.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var total = await _unitOfWork.BlogImages.CountForAdminAsync(predicate, cancellationToken);
+        return PagedResult<AdminBlogImageDto>.Ok(entities.Select(e => e.ToAdminDto()), total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCover, int? blogId, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.BlogImages.GetAdminStatusCountsAsync(AdminPredicate(query, isCover, blogId), cancellationToken));
 }

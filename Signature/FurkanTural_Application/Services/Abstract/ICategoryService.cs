@@ -11,4 +11,6 @@ public interface ICategoryService : IService<CategoryDto, CreateCategoryDto, Upd
     Task<Result<AdminCategoryDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminCategoryDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminCategoryDto>> GetAllForAdminPagedAsync(AdminListQuery query, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default);
 }

@@ -19,4 +19,6 @@ public interface IUserService : IService<UserDto, CreateUserDto, UpdateUserDto>
     Task<Result<AdminUserDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminUserDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminUserDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? roleId, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? roleId, CancellationToken cancellationToken = default);
 }

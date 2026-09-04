@@ -12,4 +12,6 @@ public interface IBlogImageService : IService<BlogImageDto, CreateBlogImageDto, 
     Task<Result<AdminBlogImageDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminBlogImageDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminBlogImageDto>> GetAllForAdminPagedAsync(AdminListQuery query, bool? isCover, int? blogId, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCover, int? blogId, CancellationToken cancellationToken = default);
 }

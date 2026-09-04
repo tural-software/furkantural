@@ -22,5 +22,7 @@ public interface IChatMessageService
     Task<Result<AdminChatMessageDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminChatMessageDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminChatMessageDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? username, string? messageType, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? username, string? messageType, CancellationToken cancellationToken = default);
     Task<Result<int>> EncryptLegacyContentAsync(CancellationToken cancellationToken = default);
 }

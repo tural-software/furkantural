@@ -12,4 +12,6 @@ public interface IProjectImageService : IService<ProjectImageDto, CreateProjectI
     Task<Result<AdminProjectImageDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminProjectImageDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminProjectImageDto>> GetAllForAdminPagedAsync(AdminListQuery query, bool? isCover, int? projectId, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCover, int? projectId, CancellationToken cancellationToken = default);
 }

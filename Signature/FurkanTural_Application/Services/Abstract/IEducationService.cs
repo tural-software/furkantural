@@ -11,4 +11,6 @@ public interface IEducationService : IService<EducationDto, CreateEducationDto, 
     Task<Result<AdminEducationDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminEducationDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminEducationDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? degree, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? degree, CancellationToken cancellationToken = default);
 }

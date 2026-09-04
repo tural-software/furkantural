@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.BlogImage;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_API.Controllers.Base;
@@ -183,6 +184,38 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _blogImageService.GetAdminSummaryAsync(cancellationToken));
+
+    /// <summary>Yönetici paneli için süzülmüş ve sayfalı blog görseli listesi</summary>
+    [HttpGet("admin/paged")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminPaged(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] bool? isCover,
+        [FromQuery] int? blogId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _blogImageService.GetAllForAdminPagedAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), isCover, blogId, cancellationToken));
+
+    /// <summary>Yönetici paneli için blog görseli durum sayaçları; süzgeçler sayfalı listeyle aynıdır</summary>
+    [HttpGet("admin/counts")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminCounts(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] bool? isDeleted,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] bool? isCover,
+        [FromQuery] int? blogId,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _blogImageService.GetAdminStatusCountsAsync(
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), isCover, blogId, cancellationToken));
 
     /// <summary>Sahiplik görselin kendisinden değil bağlı olduğu yazıdan çözülür; yetkilendirme politikası yalnızca rolü bildiği için bu denetim ayrıca yapılır ve yönetici koşulsuz geçer.</summary>
     private async Task<bool> HasOwnershipOrAdmin(int imageId, CancellationToken cancellationToken)

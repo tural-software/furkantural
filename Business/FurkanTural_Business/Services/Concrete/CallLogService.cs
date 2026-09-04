@@ -1,3 +1,5 @@
+using FurkanTural_Business.Helpers;
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Call;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
@@ -109,26 +111,7 @@ public class CallLogService(IUnitOfWork unitOfWork, IClock clock) : ICallLogServ
     }
 
     public async Task<PagedResult<AdminCallLogDto>> GetAllPagedForAdminAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
-    {
-        var all = (await _unitOfWork.CallLogs.GetAllForAdminAsync(cancellationToken))
-            .OrderByDescending(e => e.StartedAt)
-            .ToList();
-
-        var userIds = all.SelectMany(e => new[] { e.CallerId, e.CalleeId }).Distinct().ToList();
-        var users = new Dictionary<int, User?>();
-        foreach (var id in userIds)
-            users[id] = await _unitOfWork.Users.GetByIdAsync(id, cancellationToken);
-
-        var page = all.Skip((pageNumber - 1) * pageSize).Take(pageSize).Select(e =>
-        {
-            var dto = e.ToAdminDto();
-            dto.CallerName = NameOf(users, e.CallerId);
-            dto.CalleeName = NameOf(users, e.CalleeId);
-            return dto;
-        });
-
-        return PagedResult<AdminCallLogDto>.Ok(page, all.Count, pageNumber, pageSize);
-    }
+        => await GetAllForAdminPagedAsync(new AdminListQuery { PageNumber = pageNumber, PageSize = pageSize }, null, null, cancellationToken);
 
     public async Task<Result<AdminCallLogDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -190,4 +173,54 @@ public class CallLogService(IUnitOfWork unitOfWork, IClock clock) : ICallLogServ
 
     private static string? NameOf(Dictionary<int, User?> users, int id)
         => users.TryGetValue(id, out var u) ? (u?.DisplayName ?? u?.Username) : null;
+
+    private async Task<Expression<Func<CallLog, bool>>?> AdminPredicateAsync(AdminListQuery query, string? callType, string? status, CancellationToken cancellationToken)
+    {
+        var predicate = AdminFilters.Common<CallLog>(query with { DateFrom = null, DateTo = null });
+        if (query.DateFrom is { } from)
+            predicate = predicate.AndAlso(x => x.StartedAt >= from);
+        if (query.DateToExclusive is { } to)
+            predicate = predicate.AndAlso(x => x.StartedAt < to);
+        if (!string.IsNullOrWhiteSpace(callType))
+        {
+            var type = callType.Trim();
+            predicate = predicate.AndAlso(x => x.CallType == type);
+        }
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            var wanted = status.Trim();
+            predicate = predicate.AndAlso(x => x.Status == wanted);
+        }
+        if (query.SearchTerm is { } term)
+        {
+            var matched = (await _unitOfWork.Users.GetAllForAdminAsync(u => u.Username != null && u.Username.Contains(term), cancellationToken))
+                .Select(u => u.Id).ToList();
+            predicate = predicate.AndAlso(x => matched.Contains(x.CallerId) || matched.Contains(x.CalleeId));
+        }
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminCallLogDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? callType, string? status, CancellationToken cancellationToken = default)
+    {
+        var predicate = await AdminPredicateAsync(query, callType, status, cancellationToken);
+        var page = (await _unitOfWork.CallLogs.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, true, cancellationToken)).ToList();
+        var total = await _unitOfWork.CallLogs.CountForAdminAsync(predicate, cancellationToken);
+
+        var userIds = page.SelectMany(e => new[] { e.CallerId, e.CalleeId }).Distinct().ToList();
+        var users = userIds.Count == 0
+            ? new Dictionary<int, User?>()
+            : (await _unitOfWork.Users.GetAllForAdminAsync(u => userIds.Contains(u.Id), cancellationToken)).ToDictionary(u => u.Id, u => (User?)u);
+
+        var dtos = page.Select(e =>
+        {
+            var dto = e.ToAdminDto();
+            dto.CallerName = NameOf(users, e.CallerId);
+            dto.CalleeName = NameOf(users, e.CalleeId);
+            return dto;
+        });
+        return PagedResult<AdminCallLogDto>.Ok(dtos, total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? callType, string? status, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.CallLogs.GetAdminStatusCountsAsync(await AdminPredicateAsync(query, callType, status, cancellationToken), cancellationToken));
 }

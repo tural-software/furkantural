@@ -12,4 +12,6 @@ public interface IMusicImageService : IService<MusicImageDto, CreateMusicImageDt
     Task<Result<AdminMusicImageDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminMusicImageDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminMusicImageDto>> GetAllForAdminPagedAsync(AdminListQuery query, bool? isCover, int? musicId, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCover, int? musicId, CancellationToken cancellationToken = default);
 }

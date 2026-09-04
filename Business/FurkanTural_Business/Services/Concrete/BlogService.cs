@@ -1,3 +1,5 @@
+using FurkanTural_Domain.Entities;
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Blog;
 using FurkanTural_Application.DTOs.Category;
 using FurkanTural_Application.DTOs.Common;
@@ -209,4 +211,32 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
             if (map.TryGetValue(dto.Id, out var cats))
                 dto.Categories = cats;
     }
+
+    private static Expression<Func<Blog, bool>>? AdminPredicate(AdminListQuery query, int? blogId)
+    {
+        var predicate = AdminFilters.Common<Blog>(query);
+        if (query.SearchTerm is { } term)
+            predicate = predicate.AndAlso(x => x.Title != null && x.Title.Contains(term));
+        if (blogId is { } id)
+            predicate = predicate.AndAlso(x => x.Id == id);
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminBlogDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? blogId, CancellationToken cancellationToken = default)
+    {
+        var predicate = AdminPredicate(query, blogId);
+        var entities = await _unitOfWork.Blogs.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var total = await _unitOfWork.Blogs.CountForAdminAsync(predicate, cancellationToken);
+
+        var dtos = entities.Select(e => e.ToAdminDto()).ToList();
+        var map = await LoadCategoryMapAsync(dtos.Select(d => d.Id).ToList(), cancellationToken);
+        foreach (var dto in dtos)
+            if (map.TryGetValue(dto.Id, out var cats))
+                dto.Categories = cats;
+
+        return PagedResult<AdminBlogDto>.Ok(dtos, total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? blogId, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Blogs.GetAdminStatusCountsAsync(AdminPredicate(query, blogId), cancellationToken));
 }

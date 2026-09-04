@@ -11,4 +11,6 @@ public interface IMusicService : IService<MusicDto, CreateMusicDto, UpdateMusicD
     Task<Result<AdminMusicDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminMusicDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminMusicDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? artist, int? musicId, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? artist, int? musicId, CancellationToken cancellationToken = default);
 }

@@ -12,4 +12,6 @@ public interface IMailTemplateService : IService<MailTemplateDto, CreateMailTemp
     Task<Result<AdminMailTemplateDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminMailTemplateDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminMailTemplateDto>> GetAllForAdminPagedAsync(AdminListQuery query, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default);
 }

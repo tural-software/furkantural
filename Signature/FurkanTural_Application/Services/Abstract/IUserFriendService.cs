@@ -25,4 +25,6 @@ public interface IUserFriendService
     Task<Result<AdminUserFriendDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminUserFriendDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminUserFriendDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? statusCode, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? statusCode, CancellationToken cancellationToken = default);
 }

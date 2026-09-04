@@ -50,6 +50,7 @@ Bu **API-merkezli katmanlı mimari**: MVC sunum projeleri DB'ye/EF'e **dokunmaz*
   Bağlantı dizesi `appsettings`'ten gelir ve `Program.cs`'teki AES bloğu `builder.Build()`'dan önce çözer; `Database.Migrate()` ise `Build()`'dan sonra olduğu için `dotnet ef` sırasında tetiklenmez.
 - **Auth konfigürasyonu (Program.cs)** değiştirilmeden önce raporlanır.
 - Prod'a **Docker/ayrı servis kurulamaz** — çözümler in-process olmalı.
+- **Veri çekim kuralı:** Sayfaya yansıyan her koleksiyon çekimi **sayfalı + filtreli** gelir; tüm liste ancak belirli bir sebeple (açılır liste sözlüğü, sitemap, tek sayfalık katalog) çekilir. Yönetici aktif+pasif+silinmişi görür (`admin/paged`, `admin/counts`, `AdminOnly`); yönetici olmayan yalnızca aktif satırı görür (global sorgu süzgeci). Yeni bir liste ucu/sayfası bu kalıbı izler; bkz. `.docs/plans/veri-cekim-kurali-done.md`.
 
 ## Agent Erişim Haritası
 

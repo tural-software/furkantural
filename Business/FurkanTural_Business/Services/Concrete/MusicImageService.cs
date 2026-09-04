@@ -1,3 +1,5 @@
+using FurkanTural_Domain.Entities;
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.MusicImage;
 using FurkanTural_Application.Repositories.Abstract;
@@ -144,4 +146,27 @@ public class MusicImageService(IUnitOfWork unitOfWork, ActivityLogger activityLo
         var summary = await _unitOfWork.MusicImages.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
+
+    private static Expression<Func<MusicImage, bool>>? AdminPredicate(AdminListQuery query, bool? isCover, int? musicId)
+    {
+        var predicate = AdminFilters.Common<MusicImage>(query);
+        if (query.SearchTerm is { } term)
+            predicate = predicate.AndAlso(x => x.Url != null && x.Url.Contains(term));
+        if (isCover is { } cover)
+            predicate = predicate.AndAlso(x => x.IsCover == cover);
+        if (musicId is { } id)
+            predicate = predicate.AndAlso(x => x.MusicId == id);
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminMusicImageDto>> GetAllForAdminPagedAsync(AdminListQuery query, bool? isCover, int? musicId, CancellationToken cancellationToken = default)
+    {
+        var predicate = AdminPredicate(query, isCover, musicId);
+        var entities = await _unitOfWork.MusicImages.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var total = await _unitOfWork.MusicImages.CountForAdminAsync(predicate, cancellationToken);
+        return PagedResult<AdminMusicImageDto>.Ok(entities.Select(e => e.ToAdminDto()), total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCover, int? musicId, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.MusicImages.GetAdminStatusCountsAsync(AdminPredicate(query, isCover, musicId), cancellationToken));
 }

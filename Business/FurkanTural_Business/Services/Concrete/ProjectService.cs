@@ -1,3 +1,5 @@
+using FurkanTural_Domain.Entities;
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Project;
 using FurkanTural_Application.Repositories.Abstract;
@@ -140,4 +142,27 @@ public class ProjectService(IUnitOfWork unitOfWork, ActivityLogger activityLogge
         var summary = await _unitOfWork.Projects.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
+
+    private static Expression<Func<Project, bool>>? AdminPredicate(AdminListQuery query, bool? isCompleted, int? projectId)
+    {
+        var predicate = AdminFilters.Common<Project>(query);
+        if (query.SearchTerm is { } term)
+            predicate = predicate.AndAlso(x => x.Title != null && x.Title.Contains(term));
+        if (isCompleted is { } completed)
+            predicate = predicate.AndAlso(x => x.IsCompleted == completed);
+        if (projectId is { } id)
+            predicate = predicate.AndAlso(x => x.Id == id);
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminProjectDto>> GetAllForAdminPagedAsync(AdminListQuery query, bool? isCompleted, int? projectId, CancellationToken cancellationToken = default)
+    {
+        var predicate = AdminPredicate(query, isCompleted, projectId);
+        var entities = await _unitOfWork.Projects.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var total = await _unitOfWork.Projects.CountForAdminAsync(predicate, cancellationToken);
+        return PagedResult<AdminProjectDto>.Ok(entities.Select(e => e.ToAdminDto()), total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCompleted, int? projectId, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Projects.GetAdminStatusCountsAsync(AdminPredicate(query, isCompleted, projectId), cancellationToken));
 }

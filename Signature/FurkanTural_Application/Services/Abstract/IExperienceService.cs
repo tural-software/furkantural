@@ -11,4 +11,6 @@ public interface IExperienceService : IService<ExperienceDto, CreateExperienceDt
     Task<Result<AdminExperienceDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminExperienceDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminExperienceDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? company, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? company, CancellationToken cancellationToken = default);
 }

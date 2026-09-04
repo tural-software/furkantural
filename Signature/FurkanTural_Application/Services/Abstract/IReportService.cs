@@ -14,4 +14,6 @@ public interface IReportService
     Task<Result<AdminReportDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminReportDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminReportDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? targetType, string? status, string[]? statuses, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? targetType, string? status, string[]? statuses, CancellationToken cancellationToken = default);
 }

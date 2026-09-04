@@ -1,3 +1,5 @@
+using FurkanTural_Domain.Entities;
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Education;
 using FurkanTural_Application.Repositories.Abstract;
@@ -146,4 +148,28 @@ public class EducationService(IUnitOfWork unitOfWork, ActivityLogger activityLog
         var summary = await _unitOfWork.Educations.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
+
+    private static Expression<Func<Education, bool>>? AdminPredicate(AdminListQuery query, string? degree)
+    {
+        var predicate = AdminFilters.Common<Education>(query);
+        if (query.SearchTerm is { } term)
+            predicate = predicate.AndAlso(x => x.Institution != null && x.Institution.Contains(term));
+        if (!string.IsNullOrWhiteSpace(degree))
+        {
+            var degreeTerm = degree.Trim();
+            predicate = predicate.AndAlso(x => x.Degree != null && x.Degree.Contains(degreeTerm));
+        }
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminEducationDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? degree, CancellationToken cancellationToken = default)
+    {
+        var predicate = AdminPredicate(query, degree);
+        var entities = await _unitOfWork.Educations.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var total = await _unitOfWork.Educations.CountForAdminAsync(predicate, cancellationToken);
+        return PagedResult<AdminEducationDto>.Ok(entities.Select(e => e.ToAdminDto()), total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? degree, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Educations.GetAdminStatusCountsAsync(AdminPredicate(query, degree), cancellationToken));
 }

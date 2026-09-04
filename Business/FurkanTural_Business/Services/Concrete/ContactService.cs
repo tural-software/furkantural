@@ -1,3 +1,5 @@
+using FurkanTural_Domain.Entities;
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.DTOs.Contact;
 using FurkanTural_Application.Repositories.Abstract;
@@ -201,4 +203,25 @@ public class ContactService(
         var summary = await _unitOfWork.Contacts.GetAdminSummaryAsync(cancellationToken);
         return Result<EntitySummaryDto>.Ok(summary);
     }
+
+    private static Expression<Func<Contact, bool>>? AdminPredicate(AdminListQuery query, bool? isRead)
+    {
+        var predicate = AdminFilters.Common<Contact>(query);
+        if (query.SearchTerm is { } term)
+            predicate = predicate.AndAlso(x => (x.Name != null && x.Name.Contains(term)) || (x.Email != null && x.Email.Contains(term)));
+        if (isRead is { } read)
+            predicate = predicate.AndAlso(x => x.IsRead == read);
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminContactDto>> GetAllForAdminPagedAsync(AdminListQuery query, bool? isRead, CancellationToken cancellationToken = default)
+    {
+        var predicate = AdminPredicate(query, isRead);
+        var entities = await _unitOfWork.Contacts.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var total = await _unitOfWork.Contacts.CountForAdminAsync(predicate, cancellationToken);
+        return PagedResult<AdminContactDto>.Ok(entities.Select(e => e.ToAdminDto()), total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isRead, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Contacts.GetAdminStatusCountsAsync(AdminPredicate(query, isRead), cancellationToken));
 }

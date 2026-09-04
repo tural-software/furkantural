@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.ChatMessage;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
@@ -164,16 +165,14 @@ public class ChatMessageService(
         if (!areFriends)
             return Result<IEnumerable<ChatMessageDto>>.Fail("Yalnızca arkadaşlarınızla olan sohbeti görüntüleyebilirsiniz.", statusCode: 403);
 
-        var messages = await _unitOfWork.ChatMessages.GetAllAsync(
+        var limit = take is > 0 ? Math.Min(take.Value, 500) : 100;
+        var messages = await _unitOfWork.ChatMessages.GetAllPagedAsync(1, limit,
             x => (x.SenderId == currentUserId && x.ReceiverId == otherUserId) ||
                  (x.SenderId == otherUserId && x.ReceiverId == currentUserId),
+            true,
             cancellationToken);
 
-        var ordered = messages.OrderBy(m => m.CreatedAt).AsEnumerable();
-        if (take is > 0)
-            ordered = ordered.TakeLast(take.Value);
-
-        return Result<IEnumerable<ChatMessageDto>>.Ok(ordered.Select(ToDecryptedDto));
+        return Result<IEnumerable<ChatMessageDto>>.Ok(messages.OrderBy(m => m.CreatedAt).Select(ToDecryptedDto));
     }
 
     private ChatMessageDto ToDecryptedDto(ChatMessage entity)
@@ -329,15 +328,7 @@ public class ChatMessageService(
     }
 
     public async Task<PagedResult<AdminChatMessageDto>> GetAllPagedForAdminAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
-    {
-        var all = (await _unitOfWork.ChatMessages.GetAllForAdminAsync(cancellationToken))
-            .OrderByDescending(e => e.CreatedAt)
-            .ToList();
-
-        var usernames = await LoadAllUsernamesAsync(cancellationToken);
-        var page = all.Skip((pageNumber - 1) * pageSize).Take(pageSize).Select(e => ToDecryptedAdminDto(e, usernames));
-        return PagedResult<AdminChatMessageDto>.Ok(page, all.Count, pageNumber, pageSize);
-    }
+        => await GetAllForAdminPagedAsync(new AdminListQuery { PageNumber = pageNumber, PageSize = pageSize }, null, null, cancellationToken);
 
     public async Task<Result<AdminChatMessageDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -408,4 +399,39 @@ public class ChatMessageService(
         await _activityLogger.LogAsync($"Legacy mesaj içerikleri şifrelendi. Adet: {migrated}", cancellationToken);
         return Result<int>.Ok(migrated);
     }
+
+    private async Task<Expression<Func<ChatMessage, bool>>?> AdminPredicateAsync(AdminListQuery query, string? username, string? messageType, CancellationToken cancellationToken)
+    {
+        var predicate = AdminFilters.Common<ChatMessage>(query);
+        if (!string.IsNullOrWhiteSpace(messageType))
+        {
+            var type = messageType.Trim();
+            predicate = predicate.AndAlso(x => (x.MessageType ?? "Text") == type);
+        }
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            var name = username.Trim();
+            var matched = (await _unitOfWork.Users.GetAllForAdminAsync(u => u.Username != null && u.Username.Contains(name), cancellationToken))
+                .Select(u => u.Id).ToList();
+            predicate = predicate.AndAlso(x => matched.Contains(x.SenderId) || matched.Contains(x.ReceiverId));
+        }
+        return predicate;
+    }
+
+    public async Task<PagedResult<AdminChatMessageDto>> GetAllForAdminPagedAsync(AdminListQuery query, string? username, string? messageType, CancellationToken cancellationToken = default)
+    {
+        var predicate = await AdminPredicateAsync(query, username, messageType, cancellationToken);
+        var page = (await _unitOfWork.ChatMessages.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, true, cancellationToken)).ToList();
+        var total = await _unitOfWork.ChatMessages.CountForAdminAsync(predicate, cancellationToken);
+
+        var userIds = page.SelectMany(e => new[] { e.SenderId, e.ReceiverId }).Distinct().ToList();
+        var usernames = userIds.Count == 0
+            ? new Dictionary<int, string?>()
+            : (await _unitOfWork.Users.GetAllForAdminAsync(u => userIds.Contains(u.Id), cancellationToken)).ToDictionary(u => u.Id, u => (string?)u.Username);
+
+        return PagedResult<AdminChatMessageDto>.Ok(page.Select(e => ToDecryptedAdminDto(e, usernames)), total, query.SafePageNumber, query.SafePageSize);
+    }
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? username, string? messageType, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.ChatMessages.GetAdminStatusCountsAsync(await AdminPredicateAsync(query, username, messageType, cancellationToken), cancellationToken));
 }

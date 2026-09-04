@@ -11,4 +11,6 @@ public interface IRoleService : IService<RoleDto, CreateRoleDto, UpdateRoleDto>
     Task<Result<AdminRoleDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<AdminRoleDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminRoleDto>> GetAllForAdminPagedAsync(AdminListQuery query, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default);
 }
