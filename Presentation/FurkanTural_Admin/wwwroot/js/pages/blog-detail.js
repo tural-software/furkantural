@@ -233,6 +233,22 @@
         }), {});
     }
 
+    function withContent(record, cb) {
+        if (record.content != null) { cb(record); return; }
+        fetch('/Blog/Content/' + record.id, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                if (!data || typeof data.content !== 'string') { throw new Error('no content'); }
+                record.content = data.content;
+                cb(record);
+            })
+            .catch(function () {
+                if (typeof showToast === 'function') {
+                    showToast('error', 'Hata', 'Yazının içeriği alınamadı; sayfayı yenileyip tekrar deneyin.');
+                }
+            });
+    }
+
     function bindAll() {
         var rows = readRows();
 
@@ -245,11 +261,13 @@
                 }
                 if (!record) return;
 
-                DetailModal.open(BlogDetailConfig, record, function (key) {
-                    if (key === 'edit') {
-                        DetailModal.close();
-                        openEditModal(record);
-                    }
+                withContent(record, function (full) {
+                    DetailModal.open(BlogDetailConfig, full, function (key) {
+                        if (key === 'edit') {
+                            DetailModal.close();
+                            openEditModal(full);
+                        }
+                    });
                 });
             });
         });
@@ -262,7 +280,7 @@
                     if (rows[i].id === id) { record = rows[i]; break; }
                 }
                 if (!record) return;
-                openEditModal(record);
+                withContent(record, openEditModal);
             });
         });
 

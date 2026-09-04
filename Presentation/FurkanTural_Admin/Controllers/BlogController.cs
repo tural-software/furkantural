@@ -55,7 +55,8 @@ public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient cat
         int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
         var request = AdminListRequest.From(title, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize)
-            .With("blogId", blogId);
+            .With("blogId", blogId)
+            .With("includeContent", false);
 
         var countsTask = _blogApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
         var pagedTask = _blogApiClient.GetAdminPagedAsync(request, token, cancellationToken);
@@ -107,6 +108,17 @@ public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient cat
 
         var options = await _blogApiClient.GetAdminOptionsAsync(search, null, token, cancellationToken);
         return Json(options.Select(o => new { value = o.Id, label = o.Label ?? "" }));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Content(int id, CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
+
+        var blog = await _blogApiClient.GetByIdForAdminAsync(id, token, cancellationToken);
+        return blog is null ? NotFound() : Json(new { content = blog.Content ?? "" });
     }
 
     [HttpPost]

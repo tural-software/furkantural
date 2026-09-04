@@ -115,7 +115,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetAdminSummaryAsync(cancellationToken));
 
-    /// <summary>Yönetici paneli için süzülmüş ve sayfalı blog listesi</summary>
+    /// <summary>Yönetici paneli için süzülmüş ve sayfalı blog listesi; includeContent=false verilirse içerik sütunu veri tabanından hiç okunmaz ve boş döner</summary>
     [HttpGet("admin/paged")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminPaged(
@@ -127,9 +127,10 @@ public class BlogController(IBlogService blogService) : JwtBaseController
         [FromQuery] int? blogId,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
+        [FromQuery] bool includeContent = true,
         CancellationToken cancellationToken = default)
         => ToActionResult(await _blogService.GetAllForAdminPagedAsync(
-            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), blogId, cancellationToken));
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), blogId, includeContent, cancellationToken));
 
     /// <summary>Yönetici paneli için blog durum sayaçları; süzgeçler sayfalı listeyle aynıdır</summary>
     [HttpGet("admin/counts")]

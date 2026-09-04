@@ -155,4 +155,39 @@ public sealed class FlowTests(LiveSiteFixture site)
         result.answer.Should().BeFalse("Escape vazgeçmek demektir");
         result.hidden.Should().BeTrue("vazgeçilen pencere kapanmalı");
     }
+
+    [SkippableFact]
+    public async Task Yonetim_blog_listesi_icerik_tasimaz_detay_acilirken_ayrica_ceker()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Blog"), async page =>
+        {
+            Skip.If(await page.Locator("button.ft-view-btn").CountAsync() == 0, "Admin/Blog: listelenmiş kayıt yok");
+
+            var embedded = await page.EvaluateAsync<bool>(
+                "() => { const el = document.getElementById('__blog-rows-json'); const rows = el ? JSON.parse(el.textContent || '[]') : []; " +
+                "return rows.some(r => typeof r.content === 'string' && r.content.length > 0); }");
+
+            var response = await page.RunAndWaitForResponseAsync(
+                () => page.Locator("button.ft-view-btn").First.ClickAsync(),
+                r => r.Url.Contains("/Blog/Content/", StringComparison.OrdinalIgnoreCase),
+                new PageRunAndWaitForResponseOptions { Timeout = 15000 });
+
+            await page.Locator(".dm-overlay:not(.dm-overlay--hidden)").WaitForAsync(
+                new LocatorWaitForOptions { Timeout = 10000 });
+
+            var shown = await page.EvaluateAsync<string>(
+                "() => { const fields = Array.from(document.querySelectorAll('.dm-overlay .dm-field')); " +
+                "const f = fields.find(x => ((x.querySelector('.dm-field__label') || {}).textContent || '').trim() === 'İçerik'); " +
+                "if (!f) return ''; const label = f.querySelector('.dm-field__label'); " +
+                "return (f.textContent || '').replace(label ? label.textContent : '', '').trim(); }");
+
+            return (embedded, status: response.Status, shown);
+        });
+
+        result.embedded.Should().BeFalse(
+            "liste satırları içeriği taşımamalı; taşıyorsa sayfa yine yazıların tamamı kadar ağır iner");
+        result.status.Should().Be(200, "detay açılırken içerik tek kayıt ucundan ayrıca çekilmeli");
+        result.shown.Should().NotBeNullOrEmpty().And.NotBe("—",
+            "içerik ayrıca çekildiğine göre modal onu göstermeli; boş kalırsa tembel yükleme kırıktır");
+    }
 }

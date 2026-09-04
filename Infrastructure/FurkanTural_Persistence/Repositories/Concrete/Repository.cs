@@ -220,4 +220,16 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
         if (take is > 0) options = options.Take(take.Value);
         return await options.ToListAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<TResult>> SelectForAdminPagedAsync<TResult>(int pageNumber, int pageSize, Expression<Func<T, TResult>> selector, Expression<Func<T, bool>>? predicate = null, bool descending = false, CancellationToken cancellationToken = default)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking().IgnoreQueryFilters();
+        if (predicate != null) query = query.Where(predicate);
+        query = descending ? query.OrderByDescending(e => e.Id) : query.OrderBy(e => e.Id);
+        return await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(selector)
+            .ToListAsync(cancellationToken);
+    }
 }

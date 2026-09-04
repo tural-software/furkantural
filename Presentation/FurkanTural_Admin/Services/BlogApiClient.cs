@@ -245,4 +245,32 @@ public class BlogApiClient(HttpClient httpClient, ILogger<BlogApiClient> logger)
             return [];
         }
     }
+
+    public async Task<BlogAdminDto?> GetByIdForAdminAsync(int id, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/blog/admin/{id}");
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Blog kaydı alınamadı: {Status}", (int)response.StatusCode);
+                return null;
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<ApiResult<BlogAdminDto>>(JsonOptions, ct);
+            return wrapper?.Data;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Blog kayıt uç noktasına erişilemedi.");
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+    }
 }

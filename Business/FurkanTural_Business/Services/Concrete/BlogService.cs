@@ -222,10 +222,29 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         return predicate;
     }
 
-    public async Task<PagedResult<AdminBlogDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? blogId, CancellationToken cancellationToken = default)
+    public Task<PagedResult<AdminBlogDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? blogId, CancellationToken cancellationToken = default)
+        => GetAllForAdminPagedAsync(query, blogId, true, cancellationToken);
+
+    private static readonly Expression<Func<Blog, Blog>> ListShape = x => new Blog
+    {
+        Id = x.Id,
+        Title = x.Title,
+        IsActive = x.IsActive,
+        IsDeleted = x.IsDeleted,
+        CreatedAt = x.CreatedAt,
+        CreatedBy = x.CreatedBy,
+        UpdatedAt = x.UpdatedAt,
+        UpdatedBy = x.UpdatedBy,
+        DeletedAt = x.DeletedAt,
+        DeletedBy = x.DeletedBy
+    };
+
+    public async Task<PagedResult<AdminBlogDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? blogId, bool includeContent, CancellationToken cancellationToken = default)
     {
         var predicate = AdminPredicate(query, blogId);
-        var entities = await _unitOfWork.Blogs.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
+        var entities = includeContent
+            ? await _unitOfWork.Blogs.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken)
+            : await _unitOfWork.Blogs.SelectForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, ListShape, predicate, false, cancellationToken);
         var total = await _unitOfWork.Blogs.CountForAdminAsync(predicate, cancellationToken);
 
         var dtos = entities.Select(e => e.ToAdminDto()).ToList();

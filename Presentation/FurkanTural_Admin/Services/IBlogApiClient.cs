@@ -16,4 +16,6 @@ public interface IBlogApiClient
     Task<bool> RestoreAsync(int id, string token, CancellationToken ct = default);
 
     Task<IReadOnlyList<AdminOptionDto>> GetAdminOptionsAsync(string? search, int? take, string token, CancellationToken ct = default);
+
+    Task<BlogAdminDto?> GetByIdForAdminAsync(int id, string token, CancellationToken ct = default);
 }
