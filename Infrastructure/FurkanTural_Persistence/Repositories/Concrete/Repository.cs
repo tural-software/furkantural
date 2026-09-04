@@ -211,4 +211,13 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
         public int Count { get; set; }
         public DateTime? LastModifiedDate { get; set; }
     }
+
+    public async Task<IReadOnlyList<AdminOptionDto>> GetAdminOptionsAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, string?>> orderBy, Expression<Func<T, AdminOptionDto>> selector, int? take, CancellationToken cancellationToken = default)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking().IgnoreQueryFilters().Where(e => !e.IsDeleted);
+        if (predicate != null) query = query.Where(predicate);
+        IQueryable<AdminOptionDto> options = query.OrderBy(orderBy).Select(selector);
+        if (take is > 0) options = options.Take(take.Value);
+        return await options.ToListAsync(cancellationToken);
+    }
 }

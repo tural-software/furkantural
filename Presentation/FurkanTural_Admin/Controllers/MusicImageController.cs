@@ -107,20 +107,14 @@ public class MusicImageController(
     }
 
     [HttpGet]
-    public async Task<IActionResult> MusicOptions(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> MusicOptions(string? search, CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var musics = await _musicApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var options = musics
-            .Where(m => !m.IsDeleted)
-            .OrderBy(m => m.Name)
-            .Select(m => new { value = m.Id, label = m.Name ?? $"Müzik #{m.Id}" })
-            .ToList();
-
-        return Json(options);
+        var options = await _musicApiClient.GetAdminOptionsAsync(search, null, token, cancellationToken);
+        return Json(options.Select(o => new { value = o.Id, label = o.Label ?? "" }));
     }
 
     [HttpPost]

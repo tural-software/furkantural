@@ -165,4 +165,12 @@ public class ProjectService(IUnitOfWork unitOfWork, ActivityLogger activityLogge
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCompleted, int? projectId, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Projects.GetAdminStatusCountsAsync(AdminPredicate(query, isCompleted, projectId), cancellationToken));
+
+    public async Task<Result<IReadOnlyList<AdminOptionDto>>> GetAdminOptionsAsync(string? search, int? take, CancellationToken cancellationToken = default)
+    {
+        var term = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
+        Expression<Func<Project, bool>>? predicate = term is null ? null : x => x.Title != null && x.Title.Contains(term);
+        var options = await _unitOfWork.Projects.GetAdminOptionsAsync(predicate, x => x.Title, x => new AdminOptionDto(x.Id, x.Title ?? ""), take, cancellationToken);
+        return Result<IReadOnlyList<AdminOptionDto>>.Ok(options.Select(o => o.Label.Length > 0 ? o : o with { Label = $"Proje #{o.Id}" }).ToList());
+    }
 }

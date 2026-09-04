@@ -235,4 +235,37 @@ public class MusicApiClient(HttpClient httpClient, ILogger<MusicApiClient> logge
             return false;
         }
     }
+
+    public async Task<IReadOnlyList<AdminOptionDto>> GetAdminOptionsAsync(string? search, int? take, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            var query = new List<string>();
+            if (!string.IsNullOrWhiteSpace(search)) query.Add("search=" + Uri.EscapeDataString(search.Trim()));
+            if (take is > 0) query.Add("take=" + take.Value);
+            var path = "/api/v1/music/admin/options" + (query.Count == 0 ? "" : "?" + string.Join("&", query));
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Get, path);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Müzik sözlüğü alınamadı: {Status}", (int)response.StatusCode);
+                return [];
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<ApiResult<List<AdminOptionDto>>>(JsonOptions, ct);
+            return wrapper?.Data ?? [];
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Müzik sözlük uç noktasına erişilemedi.");
+            return [];
+        }
+        catch (TaskCanceledException)
+        {
+            return [];
+        }
+    }
 }

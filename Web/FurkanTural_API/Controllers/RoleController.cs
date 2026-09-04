@@ -106,4 +106,13 @@ public class RoleController(IRoleService roleService) : JwtBaseController
         CancellationToken cancellationToken = default)
         => ToActionResult(await _roleService.GetAdminStatusCountsAsync(
             AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), cancellationToken));
+
+    /// <summary>Açılır liste sözlüğü: silinmemiş kayıtların kimliği ve etiketi. Sayfa değil sözlüktür; take verilirse o kadar, verilmezse tümü döner</summary>
+    [HttpGet("admin/options")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminOptions(
+        [FromQuery] string? search,
+        [FromQuery] int? take,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _roleService.GetAdminOptionsAsync(search, take, cancellationToken));
 }

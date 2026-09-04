@@ -14,24 +14,6 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
     private readonly IRoleApiClient _roleApiClient = roleApiClient;
     private readonly ApiOptions _apiOptions = apiOptions.Value;
 
-    private async Task<(IReadOnlyList<UserAdminDto> users, IReadOnlyList<RoleAdminDto> roles)>
-        FetchUsersAndRoles(string token, CancellationToken cancellationToken)
-    {
-        var usersTask = _userApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var rolesTask = _roleApiClient.GetAllForAdminAsync(token, cancellationToken);
-
-        await Task.WhenAll(usersTask, rolesTask);
-
-        var users = usersTask.Result;
-        var roles = rolesTask.Result;
-
-        var roleDict = roles.ToDictionary(r => r.Id, r => r.Name);
-        foreach (var u in users)
-            u.RoleName = roleDict.GetValueOrDefault(u.RoleId);
-
-        return (users, roles);
-    }
-
     public async Task<IActionResult> Index(
         string? searchUsername,
         int? roleFilter,
@@ -83,7 +65,7 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
 
         var countsTask = _userApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
         var pagedTask = _userApiClient.GetAdminPagedAsync(request, token, cancellationToken);
-        var rolesTask = _roleApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var rolesTask = _roleApiClient.GetAdminOptionsAsync(null, null, token, cancellationToken);
         await Task.WhenAll(countsTask, pagedTask, rolesTask);
 
         var counts = await countsTask;

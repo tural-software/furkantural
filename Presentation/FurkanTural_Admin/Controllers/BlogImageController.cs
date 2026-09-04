@@ -103,20 +103,14 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         return View("TableSchema", vm);
     }
     [HttpGet]
-    public async Task<IActionResult> BlogOptions(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> BlogOptions(string? search, CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var blogs = await _blogApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var options = blogs
-            .Where(b => !b.IsDeleted)
-            .OrderBy(b => b.Title)
-            .Select(b => new { value = b.Id, label = b.Title ?? $"Blog #{b.Id}" })
-            .ToList();
-
-        return Json(options);
+        var options = await _blogApiClient.GetAdminOptionsAsync(search, null, token, cancellationToken);
+        return Json(options.Select(o => new { value = o.Id, label = o.Label ?? "" }));
     }
     [HttpPost]
     [ValidateAntiForgeryToken]

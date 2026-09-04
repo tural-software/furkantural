@@ -10,19 +10,14 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
     private readonly IRoleApiClient _roleApiClient = roleApiClient;
 
     [HttpGet]
-    public async Task<IActionResult> RoleOptions(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RoleOptions(string? search, CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _roleApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var options = all
-            .Where(r => !r.IsDeleted)
-            .OrderBy(r => r.Name)
-            .Select(r => new { value = r.Id, label = r.Name ?? $"Rol #{r.Id}" });
-
-        return Json(options);
+        var options = await _roleApiClient.GetAdminOptionsAsync(search, null, token, cancellationToken);
+        return Json(options.Select(o => new { value = o.Id, label = o.Label ?? "" }));
     }
 
     public async Task<IActionResult> Index(

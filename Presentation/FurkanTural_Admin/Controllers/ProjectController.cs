@@ -10,20 +10,14 @@ public class ProjectController(IProjectApiClient projectApiClient) : Controller
     private readonly IProjectApiClient _projectApiClient = projectApiClient;
 
     [HttpGet]
-    public async Task<IActionResult> ProjectOptions(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> ProjectOptions(string? search, CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var projects = await _projectApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var options = projects
-            .Where(p => !p.IsDeleted)
-            .OrderBy(p => p.Title)
-            .Select(p => new { value = p.Id, label = p.Title ?? $"Proje #{p.Id}" })
-            .ToList();
-
-        return Json(options);
+        var options = await _projectApiClient.GetAdminOptionsAsync(search, null, token, cancellationToken);
+        return Json(options.Select(o => new { value = o.Id, label = o.Label ?? "" }));
     }
 
     public async Task<IActionResult> Index(

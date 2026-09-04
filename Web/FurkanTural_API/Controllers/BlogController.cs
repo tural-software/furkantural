@@ -145,6 +145,15 @@ public class BlogController(IBlogService blogService) : JwtBaseController
         => ToActionResult(await _blogService.GetAdminStatusCountsAsync(
             AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), blogId, cancellationToken));
 
+    /// <summary>Açılır liste sözlüğü: silinmemiş kayıtların kimliği ve etiketi. Sayfa değil sözlüktür; take verilirse o kadar, verilmezse tümü döner</summary>
+    [HttpGet("admin/options")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminOptions(
+        [FromQuery] string? search,
+        [FromQuery] int? take,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _blogService.GetAdminOptionsAsync(search, take, cancellationToken));
+
     /// <summary>Yetkilendirme politikası yalnızca "üye ya da yönetici" der; kaydın kime ait olduğunu söylemez. Sahiplik bu yüzden ayrıca burada denetlenir ve yönetici koşulsuz geçer.</summary>
     private async Task<bool> HasOwnershipOrAdmin(int blogId, CancellationToken cancellationToken)
     {

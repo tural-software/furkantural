@@ -163,4 +163,12 @@ public class RoleService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Roles.GetAdminStatusCountsAsync(AdminPredicate(query), cancellationToken));
+
+    public async Task<Result<IReadOnlyList<AdminOptionDto>>> GetAdminOptionsAsync(string? search, int? take, CancellationToken cancellationToken = default)
+    {
+        var term = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
+        Expression<Func<Role, bool>>? predicate = term is null ? null : x => x.Name != null && x.Name.Contains(term);
+        var options = await _unitOfWork.Roles.GetAdminOptionsAsync(predicate, x => x.Name, x => new AdminOptionDto(x.Id, x.Name ?? ""), take, cancellationToken);
+        return Result<IReadOnlyList<AdminOptionDto>>.Ok(options.Select(o => o.Label.Length > 0 ? o : o with { Label = $"Rol #{o.Id}" }).ToList());
+    }
 }

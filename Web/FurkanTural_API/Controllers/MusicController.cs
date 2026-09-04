@@ -136,4 +136,13 @@ public class MusicController(IMusicService musicService) : JwtBaseController
         CancellationToken cancellationToken = default)
         => ToActionResult(await _musicService.GetAdminStatusCountsAsync(
             AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), artist, musicId, cancellationToken));
+
+    /// <summary>Açılır liste sözlüğü: silinmemiş kayıtların kimliği ve etiketi. Sayfa değil sözlüktür; take verilirse o kadar, verilmezse tümü döner</summary>
+    [HttpGet("admin/options")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> GetAdminOptions(
+        [FromQuery] string? search,
+        [FromQuery] int? take,
+        CancellationToken cancellationToken = default)
+        => ToActionResult(await _musicService.GetAdminOptionsAsync(search, take, cancellationToken));
 }

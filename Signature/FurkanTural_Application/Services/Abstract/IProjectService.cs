@@ -13,4 +13,6 @@ public interface IProjectService : IService<ProjectDto, CreateProjectDto, Update
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
     Task<PagedResult<AdminProjectDto>> GetAllForAdminPagedAsync(AdminListQuery query, bool? isCompleted, int? projectId, CancellationToken cancellationToken = default);
     Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCompleted, int? projectId, CancellationToken cancellationToken = default);
+
+    Task<Result<IReadOnlyList<AdminOptionDto>>> GetAdminOptionsAsync(string? search, int? take, CancellationToken cancellationToken = default);
 }

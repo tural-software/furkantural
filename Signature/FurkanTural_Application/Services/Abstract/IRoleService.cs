@@ -13,4 +13,6 @@ public interface IRoleService : IService<RoleDto, CreateRoleDto, UpdateRoleDto>
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
     Task<PagedResult<AdminRoleDto>> GetAllForAdminPagedAsync(AdminListQuery query, CancellationToken cancellationToken = default);
     Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default);
+
+    Task<Result<IReadOnlyList<AdminOptionDto>>> GetAdminOptionsAsync(string? search, int? take, CancellationToken cancellationToken = default);
 }

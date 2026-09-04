@@ -21,4 +21,6 @@ public interface IReadRepository<T> where T : BaseEntity
     Task<IEnumerable<T>> GetAllForAdminPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? predicate = null, bool descending = false, CancellationToken cancellationToken = default);
     Task<int> CountForAdminAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
     Task<AdminStatusCountsDto> GetAdminStatusCountsAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<AdminOptionDto>> GetAdminOptionsAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, string?>> orderBy, Expression<Func<T, AdminOptionDto>> selector, int? take, CancellationToken cancellationToken = default);
 }

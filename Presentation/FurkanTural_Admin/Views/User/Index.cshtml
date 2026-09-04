@@ -21,7 +21,7 @@
             dateTo         = Model.DateTo ?? "",
             pageNumber     = Model.PageNumber,
             pageSize       = Model.PageSize,
-            roles          = Model.RoleOptions
+            roles          = Model.RoleOptions.Select(r => new { id = r.Id, name = r.Label })
         }, jsonOpts));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>

@@ -14,4 +14,6 @@ public interface IProjectApiClient
     Task<bool> DeleteAsync(int id, string token, CancellationToken ct = default);
     Task<bool> ToggleActiveAsync(int id, string token, CancellationToken ct = default);
     Task<bool> RestoreAsync(int id, string token, CancellationToken ct = default);
+
+    Task<IReadOnlyList<AdminOptionDto>> GetAdminOptionsAsync(string? search, int? take, string token, CancellationToken ct = default);
 }

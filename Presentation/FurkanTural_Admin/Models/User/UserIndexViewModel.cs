@@ -1,11 +1,11 @@
-using FurkanTural_Admin.Models.Role;
+using FurkanTural_Admin.Models.Common;
 
 namespace FurkanTural_Admin.Models.User;
 
 public sealed class UserIndexViewModel
 {
     public IReadOnlyList<UserAdminDto> Rows { get; init; } = [];
-    public IReadOnlyList<RoleAdminDto> RoleOptions { get; init; } = [];
+    public IReadOnlyList<AdminOptionDto> RoleOptions { get; init; } = [];
 
     public int TotalCount { get; init; }
     public int ActiveCount { get; init; }
