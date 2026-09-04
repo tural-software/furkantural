@@ -12,68 +12,6 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
     private readonly IChatMessageApiClient _chatMessageApiClient = chatMessageApiClient;
     private readonly ApiOptions _apiOptions = apiOptions.Value;
 
-    private static ChatMessageIndexViewModel BuildViewModel(
-        IReadOnlyList<ChatMessageAdminDto> all,
-        string? search, string? usernameFilter, string? typeFilter, string? activeFilter, string? deletedFilter,
-        string? dateFrom, string? dateTo, int pageNumber, int pageSize)
-    {
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(search))
-            filtered = filtered.Where(r => r.Content != null && r.Content.Contains(search, StringComparison.OrdinalIgnoreCase));
-
-        // Filtre iki alanı birden tarar: eşleşme gönderende ya da alıcıda olabilir.
-        if (!string.IsNullOrWhiteSpace(usernameFilter))
-            filtered = filtered.Where(r =>
-                (r.SenderUsername != null && r.SenderUsername.Contains(usernameFilter, StringComparison.OrdinalIgnoreCase)) ||
-                (r.ReceiverUsername != null && r.ReceiverUsername.Contains(usernameFilter, StringComparison.OrdinalIgnoreCase)));
-
-        if (!string.IsNullOrWhiteSpace(typeFilter))
-            filtered = filtered.Where(r => string.Equals(r.MessageType ?? "Text", typeFilter, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(r => r.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(r => !r.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(r => r.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(r => !r.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(r => r.CreatedAt >= from);
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(r => r.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.OrderByDescending(r => r.CreatedAt).ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList.Skip((safePageNumber - 1) * safePageSize).Take(safePageSize).ToList();
-
-        return new ChatMessageIndexViewModel
-        {
-            Rows = rows,
-            TotalCount = all.Count,
-            ActiveCount = all.Count(r => r.IsActive && !r.IsDeleted),
-            PassiveCount = all.Count(r => !r.IsActive && !r.IsDeleted),
-            DeletedCount = all.Count(r => r.IsDeleted),
-            SearchContent = search,
-            UsernameFilter = usernameFilter,
-            TypeFilter = typeFilter,
-            ActiveFilter = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom = dateFrom,
-            DateTo = dateTo,
-            PageNumber = safePageNumber,
-            PageSize = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-    }
-
     public async Task<IActionResult> Index(string? search = null, string? usernameFilter = null, string? typeFilter = null, string? activeFilter = null,
         string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
         int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
@@ -82,8 +20,55 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
         if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
 
         ViewData["ApiBaseUrl"] = _apiOptions.BaseUrl;
-        var all = await _chatMessageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        return View(BuildViewModel(all, search, usernameFilter, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
+        return View(await BuildViewModelAsync(token, search, usernameFilter, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> TablePartial(string? search = null, string? usernameFilter = null, string? typeFilter = null, string? activeFilter = null,
+        string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
+        int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token)) return Unauthorized();
+
+        ViewData["ApiBaseUrl"] = _apiOptions.BaseUrl;
+        return PartialView("_ChatMessageTable", await BuildViewModelAsync(token, search, usernameFilter, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken));
+    }
+
+    private async Task<ChatMessageIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? search, string? usernameFilter, string? typeFilter, string? activeFilter, string? deletedFilter,
+        string? dateFrom, string? dateTo, int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(search, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize)
+            .With("username", usernameFilter)
+            .With("messageType", typeFilter);
+
+        var countsTask = _chatMessageApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _chatMessageApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new ChatMessageIndexViewModel
+        {
+            Rows = rows,
+            TotalCount = counts?.Total ?? 0,
+            ActiveCount = counts?.Active ?? 0,
+            PassiveCount = counts?.Passive ?? 0,
+            DeletedCount = counts?.Deleted ?? 0,
+            SearchContent = search,
+            UsernameFilter = usernameFilter,
+            TypeFilter = typeFilter,
+            ActiveFilter = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)
@@ -96,19 +81,6 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
             schemaApiClient, Url, ControllerContext.ActionDescriptor.ControllerName, token, cancellationToken);
 
         return View("TableSchema", vm);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> TablePartial(string? search = null, string? usernameFilter = null, string? typeFilter = null, string? activeFilter = null,
-        string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
-        int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
-    {
-        var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token)) return Unauthorized();
-
-        ViewData["ApiBaseUrl"] = _apiOptions.BaseUrl;
-        var all = await _chatMessageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        return PartialView("_ChatMessageTable", BuildViewModel(all, search, usernameFilter, typeFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
     /// <summary>Sohbet ekini API'nin yetkili ucundan akış olarak sunar. Ekler API'de statik sunulmadığı için panel önizlemesi bu vekil üzerinden çalışır.<para>Dosya adı API'ye geçmeden önce burada da elenir: üst dizine çıkma işaretleri ve yol ayraçları reddedilir, uzantı beyaz listeye sokulur. Asıl yetki denetimini API yapar; buradaki eleme onun yerine geçmez, adres çubuğundan gelen bir değerin ağa çıkmasını engeller.</para></summary>

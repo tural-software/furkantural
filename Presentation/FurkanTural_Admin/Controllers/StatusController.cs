@@ -9,72 +9,81 @@ public class StatusController(IStatusApiClient statusApiClient) : Controller
 {
     private readonly IStatusApiClient _statusApiClient = statusApiClient;
 
-    private static StatusIndexViewModel BuildViewModel(
-        IReadOnlyList<StatusAdminDto> all,
-        string? name, string? groupFilter, string? activeFilter, string? deletedFilter,
-        string? dateFrom, string? dateTo, int pageNumber, int pageSize)
+    public async Task<IActionResult> Index(
+        string? name,
+        string? groupFilter = null,
+        string? activeFilter = null,
+        string? deletedFilter = null,
+        string? dateFrom = null,
+        string? dateTo = null,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
-        var filtered = all.AsEnumerable();
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return RedirectToAction("Login", "Auth");
 
-        if (!string.IsNullOrWhiteSpace(name))
-            filtered = filtered.Where(r =>
-                (r.Name != null && r.Name.Contains(name, StringComparison.OrdinalIgnoreCase)) ||
-                (r.Code != null && r.Code.Contains(name, StringComparison.OrdinalIgnoreCase)));
+        var vm = await BuildViewModelAsync(token, name, groupFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        return View(vm);
+    }
 
-        if (!string.IsNullOrWhiteSpace(groupFilter))
-            filtered = filtered.Where(r => r.Group == groupFilter);
+    [HttpGet]
+    public async Task<IActionResult> TablePartial(
+        string? name,
+        string? groupFilter = null,
+        string? activeFilter = null,
+        string? deletedFilter = null,
+        string? dateFrom = null,
+        string? dateTo = null,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
 
-        if (activeFilter == "active")
-            filtered = filtered.Where(r => r.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(r => !r.IsActive);
+        var vm = await BuildViewModelAsync(token, name, groupFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        return PartialView("_StatusTable", vm);
+    }
 
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(r => r.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(r => !r.IsDeleted);
+    private async Task<StatusIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? name,
+        string? groupFilter,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize).With("group", groupFilter);
 
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(r => r.CreatedAt >= from);
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(r => r.CreatedAt < to.AddDays(1));
+        var countsTask = _statusApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _statusApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
 
-        var filteredList = filtered.OrderBy(r => r.Group).ThenBy(r => r.SortOrder).ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList.Skip((safePageNumber - 1) * safePageSize).Take(safePageSize).ToList();
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
 
         return new StatusIndexViewModel
         {
-            Rows = rows,
-            TotalCount = all.Count,
-            ActiveCount = all.Count(r => r.IsActive && !r.IsDeleted),
-            PassiveCount = all.Count(r => !r.IsActive && !r.IsDeleted),
-            DeletedCount = all.Count(r => r.IsDeleted),
-            SearchName = name,
-            GroupFilter = groupFilter,
-            ActiveFilter = activeFilter,
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchName    = name,
+            GroupFilter   = groupFilter,
+            ActiveFilter  = activeFilter,
             DeletedFilter = deletedFilter,
-            DateFrom = dateFrom,
-            DateTo = dateTo,
-            PageNumber = safePageNumber,
-            PageSize = safePageSize,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
             TotalFiltered = totalFiltered
         };
-    }
-
-    public async Task<IActionResult> Index(string? name, string? groupFilter = null, string? activeFilter = null,
-        string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
-        int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
-    {
-        var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
-
-        var all = await _statusApiClient.GetAllForAdminAsync(token, cancellationToken);
-        return View(BuildViewModel(all, name, groupFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)
@@ -87,18 +96,6 @@ public class StatusController(IStatusApiClient statusApiClient) : Controller
             schemaApiClient, Url, ControllerContext.ActionDescriptor.ControllerName, token, cancellationToken);
 
         return View("TableSchema", vm);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> TablePartial(string? name, string? groupFilter = null, string? activeFilter = null,
-        string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
-        int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
-    {
-        var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token)) return Unauthorized();
-
-        var all = await _statusApiClient.GetAllForAdminAsync(token, cancellationToken);
-        return PartialView("_StatusTable", BuildViewModel(all, name, groupFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
     [HttpPost]

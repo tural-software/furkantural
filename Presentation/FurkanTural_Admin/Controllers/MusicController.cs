@@ -9,70 +9,21 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
 {
     private readonly IMusicApiClient _musicApiClient = musicApiClient;
 
-    private static MusicIndexViewModel BuildViewModel(
-        IReadOnlyList<MusicAdminDto> all,
-        string? searchName, string? searchArtist,
-        string? activeFilter, string? deletedFilter,
-        string? dateFrom, string? dateTo,
-        int pageNumber, int pageSize,
-        int? musicIdFilter = null)
+    [HttpGet]
+    public async Task<IActionResult> MusicOptions(CancellationToken cancellationToken = default)
     {
-        var filtered = all.AsEnumerable();
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
 
-        if (!string.IsNullOrWhiteSpace(searchName))
-            filtered = filtered.Where(m => m.Name != null && m.Name.Contains(searchName, StringComparison.OrdinalIgnoreCase));
-
-        if (!string.IsNullOrWhiteSpace(searchArtist))
-            filtered = filtered.Where(m => m.Artist != null && m.Artist.Contains(searchArtist, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(m => m.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(m => !m.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(m => m.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(m => !m.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(m => m.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(m => m.CreatedAt < to.AddDays(1));
-
-        if (musicIdFilter.HasValue)
-            filtered = filtered.Where(m => m.Id == musicIdFilter.Value);
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
+        var musics = await _musicApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var options = musics
+            .Where(m => !m.IsDeleted)
+            .OrderBy(m => m.Name)
+            .Select(m => new { value = m.Id, label = m.Name ?? $"Müzik #{m.Id}" })
             .ToList();
 
-        return new MusicIndexViewModel
-        {
-            Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(m => m.IsActive && !m.IsDeleted),
-            PassiveCount  = all.Count(m => !m.IsActive && !m.IsDeleted),
-            DeletedCount  = all.Count(m => m.IsDeleted),
-            SearchName    = searchName,
-            SearchArtist  = searchArtist,
-            ActiveFilter  = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            MusicIdFilter = musicIdFilter,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
-            TotalFiltered = totalFiltered
-        };
+        return Json(options);
     }
 
     public async Task<IActionResult> Index(
@@ -91,8 +42,7 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _musicApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, searchName, searchArtist, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, musicId);
+        var vm = await BuildViewModelAsync(token, searchName, searchArtist, activeFilter, deletedFilter, dateFrom, dateTo, musicId, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -113,26 +63,47 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _musicApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, searchName, searchArtist, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, musicId);
+        var vm = await BuildViewModelAsync(token, searchName, searchArtist, activeFilter, deletedFilter, dateFrom, dateTo, musicId, pageNumber, pageSize, cancellationToken);
         return PartialView("_MusicTable", vm);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> MusicOptions(CancellationToken cancellationToken = default)
+    private async Task<MusicIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? searchName,
+        string? searchArtist,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int? musicId,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
-        var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token))
-            return Unauthorized();
+        var request = AdminListRequest.From(searchName, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize).With("artist", searchArtist).With("musicId", musicId);
 
-        var musics = await _musicApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var options = musics
-            .Where(m => !m.IsDeleted)
-            .OrderBy(m => m.Name)
-            .Select(m => new { value = m.Id, label = m.Name ?? $"Müzik #{m.Id}" })
-            .ToList();
+        var countsTask = _musicApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _musicApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
 
-        return Json(options);
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new MusicIndexViewModel
+        {
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchName    = searchName,
+            SearchArtist  = searchArtist,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

@@ -24,61 +24,7 @@ public class ExperienceController(IExperienceApiClient experienceApiClient) : Co
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _experienceApiClient.GetAllForAdminAsync(token, cancellationToken);
-
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(position))
-            filtered = filtered.Where(e => e.Position != null && e.Position.Contains(position, StringComparison.OrdinalIgnoreCase));
-
-        if (!string.IsNullOrWhiteSpace(company))
-            filtered = filtered.Where(e => e.CompanyName != null && e.CompanyName.Contains(company, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(e => e.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(e => !e.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(e => e.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(e => !e.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(e => e.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(e => e.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new ExperienceIndexViewModel
-        {
-            Rows           = rows,
-            TotalCount     = all.Count,
-            ActiveCount    = all.Count(e => e.IsActive && !e.IsDeleted),
-            PassiveCount   = all.Count(e => !e.IsActive && !e.IsDeleted),
-            DeletedCount   = all.Count(e => e.IsDeleted),
-            SearchPosition = position,
-            SearchCompany  = company,
-            ActiveFilter   = activeFilter,
-            DeletedFilter  = deletedFilter,
-            DateFrom       = dateFrom,
-            DateTo         = dateTo,
-            PageNumber     = safePageNumber,
-            PageSize       = safePageSize,
-            TotalFiltered  = totalFiltered
-        };
-
+        var vm = await BuildViewModelAsync(token, position, company, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -98,62 +44,46 @@ public class ExperienceController(IExperienceApiClient experienceApiClient) : Co
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _experienceApiClient.GetAllForAdminAsync(token, cancellationToken);
-
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(position))
-            filtered = filtered.Where(e => e.Position != null && e.Position.Contains(position, StringComparison.OrdinalIgnoreCase));
-
-        if (!string.IsNullOrWhiteSpace(company))
-            filtered = filtered.Where(e => e.CompanyName != null && e.CompanyName.Contains(company, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(e => e.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(e => !e.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(e => e.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(e => !e.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(e => e.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(e => e.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new ExperienceIndexViewModel
-        {
-            Rows           = rows,
-            TotalCount     = all.Count,
-            ActiveCount    = all.Count(e => e.IsActive && !e.IsDeleted),
-            PassiveCount   = all.Count(e => !e.IsActive && !e.IsDeleted),
-            DeletedCount   = all.Count(e => e.IsDeleted),
-            SearchPosition = position,
-            SearchCompany  = company,
-            ActiveFilter   = activeFilter,
-            DeletedFilter  = deletedFilter,
-            DateFrom       = dateFrom,
-            DateTo         = dateTo,
-            PageNumber     = safePageNumber,
-            PageSize       = safePageSize,
-            TotalFiltered  = totalFiltered
-        };
-
+        var vm = await BuildViewModelAsync(token, position, company, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return PartialView("_ExperienceTable", vm);
+    }
+
+    private async Task<ExperienceIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? position,
+        string? company,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(position, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize).With("company", company);
+
+        var countsTask = _experienceApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _experienceApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new ExperienceIndexViewModel
+        {
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchPosition = position,
+            SearchCompany = company,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

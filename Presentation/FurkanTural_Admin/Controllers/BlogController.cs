@@ -25,64 +25,7 @@ public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient cat
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _blogApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var categories = await _categoryApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var availableCategories = categories.Where(c => c.IsActive && !c.IsDeleted).ToList();
-
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(title))
-            filtered = filtered.Where(b => b.Title != null && b.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(b => b.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(b => !b.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(b => b.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(b => !b.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(b => b.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(b => b.CreatedAt < to.AddDays(1));
-
-        if (blogId.HasValue)
-            filtered = filtered.Where(b => b.Id == blogId.Value);
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new BlogIndexViewModel
-        {
-            Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(b => b.IsActive && !b.IsDeleted),
-            PassiveCount  = all.Count(b => !b.IsActive && !b.IsDeleted),
-            DeletedCount  = all.Count(b => b.IsDeleted),
-            SearchTitle   = title,
-            ActiveFilter  = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            BlogIdFilter  = blogId,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
-            TotalFiltered = totalFiltered,
-            AvailableCategories = availableCategories
-        };
-
+        var vm = await BuildViewModelAsync(token, title, activeFilter, deletedFilter, dateFrom, dateTo, blogId, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -102,62 +45,45 @@ public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient cat
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _blogApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var vm = await BuildViewModelAsync(token, title, activeFilter, deletedFilter, dateFrom, dateTo, blogId, pageNumber, pageSize, cancellationToken);
+        return PartialView("_BlogTable", vm);
+    }
 
-        var filtered = all.AsEnumerable();
+    private async Task<BlogIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? title, string? activeFilter, string? deletedFilter, string? dateFrom, string? dateTo, int? blogId,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(title, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize)
+            .With("blogId", blogId);
 
-        if (!string.IsNullOrWhiteSpace(title))
-            filtered = filtered.Where(b => b.Title != null && b.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+        var countsTask = _blogApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _blogApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        var categoriesTask = _categoryApiClient.GetAllForAdminAsync(token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask, categoriesTask);
 
-        if (activeFilter == "active")
-            filtered = filtered.Where(b => b.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(b => !b.IsActive);
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+        var availableCategories = (await categoriesTask).Where(c => c.IsActive && !c.IsDeleted).ToList();
 
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(b => b.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(b => !b.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(b => b.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(b => b.CreatedAt < to.AddDays(1));
-
-        if (blogId.HasValue)
-            filtered = filtered.Where(b => b.Id == blogId.Value);
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new BlogIndexViewModel
+        return new BlogIndexViewModel
         {
             Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(b => b.IsActive && !b.IsDeleted),
-            PassiveCount  = all.Count(b => !b.IsActive && !b.IsDeleted),
-            DeletedCount  = all.Count(b => b.IsDeleted),
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
             SearchTitle   = title,
             ActiveFilter  = activeFilter,
             DeletedFilter = deletedFilter,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
             BlogIdFilter  = blogId,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
-            TotalFiltered = totalFiltered
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered,
+            AvailableCategories = availableCategories
         };
-
-        return PartialView("_BlogTable", vm);
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

@@ -1,3 +1,4 @@
+using FurkanTural_Admin.Helpers;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -53,6 +54,73 @@ public class UserApiClient(HttpClient httpClient, ILogger<UserApiClient> logger)
         {
             _logger.LogError(ex, "Kullanıcı listesi alınırken beklenmeyen hata oluştu.");
             return [];
+        }
+    }
+
+    public async Task<(IReadOnlyList<UserAdminDto> Rows, int TotalFiltered)> GetAdminPagedAsync(AdminListRequest request, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Get, request.ToQueryString("/api/v1/user/admin/paged", paged: true));
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Kullanıcı listesi alınamadı: {Status}", (int)response.StatusCode);
+                return ([], 0);
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<PagedApiResult<UserAdminDto>>(JsonOptions, ct);
+            var rows = wrapper?.Data?.ToList().AsReadOnly() ?? (IReadOnlyList<UserAdminDto>)[];
+            return (rows, wrapper?.TotalCount ?? 0);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Kullanıcı listesi uç noktasına erişilemedi.");
+            return ([], 0);
+        }
+        catch (TaskCanceledException)
+        {
+            return ([], 0);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Kullanıcı listesi alınırken beklenmeyen hata oluştu.");
+            return ([], 0);
+        }
+    }
+
+    public async Task<StatusCountsModel?> GetAdminCountsAsync(AdminListRequest request, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Get, request.ToQueryString("/api/v1/user/admin/counts", paged: false));
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Kullanıcı sayaçları alınamadı: {Status}", (int)response.StatusCode);
+                return null;
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<ApiResult<StatusCountsModel>>(JsonOptions, ct);
+            return wrapper?.Data;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Kullanıcı sayaç uç noktasına erişilemedi.");
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Kullanıcı sayaçları alınırken beklenmeyen hata oluştu.");
+            return null;
         }
     }
 

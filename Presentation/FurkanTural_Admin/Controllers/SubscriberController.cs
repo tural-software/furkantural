@@ -23,57 +23,7 @@ public class SubscriberController(ISubscriberApiClient subscriberApiClient) : Co
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _subscriberApiClient.GetAllForAdminAsync(token, cancellationToken);
-
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(email))
-            filtered = filtered.Where(s => s.Email != null && s.Email.Contains(email, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(s => s.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(s => !s.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(s => s.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(s => !s.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(s => s.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(s => s.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new SubscriberIndexViewModel
-        {
-            Rows = rows,
-            TotalCount = all.Count,
-            ActiveCount = all.Count(s => s.IsActive && !s.IsDeleted),
-            PassiveCount = all.Count(s => !s.IsActive && !s.IsDeleted),
-            DeletedCount = all.Count(s => s.IsDeleted),
-            SearchEmail = email,
-            ActiveFilter = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom = dateFrom,
-            DateTo = dateTo,
-            PageNumber = safePageNumber,
-            PageSize = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-
+        var vm = await BuildViewModelAsync(token, email, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -92,58 +42,44 @@ public class SubscriberController(ISubscriberApiClient subscriberApiClient) : Co
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _subscriberApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var vm = await BuildViewModelAsync(token, email, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        return PartialView("_SubscriberTable", vm);
+    }
 
-        var filtered = all.AsEnumerable();
+    private async Task<SubscriberIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? email,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(email, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
 
-        if (!string.IsNullOrWhiteSpace(email))
-            filtered = filtered.Where(s => s.Email != null && s.Email.Contains(email, StringComparison.OrdinalIgnoreCase));
+        var countsTask = _subscriberApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _subscriberApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
 
-        if (activeFilter == "active")
-            filtered = filtered.Where(s => s.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(s => !s.IsActive);
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
 
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(s => s.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(s => !s.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(s => s.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(s => s.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new SubscriberIndexViewModel
+        return new SubscriberIndexViewModel
         {
             Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(s => s.IsActive && !s.IsDeleted),
-            PassiveCount  = all.Count(s => !s.IsActive && !s.IsDeleted),
-            DeletedCount  = all.Count(s => s.IsDeleted),
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
             SearchEmail   = email,
             ActiveFilter  = activeFilter,
             DeletedFilter = deletedFilter,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
             TotalFiltered = totalFiltered
         };
-
-        return PartialView("_SubscriberTable", vm);
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

@@ -1,3 +1,5 @@
+using FurkanTural_Admin.Models.Common;
+using FurkanTural_Admin.Helpers;
 using FurkanTural_Admin.Models.ChatMessage;
 
 namespace FurkanTural_Admin.Services;
@@ -5,6 +7,8 @@ namespace FurkanTural_Admin.Services;
 public interface IChatMessageApiClient
 {
     Task<IReadOnlyList<ChatMessageAdminDto>> GetAllForAdminAsync(string token, CancellationToken ct = default);
+    Task<(IReadOnlyList<ChatMessageAdminDto> Rows, int TotalFiltered)> GetAdminPagedAsync(AdminListRequest request, string token, CancellationToken ct = default);
+    Task<StatusCountsModel?> GetAdminCountsAsync(AdminListRequest request, string token, CancellationToken ct = default);
     Task<bool> ToggleActiveAsync(int id, string token, CancellationToken ct = default);
     Task<bool> RestoreAsync(int id, string token, CancellationToken ct = default);
 

@@ -1,3 +1,4 @@
+using FurkanTural_Admin.Models.Common;
 using FluentAssertions;
 using FurkanTural_Admin.Controllers;
 using FurkanTural_Admin.Helpers;
@@ -20,25 +21,30 @@ public class AdminRelationsTests
         IReadOnlyList<BlogImageAdminDto>? blogImages = null,
         IReadOnlyList<UserAdminDto>? users = null)
     {
+        static int Wanted(AdminListRequest request, string key)
+            => int.TryParse(request.Extra(key), out var id) ? id : -1;
+
         var blogImageClient = new Mock<IBlogImageApiClient>(MockBehavior.Loose);
         blogImageClient
-            .Setup(c => c.GetAllForAdminAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(blogImages ?? []);
+            .Setup(c => c.GetAdminCountsAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AdminListRequest r, string _, CancellationToken _) =>
+                new StatusCountsModel { Total = (blogImages ?? []).Count(b => b.BlogId == Wanted(r, "blogId")) });
 
         var musicImageClient = new Mock<IMusicImageApiClient>(MockBehavior.Loose);
         musicImageClient
-            .Setup(c => c.GetAllForAdminAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Array.Empty<MusicImageAdminDto>());
+            .Setup(c => c.GetAdminCountsAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new StatusCountsModel());
 
         var projectImageClient = new Mock<IProjectImageApiClient>(MockBehavior.Loose);
         projectImageClient
-            .Setup(c => c.GetAllForAdminAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Array.Empty<ProjectImageAdminDto>());
+            .Setup(c => c.GetAdminCountsAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new StatusCountsModel());
 
         var userClient = new Mock<IUserApiClient>(MockBehavior.Loose);
         userClient
-            .Setup(c => c.GetAllForAdminAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(users ?? []);
+            .Setup(c => c.GetAdminCountsAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AdminListRequest r, string _, CancellationToken _) =>
+                new StatusCountsModel { Total = (users ?? []).Count(u => u.RoleId == Wanted(r, "roleId")) });
 
         return new RelatedController(
             blogImageClient.Object, musicImageClient.Object, projectImageClient.Object, userClient.Object)

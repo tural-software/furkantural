@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace FurkanTural_Admin.Controllers;
 
-/// <summary>Detay çekmecesindeki "İlişkili" sekmesi buradan beslenir: bir kaydın alt kayıt sayısı ve süzülmüş listeye giden adres. Sayım Admin tarafında yapılır; API sözleşmesi değişmez.</summary>
+/// <summary>Detay çekmecesindeki "İlişkili" sekmesi buradan beslenir: bir kaydın alt kayıt sayısı ve süzülmüş listeye giden adres. Sayı, alt modülün sayaç ucundan üst kaydın kimliğiyle süzülerek gelir; satır taşınmaz. API sözleşmesi değişmez.</summary>
 public class RelatedController(
     IBlogImageApiClient blogImageApiClient,
     IMusicImageApiClient musicImageApiClient,
@@ -52,17 +52,17 @@ public class RelatedController(
     private static RouteValueDictionary BuildFilter(string key, int id) =>
         new() { [key] = id };
 
-    private async Task<int> CountAsync(AdminRelation relation, int id, string token, CancellationToken cancellationToken) =>
-        relation.ChildController switch
+    private async Task<int> CountAsync(AdminRelation relation, int id, string token, CancellationToken cancellationToken)
+    {
+        var counts = relation.ChildController switch
         {
-            "BlogImage" => (await _blogImageApiClient.GetAllForAdminAsync(token, cancellationToken))
-                .Count(x => x.BlogId == id),
-            "MusicImage" => (await _musicImageApiClient.GetAllForAdminAsync(token, cancellationToken))
-                .Count(x => x.MusicId == id),
-            "ProjectImage" => (await _projectImageApiClient.GetAllForAdminAsync(token, cancellationToken))
-                .Count(x => x.ProjectId == id),
-            "User" => (await _userApiClient.GetAllForAdminAsync(token, cancellationToken))
-                .Count(x => x.RoleId == id),
-            _ => 0
+            "BlogImage" => await _blogImageApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered.With("blogId", id), token, cancellationToken),
+            "MusicImage" => await _musicImageApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered.With("musicId", id), token, cancellationToken),
+            "ProjectImage" => await _projectImageApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered.With("projectId", id), token, cancellationToken),
+            "User" => await _userApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered.With("roleId", id), token, cancellationToken),
+            _ => null
         };
+
+        return counts?.Total ?? 0;
+    }
 }

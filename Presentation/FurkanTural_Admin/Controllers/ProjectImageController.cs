@@ -14,78 +14,6 @@ public class ProjectImageController(
     private readonly IProjectApiClient      _projectApiClient      = projectApiClient;
     private readonly string                 _apiBaseUrl            = configuration["Api:BaseUrl"]?.TrimEnd('/') ?? string.Empty;
 
-    private static ProjectImageIndexViewModel BuildViewModel(
-        IReadOnlyList<ProjectImageAdminDto> all,
-        string? searchUrl,
-        string? isCoverFilter,
-        string? activeFilter,
-        string? deletedFilter,
-        int? projectIdFilter,
-        string? dateFrom,
-        string? dateTo,
-        int pageNumber,
-        int pageSize)
-    {
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(searchUrl))
-            filtered = filtered.Where(p => p.Url != null && p.Url.Contains(searchUrl, StringComparison.OrdinalIgnoreCase));
-
-        if (isCoverFilter == "cover")
-            filtered = filtered.Where(p => p.IsCover);
-        else if (isCoverFilter == "notCover")
-            filtered = filtered.Where(p => !p.IsCover);
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(p => p.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(p => !p.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(p => p.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(p => !p.IsDeleted);
-
-        if (projectIdFilter.HasValue)
-            filtered = filtered.Where(p => p.ProjectId == projectIdFilter.Value);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(p => p.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(p => p.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        return new ProjectImageIndexViewModel
-        {
-            Rows            = rows,
-            TotalCount      = all.Count,
-            ActiveCount     = all.Count(p => p.IsActive && !p.IsDeleted),
-            PassiveCount    = all.Count(p => !p.IsActive && !p.IsDeleted),
-            DeletedCount    = all.Count(p => p.IsDeleted),
-            SearchUrl       = searchUrl,
-            IsCoverFilter   = isCoverFilter,
-            ActiveFilter    = activeFilter,
-            DeletedFilter   = deletedFilter,
-            ProjectIdFilter = projectIdFilter,
-            DateFrom        = dateFrom,
-            DateTo          = dateTo,
-            PageNumber      = safePageNumber,
-            PageSize        = safePageSize,
-            TotalFiltered   = totalFiltered
-        };
-    }
-
     public async Task<IActionResult> Index(
         string? url,
         string? isCoverFilter,
@@ -95,17 +23,14 @@ public class ProjectImageController(
         string? dateFrom,
         string? dateTo,
         int pageNumber = 1,
-        int pageSize   = 10,
+        int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _projectImageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm  = BuildViewModel(all, url, isCoverFilter, activeFilter, deletedFilter, projectId, dateFrom, dateTo, pageNumber, pageSize);
-
-        ViewData["ApiBaseUrl"] = _apiBaseUrl;
+        var vm = await BuildViewModelAsync(token, url, isCoverFilter, activeFilter, deletedFilter, projectId, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -119,17 +44,54 @@ public class ProjectImageController(
         string? dateFrom,
         string? dateTo,
         int pageNumber = 1,
-        int pageSize   = 10,
+        int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _projectImageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm  = BuildViewModel(all, url, isCoverFilter, activeFilter, deletedFilter, projectId, dateFrom, dateTo, pageNumber, pageSize);
-
+        var vm = await BuildViewModelAsync(token, url, isCoverFilter, activeFilter, deletedFilter, projectId, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return PartialView("_ProjectImageTable", vm);
+    }
+
+    private async Task<ProjectImageIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? url,
+        string? isCoverFilter,
+        string? activeFilter,
+        string? deletedFilter,
+        int? projectId,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(url, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize).With("isCover", isCoverFilter switch { "cover" => true, "notCover" => false, _ => (bool?)null }).With("projectId", projectId);
+
+        var countsTask = _projectImageApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _projectImageApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new ProjectImageIndexViewModel
+        {
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchUrl     = url,
+            IsCoverFilter = isCoverFilter,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

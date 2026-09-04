@@ -23,57 +23,7 @@ public class SkillController(ISkillApiClient skillApiClient) : Controller
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _skillApiClient.GetAllForAdminAsync(token, cancellationToken);
-
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(name))
-            filtered = filtered.Where(s => s.Name != null && s.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(s => s.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(s => !s.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(s => s.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(s => !s.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(s => s.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(s => s.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new SkillIndexViewModel
-        {
-            Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(s => s.IsActive && !s.IsDeleted),
-            PassiveCount  = all.Count(s => !s.IsActive && !s.IsDeleted),
-            DeletedCount  = all.Count(s => s.IsDeleted),
-            SearchName    = name,
-            ActiveFilter  = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-
+        var vm = await BuildViewModelAsync(token, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -92,58 +42,40 @@ public class SkillController(ISkillApiClient skillApiClient) : Controller
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _skillApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var vm = await BuildViewModelAsync(token, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        return PartialView("_SkillTable", vm);
+    }
 
-        var filtered = all.AsEnumerable();
+    private async Task<SkillIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? name, string? activeFilter, string? deletedFilter, string? dateFrom, string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
 
-        if (!string.IsNullOrWhiteSpace(name))
-            filtered = filtered.Where(s => s.Name != null && s.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+        var countsTask = _skillApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _skillApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
 
-        if (activeFilter == "active")
-            filtered = filtered.Where(s => s.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(s => !s.IsActive);
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
 
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(s => s.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(s => !s.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(s => s.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(s => s.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new SkillIndexViewModel
+        return new SkillIndexViewModel
         {
             Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(s => s.IsActive && !s.IsDeleted),
-            PassiveCount  = all.Count(s => !s.IsActive && !s.IsDeleted),
-            DeletedCount  = all.Count(s => s.IsDeleted),
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
             SearchName    = name,
             ActiveFilter  = activeFilter,
             DeletedFilter = deletedFilter,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
             TotalFiltered = totalFiltered
         };
-
-        return PartialView("_SkillTable", vm);
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

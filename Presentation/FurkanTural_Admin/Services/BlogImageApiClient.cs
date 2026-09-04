@@ -1,3 +1,5 @@
+using FurkanTural_Admin.Models.Common;
+using FurkanTural_Admin.Helpers;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -35,6 +37,73 @@ public class BlogImageApiClient(HttpClient httpClient, ILogger<BlogImageApiClien
         catch (HttpRequestException ex) { _logger.LogWarning(ex, "BlogImage listesi uç noktasına erişilemedi."); return []; }
         catch (TaskCanceledException) { return []; }
         catch (Exception ex) { _logger.LogError(ex, "BlogImage listesi alınırken beklenmeyen hata."); return []; }
+    }
+
+    public async Task<(IReadOnlyList<BlogImageAdminDto> Rows, int TotalFiltered)> GetAdminPagedAsync(AdminListRequest request, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Get, request.ToQueryString("/api/v1/blogimage/admin/paged", paged: true));
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Blog görseli listesi alınamadı: {Status}", (int)response.StatusCode);
+                return ([], 0);
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<PagedApiResult<BlogImageAdminDto>>(JsonOptions, ct);
+            var rows = wrapper?.Data?.ToList().AsReadOnly() ?? (IReadOnlyList<BlogImageAdminDto>)[];
+            return (rows, wrapper?.TotalCount ?? 0);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Blog görseli listesi uç noktasına erişilemedi.");
+            return ([], 0);
+        }
+        catch (TaskCanceledException)
+        {
+            return ([], 0);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Blog görseli listesi alınırken beklenmeyen hata oluştu.");
+            return ([], 0);
+        }
+    }
+
+    public async Task<StatusCountsModel?> GetAdminCountsAsync(AdminListRequest request, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Get, request.ToQueryString("/api/v1/blogimage/admin/counts", paged: false));
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Blog görseli sayaçları alınamadı: {Status}", (int)response.StatusCode);
+                return null;
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<ApiResult<StatusCountsModel>>(JsonOptions, ct);
+            return wrapper?.Data;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Blog görseli sayaç uç noktasına erişilemedi.");
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Blog görseli sayaçları alınırken beklenmeyen hata oluştu.");
+            return null;
+        }
     }
 
     public async Task<int?> CreateAsync(IFormFile imageFile, string? altText, bool isCover, int blogId, string token, CancellationToken ct = default)

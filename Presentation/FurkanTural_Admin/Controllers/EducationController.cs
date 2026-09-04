@@ -24,61 +24,7 @@ public class EducationController(IEducationApiClient educationApiClient) : Contr
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _educationApiClient.GetAllForAdminAsync(token, cancellationToken);
-
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(institution))
-            filtered = filtered.Where(e => e.Institution != null && e.Institution.Contains(institution, StringComparison.OrdinalIgnoreCase));
-
-        if (!string.IsNullOrWhiteSpace(degree))
-            filtered = filtered.Where(e => e.Degree != null && e.Degree.Contains(degree, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(e => e.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(e => !e.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(e => e.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(e => !e.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(e => e.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(e => e.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new EducationIndexViewModel
-        {
-            Rows              = rows,
-            TotalCount        = all.Count,
-            ActiveCount       = all.Count(e => e.IsActive && !e.IsDeleted),
-            PassiveCount      = all.Count(e => !e.IsActive && !e.IsDeleted),
-            DeletedCount      = all.Count(e => e.IsDeleted),
-            SearchInstitution = institution,
-            SearchDegree      = degree,
-            ActiveFilter      = activeFilter,
-            DeletedFilter     = deletedFilter,
-            DateFrom          = dateFrom,
-            DateTo            = dateTo,
-            PageNumber        = safePageNumber,
-            PageSize          = safePageSize,
-            TotalFiltered     = totalFiltered
-        };
-
+        var vm = await BuildViewModelAsync(token, institution, degree, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -98,62 +44,46 @@ public class EducationController(IEducationApiClient educationApiClient) : Contr
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _educationApiClient.GetAllForAdminAsync(token, cancellationToken);
-
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(institution))
-            filtered = filtered.Where(e => e.Institution != null && e.Institution.Contains(institution, StringComparison.OrdinalIgnoreCase));
-
-        if (!string.IsNullOrWhiteSpace(degree))
-            filtered = filtered.Where(e => e.Degree != null && e.Degree.Contains(degree, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(e => e.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(e => !e.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(e => e.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(e => !e.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(e => e.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(e => e.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new EducationIndexViewModel
-        {
-            Rows              = rows,
-            TotalCount        = all.Count,
-            ActiveCount       = all.Count(e => e.IsActive && !e.IsDeleted),
-            PassiveCount      = all.Count(e => !e.IsActive && !e.IsDeleted),
-            DeletedCount      = all.Count(e => e.IsDeleted),
-            SearchInstitution = institution,
-            SearchDegree      = degree,
-            ActiveFilter      = activeFilter,
-            DeletedFilter     = deletedFilter,
-            DateFrom          = dateFrom,
-            DateTo            = dateTo,
-            PageNumber        = safePageNumber,
-            PageSize          = safePageSize,
-            TotalFiltered     = totalFiltered
-        };
-
+        var vm = await BuildViewModelAsync(token, institution, degree, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return PartialView("_EducationTable", vm);
+    }
+
+    private async Task<EducationIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? institution,
+        string? degree,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(institution, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize).With("degree", degree);
+
+        var countsTask = _educationApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _educationApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new EducationIndexViewModel
+        {
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchInstitution = institution,
+            SearchDegree  = degree,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

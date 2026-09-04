@@ -32,69 +32,6 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
         return (users, roles);
     }
 
-    private static UserIndexViewModel BuildViewModel(
-        IReadOnlyList<UserAdminDto> all,
-        IReadOnlyList<RoleAdminDto> roles,
-        string? searchUsername, int? roleFilter,
-        string? activeFilter, string? deletedFilter,
-        string? dateFrom, string? dateTo,
-        int pageNumber, int pageSize)
-    {
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(searchUsername))
-            filtered = filtered.Where(u => u.Username != null && u.Username.Contains(searchUsername, StringComparison.OrdinalIgnoreCase));
-
-        if (roleFilter.HasValue && roleFilter.Value > 0)
-            filtered = filtered.Where(u => u.RoleId == roleFilter.Value);
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(u => u.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(u => !u.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(u => u.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(u => !u.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(u => u.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(u => u.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        return new UserIndexViewModel
-        {
-            Rows          = rows,
-            RoleOptions   = roles,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(u => u.IsActive && !u.IsDeleted),
-            PassiveCount  = all.Count(u => !u.IsActive && !u.IsDeleted),
-            DeletedCount  = all.Count(u => u.IsDeleted),
-            SearchUsername = searchUsername,
-            RoleFilter    = roleFilter,
-            ActiveFilter  = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-    }
-
     public async Task<IActionResult> Index(
         string? searchUsername,
         int? roleFilter,
@@ -111,8 +48,7 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
             return RedirectToAction("Login", "Auth");
 
         ViewData["ApiBaseUrl"] = _apiOptions.BaseUrl;
-        var (all, roles) = await FetchUsersAndRoles(token, cancellationToken);
-        var vm = BuildViewModel(all, roles, searchUsername, roleFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var vm = await BuildViewModelAsync(token, searchUsername, roleFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -133,9 +69,44 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
             return Unauthorized();
 
         ViewData["ApiBaseUrl"] = _apiOptions.BaseUrl;
-        var (all, roles) = await FetchUsersAndRoles(token, cancellationToken);
-        var vm = BuildViewModel(all, roles, searchUsername, roleFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var vm = await BuildViewModelAsync(token, searchUsername, roleFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return PartialView("_UserTable", vm);
+    }
+
+    private async Task<UserIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? searchUsername, int? roleFilter, string? activeFilter, string? deletedFilter, string? dateFrom, string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(searchUsername, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize)
+            .With("roleId", roleFilter);
+
+        var countsTask = _userApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _userApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        var rolesTask = _roleApiClient.GetAllForAdminAsync(token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask, rolesTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new UserIndexViewModel
+        {
+            Rows          = rows,
+            RoleOptions   = await rolesTask,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchUsername = searchUsername,
+            RoleFilter    = roleFilter,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

@@ -11,78 +11,6 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
     private readonly IBlogApiClient _blogApiClient = blogApiClient;
     private readonly string _apiBaseUrl = configuration["Api:BaseUrl"]?.TrimEnd('/') ?? string.Empty;
 
-    private static BlogImageIndexViewModel BuildViewModel(
-        IReadOnlyList<BlogImageAdminDto> all,
-        string? searchUrl,
-        string? isCoverFilter,
-        string? activeFilter,
-        string? deletedFilter,
-        int? blogIdFilter,
-        string? dateFrom,
-        string? dateTo,
-        int pageNumber,
-        int pageSize)
-    {
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(searchUrl))
-            filtered = filtered.Where(b => b.Url != null && b.Url.Contains(searchUrl, StringComparison.OrdinalIgnoreCase));
-
-        if (isCoverFilter == "cover")
-            filtered = filtered.Where(b => b.IsCover);
-        else if (isCoverFilter == "notCover")
-            filtered = filtered.Where(b => !b.IsCover);
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(b => b.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(b => !b.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(b => b.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(b => !b.IsDeleted);
-
-        if (blogIdFilter.HasValue)
-            filtered = filtered.Where(b => b.BlogId == blogIdFilter.Value);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(b => b.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(b => b.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        return new BlogImageIndexViewModel
-        {
-            Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(b => b.IsActive && !b.IsDeleted),
-            PassiveCount  = all.Count(b => !b.IsActive && !b.IsDeleted),
-            DeletedCount  = all.Count(b => b.IsDeleted),
-            SearchUrl     = searchUrl,
-            IsCoverFilter = isCoverFilter,
-            ActiveFilter  = activeFilter,
-            DeletedFilter = deletedFilter,
-            BlogIdFilter  = blogIdFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-    }
-
     public async Task<IActionResult> Index(
         string? url,
         string? isCoverFilter,
@@ -99,10 +27,7 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _blogImageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, url, isCoverFilter, activeFilter, deletedFilter, blogId, dateFrom, dateTo, pageNumber, pageSize);
-
-        ViewData["ApiBaseUrl"] = _apiBaseUrl;
+        var vm = await BuildViewModelAsync(token, url, isCoverFilter, activeFilter, deletedFilter, blogId, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -123,10 +48,47 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _blogImageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, url, isCoverFilter, activeFilter, deletedFilter, blogId, dateFrom, dateTo, pageNumber, pageSize);
-
+        var vm = await BuildViewModelAsync(token, url, isCoverFilter, activeFilter, deletedFilter, blogId, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return PartialView("_BlogImageTable", vm);
+    }
+
+    private async Task<BlogImageIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? url,
+        string? isCoverFilter,
+        string? activeFilter,
+        string? deletedFilter,
+        int? blogId,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(url, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize).With("isCover", isCoverFilter switch { "cover" => true, "notCover" => false, _ => (bool?)null }).With("blogId", blogId);
+
+        var countsTask = _blogImageApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _blogImageApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new BlogImageIndexViewModel
+        {
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchUrl     = url,
+            IsCoverFilter = isCoverFilter,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

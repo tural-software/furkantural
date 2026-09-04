@@ -67,7 +67,7 @@
                     <label>İçerik ara</label>
                     <div class="filter-input-wrap">
                         @await Html.PartialAsync("_Icons", "search")
-                        <input aria-label="İçerik ara" type="text" name="search" value="@Model.SearchContent" class="filter-input filter-input--search" placeholder="Mesaj içeriği ara..." />
+                        <input aria-label="İçerik ara" type="text" name="search" value="@Model.SearchContent" class="filter-input filter-input--search" placeholder="İçerik araması şifreli mesajlarda kullanılamaz" title="Mesaj içerikleri şifreli saklanır; sunucu tarafında içerik araması yapılamaz. Kullanıcı adı, tür ve tarihle süzün." disabled />
                     </div>
                 </div>
                 <div class="filter-group">

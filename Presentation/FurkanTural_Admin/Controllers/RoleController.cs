@@ -9,143 +9,6 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
 {
     private readonly IRoleApiClient _roleApiClient = roleApiClient;
 
-    public async Task<IActionResult> Index(
-        string? name,
-        string? activeFilter = null,
-        string? deletedFilter = null,
-        string? dateFrom = null,
-        string? dateTo = null,
-        int pageNumber = 1,
-        int pageSize = 10,
-        CancellationToken cancellationToken = default)
-    {
-        var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token))
-            return RedirectToAction("Login", "Auth");
-
-        var all = await _roleApiClient.GetAllForAdminAsync(token, cancellationToken);
-
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(name))
-            filtered = filtered.Where(r => r.Name != null && r.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(r => r.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(r => !r.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(r => r.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(r => !r.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(r => r.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(r => r.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new RoleIndexViewModel
-        {
-            Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(r => r.IsActive && !r.IsDeleted),
-            PassiveCount  = all.Count(r => !r.IsActive && !r.IsDeleted),
-            DeletedCount  = all.Count(r => r.IsDeleted),
-            SearchName    = name,
-            ActiveFilter  = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-
-        return View(vm);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> TablePartial(
-        string? name,
-        string? activeFilter = null,
-        string? deletedFilter = null,
-        string? dateFrom = null,
-        string? dateTo = null,
-        int pageNumber = 1,
-        int pageSize = 10,
-        CancellationToken cancellationToken = default)
-    {
-        var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token))
-            return Unauthorized();
-
-        var all = await _roleApiClient.GetAllForAdminAsync(token, cancellationToken);
-
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(name))
-            filtered = filtered.Where(r => r.Name != null && r.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(r => r.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(r => !r.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(r => r.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(r => !r.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(r => r.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(r => r.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        var vm = new RoleIndexViewModel
-        {
-            Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(r => r.IsActive && !r.IsDeleted),
-            PassiveCount  = all.Count(r => !r.IsActive && !r.IsDeleted),
-            DeletedCount  = all.Count(r => r.IsDeleted),
-            SearchName    = name,
-            ActiveFilter  = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-
-        return PartialView("_RoleTable", vm);
-    }
-
     [HttpGet]
     public async Task<IActionResult> RoleOptions(CancellationToken cancellationToken = default)
     {
@@ -160,6 +23,79 @@ public class RoleController(IRoleApiClient roleApiClient) : Controller
             .Select(r => new { value = r.Id, label = r.Name ?? $"Rol #{r.Id}" });
 
         return Json(options);
+    }
+
+    public async Task<IActionResult> Index(
+        string? name,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return RedirectToAction("Login", "Auth");
+
+        var vm = await BuildViewModelAsync(token, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> TablePartial(
+        string? name,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
+
+        var vm = await BuildViewModelAsync(token, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        return PartialView("_RoleTable", vm);
+    }
+
+    private async Task<RoleIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? name,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+
+        var countsTask = _roleApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _roleApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new RoleIndexViewModel
+        {
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchName    = name,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

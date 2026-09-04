@@ -9,76 +9,21 @@ public class ProjectController(IProjectApiClient projectApiClient) : Controller
 {
     private readonly IProjectApiClient _projectApiClient = projectApiClient;
 
-    private static ProjectIndexViewModel BuildViewModel(
-        IReadOnlyList<ProjectAdminDto> all,
-        string? searchTitle,
-        string? completedFilter,
-        string? activeFilter,
-        string? deletedFilter,
-        string? dateFrom,
-        string? dateTo,
-        int pageNumber,
-        int pageSize,
-        int? projectIdFilter = null)
+    [HttpGet]
+    public async Task<IActionResult> ProjectOptions(CancellationToken cancellationToken = default)
     {
-        var filtered = all.AsEnumerable();
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
 
-        if (!string.IsNullOrWhiteSpace(searchTitle))
-            filtered = filtered.Where(p => p.Title != null && p.Title.Contains(searchTitle, StringComparison.OrdinalIgnoreCase));
-
-        if (completedFilter == "completed")
-            filtered = filtered.Where(p => p.IsCompleted);
-        else if (completedFilter == "notCompleted")
-            filtered = filtered.Where(p => !p.IsCompleted);
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(p => p.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(p => !p.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(p => p.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(p => !p.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(p => p.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(p => p.CreatedAt < to.AddDays(1));
-
-        if (projectIdFilter.HasValue)
-            filtered = filtered.Where(p => p.Id == projectIdFilter.Value);
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
+        var projects = await _projectApiClient.GetAllForAdminAsync(token, cancellationToken);
+        var options = projects
+            .Where(p => !p.IsDeleted)
+            .OrderBy(p => p.Title)
+            .Select(p => new { value = p.Id, label = p.Title ?? $"Proje #{p.Id}" })
             .ToList();
 
-        return new ProjectIndexViewModel
-        {
-            Rows            = rows,
-            TotalCount      = all.Count,
-            ActiveCount     = all.Count(p => p.IsActive && !p.IsDeleted),
-            PassiveCount    = all.Count(p => !p.IsActive && !p.IsDeleted),
-            DeletedCount    = all.Count(p => p.IsDeleted),
-            SearchTitle     = searchTitle,
-            CompletedFilter = completedFilter,
-            ActiveFilter    = activeFilter,
-            DeletedFilter   = deletedFilter,
-            DateFrom        = dateFrom,
-            DateTo          = dateTo,
-            ProjectIdFilter = projectIdFilter,
-            PageNumber      = safePageNumber,
-            PageSize        = safePageSize,
-            TotalFiltered   = totalFiltered
-        };
+        return Json(options);
     }
 
     public async Task<IActionResult> Index(
@@ -97,8 +42,7 @@ public class ProjectController(IProjectApiClient projectApiClient) : Controller
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _projectApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, searchTitle, completedFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, projectId);
+        var vm = await BuildViewModelAsync(token, searchTitle, completedFilter, activeFilter, deletedFilter, dateFrom, dateTo, projectId, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -119,26 +63,47 @@ public class ProjectController(IProjectApiClient projectApiClient) : Controller
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _projectApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, searchTitle, completedFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, projectId);
+        var vm = await BuildViewModelAsync(token, searchTitle, completedFilter, activeFilter, deletedFilter, dateFrom, dateTo, projectId, pageNumber, pageSize, cancellationToken);
         return PartialView("_ProjectTable", vm);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> ProjectOptions(CancellationToken cancellationToken = default)
+    private async Task<ProjectIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? searchTitle,
+        string? completedFilter,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int? projectId,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
-        var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token))
-            return Unauthorized();
+        var request = AdminListRequest.From(searchTitle, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize).With("isCompleted", completedFilter switch { "completed" => true, "notCompleted" => false, _ => (bool?)null }).With("projectId", projectId);
 
-        var projects = await _projectApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var options = projects
-            .Where(p => !p.IsDeleted)
-            .OrderBy(p => p.Title)
-            .Select(p => new { value = p.Id, label = p.Title ?? $"Proje #{p.Id}" })
-            .ToList();
+        var countsTask = _projectApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _projectApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
 
-        return Json(options);
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new ProjectIndexViewModel
+        {
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchTitle   = searchTitle,
+            CompletedFilter = completedFilter,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

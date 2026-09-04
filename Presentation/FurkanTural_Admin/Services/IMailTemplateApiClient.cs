@@ -1,3 +1,5 @@
+using FurkanTural_Admin.Models.Common;
+using FurkanTural_Admin.Helpers;
 using FurkanTural_Admin.Models.MailTemplate;
 
 namespace FurkanTural_Admin.Services;
@@ -5,6 +7,8 @@ namespace FurkanTural_Admin.Services;
 public interface IMailTemplateApiClient
 {
     Task<IReadOnlyList<MailTemplateAdminDto>> GetAllForAdminAsync(string token, CancellationToken ct = default);
+    Task<(IReadOnlyList<MailTemplateAdminDto> Rows, int TotalFiltered)> GetAdminPagedAsync(AdminListRequest request, string token, CancellationToken ct = default);
+    Task<StatusCountsModel?> GetAdminCountsAsync(AdminListRequest request, string token, CancellationToken ct = default);
     Task<IReadOnlyList<MailTemplateTypeOptionDto>> GetTypesAsync(string token, CancellationToken ct = default);
     Task<IReadOnlyList<AppSourceOptionDto>> GetAppSourcesAsync(string token, CancellationToken ct = default);
     Task<string?> GetHtmlContentAsync(int id, string token, CancellationToken ct = default);

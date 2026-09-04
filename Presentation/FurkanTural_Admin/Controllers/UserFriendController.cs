@@ -9,57 +9,6 @@ public class UserFriendController(IUserFriendApiClient userFriendApiClient) : Co
 {
     private readonly IUserFriendApiClient _userFriendApiClient = userFriendApiClient;
 
-    private static UserFriendIndexViewModel BuildViewModel(
-        IReadOnlyList<UserFriendAdminDto> all,
-        string? statusFilter, string? activeFilter, string? deletedFilter,
-        string? dateFrom, string? dateTo, int pageNumber, int pageSize)
-    {
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(statusFilter))
-            filtered = filtered.Where(r => r.StatusCode != null && r.StatusCode.Equals(statusFilter, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(r => r.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(r => !r.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(r => r.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(r => !r.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(r => r.CreatedAt >= from);
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(r => r.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.OrderByDescending(r => r.CreatedAt).ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList.Skip((safePageNumber - 1) * safePageSize).Take(safePageSize).ToList();
-
-        return new UserFriendIndexViewModel
-        {
-            Rows = rows,
-            TotalCount = all.Count,
-            ActiveCount = all.Count(r => r.IsActive && !r.IsDeleted),
-            PassiveCount = all.Count(r => !r.IsActive && !r.IsDeleted),
-            DeletedCount = all.Count(r => r.IsDeleted),
-            StatusFilter = statusFilter,
-            ActiveFilter = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom = dateFrom,
-            DateTo = dateTo,
-            PageNumber = safePageNumber,
-            PageSize = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-    }
-
     public async Task<IActionResult> Index(string? statusFilter = null, string? activeFilter = null,
         string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
         int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
@@ -67,8 +16,51 @@ public class UserFriendController(IUserFriendApiClient userFriendApiClient) : Co
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
 
-        var all = await _userFriendApiClient.GetAllForAdminAsync(token, cancellationToken);
-        return View(BuildViewModel(all, statusFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
+        return View(await BuildViewModelAsync(token, statusFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> TablePartial(string? statusFilter = null, string? activeFilter = null,
+        string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
+        int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token)) return Unauthorized();
+
+        return PartialView("_UserFriendTable", await BuildViewModelAsync(token, statusFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken));
+    }
+
+    private async Task<UserFriendIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? statusFilter, string? activeFilter, string? deletedFilter, string? dateFrom, string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(null, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize)
+            .With("statusCode", statusFilter);
+
+        var countsTask = _userFriendApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _userFriendApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new UserFriendIndexViewModel
+        {
+            Rows = rows,
+            TotalCount = counts?.Total ?? 0,
+            ActiveCount = counts?.Active ?? 0,
+            PassiveCount = counts?.Passive ?? 0,
+            DeletedCount = counts?.Deleted ?? 0,
+            StatusFilter = statusFilter,
+            ActiveFilter = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)
@@ -81,18 +73,6 @@ public class UserFriendController(IUserFriendApiClient userFriendApiClient) : Co
             schemaApiClient, Url, ControllerContext.ActionDescriptor.ControllerName, token, cancellationToken);
 
         return View("TableSchema", vm);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> TablePartial(string? statusFilter = null, string? activeFilter = null,
-        string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
-        int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
-    {
-        var token = HttpContext.Session.GetString("token");
-        if (string.IsNullOrEmpty(token)) return Unauthorized();
-
-        var all = await _userFriendApiClient.GetAllForAdminAsync(token, cancellationToken);
-        return PartialView("_UserFriendTable", BuildViewModel(all, statusFilter, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize));
     }
 
     [HttpPost]

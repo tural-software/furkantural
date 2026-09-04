@@ -9,85 +9,77 @@ public class CategoryController(ICategoryApiClient categoryApiClient) : Controll
 {
     private readonly ICategoryApiClient _categoryApiClient = categoryApiClient;
 
-    private static CategoryIndexViewModel BuildViewModel(
-        IReadOnlyList<CategoryAdminDto> all,
-        string? name, string? activeFilter, string? deletedFilter, string? dateFrom, string? dateTo,
-        int pageNumber, int pageSize)
-    {
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(name))
-            filtered = filtered.Where(c => c.Name != null && c.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(c => c.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(c => !c.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(c => c.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(c => !c.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(c => c.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(c => c.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-
-        var safePageSize = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        return new CategoryIndexViewModel
-        {
-            Rows = rows,
-            TotalCount = all.Count,
-            ActiveCount = all.Count(c => c.IsActive && !c.IsDeleted),
-            PassiveCount = all.Count(c => !c.IsActive && !c.IsDeleted),
-            DeletedCount = all.Count(c => c.IsDeleted),
-            SearchName = name,
-            ActiveFilter = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom = dateFrom,
-            DateTo = dateTo,
-            PageNumber = safePageNumber,
-            PageSize = safePageSize,
-            TotalFiltered = filteredList.Count
-        };
-    }
-
     public async Task<IActionResult> Index(
-        string? name, string? activeFilter, string? deletedFilter, string? dateFrom, string? dateTo,
-        int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+        string? name,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _categoryApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var vm = await BuildViewModelAsync(token, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
     [HttpGet]
     public async Task<IActionResult> TablePartial(
-        string? name, string? activeFilter, string? deletedFilter, string? dateFrom, string? dateTo,
-        int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+        string? name,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber = 1,
+        int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _categoryApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var vm = await BuildViewModelAsync(token, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return PartialView("_CategoryTable", vm);
+    }
+
+    private async Task<CategoryIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? name,
+        string? activeFilter,
+        string? deletedFilter,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+
+        var countsTask = _categoryApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _categoryApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new CategoryIndexViewModel
+        {
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchName    = name,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

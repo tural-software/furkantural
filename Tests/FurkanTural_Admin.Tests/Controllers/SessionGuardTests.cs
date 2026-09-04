@@ -1,5 +1,7 @@
 using FluentAssertions;
 using FurkanTural_Admin.Controllers;
+using FurkanTural_Admin.Helpers;
+using FurkanTural_Admin.Models.Common;
 using FurkanTural_Admin.Models.Skill;
 using FurkanTural_Admin.Services;
 using FurkanTural_Admin.Tests.Infrastructure;
@@ -150,11 +152,13 @@ public class SessionGuardTests
     {
         // Arrange
         var mock = new Mock<ISkillApiClient>(MockBehavior.Loose);
-        mock.Setup(c => c.GetAllForAdminAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<SkillAdminDto>
+        mock.Setup(c => c.GetAdminPagedAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((IReadOnlyList<SkillAdminDto>)new List<SkillAdminDto>
             {
                 new() { Id = 1, Name = "C#", Proficiency = 90, IsActive = true }
-            }.AsReadOnly());
+            }.AsReadOnly(), 1));
+        mock.Setup(c => c.GetAdminCountsAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new StatusCountsModel { Total = 1, Active = 1 });
 
         var sut = new SkillController(mock.Object)
         {
@@ -166,6 +170,6 @@ public class SessionGuardTests
 
         // Assert: ViewResult dönmeli (redirect değil)
         result.Should().BeOfType<ViewResult>();
-        mock.Verify(c => c.GetAllForAdminAsync("valid-jwt-token", It.IsAny<CancellationToken>()), Times.Once);
+        mock.Verify(c => c.GetAdminPagedAsync(It.IsAny<AdminListRequest>(), "valid-jwt-token", It.IsAny<CancellationToken>()), Times.Once);
     }
 }

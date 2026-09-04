@@ -14,78 +14,6 @@ public class MusicImageController(
     private readonly IMusicApiClient      _musicApiClient      = musicApiClient;
     private readonly string               _apiBaseUrl          = configuration["Api:BaseUrl"]?.TrimEnd('/') ?? string.Empty;
 
-    private static MusicImageIndexViewModel BuildViewModel(
-        IReadOnlyList<MusicImageAdminDto> all,
-        string? searchUrl,
-        string? isCoverFilter,
-        string? activeFilter,
-        string? deletedFilter,
-        int? musicIdFilter,
-        string? dateFrom,
-        string? dateTo,
-        int pageNumber,
-        int pageSize)
-    {
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(searchUrl))
-            filtered = filtered.Where(m => m.Url != null && m.Url.Contains(searchUrl, StringComparison.OrdinalIgnoreCase));
-
-        if (isCoverFilter == "cover")
-            filtered = filtered.Where(m => m.IsCover);
-        else if (isCoverFilter == "notCover")
-            filtered = filtered.Where(m => !m.IsCover);
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(m => m.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(m => !m.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(m => m.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(m => !m.IsDeleted);
-
-        if (musicIdFilter.HasValue)
-            filtered = filtered.Where(m => m.MusicId == musicIdFilter.Value);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(m => m.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(m => m.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        return new MusicImageIndexViewModel
-        {
-            Rows          = rows,
-            TotalCount    = all.Count,
-            ActiveCount   = all.Count(m => m.IsActive && !m.IsDeleted),
-            PassiveCount  = all.Count(m => !m.IsActive && !m.IsDeleted),
-            DeletedCount  = all.Count(m => m.IsDeleted),
-            SearchUrl     = searchUrl,
-            IsCoverFilter = isCoverFilter,
-            ActiveFilter  = activeFilter,
-            DeletedFilter = deletedFilter,
-            MusicIdFilter = musicIdFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-    }
-
     public async Task<IActionResult> Index(
         string? url,
         string? isCoverFilter,
@@ -95,17 +23,14 @@ public class MusicImageController(
         string? dateFrom,
         string? dateTo,
         int pageNumber = 1,
-        int pageSize   = 10,
+        int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _musicImageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm  = BuildViewModel(all, url, isCoverFilter, activeFilter, deletedFilter, musicId, dateFrom, dateTo, pageNumber, pageSize);
-
-        ViewData["ApiBaseUrl"] = _apiBaseUrl;
+        var vm = await BuildViewModelAsync(token, url, isCoverFilter, activeFilter, deletedFilter, musicId, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -119,17 +44,54 @@ public class MusicImageController(
         string? dateFrom,
         string? dateTo,
         int pageNumber = 1,
-        int pageSize   = 10,
+        int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _musicImageApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var vm  = BuildViewModel(all, url, isCoverFilter, activeFilter, deletedFilter, musicId, dateFrom, dateTo, pageNumber, pageSize);
-
+        var vm = await BuildViewModelAsync(token, url, isCoverFilter, activeFilter, deletedFilter, musicId, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return PartialView("_MusicImageTable", vm);
+    }
+
+    private async Task<MusicImageIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? url,
+        string? isCoverFilter,
+        string? activeFilter,
+        string? deletedFilter,
+        int? musicId,
+        string? dateFrom,
+        string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(url, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize).With("isCover", isCoverFilter switch { "cover" => true, "notCover" => false, _ => (bool?)null }).With("musicId", musicId);
+
+        var countsTask = _musicImageApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _musicImageApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new MusicImageIndexViewModel
+        {
+            Rows          = rows,
+            TotalCount    = counts?.Total ?? 0,
+            ActiveCount   = counts?.Active ?? 0,
+            PassiveCount  = counts?.Passive ?? 0,
+            DeletedCount  = counts?.Deleted ?? 0,
+            SearchUrl     = url,
+            IsCoverFilter = isCoverFilter,
+            ActiveFilter  = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom      = dateFrom,
+            DateTo        = dateTo,
+            PageNumber    = request.PageNumber,
+            PageSize      = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)

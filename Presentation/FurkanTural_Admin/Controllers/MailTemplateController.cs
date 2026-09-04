@@ -23,10 +23,7 @@ public class MailTemplateController(IMailTemplateApiClient mailTemplateApiClient
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
-        var all = await _mailTemplateApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var types = await _mailTemplateApiClient.GetTypesAsync(token, cancellationToken);
-        var appSources = await _mailTemplateApiClient.GetAppSourcesAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, types, appSources, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var vm = await BuildViewModelAsync(token, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return View(vm);
     }
 
@@ -45,11 +42,44 @@ public class MailTemplateController(IMailTemplateApiClient mailTemplateApiClient
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
 
-        var all = await _mailTemplateApiClient.GetAllForAdminAsync(token, cancellationToken);
-        var types = await _mailTemplateApiClient.GetTypesAsync(token, cancellationToken);
-        var appSources = await _mailTemplateApiClient.GetAppSourcesAsync(token, cancellationToken);
-        var vm = BuildViewModel(all, types, appSources, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+        var vm = await BuildViewModelAsync(token, name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
         return PartialView("_MailTemplateTable", vm);
+    }
+
+    private async Task<MailTemplateIndexViewModel> BuildViewModelAsync(
+        string token,
+        string? name, string? activeFilter, string? deletedFilter, string? dateFrom, string? dateTo,
+        int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        var request = AdminListRequest.From(name, activeFilter, deletedFilter, dateFrom, dateTo, pageNumber, pageSize);
+
+        var countsTask = _mailTemplateApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
+        var pagedTask = _mailTemplateApiClient.GetAdminPagedAsync(request, token, cancellationToken);
+        var typesTask = _mailTemplateApiClient.GetTypesAsync(token, cancellationToken);
+        var appSourcesTask = _mailTemplateApiClient.GetAppSourcesAsync(token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask, typesTask, appSourcesTask);
+
+        var counts = await countsTask;
+        var (rows, totalFiltered) = await pagedTask;
+
+        return new MailTemplateIndexViewModel
+        {
+            Rows = rows,
+            Types = await typesTask,
+            AppSources = await appSourcesTask,
+            TotalCount = counts?.Total ?? 0,
+            ActiveCount = counts?.Active ?? 0,
+            PassiveCount = counts?.Passive ?? 0,
+            DeletedCount = counts?.Deleted ?? 0,
+            SearchName = name,
+            ActiveFilter = activeFilter,
+            DeletedFilter = deletedFilter,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+            TotalFiltered = totalFiltered
+        };
     }
 
     public async Task<IActionResult> TableDetail([FromServices] ISchemaApiClient schemaApiClient, CancellationToken cancellationToken)
@@ -133,62 +163,4 @@ public class MailTemplateController(IMailTemplateApiClient mailTemplateApiClient
         return ok ? Ok() : StatusCode(500, new { message = "Geri yükleme işlemi başarısız oldu." });
     }
 
-    private static MailTemplateIndexViewModel BuildViewModel(
-        IReadOnlyList<MailTemplateAdminDto> all,
-        IReadOnlyList<MailTemplateTypeOptionDto> types,
-        IReadOnlyList<AppSourceOptionDto> appSources,
-        string? name, string? activeFilter, string? deletedFilter,
-        string? dateFrom, string? dateTo, int pageNumber, int pageSize)
-    {
-        var filtered = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(name))
-            filtered = filtered.Where(s => s.Name != null && s.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
-
-        if (activeFilter == "active")
-            filtered = filtered.Where(s => s.IsActive);
-        else if (activeFilter == "passive")
-            filtered = filtered.Where(s => !s.IsActive);
-
-        if (deletedFilter == "deleted")
-            filtered = filtered.Where(s => s.IsDeleted);
-        else if (deletedFilter == "notDeleted")
-            filtered = filtered.Where(s => !s.IsDeleted);
-
-        if (DateTime.TryParse(dateFrom, out var from))
-            filtered = filtered.Where(s => s.CreatedAt >= from);
-
-        if (DateTime.TryParse(dateTo, out var to))
-            filtered = filtered.Where(s => s.CreatedAt < to.AddDays(1));
-
-        var filteredList = filtered.ToList();
-        var totalFiltered = filteredList.Count;
-
-        var safePageSize = pageSize is > 0 and <= 100 ? pageSize : 10;
-        var safePageNumber = pageNumber > 0 ? pageNumber : 1;
-
-        var rows = filteredList
-            .Skip((safePageNumber - 1) * safePageSize)
-            .Take(safePageSize)
-            .ToList();
-
-        return new MailTemplateIndexViewModel
-        {
-            Rows = rows,
-            Types = types,
-            AppSources = appSources,
-            TotalCount = all.Count,
-            ActiveCount = all.Count(s => s.IsActive && !s.IsDeleted),
-            PassiveCount = all.Count(s => !s.IsActive && !s.IsDeleted),
-            DeletedCount = all.Count(s => s.IsDeleted),
-            SearchName = name,
-            ActiveFilter = activeFilter,
-            DeletedFilter = deletedFilter,
-            DateFrom = dateFrom,
-            DateTo = dateTo,
-            PageNumber = safePageNumber,
-            PageSize = safePageSize,
-            TotalFiltered = totalFiltered
-        };
-    }
 }
