@@ -62,8 +62,8 @@
         var maxLen = field.maxLength ? ' maxlength="' + field.maxLength + '"' : '';
         var ph = field.placeholder ? ' placeholder="' + escAttr(field.placeholder) + '"' : '';
         return '<div class="fm-field" data-field="' + field.name + '">' +
-            '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
-            '<input type="text" class="fm-field__input" name="' + field.name + '" value="' + escAttr(val) + '"' + maxLen + ph + ' autocomplete="off" />' +
+            '<label class="fm-field__label' + reqClass + '" for="fmf-' + field.name + '">' + escHtml(field.label) + '</label>' +
+            '<input id="fmf-' + field.name + '" type="text" class="fm-field__input" name="' + field.name + '" value="' + escAttr(val) + '"' + maxLen + ph + ' autocomplete="off" />' +
             '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
             '</div>';
     }
@@ -93,8 +93,8 @@
         var maxAttr = (field.max !== undefined) ? ' max="' + field.max + '"' : '';
         var ph = field.placeholder ? ' placeholder="' + escAttr(field.placeholder) + '"' : '';
         return '<div class="fm-field" data-field="' + field.name + '">' +
-            '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
-            '<input type="number" class="fm-field__input" name="' + field.name + '" value="' + escAttr(val) + '"' + minAttr + maxAttr + ph + ' autocomplete="off" />' +
+            '<label class="fm-field__label' + reqClass + '" for="fmf-' + field.name + '">' + escHtml(field.label) + '</label>' +
+            '<input id="fmf-' + field.name + '" type="number" class="fm-field__input" name="' + field.name + '" value="' + escAttr(val) + '"' + minAttr + maxAttr + ph + ' autocomplete="off" />' +
             '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
             '</div>';
     }
@@ -105,8 +105,8 @@
         var labelText = checked ? 'Aktif' : 'Pasif';
         var labelClass = checked ? ' fm-toggle__label--on' : ' fm-toggle__label--off';
         return '<div class="fm-field" data-field="' + field.name + '">' +
-            '<label class="fm-field__label">' + escHtml(field.label) + '</label>' +
-            '<div class="fm-toggle' + onClass + '" id="fmtoggle-' + field.name + '" role="switch" aria-checked="' + checked + '" tabindex="0">' +
+            '<label class="fm-field__label" id="fmlbl-' + field.name + '">' + escHtml(field.label) + '</label>' +
+            '<div class="fm-toggle' + onClass + '" id="fmtoggle-' + field.name + '" role="switch" aria-labelledby="fmlbl-' + field.name + '" aria-checked="' + checked + '" tabindex="0">' +
             '<div class="fm-toggle__track"><div class="fm-toggle__thumb"></div></div>' +
             '<span class="fm-toggle__label' + labelClass + '" id="fmtogglelbl-' + field.name + '">' + labelText + '</span>' +
             '<input type="hidden" name="' + field.name + '" id="fmtoggleval-' + field.name + '" value="' + (checked ? 'true' : 'false') + '" />' +
@@ -130,8 +130,8 @@
         var helpHtml = field.helpText ? '<p class="fm-field__help">' + escHtml(field.helpText) + '</p>' : '';
         var emptyHtml = options.length === 0 ? '<p class="fm-field__help">Seçilebilir kayıt yok.</p>' : '';
         return '<div class="fm-field" data-field="' + field.name + '">' +
-            '<label class="fm-field__label">' + escHtml(field.label) + '</label>' +
-            '<div class="fm-ms">' + boxes + emptyHtml + '</div>' +
+            '<label class="fm-field__label" id="fmlbl-' + field.name + '">' + escHtml(field.label) + '</label>' +
+            '<div class="fm-ms" role="group" aria-labelledby="fmlbl-' + field.name + '">' + boxes + emptyHtml + '</div>' +
             helpHtml +
             '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
             '</div>';
@@ -147,8 +147,8 @@
             ? '<div class="fm-field__preview" id="fmpreview-' + field.name + '"><img src="" alt="Önizleme" /></div>'
             : '';
         return '<div class="fm-field" data-field="' + field.name + '">' +
-            '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
-            '<input type="file" class="fm-field__file" name="' + field.name + '"' + accept + ' />' +
+            '<label class="fm-field__label' + reqClass + '" for="fmf-' + field.name + '">' + escHtml(field.label) + '</label>' +
+            '<input id="fmf-' + field.name + '" type="file" class="fm-field__file" name="' + field.name + '"' + accept + ' />' +
             helpHtml +
             previewHtml +
             '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
@@ -172,9 +172,9 @@
             }
         }
         return '<div class="fm-field" data-field="' + field.name + '">' +
-            '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
+            '<label class="fm-field__label' + reqClass + '" for="fmf-' + field.name + '">' + escHtml(field.label) + '</label>' +
             '<div class="fm-ss" id="fmss-' + field.name + '">' +
-            '<input type="text" class="fm-ss__input fm-field__input" placeholder="' + escAttr(ph) + '" value="' + escAttr(displayVal) + '" autocomplete="off" />' +
+            '<input id="fmf-' + field.name + '" type="text" class="fm-ss__input fm-field__input" placeholder="' + escAttr(ph) + '" value="' + escAttr(displayVal) + '" autocomplete="off" />' +
             '<div class="fm-ss__dropdown" role="listbox"></div>' +
             '</div>' +
             '<input type="hidden" name="' + field.name + '" value="' + escAttr(hiddenVal) + '" />' +
@@ -188,8 +188,8 @@
         var minAttr = field.min ? ' min="' + escAttr(field.min) + '"' : '';
         var maxAttr = field.max ? ' max="' + escAttr(field.max) + '"' : '';
         return '<div class="fm-field" data-field="' + field.name + '">' +
-            '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
-            '<input type="date" class="fm-field__input" name="' + field.name + '" value="' + escAttr(val) + '"' + minAttr + maxAttr + ' autocomplete="off" />' +
+            '<label class="fm-field__label' + reqClass + '" for="fmf-' + field.name + '">' + escHtml(field.label) + '</label>' +
+            '<input id="fmf-' + field.name + '" type="date" class="fm-field__input" name="' + field.name + '" value="' + escAttr(val) + '"' + minAttr + maxAttr + ' autocomplete="off" />' +
             '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
             '</div>';
     }
@@ -204,8 +204,8 @@
             ? '<p class="fm-field__help">' + escHtml(field.helpText) + '</p>'
             : '';
         return '<div class="fm-field" data-field="' + field.name + '">' +
-            '<label class="fm-field__label' + reqClass + '">' + escHtml(field.label) + '</label>' +
-            '<textarea class="fm-field__textarea" name="' + field.name + '"' + maxLen + ph + rows + '>' + escHtml(val) + '</textarea>' +
+            '<label class="fm-field__label' + reqClass + '" for="fmf-' + field.name + '">' + escHtml(field.label) + '</label>' +
+            '<textarea id="fmf-' + field.name + '" class="fm-field__textarea" name="' + field.name + '"' + maxLen + ph + rows + '>' + escHtml(val) + '</textarea>' +
             helpHtml +
             '<p class="fm-field__error" id="fmerr-' + field.name + '"></p>' +
             '</div>';

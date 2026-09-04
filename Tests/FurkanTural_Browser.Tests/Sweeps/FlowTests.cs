@@ -190,4 +190,35 @@ public sealed class FlowTests(LiveSiteFixture site)
         result.shown.Should().NotBeNullOrEmpty().And.NotBe("—",
             "içerik ayrıca çekildiğine göre modal onu göstermeli; boş kalırsa tembel yükleme kırıktır");
     }
+
+    [SkippableTheory]
+    [InlineData("Admin/Blog")]
+    [InlineData("Admin/BlogImage")]
+    [InlineData("Admin/Project")]
+    [InlineData("Admin/User")]
+    public async Task Yonetim_duzenleme_formunda_her_alanin_erisilebilir_adi_var(string pageId)
+    {
+        var nameless = await site.WithPageAsync(SweepData.Page(pageId), async page =>
+        {
+            Skip.If(await page.Locator("button.ft-edit-btn").CountAsync() == 0, $"{pageId}: düzenlenecek kayıt yok");
+
+            await page.Locator("button.ft-edit-btn").First.ClickAsync();
+            await page.Locator(".fm-overlay:not(.fm-overlay--hidden)").WaitForAsync(
+                new LocatorWaitForOptions { Timeout = 15000 });
+
+            return await page.EvaluateAsync<string[]>(
+                "() => { const root = document.querySelector('.fm-overlay'); " +
+                "const controls = Array.from(root.querySelectorAll('input:not([type=hidden]):not([type=checkbox]), textarea, select, [role=switch], [role=group]')); " +
+                "const text = el => el ? (el.textContent || '').trim() : ''; " +
+                "const named = el => { if (el.getAttribute('aria-label')) return true; " +
+                "  const by = el.getAttribute('aria-labelledby'); if (by && by.split(' ').filter(Boolean).some(id => text(document.getElementById(id)))) return true; " +
+                "  if (el.id && Array.from(root.querySelectorAll('label[for]')).some(l => l.htmlFor === el.id && text(l))) return true; " +
+                "  const wrap = el.closest('label'); return !!(wrap && text(wrap)); }; " +
+                "return controls.filter(el => !named(el)).map(el => el.tagName.toLowerCase() + (el.name ? '[name=' + el.name + ']' : '') + (el.getAttribute('role') ? '[role=' + el.getAttribute('role') + ']' : '')); }");
+        });
+
+        nameless.Should().BeEmpty(
+            $"{pageId} düzenleme formunda etiketi kendisine bağlanmamış alan var; ekran okuyucu alanı adsız okur, " +
+            "etikete tıklamak da alana odaklanmaz:" + Environment.NewLine + string.Join(Environment.NewLine, nameless.Select(n => "  - " + n)));
+    }
 }
