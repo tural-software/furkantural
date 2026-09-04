@@ -21,6 +21,24 @@
         </div>
     </div>
 
+    @if (Model.Attention.Count > 0)
+    {
+        <section class="dash-attention" aria-labelledby="dash-attention-title">
+            <h2 id="dash-attention-title" class="dash-attention__title">Dikkat gerektiren</h2>
+            <ul class="dash-attention__list">
+                @foreach (var item in Model.Attention)
+                {
+                    <li>
+                        <a class="dash-attention__item" href="@item.Url">
+                            <span class="dash-attention__count">@item.Count.ToString("N0")</span>
+                            <span class="dash-attention__text">@item.Text</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+
     @foreach (var group in Model.Groups)
     {
         <section class="dash-group">

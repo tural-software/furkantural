@@ -52,6 +52,13 @@
         <span class="entity-card__locked-badge">Yakında</span>
     }
 
+    @if (Model.AttentionCount is > 0)
+    {
+        <a class="entity-card__attention" href="@(Model.AttentionUrl ?? Model.ManageUrl)" aria-label="@Model.Title: @Model.AttentionCount.Value.ToString("N0") @Model.AttentionLabel">
+            @Model.AttentionCount.Value.ToString("N0") @Model.AttentionLabel
+        </a>
+    }
+
     <span class="entity-card__icon">
         @await Html.PartialAsync("_Icons", Model.IconKey)
     </span>

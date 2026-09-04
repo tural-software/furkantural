@@ -12,4 +12,8 @@ public sealed class EntityCardViewModel
     public bool IsLocked { get; init; } = true;
     public string? ManageUrl { get; init; }
     public string CountUnitLabel { get; init; } = "kayıt";
+
+    public int? AttentionCount { get; init; }
+    public string? AttentionLabel { get; init; }
+    public string? AttentionUrl { get; init; }
 }

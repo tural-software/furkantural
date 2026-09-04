@@ -221,4 +221,30 @@ public sealed class FlowTests(LiveSiteFixture site)
             $"{pageId} düzenleme formunda etiketi kendisine bağlanmamış alan var; ekran okuyucu alanı adsız okur, " +
             "etikete tıklamak da alana odaklanmaz:" + Environment.NewLine + string.Join(Environment.NewLine, nameless.Select(n => "  - " + n)));
     }
+
+    [SkippableFact]
+    public async Task Panelde_dikkat_seridi_ile_kart_rozetleri_ayni_sayiyi_soyler()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/"), async page =>
+        {
+            return await page.EvaluateAsync<string[]>(
+                "() => { const problems = []; " +
+                "const items = Array.from(document.querySelectorAll('.dash-attention__item')); " +
+                "const badges = Array.from(document.querySelectorAll('.entity-card__attention')); " +
+                "const num = s => parseInt(String(s || '').replace(/[^0-9]/g, ''), 10); " +
+                "if (items.length === 0 && badges.length > 0) problems.push('şerit yokken ' + badges.length + ' kartta rozet var'); " +
+                "items.forEach(it => { const c = num(it.querySelector('.dash-attention__count')?.textContent); " +
+                "  if (!(c > 0)) problems.push('şeritte sıfır ya da sayısız öge: ' + it.textContent.trim()); " +
+                "  if (!it.getAttribute('href')) problems.push('şerit ögesi bağlantısız: ' + it.textContent.trim()); " +
+                "  const twin = badges.find(b => b.getAttribute('href') === it.getAttribute('href')); " +
+                "  if (!twin) problems.push('şerit ögesinin kartta rozeti yok: ' + it.textContent.trim()); " +
+                "  else if (num(twin.textContent) !== c) problems.push('rozet ile şerit farklı sayı söylüyor: ' + it.textContent.trim() + ' / ' + twin.textContent.trim()); }); " +
+                "badges.forEach(b => { if (!items.some(it => it.getAttribute('href') === b.getAttribute('href'))) problems.push('rozet var ama şeritte karşılığı yok: ' + b.textContent.trim()); }); " +
+                "return problems; }");
+        });
+
+        result.Should().BeEmpty(
+            "şerit ve kart rozeti aynı iki sayaçtan beslenir; biri diğerinden farklı bir şey söylüyorsa " +
+            "yönetici hangisine inanacağını bilemez:" + Environment.NewLine + string.Join(Environment.NewLine, result.Select(p => "  - " + p)));
+    }
 }

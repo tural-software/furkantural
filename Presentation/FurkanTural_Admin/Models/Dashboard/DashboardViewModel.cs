@@ -6,4 +6,6 @@ public sealed class DashboardViewModel
     public required IReadOnlyList<DashboardGroupViewModel> Groups { get; init; }
     public int ModuleCount => Groups.Sum(g => g.Modules.Count);
     public int? TotalRecordCount { get; init; }
+
+    public IReadOnlyList<AttentionItemViewModel> Attention { get; init; } = [];
 }
