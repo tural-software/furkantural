@@ -25,10 +25,15 @@ public sealed class AdminSearch(
     IContactApiClient contacts,
     IMailTemplateApiClient mailTemplates,
     ISubscriberApiClient subscribers,
-    IStatusApiClient statuses) : IAdminSearch
+    IStatusApiClient statuses,
+    ICallLogApiClient callLogs,
+    IChatMessageApiClient chatMessages,
+    IReportApiClient reports,
+    ILogApiClient logs) : IAdminSearch
 {
     public const int MinLength = 2;
     public const int PerModule = 5;
+    public const int LabelLength = 80;
 
     public async Task<IReadOnlyList<SearchGroup>> SearchAsync(string? query, string token, CancellationToken ct = default)
     {
@@ -49,7 +54,15 @@ public sealed class AdminSearch(
             ("Contact", Paged(term, r => contacts.GetAdminPagedAsync(r, token, ct), x => x.Id, x => x.Name, "name")),
             ("MailTemplate", Paged(term, r => mailTemplates.GetAdminPagedAsync(r, token, ct), x => x.Id, x => x.Name, "name")),
             ("Subscriber", Paged(term, r => subscribers.GetAdminPagedAsync(r, token, ct), x => x.Id, x => x.Email, "email")),
-            ("Status", Paged(term, r => statuses.GetAdminPagedAsync(r, token, ct), x => x.Id, x => x.Name, "name"))
+            ("Status", Paged(term, r => statuses.GetAdminPagedAsync(r, token, ct), x => x.Id, x => x.Name, "name")),
+            ("CallLog", Paged(term, r => callLogs.GetAdminPagedAsync(r, token, ct), x => x.Id,
+                x => $"{x.CallerName ?? "?"} → {x.CalleeName ?? "?"} · {x.CallType}", "search", _ => term)),
+            ("ChatMessage", Paged(term, r => chatMessages.GetAdminPagedAsync((r with { Search = null }).With("username", term), token, ct), x => x.Id,
+                x => $"{x.SenderUsername ?? "?"} → {x.ReceiverUsername ?? "?"} · {x.MessageType ?? "Text"}", "usernameFilter", _ => term)),
+            ("Report", Paged(term, r => reports.GetAdminPagedAsync(r, token, ct), x => x.Id,
+                x => string.IsNullOrWhiteSpace(x.Reason) ? $"Şikayet #{x.Id} · {x.Status}" : $"{x.Reason} · {x.Status}", "search", _ => term)),
+            ("Log", Rows(() => logs.GetAdminPagedAsync(null, null, term, null, null, 1, PerModule, token, ct), x => x.Id,
+                x => $"{x.Level} · {x.Message}", "searchMessage", _ => term))
         };
         await Task.WhenAll(jobs.Select(j => j.Hits));
 
@@ -71,7 +84,7 @@ public sealed class AdminSearch(
             var options = await fetch() ?? [];
             return options
                 .Take(PerModule)
-                .Select(o => new SearchHit(o.Id, o.Label ?? "", key, byId ? o.Id.ToString() : o.Label ?? ""))
+                .Select(o => new SearchHit(o.Id, Trim(o.Label), key, byId ? o.Id.ToString() : Trim(o.Label)))
                 .ToList();
         }
         catch
@@ -80,20 +93,31 @@ public sealed class AdminSearch(
         }
     }
 
-    private static async Task<IReadOnlyList<SearchHit>> Paged<T>(
+    private static Task<IReadOnlyList<SearchHit>> Paged<T>(
         string term,
         Func<AdminListRequest, Task<(IReadOnlyList<T> Rows, int TotalFiltered)>> fetch,
         Func<T, int> id,
         Func<T, string?> label,
-        string key)
+        string key,
+        Func<T, string>? route = null)
+    {
+        var request = AdminListRequest.From(term, null, null, null, null, 1, PerModule) with { IsDeleted = false };
+        return Rows(() => fetch(request), id, label, key, route);
+    }
+
+    private static async Task<IReadOnlyList<SearchHit>> Rows<T>(
+        Func<Task<(IReadOnlyList<T> Rows, int TotalFiltered)>> fetch,
+        Func<T, int> id,
+        Func<T, string?> label,
+        string key,
+        Func<T, string>? route = null)
     {
         try
         {
-            var request = AdminListRequest.From(term, null, null, null, null, 1, PerModule) with { IsDeleted = false };
-            var (rows, _) = await fetch(request);
+            var (rows, _) = await fetch();
             return (rows ?? [])
                 .Take(PerModule)
-                .Select(x => new SearchHit(id(x), label(x) ?? "", key, label(x) ?? ""))
+                .Select(x => new SearchHit(id(x), Trim(label(x)), key, route is null ? Trim(label(x)) : route(x)))
                 .Where(h => h.Label.Length > 0)
                 .ToList();
         }
@@ -101,5 +125,11 @@ public sealed class AdminSearch(
         {
             return [];
         }
+    }
+
+    private static string Trim(string? text)
+    {
+        var value = (text ?? "").Trim();
+        return value.Length <= LabelLength ? value : value[..(LabelLength - 1)] + "…";
     }
 }
