@@ -286,4 +286,42 @@ public sealed class FlowTests(LiveSiteFixture site)
         kpis.Should().HaveCount(4, "panel başlığında dört gösterge var: toplam kayıt, bu hafta yeni, aktif kullanıcı, bekleyen iş");
         kpis.Should().OnlyContain(k => !k.EndsWith("="), "her göstergenin bir değeri ya da tiresi olmalı, boş kutu olmamalı:" + string.Join(", ", kpis));
     }
+
+    [SkippableFact]
+    public async Task Blog_listesinde_secim_cubugu_sayar_onay_ister_ve_vazgecince_temizlenir()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Blog"), async page =>
+        {
+            var boxes = page.Locator(".data-table .row-select");
+            Skip.If(await boxes.CountAsync() < 2, "Admin/Blog: seçmek için en az iki satır gerekir");
+
+            var barBefore = await page.Locator(".bulk-bar").IsVisibleAsync();
+            await boxes.Nth(0).CheckAsync();
+            await boxes.Nth(1).CheckAsync();
+            await page.Locator(".bulk-bar:not([hidden])").WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+            var count = (await page.Locator("[data-bulk-count]").InnerTextAsync()).Trim();
+            var selectedRows = await page.Locator(".data-table tr.is-selected").CountAsync();
+
+            await page.Locator("[data-bulk-action='deactivate']").ClickAsync();
+            await page.Locator(".cm-overlay:not(.cm-overlay--hidden)").WaitForAsync(new LocatorWaitForOptions { Timeout = 5000 });
+            var modalText = await page.Locator(".cm-overlay .cm-record").InnerTextAsync();
+            await page.Locator("#cm-cancel").ClickAsync();
+            await page.Locator(".cm-overlay:not(.cm-overlay--hidden)").WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Detached, Timeout = 5000 });
+            var stillSelected = await page.Locator(".data-table .row-select:checked").CountAsync();
+
+            await page.Locator("[data-bulk-clear]").ClickAsync();
+            var barAfter = await page.Locator(".bulk-bar").IsVisibleAsync();
+            var checkedAfter = await page.Locator(".data-table .row-select:checked").CountAsync();
+
+            return (barBefore, count, selectedRows, modalText, stillSelected, barAfter, checkedAfter);
+        });
+
+        result.barBefore.Should().BeFalse("hiçbir şey seçili değilken çubuk yer kaplamamalı");
+        result.count.Should().Be("2 seçili");
+        result.selectedRows.Should().Be(2, "seçili satır görsel olarak da işaretlenmeli");
+        result.modalText.Should().Contain("2 kayıt", "onay modalı tek kayıt değil seçim sayısını söylemeli");
+        result.stillSelected.Should().Be(2, "Hayır demek seçimi bozmamalı");
+        result.barAfter.Should().BeFalse("Vazgeç seçimi temizler ve çubuğu kaldırır");
+        result.checkedAfter.Should().Be(0);
+    }
 }

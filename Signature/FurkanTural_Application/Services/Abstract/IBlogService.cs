@@ -20,4 +20,6 @@ public interface IBlogService : IService<BlogDto, CreateBlogDto, UpdateBlogDto>
     Task<Result<IReadOnlyList<AdminOptionDto>>> GetAdminOptionsAsync(string? search, int? take, CancellationToken cancellationToken = default);
 
     Task<PagedResult<AdminBlogDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? blogId, bool includeContent, CancellationToken cancellationToken = default);
+
+    Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default);
 }

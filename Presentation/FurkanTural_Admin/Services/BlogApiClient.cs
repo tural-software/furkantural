@@ -273,4 +273,35 @@ public class BlogApiClient(HttpClient httpClient, ILogger<BlogApiClient> logger)
             return null;
         }
     }
+
+    public async Task<BulkResultModel?> BulkAsync(string action, IReadOnlyList<int> ids, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/v1/blog/admin/bulk")
+            {
+                Content = JsonContent.Create(new { ids, action })
+            };
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Toplu blog işlemi reddedildi: {Action} → {Status}", action, (int)response.StatusCode);
+                return null;
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<ApiResult<BulkResultModel>>(JsonOptions, ct);
+            return wrapper?.Data;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Toplu blog işlemi uç noktasına erişilemedi.");
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+    }
 }
