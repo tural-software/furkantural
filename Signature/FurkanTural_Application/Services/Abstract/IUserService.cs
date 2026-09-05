@@ -21,4 +21,6 @@ public interface IUserService : IService<UserDto, CreateUserDto, UpdateUserDto>
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
     Task<PagedResult<AdminUserDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? roleId, CancellationToken cancellationToken = default);
     Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? roleId, CancellationToken cancellationToken = default);
+    Task<PagedResult<AdminUserDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? roleId, DateTime? seenSince, CancellationToken cancellationToken = default);
+    Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? roleId, DateTime? seenSince, CancellationToken cancellationToken = default);
 }

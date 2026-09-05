@@ -8,4 +8,6 @@ public sealed class DashboardViewModel
     public int? TotalRecordCount { get; init; }
 
     public IReadOnlyList<AttentionItemViewModel> Attention { get; init; } = [];
+
+    public IReadOnlyList<KpiViewModel> Kpis { get; init; } = [];
 }

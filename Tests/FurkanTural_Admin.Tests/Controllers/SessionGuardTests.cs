@@ -131,7 +131,7 @@ public class SessionGuardTests
     {
         // Arrange
         var mock = new Mock<IAdminSummaryClient>(MockBehavior.Loose);
-        var sut  = new DashboardController(mock.Object, Mock.Of<IContactApiClient>(), Mock.Of<IReportApiClient>())
+        var sut  = new DashboardController(mock.Object, Mock.Of<IContactApiClient>(), Mock.Of<IReportApiClient>(), Mock.Of<IUserApiClient>(), Mock.Of<IBlogApiClient>(), Mock.Of<ISubscriberApiClient>())
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };

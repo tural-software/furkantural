@@ -312,24 +312,32 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         return Result.Ok("Hesabınız kapatıldı.");
     }
 
-    private static Expression<Func<User, bool>>? AdminPredicate(AdminListQuery query, int? roleId)
+    private static Expression<Func<User, bool>>? AdminPredicate(AdminListQuery query, int? roleId, DateTime? seenSince)
     {
         var predicate = AdminFilters.Common<User>(query);
         if (query.SearchTerm is { } term)
             predicate = predicate.AndAlso(x => x.Username != null && x.Username.Contains(term));
         if (roleId is { } role)
             predicate = predicate.AndAlso(x => x.RoleId == role);
+        if (seenSince is { } since)
+            predicate = predicate.AndAlso(x => x.LastSeenAt != null && x.LastSeenAt >= since);
         return predicate;
     }
 
-    public async Task<PagedResult<AdminUserDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? roleId, CancellationToken cancellationToken = default)
+    public Task<PagedResult<AdminUserDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? roleId, CancellationToken cancellationToken = default)
+        => GetAllForAdminPagedAsync(query, roleId, null, cancellationToken);
+
+    public async Task<PagedResult<AdminUserDto>> GetAllForAdminPagedAsync(AdminListQuery query, int? roleId, DateTime? seenSince, CancellationToken cancellationToken = default)
     {
-        var predicate = AdminPredicate(query, roleId);
+        var predicate = AdminPredicate(query, roleId, seenSince);
         var entities = await _unitOfWork.Users.GetAllForAdminPagedAsync(query.SafePageNumber, query.SafePageSize, predicate, false, cancellationToken);
         var total = await _unitOfWork.Users.CountForAdminAsync(predicate, cancellationToken);
         return PagedResult<AdminUserDto>.Ok(entities.Select(e => e.ToAdminDto()), total, query.SafePageNumber, query.SafePageSize);
     }
 
-    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? roleId, CancellationToken cancellationToken = default)
-        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Users.GetAdminStatusCountsAsync(AdminPredicate(query, roleId), cancellationToken));
+    public Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? roleId, CancellationToken cancellationToken = default)
+        => GetAdminStatusCountsAsync(query, roleId, null, cancellationToken);
+
+    public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? roleId, DateTime? seenSince, CancellationToken cancellationToken = default)
+        => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Users.GetAdminStatusCountsAsync(AdminPredicate(query, roleId, seenSince), cancellationToken));
 }

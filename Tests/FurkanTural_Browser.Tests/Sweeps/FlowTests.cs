@@ -275,4 +275,15 @@ public sealed class FlowTests(LiveSiteFixture site)
             "sözlük ucundan gelen kayıt kimliğiyle süzülmüş listeye götürmeli");
         result.activeText.Should().NotBeEmpty("ok tuşları kayıt satırlarında da gezmeli; gezmezse klavye kullanıcısı sonuca ulaşamaz");
     }
+
+    [SkippableFact]
+    public async Task Panel_dort_gosterge_tasir_ve_her_birinin_degeri_var()
+    {
+        var kpis = await site.WithPageAsync(SweepData.Page("Admin/Dashboard"), async page =>
+            await page.EvaluateAsync<string[]>(
+                "() => Array.from(document.querySelectorAll('.dash-kpis .kpi')).map(k => (k.dataset.kpi || '?') + '=' + ((k.querySelector('.kpi__value') || {}).textContent || '').trim())"));
+
+        kpis.Should().HaveCount(4, "panel başlığında dört gösterge var: toplam kayıt, bu hafta yeni, aktif kullanıcı, bekleyen iş");
+        kpis.Should().OnlyContain(k => !k.EndsWith("="), "her göstergenin bir değeri ya da tiresi olmalı, boş kutu olmamalı:" + string.Join(", ", kpis));
+    }
 }

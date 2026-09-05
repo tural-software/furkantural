@@ -22,17 +22,17 @@ public class DashboardAttentionTests
     private DashboardController BuildSut(int? unread, int? pending)
     {
         _contacts.Setup(c => c.GetAdminCountsAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Callback<AdminListRequest, string, CancellationToken>((r, _, _) => _unreadRequest = r)
+            .Callback<AdminListRequest, string, CancellationToken>((r, _, _) => { if (r.Extra("isRead") is not null) _unreadRequest = r; })
             .ReturnsAsync(unread is null ? null : new StatusCountsModel { Total = unread.Value });
         _reports.Setup(c => c.GetAdminCountsAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Callback<AdminListRequest, string, CancellationToken>((r, _, _) => _pendingRequest = r)
+            .Callback<AdminListRequest, string, CancellationToken>((r, _, _) => { if (r.Extra("status") is not null) _pendingRequest = r; })
             .ReturnsAsync(pending is null ? null : new StatusCountsModel { Total = pending.Value });
 
         var url = new Mock<IUrlHelper>();
         url.Setup(u => u.Action(It.IsAny<UrlActionContext>()))
             .Returns<UrlActionContext>(c => "/" + c.Controller + "/" + c.Action);
 
-        return new DashboardController(Mock.Of<IAdminSummaryClient>(), _contacts.Object, _reports.Object)
+        return new DashboardController(Mock.Of<IAdminSummaryClient>(), _contacts.Object, _reports.Object, Mock.Of<IUserApiClient>(), Mock.Of<IBlogApiClient>(), Mock.Of<ISubscriberApiClient>())
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext("token"),
             Url = url.Object

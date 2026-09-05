@@ -21,6 +21,38 @@
         </div>
     </div>
 
+    @if (Model.Kpis.Count > 0)
+    {
+        <section class="dash-kpis" aria-label="Özet göstergeler">
+            @foreach (var kpi in Model.Kpis)
+            {
+                <article class="kpi" data-kpi="@kpi.Key">
+                    <span class="kpi__label">@kpi.Label</span>
+                    <span class="kpi__value-row">
+                        @if (string.IsNullOrEmpty(kpi.Url))
+                        {
+                            <span class="kpi__value">@kpi.Value</span>
+                        }
+                        else
+                        {
+                            <a class="kpi__value kpi__value--link" href="@kpi.Url">@kpi.Value</a>
+                        }
+                        @if (kpi.Trend is { } trend)
+                        {
+                            var cls = trend > 0 ? "kpi__trend--up" : trend < 0 ? "kpi__trend--down" : "kpi__trend--flat";
+                            var arrow = trend > 0 ? "▲" : trend < 0 ? "▼" : "▬";
+                            <span class="kpi__trend @cls" title="@kpi.TrendText" aria-label="@(kpi.TrendText ?? "") · fark @(trend > 0 ? "+" : "")@trend">@arrow @Math.Abs(trend)</span>
+                        }
+                    </span>
+                    @if (!string.IsNullOrEmpty(kpi.Detail))
+                    {
+                        <span class="kpi__detail">@kpi.Detail</span>
+                    }
+                </article>
+            }
+        </section>
+    }
+
     @if (Model.Attention.Count > 0)
     {
         <section class="dash-attention" aria-labelledby="dash-attention-title">

@@ -122,7 +122,7 @@ public class UserController : JwtBaseController
     public async Task<IActionResult> GetAdminSummary(CancellationToken cancellationToken)
         => ToActionResult(await _userService.GetAdminSummaryAsync(cancellationToken));
 
-    /// <summary>Yönetici paneli için süzülmüş ve sayfalı kullanıcı listesi</summary>
+    /// <summary>Yönetici paneli için süzülmüş ve sayfalı kullanıcı listesi; seenSince verilirse yalnızca o andan sonra görülen kullanıcılar gelir</summary>
     [HttpGet("admin/paged")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminPaged(
@@ -132,11 +132,12 @@ public class UserController : JwtBaseController
         [FromQuery] DateTime? dateFrom,
         [FromQuery] DateTime? dateTo,
         [FromQuery] int? roleId,
+        [FromQuery] DateTime? seenSince,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         CancellationToken cancellationToken = default)
         => ToActionResult(await _userService.GetAllForAdminPagedAsync(
-            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), roleId, cancellationToken));
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo, pageNumber, pageSize), roleId, seenSince, cancellationToken));
 
     /// <summary>Yönetici paneli için kullanıcı durum sayaçları; süzgeçler sayfalı listeyle aynıdır</summary>
     [HttpGet("admin/counts")]
@@ -148,9 +149,10 @@ public class UserController : JwtBaseController
         [FromQuery] DateTime? dateFrom,
         [FromQuery] DateTime? dateTo,
         [FromQuery] int? roleId,
+        [FromQuery] DateTime? seenSince,
         CancellationToken cancellationToken = default)
         => ToActionResult(await _userService.GetAdminStatusCountsAsync(
-            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), roleId, cancellationToken));
+            AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), roleId, seenSince, cancellationToken));
 
     /// <summary>Bir kullanıcının avatar fotoğrafını yükle (admin)</summary>
     [HttpPost("{id:int}/avatar")]
