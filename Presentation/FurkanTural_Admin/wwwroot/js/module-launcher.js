@@ -4,19 +4,26 @@
 
     const search = document.getElementById('mlSearch');
     const empty = document.getElementById('mlEmpty');
+    const records = document.getElementById('mlRecords');
     const panel = root.querySelector('.ml__panel');
-    const rows = Array.from(root.querySelectorAll('[data-ml-row]'));
+    const staticRows = Array.from(root.querySelectorAll('[data-ml-row]'));
     const groups = Array.from(root.querySelectorAll('[data-ml-group]'));
+    const searchUrl = root.dataset.mlSearchUrl || '/Search';
 
     let lastFocus = null;
     let active = -1;
+    let dynamicRows = [];
+    let timer = null;
+    let inflight = null;
+    let requestNo = 0;
 
     const lower = (s) => (s || '').toLocaleLowerCase('tr');
-    const visible = () => rows.filter((r) => !r.hidden);
+    const allRows = () => staticRows.concat(dynamicRows);
+    const visible = () => allRows().filter((r) => !r.hidden);
 
     function setActive(i) {
         const list = visible();
-        rows.forEach((r) => r.classList.remove('ml__row--active'));
+        allRows().forEach((r) => r.classList.remove('ml__row--active'));
         active = list.length === 0 ? -1 : Math.max(0, Math.min(i, list.length - 1));
         if (active < 0) return;
         const el = list[active];
@@ -24,15 +31,102 @@
         el.scrollIntoView({ block: 'nearest' });
     }
 
+    function updateEmpty() {
+        empty.hidden = visible().length > 0;
+    }
+
+    function clearRecords() {
+        dynamicRows = [];
+        if (!records) return;
+        records.innerHTML = '';
+        records.hidden = true;
+    }
+
+    function iconFor(slug) {
+        const row = staticRows.find((r) => r.dataset.mlSlug === slug);
+        const icon = row ? row.querySelector('.ml__row-icon') : null;
+        return icon ? icon.cloneNode(true) : null;
+    }
+
+    function renderRecords(data) {
+        clearRecords();
+        if (!records) return;
+        const found = (data && data.groups) || [];
+        const total = found.reduce((n, g) => n + (g.items || []).length, 0);
+        if (total === 0) { updateEmpty(); return; }
+
+        const section = document.createElement('section');
+        section.className = 'ml__group';
+        const title = document.createElement('h3');
+        title.className = 'ml__group-title';
+        title.textContent = 'Kayıtlar ';
+        const count = document.createElement('span');
+        count.className = 'ml__group-count';
+        count.textContent = String(total);
+        title.appendChild(count);
+        section.appendChild(title);
+
+        found.forEach((g) => {
+            (g.items || []).forEach((item) => {
+                const a = document.createElement('a');
+                a.className = 'ml__row';
+                a.href = item.url || '#';
+                a.setAttribute('data-ml-row', '');
+                const icon = iconFor(g.slug);
+                if (icon) a.appendChild(icon);
+                const text = document.createElement('span');
+                text.className = 'ml__row-text';
+                const label = document.createElement('span');
+                label.className = 'ml__row-title';
+                label.textContent = item.label || ('#' + item.id);
+                const unit = document.createElement('span');
+                unit.className = 'ml__row-unit';
+                unit.textContent = g.title || g.slug;
+                text.appendChild(label);
+                text.appendChild(unit);
+                a.appendChild(text);
+                a.addEventListener('mouseenter', () => setActive(visible().indexOf(a)));
+                section.appendChild(a);
+                dynamicRows.push(a);
+            });
+        });
+
+        records.appendChild(section);
+        records.hidden = false;
+        updateEmpty();
+        if (active < 0) setActive(0);
+    }
+
+    function fetchRecords(q) {
+        const no = ++requestNo;
+        if (inflight) inflight.abort();
+        inflight = new AbortController();
+        fetch(searchUrl + '?q=' + encodeURIComponent(q), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            signal: inflight.signal
+        })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => { if (no === requestNo) renderRecords(data); })
+            .catch(() => { if (no === requestNo) { clearRecords(); updateEmpty(); } });
+    }
+
     function filter() {
         const q = lower(search.value).trim();
-        rows.forEach((r) => {
+        staticRows.forEach((r) => {
             r.hidden = q !== '' && !lower(r.dataset.mlText).includes(q);
         });
         groups.forEach((g) => {
             g.hidden = !g.querySelector('[data-ml-row]:not([hidden])');
         });
-        empty.hidden = visible().length > 0;
+        if (timer) clearTimeout(timer);
+        if (q.length < 2) {
+            requestNo++;
+            if (inflight) inflight.abort();
+            clearRecords();
+        } else {
+            timer = setTimeout(() => fetchRecords(search.value.trim()), 250);
+        }
+        updateEmpty();
         setActive(0);
     }
 
@@ -69,7 +163,7 @@
         }
     });
 
-    rows.forEach((r) => {
+    staticRows.forEach((r) => {
         r.addEventListener('mouseenter', () => setActive(visible().indexOf(r)));
     });
 

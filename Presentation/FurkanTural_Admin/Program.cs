@@ -38,6 +38,7 @@ builder.Services.AddHttpClient<ISubscriberApiClient, SubscriberApiClient>(client
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+builder.Services.AddScoped<IAdminSearch, AdminSearch>();
 builder.Services.AddHttpClient<ISkillApiClient, SkillApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);

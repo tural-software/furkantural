@@ -2,14 +2,14 @@
 @{
     var currentSlug = AdminModules.ByController(ViewContext.RouteData.Values["controller"] as string)?.Slug;
 }
-<div class="ml" id="moduleLauncher" hidden>
+<div class="ml" id="moduleLauncher" data-ml-search-url="@Url.Action("Index", "Search")" hidden>
     <div class="ml__scrim" data-ml-close></div>
     <div class="ml__panel" role="dialog" aria-modal="true" aria-label="Modüller">
         <div class="ml__head">
             <span class="ml__search-wrap">
                 @await Html.PartialAsync("_Icons", "search")
                 <input type="search" id="mlSearch" class="ml__search" autocomplete="off" spellcheck="false"
-                       placeholder="Modül ara — blog, mesaj, şikayet…" aria-label="Modül ara" />
+                       placeholder="Modül ya da kayıt ara — blog, kullanıcı, şikayet…" aria-label="Modül ya da kayıt ara" />
             </span>
             <button type="button" class="ml__close" data-ml-close>Kapat</button>
         </div>
@@ -25,7 +25,7 @@
                     @foreach (var m in group)
                     {
                         <a class="ml__row" href="@Url.Action("Index", m.Controller)"
-                           data-ml-row data-ml-text="@($"{m.Title} {m.Slug} {m.CountUnitLabel} {m.Group}")"
+                           data-ml-row data-ml-slug="@m.Slug" data-ml-text="@($"{m.Title} {m.Slug} {m.CountUnitLabel} {m.Group}")"
                            aria-current="@(m.Slug == currentSlug ? "page" : null)">
                             <span class="ml__row-icon">@await Html.PartialAsync("_Icons", m.Slug)</span>
                             <span class="ml__row-text">
@@ -37,7 +37,8 @@
                     }
                 </section>
             }
-            <p class="ml__empty" id="mlEmpty" hidden>Eşleşen modül yok.</p>
+            <div id="mlRecords" class="ml__records" hidden></div>
+            <p class="ml__empty" id="mlEmpty" hidden>Eşleşen modül ya da kayıt yok.</p>
         </div>
     </div>
 </div>

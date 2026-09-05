@@ -225,7 +225,7 @@ public sealed class FlowTests(LiveSiteFixture site)
     [SkippableFact]
     public async Task Panelde_dikkat_seridi_ile_kart_rozetleri_ayni_sayiyi_soyler()
     {
-        var result = await site.WithPageAsync(SweepData.Page("Admin/"), async page =>
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Dashboard"), async page =>
         {
             return await page.EvaluateAsync<string[]>(
                 "() => { const problems = []; " +
@@ -246,5 +246,33 @@ public sealed class FlowTests(LiveSiteFixture site)
         result.Should().BeEmpty(
             "şerit ve kart rozeti aynı iki sayaçtan beslenir; biri diğerinden farklı bir şey söylüyorsa " +
             "yönetici hangisine inanacağını bilemez:" + Environment.NewLine + string.Join(Environment.NewLine, result.Select(p => "  - " + p)));
+    }
+
+    [SkippableFact]
+    public async Task Modul_secici_kayit_arar_ve_bulunan_kaydin_listesine_goturur()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Dashboard"), async page =>
+        {
+            await page.Keyboard.PressAsync("Control+k");
+            await page.Locator("#moduleLauncher:not([hidden])").WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
+            await page.Locator("#mlSearch").FillAsync("AsNoTracking");
+
+            var hit = page.Locator("#mlRecords [data-ml-row]").First;
+            await hit.WaitForAsync(new LocatorWaitForOptions { Timeout = 15000 });
+            var text = (await hit.InnerTextAsync()).Trim();
+            var href = await hit.GetAttributeAsync("href") ?? "";
+
+            await page.Keyboard.PressAsync("ArrowDown");
+            var activeText = await page.EvaluateAsync<string>(
+                "() => { const a = document.querySelector('#moduleLauncher .ml__row--active'); return a ? a.innerText.trim() : ''; }");
+
+            return (text, href, activeText);
+        });
+
+        result.text.Should().Contain("AsNoTracking",
+            "yerel blog arşivinde bu başlıklı yazı var; kayıt araması onu bulup göstermeli");
+        result.href.Should().Contain("/Blog").And.Contain("blogId=",
+            "sözlük ucundan gelen kayıt kimliğiyle süzülmüş listeye götürmeli");
+        result.activeText.Should().NotBeEmpty("ok tuşları kayıt satırlarında da gezmeli; gezmezse klavye kullanıcısı sonuca ulaşamaz");
     }
 }
