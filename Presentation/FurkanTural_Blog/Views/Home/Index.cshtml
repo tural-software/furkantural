@@ -4,8 +4,6 @@
     ViewData["Title"] = pageNo > 1 ? $"Sayfa {pageNo}" : null;
     ViewData["MetaDescription"] = "Furkan Tural'ın yazılım, teknoloji ve geliştirme üzerine notları ve blog yazıları.";
 
-    // Sayfa 2+ için kendine-kanonik (yinelenen içerik sinyali olmasın). Kategori ve
-    // arama artık kendi adreslerinde, dolayısıyla burada yalnızca sayfa numarası kalır.
     if (pageNo > 1)
     {
         var basePath = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";

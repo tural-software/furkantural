@@ -1,11 +1,3 @@
-/*
- * Yazı sayfası: okuma ilerleme çubuğu + paylaşım.
- *
- * Paylaşım bilerek üçüncü-taraf ağ düğmesi içermez. Bu site Google Fonts'u bile
- * kendi sunucusuna aldı; okuru izleyen bir paylaşım betiği o kararla çelişirdi.
- * Yerine iki yerel yol var: cihazın kendi paylaşım penceresi (varsa) ve bağlantıyı
- * panoya kopyalama. Ağ düğmesi istenirse ayrı bir karar olarak eklenir.
- */
 (function () {
     'use strict';
 
@@ -19,7 +11,6 @@
             ticking = false;
             var rect = article.getBoundingClientRect();
             var viewport = window.innerHeight || document.documentElement.clientHeight;
-            // Okunan yükseklik: yazının üstü ekranın üstünü geçtiğinden itibaren.
             var total = rect.height - viewport;
             var pct = total <= 0 ? 100 : ((-rect.top) / total) * 100;
             if (pct < 0) pct = 0;
