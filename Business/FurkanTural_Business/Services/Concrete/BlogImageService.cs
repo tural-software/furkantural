@@ -151,7 +151,7 @@ public class BlogImageService(IUnitOfWork unitOfWork, ActivityLogger activityLog
     {
         var predicate = AdminFilters.Common<BlogImage>(query);
         if (query.SearchTerm is { } term)
-            predicate = predicate.AndAlso(x => x.Url != null && x.Url.Contains(term));
+            predicate = predicate.AndAlso(x => (x.Url != null && x.Url.Contains(term)) || (x.AltText != null && x.AltText.Contains(term)));
         if (isCover is { } cover)
             predicate = predicate.AndAlso(x => x.IsCover == cover);
         if (blogId is { } id)

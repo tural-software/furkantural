@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FurkanTural_Admin.Helpers;
+using FurkanTural_Admin.Models.BlogImage;
 using FurkanTural_Admin.Models.ChatMessage;
 using FurkanTural_Admin.Models.Common;
 using FurkanTural_Admin.Models.Log;
@@ -9,13 +10,14 @@ using Moq;
 
 namespace FurkanTural_Admin.Tests.Services;
 
-/// <summary>Genel arama on yedi modülü paralel tarar; sözlük ucu olan dört modül kimlikle, diğerleri etiketle ya da arama terimiyle süzülmüş listeye götürür. Her modül en çok beş kayıt ister ve silinmişi dışarıda bırakır; bir modülün istemcisi patlarsa diğerleri yine döner, iki karakterden kısa sorgu hiçbir istemciye gitmez. Şifreli mesaj içeriği aranmaz; mesajlar kullanıcı adıyla bulunur.</summary>
+/// <summary>Genel arama yirmi modülü paralel tarar; sözlük ucu olan dört modül kimlikle, diğerleri etiketle ya da arama terimiyle süzülmüş listeye götürür. Her modül en çok beş kayıt ister ve silinmişi dışarıda bırakır; bir modülün istemcisi patlarsa diğerleri yine döner, iki karakterden kısa sorgu hiçbir istemciye gitmez. Şifreli mesaj içeriği aranmaz; mesajlar kullanıcı adıyla bulunur. Görseller dosya adıyla değil önce alternatif metniyle anılır; alternatif metin yoksa dosya adına düşülür.</summary>
 public class AdminSearchTests
 {
     private readonly Mock<IBlogApiClient> _blogs = new();
     private readonly Mock<ISkillApiClient> _skills = new();
     private readonly Mock<ICategoryApiClient> _categories = new();
     private readonly Mock<IChatMessageApiClient> _messages = new();
+    private readonly Mock<IBlogImageApiClient> _blogImages = new();
     private readonly Mock<ILogApiClient> _logs = new();
     private AdminListRequest? _skillRequest;
     private AdminListRequest? _messageRequest;
@@ -32,13 +34,20 @@ public class AdminSearchTests
             .ReturnsAsync(((IReadOnlyList<ChatMessageAdminDto>)[new ChatMessageAdminDto { Id = 5, SenderUsername = "ali", ReceiverUsername = "veli", MessageType = null }], 1));
         _logs.Setup(l => l.GetAdminPagedAsync(null, null, It.IsAny<string?>(), null, null, 1, AdminSearch.PerModule, It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(((IReadOnlyList<LogAdminDto>)[new LogAdminDto { Id = 3, Level = "Error", Message = new string('x', 200) }], 1));
+        _blogImages.Setup(i => i.GetAdminPagedAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((IReadOnlyList<BlogImageAdminDto>)
+            [
+                new BlogImageAdminDto { Id = 4, AltText = "EF Core şeması", Url = "uploads/ef-core.png", BlogId = 7 },
+                new BlogImageAdminDto { Id = 5, AltText = "  ", Url = "uploads/alt/kapak.webp", BlogId = 8 }
+            ], 2));
 
         return new AdminSearch(
             _blogs.Object, Mock.Of<IMusicApiClient>(), Mock.Of<IProjectApiClient>(), Mock.Of<IRoleApiClient>(),
             _categories.Object, _skills.Object, Mock.Of<IExperienceApiClient>(), Mock.Of<IEducationApiClient>(),
             Mock.Of<IUserApiClient>(), Mock.Of<IContactApiClient>(), Mock.Of<IMailTemplateApiClient>(),
             Mock.Of<ISubscriberApiClient>(), Mock.Of<IStatusApiClient>(),
-            Mock.Of<ICallLogApiClient>(), _messages.Object, Mock.Of<IReportApiClient>(), _logs.Object);
+            Mock.Of<ICallLogApiClient>(), _messages.Object, Mock.Of<IReportApiClient>(),
+            _blogImages.Object, Mock.Of<IProjectImageApiClient>(), Mock.Of<IMusicImageApiClient>(), _logs.Object);
     }
 
     [Fact]
@@ -49,7 +58,7 @@ public class AdminSearchTests
 
         var groups = await BuildSut().SearchAsync(" ef core ", "tok");
 
-        groups.Select(g => g.Slug).Should().Equal(new[] { "blogs", "skills", "messages", "logs" },
+        groups.Select(g => g.Slug).Should().Equal(new[] { "blogs", "skills", "messages", "blog-images", "logs" },
             "kategori ucu patladı ama bu yalnızca o grubu düşürür; sıra modül kaydındaki sıradır");
         groups[0].Hits.Should().Equal(new SearchHit(7, "EF Core yazısı", "blogId", "7"));
         groups[1].Controller.Should().Be("Skill");
@@ -94,6 +103,18 @@ public class AdminSearchTests
     }
 
     [Fact]
+    public async Task Gorsel_once_alternatif_metniyle_yoksa_dosya_adiyla_anilir()
+    {
+        var groups = await BuildSut().SearchAsync("kapak", "tok");
+
+        var hits = groups.Single(g => g.Slug == "blog-images").Hits;
+        hits.Select(h => h.Label).Should().Equal(new[] { "EF Core şeması · Blog #7", "kapak.webp · Blog #8" },
+            "alternatif metin insanın yazdığı etikettir, önce o gelir; boşsa yol değil yalnızca dosya adı okunur");
+        hits[0].Should().BeEquivalentTo(new { RouteKey = "url", RouteValue = "kapak" },
+            "görsel listesinin arama kutusu url alanıdır; sunucu aynı terimi hem adreste hem alternatif metinde arar");
+    }
+
+    [Fact]
     public async Task Kisa_sorgu_hicbir_istemciye_gitmez()
     {
         var groups = await BuildSut().SearchAsync("a", "tok");
@@ -101,6 +122,6 @@ public class AdminSearchTests
         groups.Should().BeEmpty();
         _blogs.Verify(b => b.GetAdminOptionsAsync(It.IsAny<string?>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         _skills.Verify(s => s.GetAdminPagedAsync(It.IsAny<AdminListRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never,
-            "tek harf için on yedi modüle istek açmak her tuş vuruşunda on yedi sorgu demektir");
+            "tek harf için yirmi modüle istek açmak her tuş vuruşunda yirmi sorgu demektir");
     }
 }

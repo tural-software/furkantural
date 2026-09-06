@@ -29,6 +29,9 @@ public sealed class AdminSearch(
     ICallLogApiClient callLogs,
     IChatMessageApiClient chatMessages,
     IReportApiClient reports,
+    IBlogImageApiClient blogImages,
+    IProjectImageApiClient projectImages,
+    IMusicImageApiClient musicImages,
     ILogApiClient logs) : IAdminSearch
 {
     public const int MinLength = 2;
@@ -61,6 +64,12 @@ public sealed class AdminSearch(
                 x => $"{x.SenderUsername ?? "?"} → {x.ReceiverUsername ?? "?"} · {x.MessageType ?? "Text"}", "usernameFilter", _ => term)),
             ("Report", Paged(term, r => reports.GetAdminPagedAsync(r, token, ct), x => x.Id,
                 x => string.IsNullOrWhiteSpace(x.Reason) ? $"Şikayet #{x.Id} · {x.Status}" : $"{x.Reason} · {x.Status}", "search", _ => term)),
+            ("BlogImage", Paged(term, r => blogImages.GetAdminPagedAsync(r, token, ct), x => x.Id,
+                x => $"{Caption(x.AltText, x.Url)} · Blog #{x.BlogId}", "url", _ => term)),
+            ("ProjectImage", Paged(term, r => projectImages.GetAdminPagedAsync(r, token, ct), x => x.Id,
+                x => $"{Caption(x.AltText, x.Url)} · Proje #{x.ProjectId}", "url", _ => term)),
+            ("MusicImage", Paged(term, r => musicImages.GetAdminPagedAsync(r, token, ct), x => x.Id,
+                x => $"{Caption(x.AltText, x.Url)} · Müzik #{x.MusicId}", "url", _ => term)),
             ("Log", Rows(() => logs.GetAdminPagedAsync(null, null, term, null, null, 1, PerModule, token, ct), x => x.Id,
                 x => $"{x.Level} · {x.Message}", "searchMessage", _ => term))
         };
@@ -125,6 +134,16 @@ public sealed class AdminSearch(
         {
             return [];
         }
+    }
+
+    private static string Caption(string? altText, string? url)
+    {
+        if (!string.IsNullOrWhiteSpace(altText)) return altText.Trim();
+
+        var file = (url ?? "").Trim().TrimEnd('/');
+        var cut = file.LastIndexOfAny(['/', '\\']);
+        if (cut >= 0) file = file[(cut + 1)..];
+        return file.Length > 0 ? file : "görsel";
     }
 
     private static string Trim(string? text)
