@@ -11,7 +11,7 @@ using Moq;
 
 namespace FurkanTural_Admin.Tests.Controllers;
 
-/// <summary>Panel tek toplayıcı yanıttan beslenir: dört gösterge, "Dikkat gerektiren" şeridi ve kart rozetleri aynı nesneden türetilir. "Bu hafta yeni" dört sayacı toplar ve önceki haftaya göre farkı ok olarak taşır; toplayıcı cevap vermezse her gösterge tire kalır, ne şerit ne rozet çizilir, uydurma sıfır yazılmaz.</summary>
+/// <summary>Panel tek toplayıcı yanıttan beslenir: dört gösterge, "Dikkat gerektiren" şeridi ve kart rozetleri aynı nesneden türetilir. "Bu hafta yeni" dört sayacı toplar ve önceki haftaya göre farkı ok olarak taşır; toplayıcı cevap vermezse her gösterge tire kalır, ne şerit ne rozet çizilir, uydurma sıfır yazılmaz.<para>Yanıt kısmi de gelebilir: okunamayan tek bir sayaç yalnızca kendi göstergesini tireye çevirir, yanındaki sayılar durur. Eksik özet toplam kaydı düşürmez ama kapsamı "3 / 21 modül" diye yazdırır.</para></summary>
 public class DashboardKpiTests
 {
     private static DashboardController BuildSut(AdminDashboardModel? data, out Mock<IAdminDashboardClient> client)
@@ -113,5 +113,51 @@ public class DashboardKpiTests
         var open = vm.Kpis.Single(k => k.Key == "open-work");
         open.Value.Should().Be("0");
         open.Url.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Kismi_yanitta_bilinen_sayilar_kalir_bilinmeyen_tire_olur()
+    {
+        var data = Sample();
+        data.PendingReports = null;
+        data.ThisWeek!.Subscribers = null;
+        var sut = BuildSut(data, out _);
+
+        var vm = ViewModelOf(await sut.Index(CancellationToken.None));
+
+        var fresh = vm.Kpis.Single(k => k.Key == "fresh");
+        fresh.Value.Should().Be("—", "dört parçadan biri bilinmiyorsa toplam da bilinmiyordur");
+        fresh.Detail.Should().Be("2 yazı · 5 kullanıcı · 3 mesaj · — abone", "bilinen üç sayıyı saklamanın gereği yok");
+        fresh.Trend.Should().BeNull("eksik bir toplamdan geçen haftaya kıyas çıkmaz");
+
+        var open = vm.Kpis.Single(k => k.Key == "open-work");
+        open.Value.Should().Be("—");
+        open.Detail.Should().Be("3 okunmamış mesaj · — bekleyen şikayet");
+        open.Url.Should().BeNull();
+
+        vm.Attention.Select(a => a.Slug).Should().Equal(new[] { "contact" },
+            "okunamayan sayaç şerit çizmez; sıfırmış gibi de davranmaz, yalnızca susar");
+        vm.Kpis.Single(k => k.Key == "active-users").Value.Should().Be("4", "yanındaki sayaç etkilenmez");
+    }
+
+    [Fact]
+    public async Task Eksik_ozet_toplam_kaydin_kapsamini_soyler()
+    {
+        var full = Sample();
+        foreach (var m in AdminModules.All)
+            full.Summaries[m.ApiPath] = new EntitySummaryModel { TotalCount = 1 };
+        var sut = BuildSut(full, out _);
+
+        var vm = ViewModelOf(await sut.Index(CancellationToken.None));
+        vm.Kpis.Single(k => k.Key == "records").Detail.Should().Be($"{AdminModules.All.Count} modül");
+
+        var partial = Sample();
+        var lean = BuildSut(partial, out _);
+
+        var leanVm = ViewModelOf(await lean.Index(CancellationToken.None));
+        var records = leanVm.Kpis.Single(k => k.Key == "records");
+        records.Value.Should().Be("300", "gelen yirmi bir özetin toplamı hâlâ doğru bir sayıdır");
+        records.Detail.Should().Be($"3 / {AdminModules.All.Count} modül",
+            "eksik toplamı sessizce göstermek yanıltır; kaç modülün cevap verdiği yazılır");
     }
 }

@@ -26,10 +26,10 @@ public class DashboardController(IAdminDashboardClient dashboardClient) : Contro
 
         var attention = new List<AttentionItemViewModel>();
         if (data?.UnreadContacts is > 0)
-            attention.Add(new AttentionItemViewModel("contact", "okunmamış", data.UnreadContacts, "okunmamış iletişim mesajı",
+            attention.Add(new AttentionItemViewModel("contact", "okunmamış", data.UnreadContacts.Value, "okunmamış iletişim mesajı",
                 Url.Action("Index", "Contact", new { readFilter = "unread" })));
         if (data?.PendingReports is > 0)
-            attention.Add(new AttentionItemViewModel("reports", "bekleyen", data.PendingReports, "bekleyen şikayet",
+            attention.Add(new AttentionItemViewModel("reports", "bekleyen", data.PendingReports.Value, "bekleyen şikayet",
                 Url.Action("Index", "Report", new { statusFilter = "Pending" })));
         var attentionBySlug = attention.ToDictionary(a => a.Slug);
 
@@ -73,14 +73,17 @@ public class DashboardController(IAdminDashboardClient dashboardClient) : Contro
             Groups = groups,
             TotalRecordCount = totalRecords,
             Attention = attention,
-            Kpis = BuildKpis(data, totalRecords)
+            Kpis = BuildKpis(data, totalRecords, summaries.Count)
         };
 
         return View(vm);
     }
 
-    private IReadOnlyList<KpiViewModel> BuildKpis(AdminDashboardModel? data, int? totalRecords)
+    private IReadOnlyList<KpiViewModel> BuildKpis(AdminDashboardModel? data, int? totalRecords, int reportedModules)
     {
+        var moduleCount = AdminModules.All.Count;
+        var recordScope = reportedModules == moduleCount ? $"{moduleCount} modül" : $"{reportedModules} / {moduleCount} modül";
+
         var thisWeek = data?.ThisWeek;
         var lastWeek = data?.LastWeek;
         var freshTotal = thisWeek is null ? (int?)null : thisWeek.Blogs + thisWeek.Users + thisWeek.Contacts + thisWeek.Subscribers;
@@ -97,7 +100,7 @@ public class DashboardController(IAdminDashboardClient dashboardClient) : Contro
 
         return
         [
-            new KpiViewModel("records", "Toplam kayıt", Format(totalRecords), $"{AdminModules.All.Count} modül", null, null, null),
+            new KpiViewModel("records", "Toplam kayıt", Format(totalRecords), recordScope, null, null, null),
             new KpiViewModel("fresh", "Bu hafta yeni", Format(freshTotal), freshDetail, trend,
                 lastTotal is null ? null : $"geçen hafta {Format(lastTotal)}", null),
             new KpiViewModel("active-users", "Aktif kullanıcı", Format(data?.ActiveUsers), $"son {WindowDays} günde görülen", null, null,

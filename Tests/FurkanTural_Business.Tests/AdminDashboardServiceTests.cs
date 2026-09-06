@@ -4,6 +4,7 @@ using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Business.Services.Concrete;
 using FurkanTural_Domain.Entities;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace FurkanTural_Business.Tests;
@@ -63,7 +64,7 @@ public class AdminDashboardServiceTests
         }
     }
 
-    private AdminDashboardService Sut() => new(_uow.Object);
+    private AdminDashboardService Sut() => new(_uow.Object, NullLogger<AdminDashboardService>.Instance);
 
     [Fact]
     public async Task Ozetler_yol_adiyla_anahtarlanir_ve_verilmeyen_depo_bos_ozetle_gelir()
@@ -136,5 +137,50 @@ public class AdminDashboardServiceTests
         var capped = _userPredicates[0].Compile();
         capped(new User { IsActive = true, LastSeenAt = Today.AddDays(-89) }).Should().BeTrue();
         capped(new User { IsActive = true, LastSeenAt = Today.AddDays(-90) }).Should().BeFalse("pencere en çok doksan gündür");
+    }
+
+    [Fact]
+    public async Task Dusen_sorgu_yalniz_kendi_parcasini_goturur()
+    {
+        _blogs.Setup(r => r.GetAdminSummaryAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("özet sorgusu düştü"));
+        _reports.Setup(r => r.CountForAdminAsync(It.IsAny<Expression<Func<Report, bool>>?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("sayaç sorgusu düştü"));
+
+        var result = await Sut().GetAsync(Today, 7);
+
+        result.Success.Should().BeTrue("tek bir sorgunun düşmesi yanıtın tamamını götürmez");
+        result.Data!.Summaries.Should().NotContainKey("blog", "okunamayan özet sözlükte hiç yer almaz, kart boş çizilir");
+        result.Data.Summaries.Should().ContainKey("user", "yanındaki özetler etkilenmez");
+        result.Data.PendingReports.Should().BeNull("okunamayan sayaç boştur; sıfır yazmak uydurma olurdu");
+        result.Data.UnreadContacts.Should().Be(3);
+        result.Data.ActiveUsers.Should().Be(4);
+        result.Data.ThisWeek.Should().Be(new AdminWeeklyCountsDto(2, 4, 3, 1), "haftalık sayaçlar ayrı sorgulardır, şikayet sayacıyla düşmez");
+    }
+
+    [Fact]
+    public async Task Haftalik_sayaclardan_biri_duserse_digerleri_kalir()
+    {
+        _subscribers.Setup(r => r.CountForAdminAsync(It.IsAny<Expression<Func<Subscriber, bool>>?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("abone sayacı düştü"));
+
+        var result = await Sut().GetAsync(Today, 7);
+
+        result.Data!.ThisWeek.Should().Be(new AdminWeeklyCountsDto(2, 4, 3, null));
+        result.Data.LastWeek.Should().Be(new AdminWeeklyCountsDto(2, 4, 3, null));
+    }
+
+    [Fact]
+    public async Task Istemci_vazgecerse_yanit_kismi_degil_iptal_olur()
+    {
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+        _blogs.Setup(r => r.GetAdminSummaryAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        var act = () => Sut().GetAsync(Today, 7, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>(
+            "istemci isteği yarıda kesmişse eksik bir pano üretmenin anlamı yok; iptal yukarı çıkar");
     }
 }

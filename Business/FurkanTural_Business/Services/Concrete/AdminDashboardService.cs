@@ -3,16 +3,18 @@ using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
 using FurkanTural_Domain.Entities.Common;
+using Microsoft.Extensions.Logging;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class AdminDashboardService(IUnitOfWork unitOfWork) : IAdminDashboardService
+public class AdminDashboardService(IUnitOfWork unitOfWork, ILogger<AdminDashboardService> logger) : IAdminDashboardService
 {
     public const int MinWindow = 1;
     public const int MaxWindow = 90;
     public const string PendingStatus = "Pending";
 
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ILogger<AdminDashboardService> _logger = logger;
 
     public async Task<Result<AdminDashboardDto>> GetAsync(DateTime today, int windowDays, CancellationToken cancellationToken = default)
     {
@@ -23,24 +25,46 @@ public class AdminDashboardService(IUnitOfWork unitOfWork) : IAdminDashboardServ
 
         var summaries = new Dictionary<string, EntitySummaryDto>(21);
         foreach (var (key, read) in Summaries())
-            summaries[key] = await read(cancellationToken);
+        {
+            try
+            {
+                summaries[key] = await read(cancellationToken);
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
+            {
+                _logger.LogWarning(ex, "Pano özeti okunamadı, kart boş bırakıldı: {Key}", key);
+            }
+        }
 
-        var unread = await _unitOfWork.Contacts.CountForAdminAsync(x => !x.IsDeleted && !x.IsRead, cancellationToken);
-        var pending = await _unitOfWork.Reports.CountForAdminAsync(x => !x.IsDeleted && x.Status == PendingStatus, cancellationToken);
-        var active = await _unitOfWork.Users.CountForAdminAsync(x => !x.IsDeleted && x.IsActive && x.LastSeenAt != null && x.LastSeenAt >= thisFrom, cancellationToken);
+        var unread = await TryCountAsync(() => _unitOfWork.Contacts.CountForAdminAsync(x => !x.IsDeleted && !x.IsRead, cancellationToken), "okunmamış mesaj", cancellationToken);
+        var pending = await TryCountAsync(() => _unitOfWork.Reports.CountForAdminAsync(x => !x.IsDeleted && x.Status == PendingStatus, cancellationToken), "bekleyen şikayet", cancellationToken);
+        var active = await TryCountAsync(() => _unitOfWork.Users.CountForAdminAsync(x => !x.IsDeleted && x.IsActive && x.LastSeenAt != null && x.LastSeenAt >= thisFrom, cancellationToken), "aktif kullanıcı", cancellationToken);
 
-        var thisWeek = await WeekAsync(thisFrom, day.AddDays(1), cancellationToken);
-        var lastWeek = await WeekAsync(lastFrom, thisFrom, cancellationToken);
+        var thisWeek = await WeekAsync("bu hafta", thisFrom, day.AddDays(1), cancellationToken);
+        var lastWeek = await WeekAsync("geçen hafta", lastFrom, thisFrom, cancellationToken);
 
         return Result<AdminDashboardDto>.Ok(new AdminDashboardDto(summaries, unread, pending, active, thisWeek, lastWeek));
     }
 
-    private async Task<AdminWeeklyCountsDto> WeekAsync(DateTime from, DateTime toExclusive, CancellationToken cancellationToken)
+    private async Task<AdminWeeklyCountsDto> WeekAsync(string window, DateTime from, DateTime toExclusive, CancellationToken cancellationToken)
         => new(
-            await _unitOfWork.Blogs.CountForAdminAsync(Created<FurkanTural_Domain.Entities.Blog>(from, toExclusive), cancellationToken),
-            await _unitOfWork.Users.CountForAdminAsync(Created<FurkanTural_Domain.Entities.User>(from, toExclusive), cancellationToken),
-            await _unitOfWork.Contacts.CountForAdminAsync(Created<FurkanTural_Domain.Entities.Contact>(from, toExclusive), cancellationToken),
-            await _unitOfWork.Subscribers.CountForAdminAsync(Created<FurkanTural_Domain.Entities.Subscriber>(from, toExclusive), cancellationToken));
+            await TryCountAsync(() => _unitOfWork.Blogs.CountForAdminAsync(Created<FurkanTural_Domain.Entities.Blog>(from, toExclusive), cancellationToken), $"{window}/yazı", cancellationToken),
+            await TryCountAsync(() => _unitOfWork.Users.CountForAdminAsync(Created<FurkanTural_Domain.Entities.User>(from, toExclusive), cancellationToken), $"{window}/kullanıcı", cancellationToken),
+            await TryCountAsync(() => _unitOfWork.Contacts.CountForAdminAsync(Created<FurkanTural_Domain.Entities.Contact>(from, toExclusive), cancellationToken), $"{window}/mesaj", cancellationToken),
+            await TryCountAsync(() => _unitOfWork.Subscribers.CountForAdminAsync(Created<FurkanTural_Domain.Entities.Subscriber>(from, toExclusive), cancellationToken), $"{window}/abone", cancellationToken));
+
+    private async Task<int?> TryCountAsync(Func<Task<int>> read, string part, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await read();
+        }
+        catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
+        {
+            _logger.LogWarning(ex, "Pano sayacı okunamadı, boş bırakıldı: {Part}", part);
+            return null;
+        }
+    }
 
     private static System.Linq.Expressions.Expression<Func<T, bool>> Created<T>(DateTime from, DateTime toExclusive) where T : BaseEntity
         => x => !x.IsDeleted && x.CreatedAt >= from && x.CreatedAt < toExclusive;
