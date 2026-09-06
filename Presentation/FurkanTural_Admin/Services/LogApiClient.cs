@@ -18,7 +18,7 @@ public class LogApiClient(HttpClient httpClient, ILogger<LogApiClient> logger) :
     };
 
     public async Task<(IReadOnlyList<LogAdminDto> Rows, int TotalCount)> GetAdminPagedAsync(
-        string? level, string? project, string? message,
+        string? level, string? source, string? message,
         DateTime? dateFrom, DateTime? dateTo,
         int pageNumber, int pageSize,
         string token, CancellationToken ct = default)
@@ -30,8 +30,8 @@ public class LogApiClient(HttpClient httpClient, ILogger<LogApiClient> logger) :
 
             if (!string.IsNullOrWhiteSpace(level))
                 qs.Append($"&level={Uri.EscapeDataString(level)}");
-            if (!string.IsNullOrWhiteSpace(project))
-                qs.Append($"&project={Uri.EscapeDataString(project)}");
+            if (!string.IsNullOrWhiteSpace(source))
+                qs.Append($"&source={Uri.EscapeDataString(source)}");
             if (!string.IsNullOrWhiteSpace(message))
                 qs.Append($"&message={Uri.EscapeDataString(message)}");
             if (dateFrom.HasValue)

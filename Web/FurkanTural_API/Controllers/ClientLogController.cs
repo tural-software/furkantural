@@ -4,12 +4,13 @@ using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
 using FurkanTural_API.Controllers.Base;
 using FurkanTural_API.Models.Log;
+using FurkanTural_Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FurkanTural_API.Controllers;
 
-/// <summary>Kayıtlı ön-yüz uygulamalarının (app-token sahibi) istemci-tarafı hata/uyarı/bilgi loglarını alır ve sistem log tablosuna yazar. Proje adı app_source claim'inden gelir, böylece kaynak (Chat, Portfolio…) güvenilir biçimde damgalanır.<para>Aşağıdaki kırpma sınırları günlük tablosunun kolon genişliklerini yansıtır. Hizasız kalırlarsa uzun bir değer kaydetme anında hata doğurur ve istemcinin gönderdiği günlük, uygulamanın kendi 500'üne dönüşür.</para><para>Yazma başarısız olsa da istemciye 204 döner: tarayıcı kendi hatasını bildirmeye çalışırken ikinci bir hatayla oyalanmamalıdır.</para></summary>
+/// <summary>Kayıtlı ön-yüz uygulamalarının (app-token sahibi) istemci-tarafı hata/uyarı/bilgi loglarını alır ve sistem log tablosuna yazar. Kaynağın uygulama parçası app_source claim'inden gelir, gövdeden değil: tarayıcı kendi kaydını başka bir uygulamanın üstüne yazamasın diye. Gövdeden yalnızca bileşen ve işlem parçaları alınır ve <see cref="FurkanTural_Domain.Constants.LogSources"/> bunları temizler.<para>Aşağıdaki kırpma sınırları günlük tablosunun kolon genişliklerini yansıtır. Hizasız kalırlarsa uzun bir değer kaydetme anında hata doğurur ve istemcinin gönderdiği günlük, uygulamanın kendi 500'üne dönüşür.</para><para>Yazma başarısız olsa da istemciye 204 döner: tarayıcı kendi hatasını bildirmeye çalışırken ikinci bir hatayla oyalanmamalıdır.</para></summary>
 [ApiVersion("1.0")]
 [Authorize(Policy = "AppClient")]
 public class ClientLogController(ILogService logService, IClock clock) : BaseApiController
@@ -21,7 +22,7 @@ public class ClientLogController(ILogService logService, IClock clock) : BaseApi
     private const int MaxDetail = 8000;
     private const int MaxPath = 500;
     private const int MaxIpAddress = 45;
-    private const int MaxProject = 200;
+    private const int MaxSource = 200;
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ClientLogRequest request, CancellationToken cancellationToken)
@@ -29,13 +30,13 @@ public class ClientLogController(ILogService logService, IClock clock) : BaseApi
         if (request is null || string.IsNullOrWhiteSpace(request.Message))
             return ToActionResult(Result.Fail("Log mesajı boş olamaz.", statusCode: 400));
 
-        var appSource = User.FindFirst("app_source")?.Value;
-        if (string.IsNullOrWhiteSpace(appSource))
+        var app = LogSources.ForApp(User.FindFirst("app_source")?.Value);
+        if (app is null)
             return ToActionResult(Result.Fail("Geçersiz uygulama kaynağı.", statusCode: 403));
 
         var result = await _logService.CreateAsync(new CreateLogDto
         {
-            Project = Trim($"{appSource}_Client", MaxProject),
+            Source = Trim(LogSources.Compose(app, request.Component), MaxSource),
             Date = _clock.UtcNow,
             Level = NormalizeLevel(request.Level),
             Message = Trim(StripControls(request.Message), MaxMessage),

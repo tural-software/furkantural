@@ -10,4 +10,6 @@ public class ClientLogRequest
     public string? Path { get; set; }
     /// <summary>Tarayıcının IP'si; relay (ön-yüz sunucusu) doldurur. Yoksa bağlantı IP'si kullanılır.</summary>
     public string? IpAddress { get; set; }
+    /// <summary>Hatanın çıktığı bileşen ve işlem, tire ile: <c>Contact-Turnstile</c>. Uygulama adı buradan değil <c>app_source</c> claim'inden gelir, dolayısıyla tarayıcı kaynağı başka bir uygulamaymış gibi damgalayamaz.</summary>
+    public string? Component { get; set; }
 }

@@ -3,7 +3,7 @@ namespace FurkanTural_Admin.Models.Log;
 public class LogAdminDto
 {
     public int Id { get; set; }
-    public string? Project { get; set; }
+    public string? Source { get; set; }
     public DateTime Date { get; set; }
     public string? Level { get; set; }
     public string? Message { get; set; }

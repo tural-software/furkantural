@@ -88,10 +88,10 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
     }
 
     public async Task<IEnumerable<Log>> GetAllForAdminPagedAsync(
-        string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo,
+        string? level, string? source, string? message, DateTime? dateFrom, DateTime? dateTo,
         int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        var (where, parameters) = BuildAdminWhere(level, project, message, dateFrom, dateTo);
+        var (where, parameters) = BuildAdminWhere(level, source, message, dateFrom, dateTo);
         parameters.Add("Offset", (pageNumber - 1) * pageSize);
         parameters.Add("Size", pageSize);
 
@@ -102,10 +102,10 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
     }
 
     public async Task<int> CountForAdminAsync(
-        string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo,
+        string? level, string? source, string? message, DateTime? dateFrom, DateTime? dateTo,
         CancellationToken cancellationToken = default)
     {
-        var (where, parameters) = BuildAdminWhere(level, project, message, dateFrom, dateTo);
+        var (where, parameters) = BuildAdminWhere(level, source, message, dateFrom, dateTo);
 
         var conn = await GetOpenConnectionAsync(cancellationToken);
         return await conn.ExecuteScalarAsync<int>(new CommandDefinition(
@@ -114,7 +114,7 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
     }
 
     private static (string Where, DynamicParameters Parameters) BuildAdminWhere(
-        string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo)
+        string? level, string? source, string? message, DateTime? dateFrom, DateTime? dateTo)
     {
         var sql = new StringBuilder($"WHERE {LiveRows.Filter}");
         var parameters = new DynamicParameters();
@@ -125,10 +125,10 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
             parameters.Add("Level", level);
         }
 
-        if (!string.IsNullOrWhiteSpace(project))
+        if (!string.IsNullOrWhiteSpace(source))
         {
-            sql.Append(" AND Project LIKE @Project");
-            parameters.Add("Project", $"%{project}%");
+            sql.Append(" AND Source LIKE @Source");
+            parameters.Add("Source", $"%{source}%");
         }
 
         if (!string.IsNullOrWhiteSpace(message))

@@ -8,7 +8,7 @@ public static class LogMapper
     public static LogDto ToDto(this Log entity) => new()
     {
         Id = entity.Id,
-        Project = entity.Project,
+        Source = entity.Source,
         Date = entity.Date,
         Level = entity.Level,
         Message = entity.Message,
@@ -19,7 +19,7 @@ public static class LogMapper
 
     public static Log ToEntity(this CreateLogDto dto) => new()
     {
-        Project = dto.Project,
+        Source = dto.Source,
         Date = dto.Date,
         Level = dto.Level,
         Message = dto.Message,

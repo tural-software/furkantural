@@ -11,7 +11,7 @@ public class LogController(ILogApiClient logApiClient) : Controller
 
     public async Task<IActionResult> Index(
         string? levelFilter,
-        string? searchProject,
+        string? searchSource,
         string? searchMessage,
         string? dateFrom,
         string? dateTo,
@@ -30,7 +30,7 @@ public class LogController(ILogApiClient logApiClient) : Controller
         var safePageNumber = pageNumber > 0 ? pageNumber : 1;
 
         var summaryTask = _logApiClient.GetAdminSummaryAsync(token, cancellationToken);
-        var pagedTask   = _logApiClient.GetAdminPagedAsync(levelFilter, searchProject, searchMessage, from, to, safePageNumber, safePageSize, token, cancellationToken);
+        var pagedTask   = _logApiClient.GetAdminPagedAsync(levelFilter, searchSource, searchMessage, from, to, safePageNumber, safePageSize, token, cancellationToken);
 
         await Task.WhenAll(summaryTask, pagedTask);
 
@@ -43,7 +43,7 @@ public class LogController(ILogApiClient logApiClient) : Controller
             TotalCount    = summary?.TotalCount ?? 0,
             LastActivityAt = summary?.LastActivityAt,
             LevelFilter   = levelFilter,
-            SearchProject = searchProject,
+            SearchSource = searchSource,
             SearchMessage = searchMessage,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
@@ -58,7 +58,7 @@ public class LogController(ILogApiClient logApiClient) : Controller
     [HttpGet]
     public async Task<IActionResult> TablePartial(
         string? levelFilter,
-        string? searchProject,
+        string? searchSource,
         string? searchMessage,
         string? dateFrom,
         string? dateTo,
@@ -77,14 +77,14 @@ public class LogController(ILogApiClient logApiClient) : Controller
         var safePageNumber = pageNumber > 0 ? pageNumber : 1;
 
         var (rows, totalFiltered) = await _logApiClient.GetAdminPagedAsync(
-            levelFilter, searchProject, searchMessage, from, to,
+            levelFilter, searchSource, searchMessage, from, to,
             safePageNumber, safePageSize, token, cancellationToken);
 
         var vm = new LogIndexViewModel
         {
             Rows          = rows,
             LevelFilter   = levelFilter,
-            SearchProject = searchProject,
+            SearchSource = searchSource,
             SearchMessage = searchMessage,
             DateFrom      = dateFrom,
             DateTo        = dateTo,

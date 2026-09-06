@@ -1,5 +1,7 @@
 using System.Text.Json;
 using FurkanTural_Application.DTOs.Log;
+using FurkanTural_Business.Helpers;
+using FurkanTural_Domain.Constants;
 using FurkanTural_Application.Exceptions;
 using FurkanTural_Application.Services.Abstract;
 
@@ -58,7 +60,7 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
                 var clock = scope.ServiceProvider.GetService<IClock>();
                 await logService.CreateAsync(new CreateLogDto
                 {
-                    Project = "FurkanTural_API",
+                    Source = LogSourceBuilder.FromContext(context, LogSources.Api),
                     Date = clock?.UtcNow ?? DateTime.UtcNow,
                     Level = outcome.Level,
                     Message = Truncate(ex.Message, 1000),

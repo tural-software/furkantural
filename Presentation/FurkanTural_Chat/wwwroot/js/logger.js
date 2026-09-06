@@ -29,7 +29,15 @@
         return true;
     }
 
-    function send(level, message, detail) {
+    // Bileşen adı: açıkça verilmemişse sayfanın kendi yolundan türetilir (/Chat/Detail/5 -> Chat-Detail).
+    // Uygulama adını API damgalar, buradan gitmez; kaynak adı sunucuda 'FurkanTural_Chat-Chat-Detail' olur.
+    function component(explicit) {
+        if (explicit) return String(explicit);
+        var parts = location.pathname.split('/').filter(function (p) { return p.length > 0; });
+        return parts.slice(0, 2).join('-');
+    }
+
+    function send(level, message, detail, where) {
         if (sending) return;
         message = clip(message, MAX_MSG);
         if (!message) return;
@@ -41,7 +49,8 @@
             level: level,
             message: message,
             detail: detail,
-            path: location.pathname + location.search
+            path: location.pathname + location.search,
+            component: clip(component(where), 100)
         });
 
         sending = true;
@@ -62,9 +71,9 @@
     }
 
     window.ClientLog = {
-        error: function (message, detail) { send('Error', message, detail); },
-        warn:  function (message, detail) { send('Warning', message, detail); },
-        info:  function (message, detail) { send('Information', message, detail); }
+        error: function (message, detail, where) { send('Error', message, detail, where); },
+        warn:  function (message, detail, where) { send('Warning', message, detail, where); },
+        info:  function (message, detail, where) { send('Information', message, detail, where); }
     };
 
     function isSameOrigin(url) {

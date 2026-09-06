@@ -14,7 +14,7 @@
         <thead>
             <tr>
                 <th class="col-id">ID</th>
-                <th>Proje</th>
+                <th>Kaynak</th>
                 <th class="col-date">Log Tarihi</th>
                 <th>Seviye</th>
                 <th class="col-message">Mesaj</th>
@@ -40,7 +40,7 @@
 
                 <tr>
                     <td>@row.Id</td>
-                    <td>@(row.Project ?? "—")</td>
+                    <td>@(row.Source ?? "—")</td>
                     <td>@row.Date.ToString("dd MMM yyyy HH:mm")</td>
                     <td><span class="@levelCss">@(row.Level ?? "—")</span></td>
                     <td class="col-message" title="@row.Message">@msgTrunc</td>
@@ -69,7 +69,7 @@
     Model.PageNumber, Model.PageSize, Model.TotalPages, Model.TotalFiltered,
     [
         new("levelFilter",   Model.LevelFilter),
-        new("searchProject", Model.SearchProject),
+        new("searchSource", Model.SearchSource),
         new("searchMessage", Model.SearchMessage),
         new("dateFrom",      Model.DateFrom),
         new("dateTo",        Model.DateTo),

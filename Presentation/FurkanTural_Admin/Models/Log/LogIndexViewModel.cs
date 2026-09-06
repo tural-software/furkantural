@@ -7,7 +7,7 @@ public class LogIndexViewModel
     public DateTime? LastActivityAt { get; set; }
 
     public string? LevelFilter { get; set; }
-    public string? SearchProject { get; set; }
+    public string? SearchSource { get; set; }
     public string? SearchMessage { get; set; }
     public string? DateFrom { get; set; }
     public string? DateTo { get; set; }

@@ -3,6 +3,7 @@ using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
 using FurkanTural_API.Controllers.Base;
 using FurkanTural_API.Models.Log;
+using FurkanTural_Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
@@ -19,7 +20,7 @@ public class LogController(ILogService logService, IClock clock) : BaseApiContro
     private const int MaxMessage = 1000;
     private const int MaxDetail = 8000;
     private const int MaxPath = 500;
-    private const int MaxProject = 200;
+    private const int MaxSource = 200;
 
     /// <summary>Sistem logunu ID ile getir</summary>
     [HttpGet("{id:int}")]
@@ -45,14 +46,14 @@ public class LogController(ILogService logService, IClock clock) : BaseApiContro
     [HttpGet("admin/paged")]
     public async Task<IActionResult> GetAdminPaged(
         [FromQuery] string? level,
-        [FromQuery] string? project,
+        [FromQuery] string? source,
         [FromQuery] string? message,
         [FromQuery] DateTime? dateFrom,
         [FromQuery] DateTime? dateTo,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         CancellationToken cancellationToken = default)
-        => ToActionResult(await _logService.GetAllForAdminPagedAsync(level, project, message, dateFrom, dateTo, pageNumber, pageSize, cancellationToken));
+        => ToActionResult(await _logService.GetAllForAdminPagedAsync(level, source, message, dateFrom, dateTo, pageNumber, pageSize, cancellationToken));
 
     /// <summary>Admin panelinin (AdminOnly JWT) sunucu-tarafı hata/uyarı logunu sistem log tablosuna yazar. Admin'in app-token'ı yoktur; ClientLog (AppClient) yerine bu uç nokta kullanılır.</summary>
     [HttpPost]
@@ -63,7 +64,7 @@ public class LogController(ILogService logService, IClock clock) : BaseApiContro
 
         var result = await _logService.CreateAsync(new CreateLogDto
         {
-            Project = Trim(StripControls(request.Project), MaxProject) ?? "FurkanTural_Admin",
+            Source = Trim(LogSources.Compose(LogSources.Admin, request.Component), MaxSource),
             Date = _clock.UtcNow,
             Level = NormalizeLevel(request.Level),
             Message = Trim(StripControls(request.Message), MaxMessage),

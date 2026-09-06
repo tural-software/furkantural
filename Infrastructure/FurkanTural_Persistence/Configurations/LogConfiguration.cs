@@ -10,7 +10,7 @@ public class LogConfiguration : BaseEntityConfiguration<Log>
     {
         base.Configure(builder);
         builder.ToTable("Logs");
-        builder.Property(e => e.Project).HasMaxLength(200);
+        builder.Property(e => e.Source).HasMaxLength(200);
         builder.Property(e => e.Level).HasMaxLength(50);
         builder.Property(e => e.Message).HasMaxLength(1000);
         builder.Property(e => e.Detail).HasColumnType("nvarchar(max)");

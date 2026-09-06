@@ -2640,8 +2640,8 @@
                                             "disabled": true
                                         },
                                         {
-                                            "key": "project",
-                                            "value": "{{logProject}}",
+                                            "key": "source",
+                                            "value": "{{logSource}}",
                                             "disabled": true
                                         },
                                         {
@@ -8529,8 +8529,8 @@
                                             "disabled": true
                                         },
                                         {
-                                            "key": "project",
-                                            "value": "{{logProject}}",
+                                            "key": "source",
+                                            "value": "{{logSource}}",
                                             "disabled": true
                                         },
                                         {
@@ -12162,10 +12162,10 @@
             "description": "Log filtresi: seviye."
         },
         {
-            "key": "logProject",
+            "key": "logSource",
             "value": "FurkanTural_Admin",
             "type": "string",
-            "description": "Log filtresi: proje."
+            "description": "Log filtresi: kaynak (Uygulama-Bilesen-Islem)."
         },
         {
             "key": "logSearch",

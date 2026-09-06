@@ -8,6 +8,6 @@ public class CreateLogRequest
     public string? Message { get; set; }
     public string? Detail { get; set; }
     public string? Path { get; set; }
-    /// <summary>Kaynak uygulama; boşsa "FurkanTural_Admin" damgalanır.</summary>
-    public string? Project { get; set; }
+    /// <summary>Olayın çıktığı bileşen ve işlem, tire ile: <c>Blog-Create-Post</c>. Uygulama adını sunucu damgalar (<c>FurkanTural_Admin</c>), yani gönderen kendini başka bir uygulama gibi gösteremez. Boş bırakılırsa kaynak yalnızca uygulama adından ibaret kalır.</summary>
+    public string? Component { get; set; }
 }

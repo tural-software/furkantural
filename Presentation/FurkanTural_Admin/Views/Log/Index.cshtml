@@ -9,7 +9,7 @@
     <script>
         window.__logMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             levelFilter   = Model.LevelFilter ?? "",
-            searchProject = Model.SearchProject ?? "",
+            searchSource = Model.SearchSource ?? "",
             searchMessage = Model.SearchMessage ?? "",
             dateFrom      = Model.DateFrom ?? "",
             dateTo        = Model.DateTo ?? "",
@@ -83,12 +83,12 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Proje ara</label>
+                    <label>Kaynak ara</label>
                     <div class="filter-input-wrap">
                         @await Html.PartialAsync("_Icons", "search")
-                        <input type="text" name="searchProject" value="@Model.SearchProject"
+                        <input type="text" name="searchSource" value="@Model.SearchSource"
                                class="filter-input filter-input--search"
-                               placeholder="Proje ara..." />
+                               placeholder="Kaynak ara..." />
                     </div>
                 </div>
                 <div class="filter-group">

@@ -12,5 +12,5 @@ public interface ILogService
     Task<Result<IEnumerable<LogDto>>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<PagedResult<LogDto>> GetAllPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<Result<EntitySummaryDto>> GetAdminSummaryAsync(CancellationToken cancellationToken = default);
-    Task<PagedResult<LogDto>> GetAllForAdminPagedAsync(string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    Task<PagedResult<LogDto>> GetAllForAdminPagedAsync(string? level, string? source, string? message, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 }

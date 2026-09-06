@@ -26,6 +26,7 @@ public class ClientLogController(IHttpClientFactory httpClientFactory) : Control
                     message = input.Message,
                     detail,
                     path = input.Path,
+                    component = input.Component,
                     ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
                 }, cancellationToken);
             }
@@ -41,5 +42,6 @@ public class ClientLogController(IHttpClientFactory httpClientFactory) : Control
         public string? Message { get; set; }
         public string? Detail { get; set; }
         public string? Path { get; set; }
+        public string? Component { get; set; }
     }
 }

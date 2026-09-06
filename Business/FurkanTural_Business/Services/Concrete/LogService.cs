@@ -51,10 +51,10 @@ public class LogService(IUnitOfWork unitOfWork) : ILogService
         return Result<EntitySummaryDto>.Ok(summary);
     }
 
-    public async Task<PagedResult<LogDto>> GetAllForAdminPagedAsync(string? level, string? project, string? message, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<LogDto>> GetAllForAdminPagedAsync(string? level, string? source, string? message, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        var entities = await _unitOfWork.Logs.GetAllForAdminPagedAsync(level, project, message, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
-        var total = await _unitOfWork.Logs.CountForAdminAsync(level, project, message, dateFrom, dateTo, cancellationToken);
+        var entities = await _unitOfWork.Logs.GetAllForAdminPagedAsync(level, source, message, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        var total = await _unitOfWork.Logs.CountForAdminAsync(level, source, message, dateFrom, dateTo, cancellationToken);
         return PagedResult<LogDto>.Ok(entities.Select(e => e.ToDto()), total, pageNumber, pageSize);
     }
 }
