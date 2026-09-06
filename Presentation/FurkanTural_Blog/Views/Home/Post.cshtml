@@ -5,10 +5,8 @@
         ? $"{Model.Title} — Furkan Tural Blog"
         : Model.Excerpt;
 
-    // Detay sayfası Open Graph tipi her zaman article olmalı (liste/anasayfa website kalır).
     ViewData["OgType"] = "article";
 
-    // Kapak varsa sosyal paylaşım kartı (OG/Twitter) bu yazının kapağını kullansın.
     if (!string.IsNullOrEmpty(Model.CoverImageUrl))
     {
         ViewData["OgImage"] = Model.CoverImageUrl;
@@ -36,7 +34,6 @@
     if (!string.IsNullOrEmpty(Model.PublishedIso))
     {
         articleData["datePublished"] = Model.PublishedIso;
-        // dateModified: gerçek son-güncelleme tarihi (yazı hiç düzenlenmediyse yayın tarihine düşer).
         articleData["dateModified"] = Model.ModifiedIso;
     }
     if (!string.IsNullOrEmpty(Model.CoverImageUrl))
@@ -58,7 +55,6 @@
     });
 }
 
-@* Okuma ilerlemesi: yalnızca ne kadar kaldığını gösterir, odağı almaz. *@
 <div class="read-progress" role="progressbar" aria-label="Okuma ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
     <span class="read-progress__bar" data-read-progress></span>
 </div>
@@ -100,6 +96,40 @@
         <div class="post-content prose reveal" data-read-target>@Model.ContentHtml</div>
     </div>
 
+    @if (Model.Related.Count > 0)
+    {
+        <aside class="post-related" aria-labelledby="ilgili-baslik">
+            <h2 class="post-related__title" id="ilgili-baslik">İlgili yazılar</h2>
+            <div class="post-related__grid">
+                @foreach (var rel in Model.Related)
+                {
+                    <a class="related-card" href="@(Url.Action("Post", "Home", new { id = rel.Id }) ?? "/")">
+                        @if (rel.Categories.Count > 0)
+                        {
+                            <span class="related-card__cats">
+                                @foreach (var cat in rel.Categories.Take(2))
+                                {
+                                    <span class="related-card__cat" style="--chip-color:@cat.DisplayColor">
+                                        <span class="post-cat-chip__dot" aria-hidden="true"></span>@cat.Name
+                                    </span>
+                                }
+                            </span>
+                        }
+                        <span class="related-card__title">@rel.Title</span>
+                        <span class="related-card__meta">
+                            @if (!string.IsNullOrEmpty(rel.PublishedDisplay))
+                            {
+                                <time datetime="@rel.PublishedIso">@rel.PublishedDisplay</time>
+                                <span aria-hidden="true">·</span>
+                            }
+                            <span>@rel.ReadingMinutes dk</span>
+                        </span>
+                    </a>
+                }
+            </div>
+        </aside>
+    }
+
     <footer class="post-foot">
         @if (Model.Categories.Count > 0)
         {
@@ -119,7 +149,6 @@
 </article>
 
 @section HeadMeta {
-    @* Open Graph Article nitelik meta'ları — og:type=article ile birlikte gelmeli. *@
     @if (!string.IsNullOrEmpty(Model.PublishedIso))
     {
         <meta property="article:published_time" content="@Model.PublishedIso" />

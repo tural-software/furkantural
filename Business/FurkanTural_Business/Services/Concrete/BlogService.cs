@@ -112,6 +112,7 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         var dtos = rows.Select(r => new BlogSitemapDto
         {
             Id = r.Id,
+            Title = r.Title,
             CreatedAt = r.CreatedAt,
             UpdatedAt = r.UpdatedAt
         }).ToList();

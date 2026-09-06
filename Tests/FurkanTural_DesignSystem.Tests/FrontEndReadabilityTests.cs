@@ -333,9 +333,17 @@ public class FrontEndReadabilityTests
                 sapan.Add($"Blog: {page} görünümü ortak liste gövdesini kullanmıyor, arıza dalı o sayfada kaybolur");
         }
 
+        var blogArchive = Read("Presentation", "FurkanTural_Blog", "Views", "Home", "Archive.cshtml");
+        if (!blogArchive.Contains("Model.LoadFailed"))
+            sapan.Add("Blog: arşiv görünümü LoadFailed dalını taşımıyor, boş arşiv ile arıza aynı ekrana düşer");
+
         var blogService = Read("Presentation", "FurkanTural_Blog", "Services", "BlogApiService.cs");
-        if (!blogService.Contains("LoadFailed = true"))
+        var blogCatches = Regex.Matches(blogService, @"catch \(Exception ex\)").Count;
+        var blogMarks = Regex.Matches(blogService, @"LoadFailed = true").Count;
+        if (blogMarks == 0)
             sapan.Add("Blog: servis yakalama bloğunda LoadFailed işaretlenmiyor");
+        if (blogMarks > blogCatches)
+            sapan.Add($"Blog: {blogCatches} yakalama bloğuna karşılık {blogMarks} işaretleme var");
 
         var portfolioService = Read("Presentation", "FurkanTural_Portfolio", "Services", "PortfolioApiService.cs");
         var catches = Regex.Matches(portfolioService, @"catch \(Exception ex\)").Count;

@@ -6,7 +6,7 @@ namespace FurkanTural_Application.Repositories.Abstract;
 public interface IBlogRepository : IRepository<Blog>
 {
     Task<(IReadOnlyList<Blog> Items, int Total)> GetPublishedPageAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<(int Id, DateTime CreatedAt, DateTime? UpdatedAt)>> GetSitemapDataAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<(int Id, string? Title, DateTime CreatedAt, DateTime? UpdatedAt)>> GetSitemapDataAsync(CancellationToken cancellationToken = default);
     Task<Dictionary<int, List<Category>>> GetCategoriesForBlogsAsync(IReadOnlyCollection<int> blogIds, CancellationToken cancellationToken = default);
     Task<List<Category>> GetCategoriesByBlogAsync(int blogId, CancellationToken cancellationToken = default);
     Task<List<int>> GetCategoryIdsByBlogAsync(int blogId, CancellationToken cancellationToken = default);

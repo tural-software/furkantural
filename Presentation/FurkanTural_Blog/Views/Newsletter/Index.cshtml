@@ -1,0 +1,81 @@
+@model NewsletterViewModel
+@{
+    ViewData["Title"] = "Bülten";
+    ViewData["MetaDescription"] = "Yeni blog yazılarının duyuru listesine kaydolun.";
+    ViewData["Robots"] = "noindex, follow";
+}
+
+<section class="page-head reveal">
+    <div class="container">
+        <nav class="crumb" aria-label="Konum">
+            <a href="@(Url.Action("Index", "Home") ?? "/")">Blog</a>
+            <span aria-hidden="true">/</span>
+            <span>Bülten</span>
+        </nav>
+        <h1 class="page-head__title">Yeni yazıları kaçırmayın</h1>
+        <p class="page-head__lead">
+            Yeni yazıların duyurusu için bir liste tutuyorum. Kaydolmak için yalnızca
+            e-posta adresiniz yeterli.
+        </p>
+    </div>
+</section>
+
+<section class="container newsletter-page">
+
+    <div class="newsletter-card reveal">
+        @if (Model.Submitted && Model.Succeeded)
+        {
+            <div class="newsletter-result newsletter-result--ok" role="status">
+                <h2 class="newsletter-result__title">Kaydınız alındı</h2>
+                <p class="newsletter-result__text">@Model.ResultMessage</p>
+                <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Yazılara dön</a>
+            </div>
+        }
+        else
+        {
+            @if (Model.Submitted && !string.IsNullOrEmpty(Model.ResultMessage))
+            {
+                <p class="newsletter-result newsletter-result--warn" role="alert">@Model.ResultMessage</p>
+            }
+
+            <form method="post" action="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")" class="newsletter-form">
+                @Html.AntiForgeryToken()
+
+                <label class="newsletter-field">
+                    <span class="newsletter-field__label">E-posta adresiniz</span>
+                    <input class="newsletter-field__input" type="email" name="Email" value="@Model.Email"
+                           placeholder="ornek@@eposta.com" required autocomplete="email" spellcheck="false"
+                           aria-describedby="bulten-not" />
+                </label>
+                <span asp-validation-for="Email" class="newsletter-field__error"></span>
+
+                <div class="newsletter-trap" aria-hidden="true">
+                    <label for="bulten-website">Bu alanı boş bırakın</label>
+                    <input id="bulten-website" type="text" name="Website" value="" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <button class="btn btn--primary newsletter-submit" type="submit">Abone ol</button>
+
+                <p class="newsletter-note" id="bulten-not">
+                    Adresiniz listeye anında eklenir; onay postası gönderilmez.
+                </p>
+            </form>
+        }
+    </div>
+
+    <div class="newsletter-points reveal">
+        <div class="newsletter-point">
+            <span class="newsletter-point__title">Yalnızca e-posta</span>
+            <span class="newsletter-point__desc">Başka veri istenmez ve adresiniz üçüncü tarafla paylaşılmaz.</span>
+        </div>
+        <div class="newsletter-point">
+            <span class="newsletter-point__title">Yalnızca duyuru</span>
+            <span class="newsletter-point__desc">Liste yeni yazıların duyurusundan başka bir şey için kullanılmaz.</span>
+        </div>
+        <div class="newsletter-point">
+            <span class="newsletter-point__title">Ayrılmak isterseniz</span>
+            <span class="newsletter-point__desc">Adresinizin listeden çıkarılmasını istemeniz yeterli.</span>
+        </div>
+    </div>
+
+</section>

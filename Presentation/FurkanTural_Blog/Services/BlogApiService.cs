@@ -117,6 +117,20 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
         }
     }
 
+    public async Task<ArchiveViewModel> GetArchiveAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<IEnumerable<BlogSitemapItem>>>("/api/v1/blog/sitemap", JsonOptions, ct);
+            return ArchiveViewModel.From(result?.Data ?? []);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Arşiv verisi alınamadı.");
+            return new ArchiveViewModel { LoadFailed = true };
+        }
+    }
+
     public async Task<IReadOnlyList<BlogImageViewModel>> GetImagesByBlogAsync(int blogId, CancellationToken ct = default)
     {
         try

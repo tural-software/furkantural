@@ -1,0 +1,75 @@
+@model ArchiveViewModel
+@{
+    ViewData["Title"] = "Arşiv";
+    ViewData["MetaDescription"] = "Yayın tarihine göre gruplanmış tüm blog yazıları.";
+}
+
+<section class="page-head reveal">
+    <div class="container">
+        <nav class="crumb" aria-label="Konum">
+            <a href="@(Url.Action("Index", "Home") ?? "/")">Blog</a>
+            <span aria-hidden="true">/</span>
+            <span>Arşiv</span>
+        </nav>
+        <h1 class="page-head__title">Tüm yazılar</h1>
+        <p class="page-head__lead">
+            Yayın tarihine göre gruplanmış tam liste. Yılı seçip doğrudan o bölüme inebilirsiniz.
+        </p>
+        @if (Model.Years.Count > 0)
+        {
+            <p class="page-head__count">@Model.TotalCount yazı</p>
+        }
+    </div>
+</section>
+
+<section class="container archive-page">
+    @if (Model.Years.Count == 0)
+    {
+        <div class="placeholder-card reveal">
+            @if (Model.LoadFailed)
+            {
+                <h2>Arşiv şu anda yüklenemiyor</h2>
+                <p>Geçici bir sorun var; arşiv yerinde duruyor. Kısa süre sonra tekrar deneyin.</p>
+            }
+            else
+            {
+                <h2>Yakında</h2>
+                <p>Blog yazıları hazırlanıyor. İçerik yayınlandığında bu alanda listelenecek.</p>
+            }
+        </div>
+    }
+    else
+    {
+        <nav class="archive-years reveal" aria-label="Yıllar">
+            @foreach (var year in Model.Years)
+            {
+                <a class="rail-chip archive-year-chip" href="#@year.Anchor">@year.Year <span class="archive-year-chip__count">@year.Count</span></a>
+            }
+        </nav>
+
+        @foreach (var year in Model.Years)
+        {
+            <section class="archive-group reveal" id="@year.Anchor" aria-labelledby="@(year.Anchor)-baslik">
+                <h2 class="archive-group__year" id="@(year.Anchor)-baslik">
+                    @year.Year<span class="archive-group__count">@year.Count yazı</span>
+                </h2>
+
+                @foreach (var month in year.Months)
+                {
+                    <h3 class="archive-month">@month.Name</h3>
+                    <ol class="archive-list">
+                        @foreach (var item in month.Items)
+                        {
+                            <li class="archive-row">
+                                <a class="archive-row__link" href="@(Url.Action("Post", "Home", new { id = item.Id }) ?? "/")">
+                                    <time class="archive-row__day" datetime="@item.PublishedIso">@item.DayDisplay</time>
+                                    <span class="archive-row__title">@item.Title</span>
+                                </a>
+                            </li>
+                        }
+                    </ol>
+                }
+            </section>
+        }
+    }
+</section>

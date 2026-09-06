@@ -35,6 +35,14 @@ builder.Services.AddScoped<IBlogApiService>(sp =>
     return new BlogApiService(client, logger);
 });
 
+builder.Services.AddScoped<INewsletterClient>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    var client = factory.CreateClient("ApiClient");
+    var logger = sp.GetRequiredService<ILogger<NewsletterClient>>();
+    return new NewsletterClient(client, logger);
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

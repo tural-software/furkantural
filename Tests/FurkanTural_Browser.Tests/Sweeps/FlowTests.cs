@@ -374,4 +374,56 @@ public sealed class FlowTests(LiveSiteFixture site)
         result.barAfter.Should().BeFalse("Vazgeç seçimi temizler ve çubuğu kaldırır");
         result.checkedAfter.Should().Be(0);
     }
+
+    /// <summary>Arşiv yıl çipi kendi bölümüne atlar. Çip listeyi süzmez, sayfa içinde konumlanır — arşivin tamamı tek sayfada olduğu için bağlantı hedefinin gerçekten var olması gerekir; bulunamayan bir çapa sessizce hiçbir şey yapmaz.</summary>
+    [SkippableFact]
+    public async Task Blogda_arsiv_yil_cipi_kendi_bolumune_atlar()
+    {
+        var (chipCount, anchor, sectionExists, rowCount) = await site.WithPageAsync(SweepData.Page("Blog/arsiv"), async page =>
+        {
+            var chip = page.Locator(".archive-year-chip").First;
+            var count = await page.Locator(".archive-year-chip").CountAsync();
+            Skip.If(count == 0, "Blog: arşivde yıl yok");
+
+            var href = await chip.GetAttributeAsync("href") ?? "";
+            var target = href.StartsWith('#') ? await page.Locator($"section{href}").CountAsync() : 0;
+            var rows = await page.Locator(".archive-row__link").CountAsync();
+            return (count, href, target, rows);
+        });
+
+        chipCount.Should().BeGreaterThan(0);
+        anchor.Should().StartWith("#", "yıl çipi sayfa içi çapadır, ayrı bir adres değil");
+        sectionExists.Should().Be(1, "çipin gösterdiği yıl bölümü sayfada bulunmalı");
+        rowCount.Should().BeGreaterThan(0, "arşiv sayfalanmadığı için tüm satırlar tek ekranda olmalı");
+    }
+
+    /// <summary>Bülten formu JavaScript olmadan çalışmalı: sitede doğrulama kitaplığı yok ve gönderim sayfayı yeniden çizerek sonucu aynı ekranda gösterir.<para>Tuzak alanın ölçüsü ve sekme sırası ayrı ayrı sınanır. Playwright'ın görünürlük ölçütü burada işe yaramaz: kırpılmış 1×1 piksellik bir kutu da "görünür" sayılır. İnsanın yanlışlıkla dolduramaması için gereken şey alanın gerçek bir hedef sunmaması ve klavyeyle sıraya girmemesidir.</para></summary>
+    [SkippableFact]
+    public async Task Bulten_formu_gonderim_sonucunu_ayni_ekranda_gosterir()
+    {
+        var (trapArea, trapTabIndex, method, resultText) = await site.WithPageAsync(SweepData.Page("Blog/bulten"), async page =>
+        {
+            var form = page.Locator("form.newsletter-form");
+            Skip.If(await form.CountAsync() == 0, "Blog: bülten formu yok");
+
+            var trap = page.Locator("#bulten-website");
+            var box = await trap.BoundingBoxAsync();
+            var area = box is null ? 0 : box.Width * box.Height;
+            var tabIndex = await trap.GetAttributeAsync("tabindex") ?? "";
+            var verb = (await form.GetAttributeAsync("method") ?? "").ToLowerInvariant();
+
+            await trap.FillAsync("bot");
+            await page.Locator("input[name='Email']").FillAsync("tarama@example.invalid");
+            await page.Locator("button[type='submit']").ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.Load);
+
+            var text = await page.Locator(".newsletter-result").First.TextContentAsync();
+            return (area, tabIndex, verb, (text ?? "").Trim());
+        });
+
+        trapArea.Should().BeLessThan(16, "tuzak alan tıklanabilir bir hedef sunarsa insan da doldurur ve gönderim sessizce boşa gider");
+        trapTabIndex.Should().Be("-1", "sekmeyle gezinen kullanıcı tuzağa düşmemeli");
+        method.Should().Be("post", "abonelik kaydı GET ile yapılamaz");
+        resultText.Should().NotBeEmpty("gönderimden sonra ekranda ne olduğunu söyleyen bir metin bulunmalı");
+    }
 }

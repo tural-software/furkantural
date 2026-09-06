@@ -14,8 +14,11 @@ public interface IBlogApiService
 
     Task<BlogPostViewModel?> GetPostAsync(int id, CancellationToken ct = default);
 
-    /// <summary>Sitemap için yayınlı yazıların hafif listesi (Id + tarihler; içerik çekilmez).</summary>
+    /// <summary>Sitemap için yayınlı yazıların hafif listesi (Id + başlık + tarihler; içerik çekilmez).</summary>
     Task<IReadOnlyList<BlogSitemapItem>> GetSitemapItemsAsync(CancellationToken ct = default);
+
+    /// <summary>Arşiv sayfası: aynı hafif listeyi yıl/ay gruplu döndürür. Ayrı bir yöntem olmasının nedeni hata durumudur — sitemap.xml arıza hâlinde bilerek boş liste döner, arşiv sayfası ise boş arşivi arızadan ayırt etmek zorundadır.</summary>
+    Task<ArchiveViewModel> GetArchiveAsync(CancellationToken ct = default);
 
     /// <summary>Belirli bir bloğa ait görseller (detay sayfası kapağı/galerisi için).</summary>
     Task<IReadOnlyList<BlogImageViewModel>> GetImagesByBlogAsync(int blogId, CancellationToken ct = default);

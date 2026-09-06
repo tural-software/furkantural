@@ -19,8 +19,6 @@ public class SeoController(IBlogApiService blogApi) : Controller
         sb.AppendLine("User-agent: *");
         sb.AppendLine("Allow: /");
         sb.AppendLine("Disallow: /Home/Error");
-        // Her sorgu ayrı bir adres üretir ve hiçbiri kendi başına içerik sayfası
-        // değildir; taranmaları bütçeyi yer, dizine girmeleri yinelenen içerik olur.
         sb.AppendLine("Disallow: /ara");
         sb.AppendLine();
         sb.AppendLine($"Sitemap: {baseUrl}/sitemap.xml");
@@ -43,12 +41,11 @@ public class SeoController(IBlogApiService blogApi) : Controller
         var urls = new List<(string Loc, string LastMod, string Priority, string ChangeFreq)>
         {
             ($"{baseUrl}/", Iso(homeLastMod), "1.0", "weekly"),
+            ($"{baseUrl}/arsiv", Iso(homeLastMod), "0.6", "weekly"),
             ($"{baseUrl}/hakkinda", Iso(homeLastMod), "0.5", "monthly"),
             ($"{baseUrl}/Home/Privacy", "2026-01-01", "0.3", "yearly"),
         };
 
-        // Kategori sayfaları kendi adreslerine sahip olduğundan haritaya girer.
-        // Arama sayfası bilerek dışarıda: robots.txt onu zaten kapatıyor.
         var categories = await _blogApi.GetCategoriesAsync(cancellationToken);
         foreach (var slug in categories.Select(c => c.Slug).Where(s => s.Length > 0).Distinct())
             urls.Add(($"{baseUrl}/kategori/{slug}", Iso(homeLastMod), "0.6", "weekly"));

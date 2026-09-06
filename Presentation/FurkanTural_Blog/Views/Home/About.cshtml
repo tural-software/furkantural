@@ -34,7 +34,8 @@
     </div>
 
     <div class="about-links reveal">
-        <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Tüm yazılar</a>
+        <a class="btn btn--ghost" href="@(Url.RouteUrl("BlogArchive") ?? "/arsiv")">Arşiv</a>
+        <a class="btn btn--ghost" href="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")">Bülten</a>
         <a class="btn btn--ghost" href="~/feed.xml">RSS beslemesi</a>
         <a class="btn btn--ghost" asp-controller="Home" asp-action="Privacy">Gizlilik</a>
     </div>

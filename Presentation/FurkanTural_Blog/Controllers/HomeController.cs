@@ -57,6 +57,11 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
         return View(latest);
     }
 
+    /// <summary>Arşiv: yıl/ay gruplu tam liste, sayfalama yok. Tek çağrı bütün arşivi getirir, çünkü kaynak uç yalnızca kimlik, başlık ve tarih taşır — gövde veri tabanından hiç çıkmaz.<para>Bu, veri çekim kuralının "belirli bir sebeple tam çekim" istisnasıdır: arşivin işi tek ekranda taranmaktır, sayfalanmış bir arşiv arşiv olmaktan çıkar. Sayfa büyüdüğünde sınırlayan şey satır sayısı değil satır boyudur.</para></summary>
+    [Route("arsiv", Name = "BlogArchive")]
+    public async Task<IActionResult> Archive(CancellationToken cancellationToken = default)
+        => View(await _blogApi.GetArchiveAsync(cancellationToken));
+
     private async Task<IActionResult> ListAsync(
         BlogListKind kind, int page, int? categoryId, string? search, CategoryViewModel? activeCategory, CancellationToken cancellationToken)
     {
@@ -117,20 +122,40 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
         }
     }
 
+    /// <summary>Yazı ile görselleri aynı anda istenir; ikisi de yalnızca kimliğe bağlı olduğu için sıraya girmeleri için bir neden yok. İlgili yazılar ancak yazının kategorileri bilindikten sonra istenebilir, dolayısıyla o çağrı ikisinin ardından gelir.</summary>
     public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
     {
-        var post = await _blogApi.GetPostAsync(id, cancellationToken);
+        var postTask = _blogApi.GetPostAsync(id, cancellationToken);
+        var imagesTask = _blogApi.GetImagesByBlogAsync(id, cancellationToken);
+        await Task.WhenAll(postTask, imagesTask);
+
+        var post = await postTask;
         if (post is null)
             return NotFound();
 
-        var images = await _blogApi.GetImagesByBlogAsync(id, cancellationToken);
+        var images = await imagesTask;
         var cover = images.FirstOrDefault(i => i.IsCover) ?? images.FirstOrDefault();
         if (cover is not null && !string.IsNullOrWhiteSpace(cover.Url))
         {
             post.CoverImageUrl = BuildImageUrl(cover.Url);
             post.CoverAltText = cover.AltText;
         }
+
+        await AttachRelatedAsync(post, cancellationToken);
         return View(post);
+    }
+
+    /// <summary>Adaylar yazının ilk kategorisinden tek sayfada çekilir. Kategori başına ayrı çağrı yapılmaz: her sayfalı çağrı kendi içinde kategori sözlüğünü de istediği için maliyet çağrı sayısının iki katıdır ve üç kart için orantısız kalır. Sıralama yine de yazının bütün kategorilerine bakar, çünkü dönen adaylar kendi kategorilerini taşır.</summary>
+    private async Task AttachRelatedAsync(BlogPostViewModel post, CancellationToken cancellationToken)
+    {
+        var primaryCategory = post.Categories.Select(c => c.Id).FirstOrDefault();
+        if (primaryCategory == 0)
+            return;
+
+        var page = await _blogApi.GetPostsPagedAsync(
+            1, RelatedPosts.CandidatePageSize, primaryCategory, null, cancellationToken);
+
+        post.Related = RelatedPosts.Pick(post, page.Items);
     }
 
     /// <summary>Bölü işareti taşıyan değer göreli yoldur ve olduğu gibi eklenir; taşımayan değer klasörlere ayrılmadan önceki düzenden kalma düz dosya adıdır ve eski yükleme klasörü altında aranır. Ayrımın kaynağı API tarafındaki dosya servisidir, ikisi birlikte değişmelidir.</summary>

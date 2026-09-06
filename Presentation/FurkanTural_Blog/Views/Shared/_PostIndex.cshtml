@@ -1,9 +1,4 @@
 @model PagedPostsViewModel
-@*
-    Dizin düzeni: solda yapışkan ray (arama + kategoriler), sağda kartsız yazı listesi.
-    Üç sayfa da (ana sayfa, kategori, arama) bu gövdeyi paylaşır; değişen yalnızca
-    bağlantıların hangi rotaya kurulduğudur. Sayfalama bulunduğu sayfada kalır.
-*@
 @{
     var cur = Model.PageNumber;
     var tot = Model.TotalPages;
@@ -77,6 +72,14 @@
                 </ul>
             </nav>
         }
+
+        <nav class="blog-rail__group" aria-label="Diğer sayfalar">
+            <h2 class="blog-rail__title">Arşiv</h2>
+            <ul class="blog-rail__list">
+                <li><a class="rail-chip" href="@(Url.RouteUrl("BlogArchive") ?? "/arsiv")">Tüm yazılar, tarihe göre</a></li>
+                <li><a class="rail-chip" href="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")">Bültene abone ol</a></li>
+            </ul>
+        </nav>
     </aside>
 
     <div class="post-index-main">

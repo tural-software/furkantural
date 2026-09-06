@@ -22,6 +22,9 @@ public class BlogPostViewModel
 
     public List<CategoryViewModel> Categories { get; set; } = [];
 
+    /// <summary>Denetleyici tarafından yalnızca yazı sayfasında doldurulur; liste satırlarında boş kalır. İç içe geçen kayıtların kendi listesi hiç doldurulmaz, dolayısıyla derinlik bir seviyeyle sınırlıdır.</summary>
+    public IReadOnlyList<BlogPostViewModel> Related { get; set; } = [];
+
     /// <summary>Okunabilir tarih Türkçe kültürle biçimlenir; sunucunun kültür ayarından bağımsız olsun diye kültür koda sabitlenmiştir.</summary>
     public string PublishedDisplay =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("d MMMM yyyy", Tr);

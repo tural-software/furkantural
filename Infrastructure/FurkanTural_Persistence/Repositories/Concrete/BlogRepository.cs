@@ -50,15 +50,15 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
         return (items, total);
     }
 
-    public async Task<IReadOnlyList<(int Id, DateTime CreatedAt, DateTime? UpdatedAt)>> GetSitemapDataAsync(
+    public async Task<IReadOnlyList<(int Id, string? Title, DateTime CreatedAt, DateTime? UpdatedAt)>> GetSitemapDataAsync(
         CancellationToken cancellationToken = default)
     {
         var rows = await _context.Set<Blog>().AsNoTracking()
             .OrderByDescending(b => b.Id)
-            .Select(b => new { b.Id, b.CreatedAt, b.UpdatedAt })
+            .Select(b => new { b.Id, b.Title, b.CreatedAt, b.UpdatedAt })
             .ToListAsync(cancellationToken);
 
-        return rows.Select(r => (r.Id, r.CreatedAt, r.UpdatedAt)).ToList();
+        return rows.Select(r => (r.Id, r.Title, r.CreatedAt, r.UpdatedAt)).ToList();
     }
 
     public async Task<Dictionary<int, List<Category>>> GetCategoriesForBlogsAsync(

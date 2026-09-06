@@ -543,4 +543,63 @@ public class BlogApiServiceTests
         pagedUrl.Should().Contain("search=");
         pagedUrl.Should().Contain("dotnet");
     }
+
+    // ── GetArchiveAsync ───────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetArchiveAsync_WhenApiReturnsItems_GroupsThemByYearAndMonth()
+    {
+        var items = new List<BlogSitemapItem>
+        {
+            new() { Id = 1, Title = "Eski", CreatedAt = new DateTime(2025, 3, 5) },
+            new() { Id = 2, Title = "Yeni", CreatedAt = new DateTime(2026, 9, 1) },
+            new() { Id = 3, Title = "Aynı ay", CreatedAt = new DateTime(2026, 9, 20) }
+        };
+        var responseBody = new ApiResult<IEnumerable<BlogSitemapItem>> { Success = true, Data = items };
+        var (service, _) = BuildService(HttpStatusCode.OK, responseBody);
+
+        var result = await service.GetArchiveAsync();
+
+        result.LoadFailed.Should().BeFalse();
+        result.TotalCount.Should().Be(3);
+        result.Years.Select(y => y.Year).Should().ContainInOrder(2026, 2025);
+        result.Years[0].Months.Single().Items.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetArchiveAsync_WhenApiThrows_MarksLoadFailed()
+    {
+        var (service, _) = BuildServiceThrows(new HttpRequestException("Unreachable"));
+
+        var result = await service.GetArchiveAsync();
+
+        result.LoadFailed.Should().BeTrue();
+        result.Years.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetArchiveAsync_WhenApiReturnsNothing_DoesNotMarkLoadFailed()
+    {
+        var responseBody = new ApiResult<IEnumerable<BlogSitemapItem>> { Success = true, Data = [] };
+        var (service, _) = BuildService(HttpStatusCode.OK, responseBody);
+
+        var result = await service.GetArchiveAsync();
+
+        result.LoadFailed.Should().BeFalse();
+        result.Years.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetArchiveAsync_UsesTheSitemapEndpoint()
+    {
+        var responseBody = new ApiResult<IEnumerable<BlogSitemapItem>> { Success = true, Data = [] };
+        var (service, handlerMock) = BuildService(HttpStatusCode.OK, responseBody);
+
+        await service.GetArchiveAsync();
+
+        handlerMock.Protected().Verify(
+            "SendAsync", Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.EndsWith("/blog/sitemap")),
+            ItExpr.IsAny<CancellationToken>());
+    }
 }
