@@ -10,9 +10,10 @@ using Asp.Versioning;
 namespace FurkanTural_API.Controllers;
 
 [ApiVersion("1.0")]
-public class SubscriberController(ISubscriberService subscriberService) : JwtBaseController
+public class SubscriberController(ISubscriberService subscriberService, INewsletterService newsletterService) : JwtBaseController
 {
     private readonly ISubscriberService _subscriberService = subscriberService;
+    private readonly INewsletterService _newsletterService = newsletterService;
 
     /// <summary>Aboneyi ID ile getir</summary>
     [HttpGet("{id:int}")]
@@ -44,17 +45,35 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
     public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
         => ToActionResult(await _subscriberService.GetAllPagedAsync(pageNumber, pageSize, cancellationToken));
 
-    /// <summary>Bültene abone ol</summary>
+    /// <summary>Bültene abone ol. Adres doğrulanmamış olarak kaydedilir ve doğrulama bağlantısı postalanır; bağlantıya tıklanmadan listeye eklenmez.<para>Yanıt, adresin listede olup olmadığını ele vermez: kayıtlı da olsa değil de olsa aynı metin ve aynı durum döner.</para></summary>
     [HttpPost("subscribe")]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> Subscribe([FromBody] SubscribeRequest request, CancellationToken cancellationToken)
-        => ToActionResult(await _subscriberService.SubscribeAsync(request.Email ?? string.Empty, cancellationToken));
+        => ToActionResult(await _newsletterService.SubscribeAsync(
+            request.Email, request.TurnstileToken, ClientIp(), UserAgent(), cancellationToken));
 
-    /// <summary>Bülten aboneliğini iptal et</summary>
+    /// <summary>Abonelik doğrulama jetonunu harca ve aboneliği aç</summary>
+    [HttpPost("confirm")]
+    [Authorize(Policy = "VisitorOrAbove")]
+    public async Task<IActionResult> Confirm([FromBody] SubscribeRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _newsletterService.ConfirmAsync(request.Token, cancellationToken));
+
+    /// <summary>Abonelikten çıkış bağlantısını adrese gönder. Listeden düşürmez; yanıt adresin listede olup olmadığını ele vermez.</summary>
+    [HttpPost("request-unsubscribe")]
+    [Authorize(Policy = "VisitorOrAbove")]
+    public async Task<IActionResult> RequestUnsubscribe([FromBody] SubscribeRequest request, CancellationToken cancellationToken)
+        => ToActionResult(await _newsletterService.RequestUnsubscribeAsync(
+            request.Email, ClientIp(), UserAgent(), cancellationToken));
+
+    /// <summary>Bülten aboneliğini iptal et. Yalnızca postayla gönderilen jetonla yapılır: adres tek başına yeterli olsaydı herhangi biri başkasının aboneliğini iptal edebilirdi.</summary>
     [HttpPost("unsubscribe")]
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> Unsubscribe([FromBody] SubscribeRequest request, CancellationToken cancellationToken)
-        => ToActionResult(await _subscriberService.UnsubscribeAsync(request.Email ?? string.Empty, cancellationToken));
+        => ToActionResult(await _newsletterService.UnsubscribeAsync(request.Token, cancellationToken));
+
+    private string? ClientIp() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? UserAgent() => HttpContext.Request.Headers.UserAgent.ToString();
 
     /// <summary>Aboneyi sistemden sil</summary>
     [HttpDelete("{id:int}")]

@@ -11,7 +11,7 @@ using Moq;
 
 namespace FurkanTural_Business.Tests;
 
-/// <summary>Email tekil indeksi yumuşak silmeye göre süzülmez; abonelikten çıkmış bir adresle yeniden abone olmak indekse takılıyordu.</summary>
+/// <summary>Abone kayıtlarının yönetim tarafı. Ziyaretçinin gördüğü çift onaylı abonelik akışı burada değil <see cref="NewsletterService"/>'tedir.</summary>
 public class SubscriberServiceTests
 {
     private const string Email = "abone@ornek.test";
@@ -55,83 +55,6 @@ public class SubscriberServiceTests
 
     private static Subscriber Row(bool isActive, bool isDeleted, int id = 4)
         => new() { Id = id, Email = Email, IsActive = isActive, IsDeleted = isDeleted };
-
-    [Fact]
-    public async Task Abonelikten_cikmis_adres_yeniden_abone_olabilir()
-    {
-        var row = Row(isActive: false, isDeleted: true);
-        RowIs(row);
-
-        var result = await _sut.SubscribeAsync(Email);
-
-        result.Success.Should().BeTrue();
-        _restored.Should().ContainSingle();
-        _added.Should().BeEmpty("indekste duran satır yeniden kullanılır, ikincisi açılmaz");
-        row.IsDeleted.Should().BeFalse();
-        row.IsActive.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Pasife_alinmis_abone_de_geri_acilir()
-    {
-        var row = Row(isActive: false, isDeleted: false);
-        RowIs(row);
-
-        var result = await _sut.SubscribeAsync(Email);
-
-        result.Success.Should().BeTrue();
-        row.IsActive.Should().BeTrue();
-        _added.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task Geri_acilan_abonelik_ilk_kezle_ayni_yaniti_verir()
-    {
-        RowIs(null);
-        var ilk = await _sut.SubscribeAsync(Email);
-
-        RowIs(Row(isActive: false, isDeleted: true));
-        var geri = await _sut.SubscribeAsync(Email);
-
-        geri.Message.Should().Be(ilk.Message);
-        geri.StatusCode.Should().Be(ilk.StatusCode);
-    }
-
-    [Fact]
-    public async Task Zaten_etkin_abone_ikinci_kez_eklenmez()
-    {
-        RowIs(Row(isActive: true, isDeleted: false));
-
-        var result = await _sut.SubscribeAsync(Email);
-
-        result.IsFailure.Should().BeTrue();
-        _added.Should().BeEmpty();
-        _restored.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task Hic_kaydi_olmayan_adres_yeni_satir_acar()
-    {
-        RowIs(null);
-
-        var result = await _sut.SubscribeAsync(Email);
-
-        result.Success.Should().BeTrue();
-        _added.Should().ContainSingle();
-        _added[0].Email.Should().Be(Email);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public async Task Bos_adres_reddedilir(string? email)
-    {
-        var result = await _sut.SubscribeAsync(email!);
-
-        result.IsFailure.Should().BeTrue();
-        _subscribers.Verify(r => r.GetByEmailForAdminAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
 
     [Fact]
     public async Task Yonetici_kaydinda_silinmis_satir_adiyla_bildirilir()
@@ -181,17 +104,5 @@ public class SubscriberServiceTests
 
         result.Success.Should().BeTrue();
         _subscribers.Verify(r => r.UpdateAsync(row, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task Abonelikten_cikma_suzgecli_okur()
-    {
-        _subscribers.Setup(r => r.GetAsync(It.IsAny<Expression<Func<Subscriber, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Subscriber?)null);
-
-        var result = await _sut.UnsubscribeAsync(Email);
-
-        result.IsFailure.Should().BeTrue();
-        result.StatusCode.Should().Be(404, "zaten çıkmış bir adres için yapılacak bir şey yok");
     }
 }

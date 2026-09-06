@@ -1212,6 +1212,8 @@ html.lightbox-open { overflow: hidden; }
   opacity: 0;
 }
 
+.newsletter-form .cf-turnstile { display: flex; justify-content: center; align-items: center; min-height: 65px; }
+
 .newsletter-submit { min-height: 48px; align-self: flex-start; }
 
 .newsletter-note {

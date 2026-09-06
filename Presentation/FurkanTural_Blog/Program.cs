@@ -18,6 +18,7 @@ builder.Services.AddHttpClient("AppTokenClient", client =>
 }).ConfigurePrimaryHttpMessageHandler(FastFailHandler);
 
 builder.Services.AddSingleton<IAppTokenService, AppTokenService>();
+builder.Services.AddSingleton<IAppConfigService, AppConfigService>();
 builder.Services.AddTransient<DefaultTokenHandler>();
 
 builder.Services.AddHttpClient("ApiClient", client =>
@@ -74,12 +75,13 @@ app.Use(async (context, next) =>
     headers["Content-Security-Policy"] =
         "default-src 'none'; " +
         // Cloudflare Web Analytics beacon'ı (static.cloudflareinsights.com) önde enjekte edilir.
-        "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; " +
+        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
         "font-src 'self'; " +
         $"img-src {imgSrc}; " +
         "connect-src 'self' https://cloudflareinsights.com; " +
+        "frame-src https://challenges.cloudflare.com; " +
         "manifest-src 'self'; " +
         "worker-src 'self'; " +
         "frame-ancestors 'self'; " +

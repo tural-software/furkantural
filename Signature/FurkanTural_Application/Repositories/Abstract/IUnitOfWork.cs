@@ -32,6 +32,7 @@ public interface IUnitOfWork
     IRepository<CallPolicy> CallPolicies { get; }
     IRepository<PushSubscription> PushSubscriptions { get; }
     IRepository<AccountActivation> AccountActivations { get; }
+    IRepository<SubscriberVerification> SubscriberVerifications { get; }
     ILogRepository Logs { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

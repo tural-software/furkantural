@@ -41,7 +41,7 @@ public class NewsletterClientTests
         var (client, _) = Build(HttpStatusCode.OK,
             new ApiResult { Success = true, Message = "Abonelik başarıyla tamamlandı." });
 
-        var outcome = await client.SubscribeAsync("okur@example.invalid");
+        var outcome = await client.SubscribeAsync("okur@example.invalid", "bot-jetonu");
 
         outcome.Succeeded.Should().BeTrue();
         outcome.Message.Should().Be("Abonelik başarıyla tamamlandı.");
@@ -51,12 +51,12 @@ public class NewsletterClientTests
     public async Task Basarisiz_yanitta_metin_errors_dizisinden_okunur()
     {
         var (client, _) = Build(HttpStatusCode.BadRequest,
-            new ApiResult { Success = false, StatusCode = 400, Errors = ["Bu e-posta adresi zaten abone listesinde."] });
+            new ApiResult { Success = false, StatusCode = 400, Errors = ["Bot doğrulaması başarısız. Lütfen tekrar deneyin."] });
 
-        var outcome = await client.SubscribeAsync("okur@example.invalid");
+        var outcome = await client.SubscribeAsync("okur@example.invalid", "bot-jetonu");
 
         outcome.Succeeded.Should().BeFalse();
-        outcome.Message.Should().Be("Bu e-posta adresi zaten abone listesinde.");
+        outcome.Message.Should().Be("Bot doğrulaması başarısız. Lütfen tekrar deneyin.");
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class NewsletterClientTests
     {
         var (client, _) = Build(HttpStatusCode.BadRequest, new ApiResult { Success = false, StatusCode = 400 });
 
-        var outcome = await client.SubscribeAsync("okur@example.invalid");
+        var outcome = await client.SubscribeAsync("okur@example.invalid", "bot-jetonu");
 
         outcome.Succeeded.Should().BeFalse();
         outcome.Message.Should().BeNull();
@@ -75,7 +75,7 @@ public class NewsletterClientTests
     {
         var (client, _) = Build(HttpStatusCode.OK, null, new HttpRequestException("Unreachable"));
 
-        var outcome = await client.SubscribeAsync("okur@example.invalid");
+        var outcome = await client.SubscribeAsync("okur@example.invalid", "bot-jetonu");
 
         outcome.Succeeded.Should().BeFalse();
         outcome.Message.Should().BeNull();
@@ -86,10 +86,54 @@ public class NewsletterClientTests
     {
         var (client, requests) = Build(HttpStatusCode.OK, new ApiResult { Success = true });
 
-        await client.SubscribeAsync("okur@example.invalid");
+        await client.SubscribeAsync("okur@example.invalid", "bot-jetonu");
 
         requests.Should().ContainSingle();
         requests[0].Method.Should().Be(HttpMethod.Post);
         requests[0].RequestUri!.AbsolutePath.Should().EndWith("/subscriber/subscribe");
+    }
+
+    [Theory]
+    [InlineData("confirm")]
+    [InlineData("request-unsubscribe")]
+    [InlineData("unsubscribe")]
+    public async Task Her_uc_kendi_yoluna_gider(string path)
+    {
+        var (client, requests) = Build(HttpStatusCode.OK, new ApiResult { Success = true });
+
+        _ = path switch
+        {
+            "confirm" => await client.ConfirmAsync("jeton"),
+            "request-unsubscribe" => await client.RequestUnsubscribeAsync("okur@example.invalid"),
+            _ => await client.UnsubscribeAsync("jeton")
+        };
+
+        requests.Should().ContainSingle();
+        requests[0].Method.Should().Be(HttpMethod.Post);
+        requests[0].RequestUri!.AbsolutePath.Should().EndWith($"/subscriber/{path}");
+    }
+
+    [Fact]
+    public async Task Cikis_istegi_jeton_degil_adres_tasir()
+    {
+        var (client, requests) = Build(HttpStatusCode.OK, new ApiResult { Success = true });
+
+        await client.RequestUnsubscribeAsync("okur@example.invalid");
+
+        var body = await requests[0].Content!.ReadAsStringAsync();
+        body.Should().Contain("okur@example.invalid");
+        body.Should().NotContain("token");
+    }
+
+    [Fact]
+    public async Task Cikisi_bitiren_istek_adres_degil_jeton_tasir()
+    {
+        var (client, requests) = Build(HttpStatusCode.OK, new ApiResult { Success = true });
+
+        await client.UnsubscribeAsync("gizli-jeton");
+
+        var body = await requests[0].Content!.ReadAsStringAsync();
+        body.Should().Contain("gizli-jeton");
+        body.Should().NotContain("email");
     }
 }

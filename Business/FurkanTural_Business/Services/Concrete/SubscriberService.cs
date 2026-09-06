@@ -124,49 +124,6 @@ public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLo
         return Result<AdminSubscriberDto>.Ok(entity.ToAdminDto());
     }
 
-    public async Task<Result> SubscribeAsync(string email, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(email))
-            return Result.Fail("E-posta adresi boş olamaz.");
-
-        var existing = await _unitOfWork.Subscribers.GetByEmailForAdminAsync(email, cancellationToken);
-
-        if (existing is { IsDeleted: false, IsActive: true })
-            return Result.Fail("Bu e-posta adresi zaten abone listesinde.");
-
-        if (existing is not null)
-        {
-            await _unitOfWork.Subscribers.RestoreAsync(existing, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _activityLogger.LogAsync($"Abonelik yeniden açıldı. Id: {existing.Id}", cancellationToken);
-
-            return Result.Ok("Abonelik başarıyla tamamlandı.");
-        }
-
-        var entity = new CreateSubscriberDto { Email = email }.ToEntity();
-        await _unitOfWork.Subscribers.AddAsync(entity, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _activityLogger.LogAsync($"Abone olundu. Email: {email}", cancellationToken);
-
-        return Result.Ok("Abonelik başarıyla tamamlandı.");
-    }
-
-    public async Task<Result> UnsubscribeAsync(string email, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(email))
-            return Result.Fail("E-posta adresi boş olamaz.");
-
-        var entity = await _unitOfWork.Subscribers.GetAsync(x => x.Email == email, cancellationToken);
-        if (entity is null)
-            return Result.Fail("Bu e-posta adresi abone listesinde bulunamadı.", statusCode: 404);
-
-        await _unitOfWork.Subscribers.SoftDeleteAsync(entity, null, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _activityLogger.LogAsync($"Abonelik iptal edildi. Email: {email}", cancellationToken);
-
-        return Result.Ok("Abonelik başarıyla iptal edildi.");
-    }
-
     public async Task<Result<AdminSubscriberDto>> RestoreAsync(int id, int? updatedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Subscribers.GetByIdForAdminAsync(id, cancellationToken);

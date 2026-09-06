@@ -1,0 +1,49 @@
+@model NewsletterTokenViewModel
+@{
+    ViewData["Title"] = Model.TokenMissing ? "Bülten" : (Model.Succeeded ? "İşlem tamamlandı" : "Bağlantı geçersiz");
+    ViewData["MetaDescription"] = "Bülten bağlantısı sonucu.";
+    ViewData["Robots"] = "noindex, nofollow";
+}
+
+<section class="page-head reveal">
+    <div class="container">
+        <nav class="crumb" aria-label="Konum">
+            <a href="@(Url.Action("Index", "Home") ?? "/")">Blog</a>
+            <span aria-hidden="true">/</span>
+            <a href="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")">Bülten</a>
+        </nav>
+        <h1 class="page-head__title">@ViewData["Title"]</h1>
+    </div>
+</section>
+
+<section class="container newsletter-page">
+    <div class="newsletter-card reveal">
+        @if (Model.TokenMissing)
+        {
+            <div class="newsletter-result newsletter-result--ok">
+                <h2 class="newsletter-result__title">Bağlantıyı e-postanızda bulabilirsiniz</h2>
+                <p class="newsletter-result__text">
+                    Bu sayfa, size gönderdiğimiz bağlantıyla açılır. Elinizde bağlantı yoksa
+                    bülten sayfasından yeniden isteyebilirsiniz.
+                </p>
+                <a class="btn btn--ghost" href="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")">Bülten sayfası</a>
+            </div>
+        }
+        else if (Model.Succeeded)
+        {
+            <div class="newsletter-result newsletter-result--ok" role="status">
+                <h2 class="newsletter-result__title">Tamamlandı</h2>
+                <p class="newsletter-result__text">@Model.Message</p>
+                <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Yazılara dön</a>
+            </div>
+        }
+        else
+        {
+            <div class="newsletter-result newsletter-result--ok" role="alert">
+                <h2 class="newsletter-result__title">Bağlantı işe yaramadı</h2>
+                <p class="newsletter-result__text">@Model.Message</p>
+                <a class="btn btn--ghost" href="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")">Yeniden dene</a>
+            </div>
+        }
+    </div>
+</section>

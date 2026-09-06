@@ -20,6 +20,10 @@
                     variant: function (r) { return r.isActive ? 'success' : 'danger'; }
                 },
                 {
+                    label: function (r) { return r.confirmedAt ? '✓ Doğrulanmış' : '⏳ Doğrulama bekliyor'; },
+                    variant: function (r) { return r.confirmedAt ? 'success' : 'warning'; }
+                },
+                {
                     label: function (r) { return 'Silinmiş: ' + (r.isDeleted ? 'Evet' : 'Hayır'); },
                     variant: function (r) { return r.isDeleted ? 'danger' : 'neutral'; }
                 }
@@ -34,6 +38,11 @@
                         label: 'E-posta',
                         icon: 'mail',
                         value: function (r) { return r.email || '—'; }
+                    },
+                    {
+                        label: 'Doğrulandı',
+                        icon: 'calendar',
+                        value: function (r) { return r.confirmedAt ? DmFmt.date(r.confirmedAt) : 'Beklemede'; }
                     }
                 ]
             },

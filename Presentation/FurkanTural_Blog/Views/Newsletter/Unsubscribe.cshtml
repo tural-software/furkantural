@@ -1,0 +1,62 @@
+@model NewsletterViewModel
+@{
+    ViewData["Title"] = "Abonelikten çıkış";
+    ViewData["MetaDescription"] = "Bülten listesinden çıkış.";
+    ViewData["Robots"] = "noindex, follow";
+}
+
+<section class="page-head reveal">
+    <div class="container">
+        <nav class="crumb" aria-label="Konum">
+            <a href="@(Url.Action("Index", "Home") ?? "/")">Blog</a>
+            <span aria-hidden="true">/</span>
+            <a href="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")">Bülten</a>
+            <span aria-hidden="true">/</span>
+            <span>Çıkış</span>
+        </nav>
+        <h1 class="page-head__title">Abonelikten çıkış</h1>
+        <p class="page-head__lead">
+            Adresinizi yazın, size bir çıkış bağlantısı gönderelim. Çıkış, bağlantıya
+            tıkladığınızda tamamlanır.
+        </p>
+    </div>
+</section>
+
+<section class="container newsletter-page">
+    <div class="newsletter-card reveal">
+        @if (Model.Submitted && Model.Succeeded)
+        {
+            <div class="newsletter-result newsletter-result--ok" role="status">
+                <h2 class="newsletter-result__title">Bağlantı gönderildi</h2>
+                <p class="newsletter-result__text">@Model.ResultMessage</p>
+                <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Yazılara dön</a>
+            </div>
+        }
+        else
+        {
+            @if (Model.Submitted && !string.IsNullOrEmpty(Model.ResultMessage))
+            {
+                <p class="newsletter-result newsletter-result--warn" role="alert">@Model.ResultMessage</p>
+            }
+
+            <form method="post" action="@(Url.RouteUrl("BlogNewsletterUnsubscribe") ?? "/bulten/cikis")" class="newsletter-form">
+                @Html.AntiForgeryToken()
+
+                <label class="newsletter-field">
+                    <span class="newsletter-field__label">E-posta adresiniz</span>
+                    <input class="newsletter-field__input" type="email" name="Email" value="@Model.Email"
+                           placeholder="ornek@@eposta.com" required autocomplete="email" spellcheck="false"
+                           aria-describedby="cikis-not" />
+                </label>
+                <span asp-validation-for="Email" class="newsletter-field__error"></span>
+
+                <button class="btn btn--primary newsletter-submit" type="submit">Çıkış bağlantısı gönder</button>
+
+                <p class="newsletter-note" id="cikis-not">
+                    Adres tek başına yeterli değildir: çıkış ancak size gönderilen bağlantıya
+                    tıklandığında tamamlanır. Böylece kimse başkasının aboneliğini iptal edemez.
+                </p>
+            </form>
+        }
+    </div>
+</section>

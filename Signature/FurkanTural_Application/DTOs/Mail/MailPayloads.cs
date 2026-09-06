@@ -10,7 +10,9 @@ public static class MailPayloads
     {
         [MailTemplateDefinitions.ContactOwner] = typeof(ContactOwnerMailDto),
         [MailTemplateDefinitions.ContactUser] = typeof(ContactUserMailDto),
-        [MailTemplateDefinitions.AccountActivation] = typeof(AccountActivationMailDto)
+        [MailTemplateDefinitions.AccountActivation] = typeof(AccountActivationMailDto),
+        [MailTemplateDefinitions.NewsletterConfirm] = typeof(NewsletterConfirmMailDto),
+        [MailTemplateDefinitions.NewsletterUnsubscribe] = typeof(NewsletterUnsubscribeMailDto)
     };
 
     public static IReadOnlyList<string> PlaceholdersOf(string? typeCode)
@@ -50,6 +52,30 @@ public class AccountActivationMailDto
 {
     public string? DisplayName { get; set; }
     public string? ActivationUrl { get; set; }
+    public string? ExpiresAt { get; set; }
+    public string? IpAddress { get; set; }
+    public string? Browser { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? CurrentYear { get; set; }
+}
+
+/// <summary>Bülten listesine giren adrese gönderilen doğrulama postasının gövdesi. ConfirmUrl bir kimlik bilgisi taşır: jetonun düz hâli yalnızca bu bağlantının içinde bulunur, hiçbir kayda yazılmaz.</summary>
+public class NewsletterConfirmMailDto
+{
+    public string? Email { get; set; }
+    public string? ConfirmUrl { get; set; }
+    public string? ExpiresAt { get; set; }
+    public string? IpAddress { get; set; }
+    public string? Browser { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? CurrentYear { get; set; }
+}
+
+/// <summary>Abonelikten çıkmak isteyen adrese gönderilen onay postasının gövdesi. Çıkış da doğrulama ister: adres tek başına yeterli olsaydı herhangi biri başkasının aboneliğini iptal edebilirdi.</summary>
+public class NewsletterUnsubscribeMailDto
+{
+    public string? Email { get; set; }
+    public string? UnsubscribeUrl { get; set; }
     public string? ExpiresAt { get; set; }
     public string? IpAddress { get; set; }
     public string? Browser { get; set; }

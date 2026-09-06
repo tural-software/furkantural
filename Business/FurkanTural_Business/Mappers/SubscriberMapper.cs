@@ -15,6 +15,7 @@ public static class SubscriberMapper
     {
         Id = entity.Id,
         Email = entity.Email,
+        ConfirmedAt = entity.ConfirmedAt,
         IsActive = entity.IsActive,
         IsDeleted = entity.IsDeleted,
         CreatedAt = entity.CreatedAt,

@@ -4,11 +4,9 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-/// <summary>Bülten aboneleri. UnsubscribeAsync kaydı yumuşak siler; canlı okumalar silinmiş satırı görmediği için aynı adres yeniden abone olduğunda eski kayıt canlandırılmaz, yeni bir satır açılır. Kayıt hâlâ canlıyken ikinci kez abone olma denemesi ise hata döner.</summary>
+/// <summary>Bülten abonelerinin yönetim tarafı: listeleme, süzme, aktiflik ve toplu işlem. Ziyaretçinin gördüğü abonelik akışı burada değil <see cref="INewsletterService"/>'tedir — o akışın tek sorusu adresin sahipliğidir ve buradaki hiçbir uç o soruyu sormaz.<para>Yumuşak silme kalıbı burada da geçerlidir: listeden düşen abone satırı durmaya devam eder, dolayısıyla aynı adres yeniden abone olduğunda yeni satır açılmaz, duran satır geri açılır.</para></summary>
 public interface ISubscriberService : IService<SubscriberDto, CreateSubscriberDto, UpdateSubscriberDto>, IBulkService
 {
-    Task<Result> SubscribeAsync(string email, CancellationToken cancellationToken = default);
-    Task<Result> UnsubscribeAsync(string email, CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<AdminSubscriberDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminSubscriberDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);
     Task<Result<AdminSubscriberDto>> ToggleActiveAsync(int id, int? updatedBy, CancellationToken cancellationToken = default);

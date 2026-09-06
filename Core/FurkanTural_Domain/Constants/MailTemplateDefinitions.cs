@@ -6,4 +6,6 @@ public static class MailTemplateDefinitions
     public const string ContactOwner = "ContactOwner";
     public const string ContactUser = "ContactUser";
     public const string AccountActivation = "AccountActivation";
+    public const string NewsletterConfirm = "NewsletterConfirm";
+    public const string NewsletterUnsubscribe = "NewsletterUnsubscribe";
 }

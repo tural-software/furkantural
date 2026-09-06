@@ -13,6 +13,8 @@ public class MailTemplateTypeConfiguration : BaseEntityConfiguration<MailTemplat
     public const int ContactOwnerId = 1;
     public const int ContactUserId = 2;
     public const int AccountActivationId = 3;
+    public const int NewsletterConfirmId = 4;
+    public const int NewsletterUnsubscribeId = 5;
 
     public override void Configure(EntityTypeBuilder<MailTemplateType> builder)
     {
@@ -31,7 +33,11 @@ public class MailTemplateTypeConfiguration : BaseEntityConfiguration<MailTemplat
             Seed(ContactUserId, MailTemplateDefinitions.ContactUser, "İletişim — Gönderene",
                 "İletişim formunu dolduran kişiye giden alındı yanıtı.", 2),
             Seed(AccountActivationId, MailTemplateDefinitions.AccountActivation, "Hesap Aktivasyonu",
-                "Pasife alınmış bir hesabı yeniden açan doğrulama bağlantısı.", 3));
+                "Pasife alınmış bir hesabı yeniden açan doğrulama bağlantısı.", 3),
+            Seed(NewsletterConfirmId, MailTemplateDefinitions.NewsletterConfirm, "Bülten — Abonelik Onayı",
+                "Bülten listesine giren adrese gönderilen tek kullanımlık doğrulama bağlantısı.", 4),
+            Seed(NewsletterUnsubscribeId, MailTemplateDefinitions.NewsletterUnsubscribe, "Bülten — Çıkış Bağlantısı",
+                "Abonelikten çıkmak isteyen adrese gönderilen tek kullanımlık onay bağlantısı.", 5));
     }
 
     private static MailTemplateType Seed(int id, string code, string name, string description, int sortOrder) => new()

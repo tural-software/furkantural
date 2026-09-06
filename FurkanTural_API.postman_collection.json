@@ -5385,6 +5385,62 @@
                             "response": []
                         },
                         {
+                            "name": "Confirm Newsletter",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"token\": \"{{newsletterToken}}\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{prodBaseUrl}}/subscriber/confirm",
+                                    "host": [
+                                        "{{prodBaseUrl}}"
+                                    ],
+                                    "path": [
+                                        "subscriber",
+                                        "confirm"
+                                    ]
+                                },
+                                "description": "Abonelik dogrulama jetonunu harcar ve aboneligi acar. Jeton yalnizca dogrulama postasinin baglantisinda bulunur. Yetki: VisitorOrAbove."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Request Unsubscribe",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"email\": \"{{subscriberEmail}}\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{prodBaseUrl}}/subscriber/request-unsubscribe",
+                                    "host": [
+                                        "{{prodBaseUrl}}"
+                                    ],
+                                    "path": [
+                                        "subscriber",
+                                        "request-unsubscribe"
+                                    ]
+                                },
+                                "description": "Cikis baglantisini adrese gonderir. Listeden dusurmez ve yanit adresin listede olup olmadigini ele vermez. Yetki: VisitorOrAbove."
+                            },
+                            "response": []
+                        },
+                        {
                             "name": "Unsubscribe",
                             "request": {
                                 "method": "POST",
@@ -11294,6 +11350,62 @@
                             "response": []
                         },
                         {
+                            "name": "Confirm Newsletter",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"token\": \"{{newsletterToken}}\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{prodBaseUrl}}/subscriber/confirm",
+                                    "host": [
+                                        "{{prodBaseUrl}}"
+                                    ],
+                                    "path": [
+                                        "subscriber",
+                                        "confirm"
+                                    ]
+                                },
+                                "description": "Abonelik dogrulama jetonunu harcar ve aboneligi acar. Jeton yalnizca dogrulama postasinin baglantisinda bulunur. Yetki: VisitorOrAbove."
+                            },
+                            "response": []
+                        },
+                        {
+                            "name": "Request Unsubscribe",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"email\": \"{{subscriberEmail}}\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{prodBaseUrl}}/subscriber/request-unsubscribe",
+                                    "host": [
+                                        "{{prodBaseUrl}}"
+                                    ],
+                                    "path": [
+                                        "subscriber",
+                                        "request-unsubscribe"
+                                    ]
+                                },
+                                "description": "Cikis baglantisini adrese gonderir. Listeden dusurmez ve yanit adresin listede olup olmadigini ele vermez. Yetki: VisitorOrAbove."
+                            },
+                            "response": []
+                        },
+                        {
                             "name": "Unsubscribe",
                             "request": {
                                 "method": "POST",
@@ -12026,6 +12138,12 @@
             "value": "10",
             "type": "string",
             "description": "Sayfali uclarda sayfa boyutu."
+        },
+        {
+            "key": "newsletterToken",
+            "value": "postadan-gelen-jeton",
+            "type": "string",
+            "description": "Bulten dogrulama ya da cikis jetonu; yalnizca giden postanin baglantisinda bulunur."
         },
         {
             "key": "blogSlug",

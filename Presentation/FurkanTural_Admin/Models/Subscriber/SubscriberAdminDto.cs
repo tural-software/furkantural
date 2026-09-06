@@ -4,6 +4,7 @@ public sealed class SubscriberAdminDto
 {
     public int Id { get; set; }
     public string? Email { get; set; }
+    public DateTime? ConfirmedAt { get; set; }
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime CreatedAt { get; set; }

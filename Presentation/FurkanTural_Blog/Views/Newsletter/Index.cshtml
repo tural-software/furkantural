@@ -3,6 +3,7 @@
     ViewData["Title"] = "Bülten";
     ViewData["MetaDescription"] = "Yeni blog yazılarının duyuru listesine kaydolun.";
     ViewData["Robots"] = "noindex, follow";
+    var siteKey = ViewBag.TurnstileSiteKey as string;
 }
 
 <section class="page-head reveal">
@@ -26,7 +27,7 @@
         @if (Model.Submitted && Model.Succeeded)
         {
             <div class="newsletter-result newsletter-result--ok" role="status">
-                <h2 class="newsletter-result__title">Kaydınız alındı</h2>
+                <h2 class="newsletter-result__title">Doğrulama bağlantısı gönderildi</h2>
                 <p class="newsletter-result__text">@Model.ResultMessage</p>
                 <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Yazılara dön</a>
             </div>
@@ -38,7 +39,7 @@
                 <p class="newsletter-result newsletter-result--warn" role="alert">@Model.ResultMessage</p>
             }
 
-            <form method="post" action="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")" class="newsletter-form">
+            <form method="post" action="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")" class="newsletter-form" id="newsletterForm">
                 @Html.AntiForgeryToken()
 
                 <label class="newsletter-field">
@@ -54,10 +55,16 @@
                     <input id="bulten-website" type="text" name="Website" value="" tabindex="-1" autocomplete="off" />
                 </div>
 
+                @if (!string.IsNullOrEmpty(siteKey))
+                {
+                    <div class="cf-turnstile" data-sitekey="@siteKey" data-callback="onTurnstileSuccess"></div>
+                }
+                <input type="hidden" id="turnstileToken" name="TurnstileToken" />
+
                 <button class="btn btn--primary newsletter-submit" type="submit">Abone ol</button>
 
                 <p class="newsletter-note" id="bulten-not">
-                    Adresiniz listeye anında eklenir; onay postası gönderilmez.
+                    Adresinize bir doğrulama bağlantısı gönderilir; bağlantıya tıklamadan listeye eklenmezsiniz.
                 </p>
             </form>
         }
@@ -73,9 +80,20 @@
             <span class="newsletter-point__desc">Liste yeni yazıların duyurusundan başka bir şey için kullanılmaz.</span>
         </div>
         <div class="newsletter-point">
-            <span class="newsletter-point__title">Ayrılmak isterseniz</span>
-            <span class="newsletter-point__desc">Adresinizin listeden çıkarılmasını istemeniz yeterli.</span>
+            <span class="newsletter-point__title">Tek tıkla çıkış</span>
+            <span class="newsletter-point__desc">
+                <a href="@(Url.RouteUrl("BlogNewsletterUnsubscribe") ?? "/bulten/cikis")">Çıkış sayfasından</a>
+                adresinizi yazmanız yeterli; çıkış bağlantısı size gönderilir.
+            </span>
         </div>
     </div>
 
 </section>
+
+@section Scripts {
+    @if (!string.IsNullOrEmpty(siteKey))
+    {
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    }
+    <script src="~/js/newsletter.js" asp-append-version="true" defer></script>
+}

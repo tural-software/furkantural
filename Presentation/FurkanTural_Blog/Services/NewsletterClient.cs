@@ -4,7 +4,7 @@ using FurkanTural_Blog.Models.Wrappers;
 
 namespace FurkanTural_Blog.Services;
 
-/// <summary>Uygulama jetonuyla <c>POST /api/v1/subscriber/subscribe</c> çağırır. Uç <c>VisitorOrAbove</c> ister ve uygulama jetonu Visitor rolü taşıdığı için ek bir kimlik gerekmez; ziyaretçi oturum açmaz.<para>Başarısız yanıtta okunacak metin <c>Errors[0]</c>'dadır, <c>Message</c>'ta değil — zarf Ok yolunda Message'ı, Fail yolunda Errors'ı doldurur.</para></summary>
+/// <summary>Uygulama jetonuyla <c>subscriber/*</c> uçlarını çağırır. Uçlar <c>VisitorOrAbove</c> ister ve uygulama jetonu Visitor rolü taşıdığı için ek bir kimlik gerekmez; ziyaretçi oturum açmaz.<para>Başarısız yanıtta okunacak metin <c>Errors[0]</c>'dadır, <c>Message</c>'ta değil — zarf Ok yolunda Message'ı, Fail yolunda Errors'ı doldurur.</para></summary>
 public class NewsletterClient(HttpClient httpClient, ILogger<NewsletterClient> logger) : INewsletterClient
 {
     private readonly HttpClient _httpClient = httpClient;
@@ -15,21 +15,33 @@ public class NewsletterClient(HttpClient httpClient, ILogger<NewsletterClient> l
         PropertyNameCaseInsensitive = true
     };
 
-    public async Task<NewsletterOutcome> SubscribeAsync(string email, CancellationToken ct = default)
+    public Task<NewsletterOutcome> SubscribeAsync(string email, string? turnstileToken, CancellationToken ct = default)
+        => PostAsync("subscribe", new { email, turnstileToken }, "Bülten aboneliği kaydedilemedi.", ct);
+
+    public Task<NewsletterOutcome> ConfirmAsync(string token, CancellationToken ct = default)
+        => PostAsync("confirm", new { token }, "Bülten aboneliği doğrulanamadı.", ct);
+
+    public Task<NewsletterOutcome> RequestUnsubscribeAsync(string email, CancellationToken ct = default)
+        => PostAsync("request-unsubscribe", new { email }, "Çıkış bağlantısı istenemedi.", ct);
+
+    public Task<NewsletterOutcome> UnsubscribeAsync(string token, CancellationToken ct = default)
+        => PostAsync("unsubscribe", new { token }, "Abonelik iptal edilemedi.", ct);
+
+    private async Task<NewsletterOutcome> PostAsync(string path, object body, string failureLog, CancellationToken ct)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/v1/subscriber/subscribe", new { email }, ct);
-            var body = await response.Content.ReadFromJsonAsync<ApiResult>(JsonOptions, ct);
+            var response = await _httpClient.PostAsJsonAsync($"/api/v1/subscriber/{path}", body, ct);
+            var envelope = await response.Content.ReadFromJsonAsync<ApiResult>(JsonOptions, ct);
 
-            if (body is null)
+            if (envelope is null)
                 return new NewsletterOutcome(response.IsSuccessStatusCode, null);
 
-            return new NewsletterOutcome(body.Success, body.Success ? body.Message : body.Errors.FirstOrDefault());
+            return new NewsletterOutcome(envelope.Success, envelope.Success ? envelope.Message : envelope.Errors.FirstOrDefault());
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Bülten aboneliği kaydedilemedi.");
+            _logger.LogWarning(ex, "{Message}", failureLog);
             return new NewsletterOutcome(false, null);
         }
     }
