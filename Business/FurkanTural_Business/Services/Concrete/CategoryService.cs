@@ -59,6 +59,7 @@ public partial class CategoryService(IUnitOfWork unitOfWork, ActivityLogger acti
             return Result<CategoryDto>.Fail(colorError);
 
         var entity = dto.ToEntity();
+        entity.Slug = await BuildSlugAsync(dto.Name, null, cancellationToken);
         await _unitOfWork.Categories.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kategori oluşturuldu. Id: {entity.Id}", cancellationToken);
@@ -79,6 +80,9 @@ public partial class CategoryService(IUnitOfWork unitOfWork, ActivityLogger acti
             return Result<CategoryDto>.Fail(colorError);
 
         entity.UpdateEntity(dto);
+        if (!string.IsNullOrWhiteSpace(dto.Slug))
+            entity.Slug = await BuildSlugAsync(dto.Slug, entity.Id, cancellationToken);
+
         await _unitOfWork.Categories.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kategori güncellendi. Id: {entity.Id}", cancellationToken);
@@ -177,4 +181,23 @@ public partial class CategoryService(IUnitOfWork unitOfWork, ActivityLogger acti
 
     public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
         => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Categories, action, ids, userId, "kategori", _activityLogger, cancellationToken);
+
+    /// <summary>Adresi kategori adından üretir ve çakışırsa sayı ekler. Aday listesi silinmiş satırları da kapsar: silinen bir kategorinin adresini başkasına vermek, o kategori geri yüklendiğinde tekil dizinde çakışırdı.</summary>
+    private async Task<string> BuildSlugAsync(string? source, int? excludeId, CancellationToken cancellationToken)
+    {
+        var basis = Slugifier.ToSlug(source, SlugLimits.Category, "kategori");
+
+        var rows = await _unitOfWork.Categories.SelectForAdminPagedAsync(
+            1, SlugLimits.CollisionScan,
+            c => new { c.Id, c.Slug },
+            c => c.Slug != null && c.Slug.StartsWith(basis),
+            cancellationToken: cancellationToken);
+
+        var taken = rows
+            .Where(x => excludeId is null || x.Id != excludeId)
+            .Select(x => x.Slug!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return Slugifier.MakeUnique(basis, SlugLimits.Category, taken.Contains);
+    }
 }

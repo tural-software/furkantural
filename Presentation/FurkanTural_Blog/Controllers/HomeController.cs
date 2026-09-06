@@ -122,18 +122,36 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
         }
     }
 
-    /// <summary>Yazı ile görselleri aynı anda istenir; ikisi de yalnızca kimliğe bağlı olduğu için sıraya girmeleri için bir neden yok. İlgili yazılar ancak yazının kategorileri bilindikten sonra istenebilir, dolayısıyla o çağrı ikisinin ardından gelir.</summary>
+    /// <summary>Eski kimlik adresi. Yazının kanonik adresi artık <c>/yazi/{slug}</c>; buraya gelen istek kalıcı olarak oraya taşınır.<para>Kalıcı yönlendirme şart: geçici olsaydı arama motoru eski adresi tutmaya devam eder ve aynı yazı iki adresten görünürdü. Yazının kendisi burada çizilmez, yalnızca slug'ı okunacak kadar çekilir.</para><para>Slug boşsa yönlendirme yapılmaz ve yazı buradan çizilir; adressiz bir yönlendirme okuru hiçbir yere götürmezdi.</para></summary>
     public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
     {
-        var postTask = _blogApi.GetPostAsync(id, cancellationToken);
-        var imagesTask = _blogApi.GetImagesByBlogAsync(id, cancellationToken);
-        await Task.WhenAll(postTask, imagesTask);
-
-        var post = await postTask;
+        var post = await _blogApi.GetPostAsync(id, cancellationToken);
         if (post is null)
             return NotFound();
 
-        var images = await imagesTask;
+        if (post.Slug.Length > 0)
+            return RedirectToRoutePermanent("BlogPost", new { slug = post.Slug });
+
+        await AttachDetailAsync(post, cancellationToken);
+        return View(nameof(Post), post);
+    }
+
+    /// <summary>Yazının kanonik adresi. Slug kalıcıdır: başlık değişse de adres durur, dolayısıyla paylaşılmış bağlantılar kırılmaz.</summary>
+    [Route("yazi/{slug}", Name = "BlogPost")]
+    public async Task<IActionResult> Detail(string slug, CancellationToken cancellationToken)
+    {
+        var post = await _blogApi.GetPostBySlugAsync(slug, cancellationToken);
+        if (post is null)
+            return NotFound();
+
+        await AttachDetailAsync(post, cancellationToken);
+        return View(nameof(Post), post);
+    }
+
+    /// <summary>Kapak ile ilgili yazıları yazıya iliştirir. Görseller yalnızca kimliğe bağlı olduğu için hemen istenir; ilgili yazılar ancak kategoriler bilindikten sonra istenebilir, dolayısıyla o çağrı sonra gelir.</summary>
+    private async Task AttachDetailAsync(BlogPostViewModel post, CancellationToken cancellationToken)
+    {
+        var images = await _blogApi.GetImagesByBlogAsync(post.Id, cancellationToken);
         var cover = images.FirstOrDefault(i => i.IsCover) ?? images.FirstOrDefault();
         if (cover is not null && !string.IsNullOrWhiteSpace(cover.Url))
         {
@@ -142,7 +160,6 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
         }
 
         await AttachRelatedAsync(post, cancellationToken);
-        return View(post);
     }
 
     /// <summary>Adaylar yazının ilk kategorisinden tek sayfada çekilir. Kategori başına ayrı çağrı yapılmaz: her sayfalı çağrı kendi içinde kategori sözlüğünü de istediği için maliyet çağrı sayısının iki katıdır ve üç kart için orantısız kalır. Sıralama yine de yazının bütün kategorilerine bakar, çünkü dönen adaylar kendi kategorilerini taşır.</summary>

@@ -9,6 +9,7 @@ public static class CategoryMapper
     {
         Id = entity.Id,
         Name = entity.Name,
+        Slug = entity.Slug,
         Color = entity.Color
     };
 
@@ -16,6 +17,7 @@ public static class CategoryMapper
     {
         Id = entity.Id,
         Name = entity.Name,
+        Slug = entity.Slug,
         Color = entity.Color,
         IsActive = entity.IsActive,
         IsDeleted = entity.IsDeleted,

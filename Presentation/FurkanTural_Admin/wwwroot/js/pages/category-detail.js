@@ -37,6 +37,11 @@
                         value: function (r) { return r.name || '—'; }
                     },
                     {
+                        label: 'Adres',
+                        icon: 'field-text',
+                        value: function (r) { return r.slug ? '/kategori/' + r.slug : '—'; }
+                    },
+                    {
                         label: 'Renk',
                         icon: 'hash-icon',
                         value: function (r) { return r.color || '—'; }
@@ -82,13 +87,23 @@
         };
     }
 
+    var SLUG_FIELD = {
+        name: 'slug',
+        label: 'Adres',
+        type: 'text',
+        required: false,
+        maxLength: 160,
+        placeholder: 'Boş bırakın — mevcut adres korunur',
+        helpText: 'Kategorinin kalıcı adresi (/kategori/…). Ad değişince kendiliğinden değişmez. Buradan değiştirirseniz eski adres 404 verir.'
+    };
+
     function buildEditConfig(id, onSuccess) {
         return {
             title: 'Kategori Düzenle',
             description: 'Mevcut kategori kaydını güncelleyin.',
             submitUrl: '/Category/Update/' + id,
             submitLabel: 'Güncelle',
-            fields: CATEGORY_FORM_FIELDS,
+            fields: CATEGORY_FORM_FIELDS.concat([SLUG_FIELD]),
             onSuccess: onSuccess
         };
     }

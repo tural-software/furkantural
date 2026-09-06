@@ -148,7 +148,7 @@ public class CategoryApiClient(HttpClient httpClient, ILogger<CategoryApiClient>
         {
             using var request = new HttpRequestMessage(HttpMethod.Put, "/api/v1/category");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var body = new { id, name = dto.Name, color = dto.Color };
+            var body = new { id, name = dto.Name, slug = dto.Slug, color = dto.Color };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request, ct);

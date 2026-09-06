@@ -27,6 +27,22 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         return Result<BlogDto>.Ok(dto);
     }
 
+    /// <summary>Yazıyı kalıcı adres parçasıyla getirir. Eşleşme büyük-küçük harf ayrımı gözetmez; veri tabanı harmanlaması zaten öyle çalışır ve adres satırına büyük harfle yazan okur da aynı sayfaya varmalıdır.<para>Bulunamayan slug 404 döner, kimlik adresine düşmez: var olmayan bir adresin başka bir yazıyı açması, yanlış bağlantıyı sessizce doğru göstermek olurdu.</para></summary>
+    public async Task<Result<BlogDto>> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            return Result<BlogDto>.Fail("Blog bulunamadı.", statusCode: 404);
+
+        var trimmed = slug.Trim();
+        var entity = await _unitOfWork.Blogs.GetAsync(b => b.Slug == trimmed, cancellationToken);
+        if (entity is null)
+            return Result<BlogDto>.Fail("Blog bulunamadı.", statusCode: 404);
+
+        var dto = entity.ToDto();
+        dto.Categories = await GetCategoryDtosAsync(entity.Id, cancellationToken);
+        return Result<BlogDto>.Ok(dto);
+    }
+
     public async Task<Result<IEnumerable<BlogDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _unitOfWork.Blogs.GetAllAsync(cancellationToken);
@@ -113,6 +129,7 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         {
             Id = r.Id,
             Title = r.Title,
+            Slug = r.Slug,
             CreatedAt = r.CreatedAt,
             UpdatedAt = r.UpdatedAt
         }).ToList();
@@ -128,6 +145,7 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
             return Result<BlogDto>.Fail("İçerik boş olamaz.");
 
         var entity = dto.ToEntity();
+        entity.Slug = await BuildSlugAsync(dto.Title, null, cancellationToken);
         await _unitOfWork.Blogs.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -157,6 +175,9 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
             return Result<BlogDto>.Fail("İçerik boş olamaz.");
 
         entity.UpdateEntity(dto);
+        if (!string.IsNullOrWhiteSpace(dto.Slug))
+            entity.Slug = await BuildSlugAsync(dto.Slug, entity.Id, cancellationToken);
+
         await _unitOfWork.Blogs.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -196,6 +217,25 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
     {
         var categories = await _unitOfWork.Blogs.GetCategoriesByBlogAsync(blogId, cancellationToken);
         return categories.Select(c => c.ToDto()).ToList();
+    }
+
+    /// <summary>Adresi başlıktan üretir ve çakışırsa sayı ekler. Aday listesi silinmiş satırları da kapsar: silinen bir yazının adresini başkasına vermek, o yazı geri yüklendiğinde tekil dizinde çakışırdı.<para>Yalnızca aynı önekle başlayan satırlar okunur ve okunan tek şey slug'dır; gövde bu sorguda hiç yer almaz. Önek eşleşmesi normalde sıfır ya da bir satır döndürür.</para></summary>
+    private async Task<string> BuildSlugAsync(string? source, int? excludeId, CancellationToken cancellationToken)
+    {
+        var basis = Slugifier.ToSlug(source, SlugLimits.Blog, "yazi");
+
+        var rows = await _unitOfWork.Blogs.SelectForAdminPagedAsync(
+            1, SlugLimits.CollisionScan,
+            b => new { b.Id, b.Slug },
+            b => b.Slug != null && b.Slug.StartsWith(basis),
+            cancellationToken: cancellationToken);
+
+        var taken = rows
+            .Where(x => excludeId is null || x.Id != excludeId)
+            .Select(x => x.Slug!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return Slugifier.MakeUnique(basis, SlugLimits.Blog, taken.Contains);
     }
 
     private async Task<Dictionary<int, List<CategoryDto>>> LoadCategoryMapAsync(IReadOnlyCollection<int> blogIds, CancellationToken cancellationToken)

@@ -37,6 +37,11 @@
                         value: function (r) { return r.title || '—'; }
                     },
                     {
+                        label: 'Adres',
+                        icon: 'field-text',
+                        value: function (r) { return r.slug ? '/yazi/' + r.slug : '—'; }
+                    },
+                    {
                         label: 'İçerik',
                         icon: 'field-text',
                         value: function (r) { return r.content || '—'; },
@@ -75,6 +80,16 @@
         }
     ];
 
+    var SLUG_FIELD = {
+        name: 'slug',
+        label: 'Adres',
+        type: 'text',
+        required: false,
+        maxLength: 200,
+        placeholder: 'Boş bırakın — mevcut adres korunur',
+        helpText: 'Yazının kalıcı adresi (/yazi/…). Başlık değişince kendiliğinden değişmez. Buradan değiştirirseniz eski adres 404 verir ve dışarıdaki bağlantılar kırılır.'
+    };
+
     // Kategori çoklu-seçim alanı — seçenekler sayfadan (window.__blogCategories) gelir.
     function categoryField() {
         var cats = window.__blogCategories || [];
@@ -92,6 +107,10 @@
 
     function formFields() {
         return BLOG_FORM_FIELDS.concat([categoryField()]);
+    }
+
+    function editFormFields() {
+        return BLOG_FORM_FIELDS.concat([SLUG_FIELD, categoryField()]);
     }
 
     function buildCreateConfig(onSuccess) {
@@ -113,7 +132,7 @@
             submitUrl: '/Blog/Update/' + id,
             submitLabel: 'Güncelle',
             size: 'large',
-            fields: formFields(),
+            fields: editFormFields(),
             onSuccess: onSuccess
         };
     }

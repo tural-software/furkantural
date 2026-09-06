@@ -426,4 +426,26 @@ public sealed class FlowTests(LiveSiteFixture site)
         method.Should().Be("post", "abonelik kaydı GET ile yapılamaz");
         resultText.Should().NotBeEmpty("gönderimden sonra ekranda ne olduğunu söyleyen bir metin bulunmalı");
     }
+
+    /// <summary>Yazının kanonik adresi slug'dır. Kanonik etiket kimlik adresini gösterirse, arama motoru için aynı yazı iki adresten var olur.</summary>
+    [SkippableFact]
+    public async Task Blogda_yazi_adresi_sluga_dayanir()
+    {
+        var (url, canonical, idLinks) = await site.WithPageAsync(SweepData.Page("Blog/"), async page =>
+        {
+            var link = page.Locator("a[href*='/yazi/']").First;
+            Skip.If(await link.CountAsync() == 0, "Blog: yazı yok");
+
+            await link.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.Load);
+
+            var canon = await page.Locator("link[rel='canonical']").First.GetAttributeAsync("href");
+            var legacy = await page.Locator("a[href*='/Home/Post/']").CountAsync();
+            return (page.Url, canon ?? "", legacy);
+        });
+
+        url.Should().Contain("/yazi/", "yazı bağlantısı kimlik adresine değil slug adresine gitmeli");
+        canonical.Should().Contain("/yazi/", "kanonik etiket slug adresini göstermeli");
+        idLinks.Should().Be(0, "sayfada eski kimlik adresine bağlantı kalmamalı");
+    }
 }

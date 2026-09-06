@@ -11,7 +11,7 @@ namespace FurkanTural_Business.Tests;
 /// <summary>Sitemap ucu artık başlık da taşıyor; arşiv sayfası bu alandan besleniyor. Uç bilerek hafif kalır: yazı gövdesi hiç okunmaz, dolayısıyla okuma süresi buradan hesaplanamaz ve hesaplanmamalıdır — aynı yazı için yazı sayfasındakinden farklı bir sayı doğururdu.</summary>
 public class BlogSitemapTests
 {
-    private static BlogService Build(params (int Id, string? Title, DateTime CreatedAt, DateTime? UpdatedAt)[] rows)
+    private static BlogService Build(params (int Id, string? Title, string? Slug, DateTime CreatedAt, DateTime? UpdatedAt)[] rows)
     {
         var blogs = new Mock<IBlogRepository>();
         blogs.Setup(r => r.GetSitemapDataAsync(It.IsAny<CancellationToken>())).ReturnsAsync(rows);
@@ -26,7 +26,7 @@ public class BlogSitemapTests
     [Fact]
     public async Task Baslik_yaniya_tasinir()
     {
-        var sut = Build((7, "Yazının başlığı", new DateTime(2026, 3, 1), null));
+        var sut = Build((7, "Yazının başlığı", "yazinin-basligi", new DateTime(2026, 3, 1), null));
 
         var result = await sut.GetSitemapAsync();
 
@@ -39,11 +39,12 @@ public class BlogSitemapTests
     {
         var created = new DateTime(2026, 3, 1);
         var updated = new DateTime(2026, 4, 2);
-        var sut = Build((7, "Başlık", created, updated));
+        var sut = Build((7, "Başlık", "baslik", created, updated));
 
         var dto = (await sut.GetSitemapAsync()).Data!.Single();
 
         dto.Id.Should().Be(7);
+        dto.Slug.Should().Be("baslik");
         dto.CreatedAt.Should().Be(created);
         dto.UpdatedAt.Should().Be(updated);
     }
@@ -51,7 +52,7 @@ public class BlogSitemapTests
     [Fact]
     public async Task Basligi_bos_satir_yine_de_doner_ve_ayiklama_istemciye_kalir()
     {
-        var sut = Build((7, null, new DateTime(2026, 3, 1), null));
+        var sut = Build((7, null, "yazi", new DateTime(2026, 3, 1), null));
 
         (await sut.GetSitemapAsync()).Data!.Single().Title.Should().BeNull();
     }

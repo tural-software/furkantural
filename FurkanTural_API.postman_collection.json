@@ -324,6 +324,26 @@
                             "response": []
                         },
                         {
+                            "name": "Get By Slug",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{prodBaseUrl}}/blog/by-slug/{{blogSlug}}",
+                                    "host": [
+                                        "{{prodBaseUrl}}"
+                                    ],
+                                    "path": [
+                                        "blog",
+                                        "by-slug",
+                                        "{{blogSlug}}"
+                                    ]
+                                },
+                                "description": "Blog yazisini kalici adres parcasi (slug) ile getir. Yetki: VisitorOrAbove."
+                            },
+                            "response": []
+                        },
+                        {
                             "name": "Get Sitemap",
                             "request": {
                                 "method": "GET",
@@ -6213,6 +6233,26 @@
                             "response": []
                         },
                         {
+                            "name": "Get By Slug",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{prodBaseUrl}}/blog/by-slug/{{blogSlug}}",
+                                    "host": [
+                                        "{{prodBaseUrl}}"
+                                    ],
+                                    "path": [
+                                        "blog",
+                                        "by-slug",
+                                        "{{blogSlug}}"
+                                    ]
+                                },
+                                "description": "Blog yazisini kalici adres parcasi (slug) ile getir. Yetki: VisitorOrAbove."
+                            },
+                            "response": []
+                        },
+                        {
                             "name": "Get Sitemap",
                             "request": {
                                 "method": "GET",
@@ -11986,6 +12026,12 @@
             "value": "10",
             "type": "string",
             "description": "Sayfali uclarda sayfa boyutu."
+        },
+        {
+            "key": "blogSlug",
+            "value": "ornek-yazi-basligi",
+            "type": "string",
+            "description": "Ornek blog yazisi slug degeri (kalici adres parcasi)."
         },
         {
             "key": "blogId",

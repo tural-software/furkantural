@@ -64,6 +64,7 @@ public class CategoryController(ICategoryService categoryService) : JwtBaseContr
         {
             Id = request.Id,
             Name = request.Name,
+            Slug = request.Slug,
             Color = request.Color,
             UpdatedBy = SortUserId()
         }, cancellationToken));

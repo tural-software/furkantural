@@ -1,5 +1,6 @@
 using System.Text;
 using System.Xml;
+using FurkanTural_Blog.Helpers;
 using FurkanTural_Blog.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,7 +52,7 @@ public class SeoController(IBlogApiService blogApi) : Controller
             urls.Add(($"{baseUrl}/kategori/{slug}", Iso(homeLastMod), "0.6", "weekly"));
 
         foreach (var post in posts)
-            urls.Add(($"{baseUrl}/Home/Post/{post.Id}", Iso(post.LastModified), "0.7", "monthly"));
+            urls.Add(($"{baseUrl}{PostUrl.For(Url, post)}", Iso(post.LastModified), "0.7", "monthly"));
 
         using var ms = new MemoryStream();
         var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false) };
@@ -112,7 +113,7 @@ public class SeoController(IBlogApiService blogApi) : Controller
 
             foreach (var post in posts)
             {
-                var link = $"{baseUrl}/Home/Post/{post.Id}";
+                var link = $"{baseUrl}{PostUrl.For(Url, post)}";
                 writer.WriteStartElement("item");
                 writer.WriteElementString("title", post.Title ?? string.Empty);
                 writer.WriteElementString("link", link);

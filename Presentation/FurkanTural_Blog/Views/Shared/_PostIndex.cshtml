@@ -113,7 +113,7 @@
             <ol class="post-index">
                 @foreach (var post in Model.Items)
                 {
-                    var postUrl = Url.Action("Post", "Home", new { id = post.Id }) ?? "/";
+                    var postUrl = PostUrl.For(Url, post);
                     <li class="index-row reveal">
                         <div class="index-row__date">
                             @if (!string.IsNullOrEmpty(post.PublishedDisplay))

@@ -12,5 +12,7 @@ public class CategoryConfiguration : BaseEntityConfiguration<Category>
         builder.ToTable("Categories");
         builder.Property(e => e.Name).HasMaxLength(120).IsRequired();
         builder.Property(e => e.Color).HasMaxLength(20);
+        builder.Property(e => e.Slug).HasMaxLength(160).IsRequired();
+        builder.HasIndex(e => e.Slug).IsUnique();
     }
 }

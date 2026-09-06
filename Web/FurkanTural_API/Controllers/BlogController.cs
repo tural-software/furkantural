@@ -21,6 +21,12 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetByIdAsync(id, cancellationToken));
 
+    /// <summary>Blog yazısını kalıcı adres parçasıyla (slug) getir</summary>
+    [HttpGet("by-slug/{slug}")]
+    [Authorize(Policy = "VisitorOrAbove")]
+    public async Task<IActionResult> GetBySlug(string slug, CancellationToken cancellationToken)
+        => ToActionResult(await _blogService.GetBySlugAsync(slug, cancellationToken));
+
     /// <summary>Tüm blog yazılarını listele</summary>
     [HttpGet]
     [Authorize(Policy = "VisitorOrAbove")]
@@ -94,6 +100,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
         {
             Id = request.Id,
             Title = request.Title,
+            Slug = request.Slug,
             Content = request.Content,
             CategoryIds = request.CategoryIds,
             UpdatedBy = SortUserId()

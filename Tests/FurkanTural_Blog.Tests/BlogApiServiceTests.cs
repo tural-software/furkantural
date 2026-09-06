@@ -602,4 +602,59 @@ public class BlogApiServiceTests
             ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.EndsWith("/blog/sitemap")),
             ItExpr.IsAny<CancellationToken>());
     }
+
+    // ── GetPostBySlugAsync ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetPostBySlugAsync_WhenApiReturnsPost_ReturnsIt()
+    {
+        var responseBody = new ApiResult<BlogPostViewModel>
+        {
+            Success = true,
+            Data = new BlogPostViewModel { Id = 42, Title = "Test", Slug = "test" }
+        };
+        var (service, _) = BuildService(HttpStatusCode.OK, responseBody);
+
+        var result = await service.GetPostBySlugAsync("test");
+
+        result.Should().NotBeNull();
+        result!.Slug.Should().Be("test");
+    }
+
+    [Fact]
+    public async Task GetPostBySlugAsync_UsesTheSlugEndpointAndEscapesTheValue()
+    {
+        var responseBody = new ApiResult<BlogPostViewModel> { Success = true, Data = new BlogPostViewModel() };
+        var (service, handlerMock) = BuildService(HttpStatusCode.OK, responseBody);
+
+        await service.GetPostBySlugAsync(" bir-iki ");
+
+        handlerMock.Protected().Verify(
+            "SendAsync", Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(r => r.RequestUri!.AbsolutePath.EndsWith("/blog/by-slug/bir-iki")),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GetPostBySlugAsync_WhenSlugIsBlank_DoesNotCallTheApi(string slug)
+    {
+        var responseBody = new ApiResult<BlogPostViewModel> { Success = true, Data = new BlogPostViewModel() };
+        var (service, handlerMock) = BuildService(HttpStatusCode.OK, responseBody);
+
+        var result = await service.GetPostBySlugAsync(slug);
+
+        result.Should().BeNull();
+        handlerMock.Protected().Verify("SendAsync", Times.Never(),
+            ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetPostBySlugAsync_WhenApiThrows_ReturnsNull()
+    {
+        var (service, _) = BuildServiceThrows(new HttpRequestException("Unreachable"));
+
+        (await service.GetPostBySlugAsync("test")).Should().BeNull();
+    }
 }

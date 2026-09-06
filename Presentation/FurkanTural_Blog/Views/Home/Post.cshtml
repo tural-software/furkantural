@@ -103,7 +103,7 @@
             <div class="post-related__grid">
                 @foreach (var rel in Model.Related)
                 {
-                    <a class="related-card" href="@(Url.Action("Post", "Home", new { id = rel.Id }) ?? "/")">
+                    <a class="related-card" href="@PostUrl.For(Url, rel)">
                         @if (rel.Categories.Count > 0)
                         {
                             <span class="related-card__cats">

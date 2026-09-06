@@ -8,6 +8,9 @@ namespace FurkanTural_Application.Services.Abstract;
 public interface IBlogService : IService<BlogDto, CreateBlogDto, UpdateBlogDto>, IBulkService
 {
     Task<PagedResult<BlogDto>> GetPublishedPagedAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default);
+
+    /// <summary>Yazıyı kalıcı adres parçasıyla getirir. Bulunamayan slug 404 döner ve kimlik adresine düşmez; var olmayan bir adresin başka bir yazıyı açması yanlış bağlantıyı sessizce doğru gösterirdi.</summary>
+    Task<Result<BlogDto>> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<BlogSitemapDto>>> GetSitemapAsync(CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<AdminBlogDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminBlogDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);

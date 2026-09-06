@@ -10,6 +10,9 @@ public class BlogPostViewModel
 
     public int Id { get; set; }
     public string? Title { get; set; }
+
+    /// <summary>Yazının kalıcı adres parçası; API'den gelir. Boş varsayılan bilerektir: alan hiç gelmezse bağlantılar kimlik adresine düşer, boş bir adres üretilmez.</summary>
+    public string Slug { get; set; } = string.Empty;
     public string? Content { get; set; }
     public DateTime CreatedAt { get; set; }
 

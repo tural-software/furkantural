@@ -14,6 +14,9 @@ public interface IBlogApiService
 
     Task<BlogPostViewModel?> GetPostAsync(int id, CancellationToken ct = default);
 
+    /// <summary>Yazıyı kanonik adres parçasıyla getirir. Bulunamayan slug null döner ve kimlik adresine düşülmez; var olmayan bir adresin başka bir yazıyı açması yanlış bağlantıyı sessizce doğru gösterirdi.</summary>
+    Task<BlogPostViewModel?> GetPostBySlugAsync(string slug, CancellationToken ct = default);
+
     /// <summary>Sitemap için yayınlı yazıların hafif listesi (Id + başlık + tarihler; içerik çekilmez).</summary>
     Task<IReadOnlyList<BlogSitemapItem>> GetSitemapItemsAsync(CancellationToken ct = default);
 

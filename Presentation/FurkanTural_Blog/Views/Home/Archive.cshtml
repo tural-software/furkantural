@@ -61,7 +61,7 @@
                         @foreach (var item in month.Items)
                         {
                             <li class="archive-row">
-                                <a class="archive-row__link" href="@(Url.Action("Post", "Home", new { id = item.Id }) ?? "/")">
+                                <a class="archive-row__link" href="@PostUrl.For(Url, item)">
                                     <time class="archive-row__day" datetime="@item.PublishedIso">@item.DayDisplay</time>
                                     <span class="archive-row__title">@item.Title</span>
                                 </a>

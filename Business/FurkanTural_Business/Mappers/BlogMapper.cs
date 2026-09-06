@@ -9,6 +9,7 @@ public static class BlogMapper
     {
         Id = entity.Id,
         Title = entity.Title,
+        Slug = entity.Slug,
         Content = entity.Content,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
@@ -18,6 +19,7 @@ public static class BlogMapper
     {
         Id = entity.Id,
         Title = entity.Title,
+        Slug = entity.Slug,
         Content = entity.Content,
         IsActive = entity.IsActive,
         IsDeleted = entity.IsDeleted,

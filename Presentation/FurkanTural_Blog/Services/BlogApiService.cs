@@ -103,6 +103,24 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
         }
     }
 
+    public async Task<BlogPostViewModel?> GetPostBySlugAsync(string slug, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            return null;
+
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<BlogPostViewModel>>(
+                $"/api/v1/blog/by-slug/{Uri.EscapeDataString(slug.Trim())}", JsonOptions, ct);
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Blog yazısı alınamadı. Slug={Slug}", slug);
+            return null;
+        }
+    }
+
     public async Task<IReadOnlyList<BlogSitemapItem>> GetSitemapItemsAsync(CancellationToken ct = default)
     {
         try

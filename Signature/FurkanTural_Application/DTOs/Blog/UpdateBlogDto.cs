@@ -6,6 +6,9 @@ public class UpdateBlogDto
     public int Id { get; set; }
     public string? Title { get; set; }
     public string? Content { get; set; }
+
+    /// <summary>Adresi elle düzeltmek için. Boş bırakılırsa mevcut adres korunur; dolu gönderilirse temizlenip tekilleştirilerek yazılır — bilinçli bir karardır ve eski adresi kırar.</summary>
+    public string? Slug { get; set; }
     public int? UpdatedBy { get; set; }
     public List<int>? CategoryIds { get; set; }
 }
