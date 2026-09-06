@@ -14,6 +14,7 @@ public static class BusinessServiceRegistration
         services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<ActivityLogger>();
         services.AddScoped<IBlogService, BlogService>();
+        services.AddScoped<IAdminDashboardService, AdminDashboardService>();
         services.AddScoped<IBlogImageService, BlogImageService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IEducationService, EducationService>();

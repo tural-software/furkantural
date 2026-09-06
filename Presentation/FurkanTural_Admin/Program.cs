@@ -20,7 +20,7 @@ builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-builder.Services.AddHttpClient<IAdminSummaryClient, AdminSummaryClient>(client =>
+builder.Services.AddHttpClient<IAdminDashboardClient, AdminDashboardClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(10);

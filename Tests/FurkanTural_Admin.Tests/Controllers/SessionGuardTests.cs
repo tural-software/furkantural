@@ -130,8 +130,8 @@ public class SessionGuardTests
     public async Task DashboardController_Index_WithoutToken_RedirectsToLogin()
     {
         // Arrange
-        var mock = new Mock<IAdminSummaryClient>(MockBehavior.Loose);
-        var sut  = new DashboardController(mock.Object, Mock.Of<IContactApiClient>(), Mock.Of<IReportApiClient>(), Mock.Of<IUserApiClient>(), Mock.Of<IBlogApiClient>(), Mock.Of<ISubscriberApiClient>())
+        var mock = new Mock<IAdminDashboardClient>(MockBehavior.Loose);
+        var sut  = new DashboardController(mock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };
