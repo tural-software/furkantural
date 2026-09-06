@@ -61,7 +61,10 @@ public static class SiteMap
 
             new(Blog, "/"),
             new(Blog, "/Home/Privacy"),
+            new(Blog, "/hakkinda"),
+            new(Blog, "/ara?q=ef"),
             new(Blog, "/Home/Post", Access.Public, Discover: "a[href*='/Home/Post/']", DiscoverFrom: "/"),
+            new(Blog, "/kategori", Access.Public, Discover: "a[href*='/kategori/']", DiscoverFrom: "/"),
 
             new(Portfolio, "/"),
             new(Portfolio, "/Home/Privacy"),

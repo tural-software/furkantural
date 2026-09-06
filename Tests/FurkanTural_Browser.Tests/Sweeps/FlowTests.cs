@@ -21,9 +21,55 @@ public sealed class FlowTests(LiveSiteFixture site)
             return (page.Url, h1 ?? "", value);
         });
 
-        url.Should().Contain("search=test", "arama sorgusu adrese taşınmazsa sonuç paylaşılamaz ve geri tuşu bozulur");
+        url.Should().Contain("/ara", "arama artık kendi adresinde yaşıyor; liste sayfasının sorgu dizesinde değil");
+        url.Should().Contain("q=test", "arama sorgusu adrese taşınmazsa sonuç paylaşılamaz ve geri tuşu bozulur");
         echoed.Should().Be("test", "arama kutusu ne aradığını göstermeye devam etmeli");
-        heading.Should().NotBeEmpty("sonuç sayfasının da bir başlığı olmalı");
+        heading.Should().Contain("test", "sonuç sayfasının başlığı neyin arandığını söylemeli");
+    }
+
+    /// <summary>Kategori artık sorgu dizesi değil kendi adresi. Ray'daki chip oraya götürmeli ve sayfa hangi kategoride olduğunu başlığında söylemeli — aksi hâlde adres paylaşılabilir olur ama sayfa neyi gösterdiğini söylemez.</summary>
+    [SkippableFact]
+    public async Task Blogda_kategori_kendi_adresine_goturur()
+    {
+        var (url, heading, active) = await site.WithPageAsync(SweepData.Page("Blog/"), async page =>
+        {
+            var chip = page.Locator(".blog-rail a[href*='/kategori/']").First;
+            Skip.If(await chip.CountAsync() == 0, "Blog: kategori yok");
+
+            var label = (await chip.TextContentAsync() ?? "").Trim();
+            await chip.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.Load);
+
+            var h1 = await page.Locator("h1").First.TextContentAsync();
+            var isActive = await page.Locator(".rail-chip.is-active").CountAsync();
+            return (page.Url, (h1 ?? "").Trim(), isActive);
+        });
+
+        url.Should().Contain("/kategori/", "kategori sayfasının kendi kanonik adresi olmalı");
+        heading.Should().NotBeEmpty("kategori sayfası hangi kategoride olduğunu başlığında söylemeli");
+        active.Should().Be(1, "rayda tam olarak bir kategori seçili görünmeli; okur nerede olduğunu ray'dan da görmeli");
+    }
+
+    /// <summary>Eski süzgeç adresleri kalıcı olarak yeni adrese taşınır. Geçici yönlendirme olsaydı arama motoru eski adresi tutmaya devam eder, iki adres aynı listeyi gösterirdi.</summary>
+    [SkippableFact]
+    public async Task Blogda_eski_suzgec_adresi_kalici_yonlendirir()
+    {
+        var (categoryUrl, categoryStatus, searchUrl) = await site.WithPageAsync(SweepData.Page("Blog/"), async page =>
+        {
+            var response = await page.GotoAsync(page.Url.TrimEnd('/') + "/?categoryId=1",
+                new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+            var first = response?.Request.RedirectedFrom;
+            var status = first is null ? 0 : (await first.ResponseAsync())?.Status ?? 0;
+            var catUrl = page.Url;
+
+            await page.GotoAsync(page.Url.Split("/kategori")[0] + "/?search=ef",
+                new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+            return (catUrl, status, page.Url);
+        });
+
+        categoryUrl.Should().Contain("/kategori/");
+        categoryStatus.Should().Be(301, "kalıcı taşıma sinyali verilmezse eski adres dizinde kalır");
+        searchUrl.Should().Contain("/ara").And.Contain("q=ef");
     }
 
     [SkippableFact]

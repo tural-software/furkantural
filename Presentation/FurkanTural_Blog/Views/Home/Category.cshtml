@@ -1,0 +1,30 @@
+@model PagedPostsViewModel
+@{
+    var cat = Model.ActiveCategory;
+    var pageNo = Model.PageNumber;
+    ViewData["Title"] = pageNo > 1 ? $"{cat?.Name} — Sayfa {pageNo}" : cat?.Name;
+    ViewData["MetaDescription"] = $"{cat?.Name} kategorisindeki blog yazıları.";
+
+    var basePath = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    ViewData["Canonical"] = pageNo > 1 ? $"{basePath}?page={pageNo}" : basePath;
+}
+
+<section class="page-head reveal">
+    <div class="container">
+        <nav class="crumb" aria-label="Konum">
+            <a href="@(Url.Action("Index", "Home") ?? "/")">Blog</a>
+            <span aria-hidden="true">/</span>
+            <span>@cat?.Name</span>
+        </nav>
+        <h1 class="page-head__title" style="--chip-color:@cat?.DisplayColor">
+            <span class="page-head__dot" aria-hidden="true"></span>@cat?.Name
+        </h1>
+        <p class="page-head__lead">
+            Bu kategoride <strong>@Model.TotalCount</strong> yazı var.
+        </p>
+    </div>
+</section>
+
+<section class="container">
+    @await Html.PartialAsync("_PostIndex", Model)
+</section>

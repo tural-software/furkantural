@@ -1,0 +1,41 @@
+@model PagedPostsViewModel
+@{
+    var term = Model.Search;
+    var hasTerm = !string.IsNullOrWhiteSpace(term);
+    ViewData["Title"] = hasTerm ? $"\"{term}\" araması" : "Arama";
+    ViewData["MetaDescription"] = "Blog yazılarında arama.";
+
+    // Arama sonuçları dizine girmemeli: her sorgu ayrı bir adres üretir ve hiçbiri
+    // kendi başına bir içerik sayfası değildir.
+    ViewData["Robots"] = "noindex, follow";
+}
+
+<section class="page-head reveal">
+    <div class="container">
+        <nav class="crumb" aria-label="Konum">
+            <a href="@(Url.Action("Index", "Home") ?? "/")">Blog</a>
+            <span aria-hidden="true">/</span>
+            <span>Arama</span>
+        </nav>
+        <h1 class="page-head__title">
+            @if (hasTerm)
+            {
+                <text>“@term” için sonuçlar</text>
+            }
+            else
+            {
+                <text>Arama</text>
+            }
+        </h1>
+        @if (hasTerm)
+        {
+            <p class="page-head__lead">
+                <strong>@Model.TotalCount</strong> yazı bulundu.
+            </p>
+        }
+    </div>
+</section>
+
+<section class="container">
+    @await Html.PartialAsync("_PostIndex", Model)
+</section>

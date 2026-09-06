@@ -1,0 +1,194 @@
+@model PagedPostsViewModel
+@*
+    Dizin düzeni: solda yapışkan ray (arama + kategoriler), sağda kartsız yazı listesi.
+    Üç sayfa da (ana sayfa, kategori, arama) bu gövdeyi paylaşır; değişen yalnızca
+    bağlantıların hangi rotaya kurulduğudur. Sayfalama bulunduğu sayfada kalır.
+*@
+@{
+    var cur = Model.PageNumber;
+    var tot = Model.TotalPages;
+
+    string PageUrl(int p)
+    {
+        int? n = p > 1 ? p : null;
+        return Model.Kind switch
+        {
+            BlogListKind.Category => Url.RouteUrl("BlogCategory", new { slug = Model.ActiveCategory?.Slug, page = n }) ?? "/",
+            BlogListKind.Search => Url.RouteUrl("BlogSearch", new { q = Model.Search, page = n }) ?? "/",
+            _ => Url.Action("Index", "Home", new { page = n }) ?? "/"
+        };
+    }
+
+    var tokens = new List<int?>();
+    if (tot > 1)
+    {
+        const int radius = 1;
+        int start = Math.Max(1, cur - radius);
+        int end = Math.Min(tot, cur + radius);
+        if (start > 1) { tokens.Add(1); if (start > 2) tokens.Add(null); }
+        for (int p = start; p <= end; p++) tokens.Add(p);
+        if (end < tot) { if (end < tot - 1) tokens.Add(null); tokens.Add(tot); }
+    }
+}
+
+<div class="post-index-layout">
+
+    <aside class="blog-rail" aria-label="Yazı süzgeçleri">
+        <form class="blog-search" method="get" action="@(Url.RouteUrl("BlogSearch") ?? "/ara")" role="search">
+            <input class="blog-search__input" type="search" name="q" value="@(Model.Kind == BlogListKind.Search ? Model.Search : null)"
+                   placeholder="Yazılarda ara…" aria-label="Yazılarda ara" />
+            <button class="blog-search__btn" type="submit">Ara</button>
+        </form>
+
+        @if (Model.AvailableCategories.Count > 0)
+        {
+            <nav class="blog-rail__group" aria-label="Kategoriler">
+                <h2 class="blog-rail__title">Kategoriler</h2>
+                <ul class="blog-rail__list">
+                    <li>
+                        @if (Model.Kind == BlogListKind.Home)
+                        {
+                            <a class="rail-chip is-active" href="@(Url.Action("Index", "Home") ?? "/")" aria-current="page">Tümü</a>
+                        }
+                        else
+                        {
+                            <a class="rail-chip" href="@(Url.Action("Index", "Home") ?? "/")">Tümü</a>
+                        }
+                    </li>
+                    @foreach (var cat in Model.AvailableCategories.Where(c => c.Slug.Length > 0))
+                    {
+                        var active = Model.ActiveCategory?.Id == cat.Id;
+                        var href = Url.RouteUrl("BlogCategory", new { slug = cat.Slug }) ?? "/";
+                        <li>
+                            @if (active)
+                            {
+                                <a class="rail-chip is-active" style="--chip-color:@cat.DisplayColor" href="@href" aria-current="page">
+                                    <span class="filter-chip__dot" aria-hidden="true"></span>@cat.Name
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="rail-chip" style="--chip-color:@cat.DisplayColor" href="@href">
+                                    <span class="filter-chip__dot" aria-hidden="true"></span>@cat.Name
+                                </a>
+                            }
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </aside>
+
+    <div class="post-index-main">
+        @if (Model.Items.Count == 0)
+        {
+            <div class="placeholder-card reveal">
+                @if (Model.LoadFailed)
+                {
+                    <h2>Yazılar şu anda yüklenemiyor</h2>
+                    <p>Geçici bir sorun var; arşiv yerinde duruyor. Kısa süre sonra tekrar deneyin.</p>
+                }
+                else if (Model.Kind == BlogListKind.Search && string.IsNullOrWhiteSpace(Model.Search))
+                {
+                    <h2>Ne arıyorsunuz?</h2>
+                    <p>Yukarıdaki kutuya bir sözcük yazın, başlıklarda arayalım.</p>
+                }
+                else if (Model.HasActiveFilter)
+                {
+                    <h2>Sonuç bulunamadı</h2>
+                    <p>Seçtiğiniz süzgeçle eşleşen yazı yok. <a href="@(Url.Action("Index", "Home") ?? "/")">Tüm yazıları gör</a>.</p>
+                }
+                else
+                {
+                    <h2>Yakında</h2>
+                    <p>Blog yazıları hazırlanıyor. İçerik yayınlandığında bu alanda listelenecek.</p>
+                }
+            </div>
+        }
+        else
+        {
+            <ol class="post-index">
+                @foreach (var post in Model.Items)
+                {
+                    var postUrl = Url.Action("Post", "Home", new { id = post.Id }) ?? "/";
+                    <li class="index-row reveal">
+                        <div class="index-row__date">
+                            @if (!string.IsNullOrEmpty(post.PublishedDisplay))
+                            {
+                                <time datetime="@post.PublishedIso">@post.PublishedDisplay</time>
+                            }
+                            <span class="index-row__read">@post.ReadingMinutes dk</span>
+                        </div>
+
+                        <div class="index-row__body">
+                            <h2 class="index-row__title"><a href="@postUrl">@post.Title</a></h2>
+                            @if (!string.IsNullOrEmpty(post.Excerpt))
+                            {
+                                <p class="index-row__excerpt">@post.Excerpt</p>
+                            }
+                            @if (post.Categories.Count > 0)
+                            {
+                                <div class="index-row__cats">
+                                    @foreach (var cat in post.Categories.Where(c => c.Slug.Length > 0))
+                                    {
+                                        <a class="post-cat-chip" style="--chip-color:@cat.DisplayColor"
+                                           href="@(Url.RouteUrl("BlogCategory", new { slug = cat.Slug }) ?? "/")"
+                                           aria-label="@cat.Name kategorisindeki yazılar">
+                                            <span class="post-cat-chip__dot" aria-hidden="true"></span>@cat.Name
+                                        </a>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(post.CoverImageUrl))
+                        {
+                            <a class="index-row__cover" href="@postUrl" tabindex="-1" aria-hidden="true">
+                                <img src="@post.CoverImageUrl" alt="@(post.CoverAltText ?? post.Title)" loading="lazy" decoding="async" />
+                            </a>
+                        }
+                    </li>
+                }
+            </ol>
+
+            @if (tot > 1)
+            {
+                <nav class="pagination reveal" aria-label="Blog sayfaları">
+                    @if (Model.HasPrevious)
+                    {
+                        <a class="pagination__link pagination__link--nav" rel="prev" href="@PageUrl(cur - 1)" aria-label="Önceki sayfa">‹ Önceki</a>
+                    }
+                    else
+                    {
+                        <span class="pagination__link pagination__link--nav is-disabled" aria-disabled="true">‹ Önceki</span>
+                    }
+
+                    @foreach (var t in tokens)
+                    {
+                        if (t is null)
+                        {
+                            <span class="pagination__ellipsis" aria-hidden="true">…</span>
+                        }
+                        else if (t == cur)
+                        {
+                            <span class="pagination__link is-current" aria-current="page">@t</span>
+                        }
+                        else
+                        {
+                            <a class="pagination__link" href="@PageUrl(t.Value)" aria-label="Sayfa @t">@t</a>
+                        }
+                    }
+
+                    @if (Model.HasNext)
+                    {
+                        <a class="pagination__link pagination__link--nav" rel="next" href="@PageUrl(cur + 1)" aria-label="Sonraki sayfa">Sonraki ›</a>
+                    }
+                    else
+                    {
+                        <span class="pagination__link pagination__link--nav is-disabled" aria-disabled="true">Sonraki ›</span>
+                    }
+                </nav>
+            }
+        }
+    </div>
+</div>

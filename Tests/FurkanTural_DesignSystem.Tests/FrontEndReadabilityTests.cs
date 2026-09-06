@@ -320,9 +320,18 @@ public class FrontEndReadabilityTests
     {
         var sapan = new List<string>();
 
-        var blogView = Read("Presentation", "FurkanTural_Blog", "Views", "Home", "Index.cshtml");
-        if (!blogView.Contains("Model.LoadFailed"))
-            sapan.Add("Blog: liste görünümü LoadFailed dalını taşımıyor");
+        // Liste gövdesi üç sayfada ortaktır (ana sayfa, kategori, arama); arıza dalı da
+        // orada durur. Ana sayfa yalnızca başlığı çizip gövdeyi çağırır.
+        var blogList = Read("Presentation", "FurkanTural_Blog", "Views", "Shared", "_PostIndex.cshtml");
+        if (!blogList.Contains("Model.LoadFailed"))
+            sapan.Add("Blog: ortak liste gövdesi LoadFailed dalını taşımıyor");
+
+        foreach (var page in new[] { "Index", "Category", "Search" })
+        {
+            var view = Read("Presentation", "FurkanTural_Blog", "Views", "Home", $"{page}.cshtml");
+            if (!view.Contains("_PostIndex"))
+                sapan.Add($"Blog: {page} görünümü ortak liste gövdesini kullanmıyor, arıza dalı o sayfada kaybolur");
+        }
 
         var blogService = Read("Presentation", "FurkanTural_Blog", "Services", "BlogApiService.cs");
         if (!blogService.Contains("LoadFailed = true"))

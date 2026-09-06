@@ -8,6 +8,9 @@
     var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
     var ogImage = (ViewData["OgImage"] as string) ?? (siteUrl + "/img/og-image.png");
     var ogType = (ViewData["OgType"] as string) ?? "website";
+    // Varsayılan yok: etiket ancak sayfa isterse yazılır. Arama sonuçları gibi her
+    // sorgu için ayrı adres üreten sayfalar kendini dizinden çıkarır.
+    var robots = ViewData["Robots"] as string;
     // Varsayılan WebSite yapısal verisi; sayfa "JsonLd" section'ı tanımlarsa (örn. yazı için Article) o kullanılır.
     var defaultJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
     {
@@ -37,6 +40,10 @@
     <meta name="description" content="@metaDescription" />
     <meta name="author" content="Furkan Tural" />
     <meta name="theme-color" content="#0d1117" />
+    @if (!string.IsNullOrWhiteSpace(robots))
+    {
+        <meta name="robots" content="@robots" />
+    }
     <link rel="canonical" href="@canonical" />
 
     @* RSS beslemesi — okuyucuların abone olabilmesi için (otomatik keşif). *@
@@ -87,6 +94,7 @@
             </a>
             <nav class="site-nav" aria-label="Ana menü">
                 <a class="nav-link" asp-controller="Home" asp-action="Index">Anasayfa</a>
+                <a class="nav-link" href="@(Url.RouteUrl("BlogAbout") ?? "/hakkinda")">Hakkında</a>
                 <a class="nav-link" asp-controller="Home" asp-action="Privacy">Gizlilik</a>
                 <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Temayı değiştir">
                     <span data-theme-icon aria-hidden="true">🌙</span>

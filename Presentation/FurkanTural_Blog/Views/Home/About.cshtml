@@ -1,0 +1,64 @@
+@model PagedPostsViewModel
+@{
+    ViewData["Title"] = "Hakkında";
+    ViewData["MetaDescription"] = "Furkan Tural kimdir, bu blogda ne yazılır ve nereden ulaşılır.";
+    ViewData["OgType"] = "profile";
+}
+
+<section class="page-head reveal">
+    <div class="container">
+        <nav class="crumb" aria-label="Konum">
+            <a href="@(Url.Action("Index", "Home") ?? "/")">Blog</a>
+            <span aria-hidden="true">/</span>
+            <span>Hakkında</span>
+        </nav>
+        <h1 class="page-head__title">Hakkında</h1>
+        <p class="page-head__lead">
+            Yazılım geliştirici. Bu blogda üzerinde çalıştığım şeyleri, öğrendiklerimi ve
+            karşılaştığım sorunların çözümlerini yazıyorum.
+        </p>
+    </div>
+</section>
+
+<section class="container about-page">
+
+    <div class="about-stats reveal">
+        <div class="about-stat">
+            <span class="about-stat__value">@Model.TotalCount</span>
+            <span class="about-stat__label">yazı</span>
+        </div>
+        <div class="about-stat">
+            <span class="about-stat__value">@Model.AvailableCategories.Count</span>
+            <span class="about-stat__label">kategori</span>
+        </div>
+    </div>
+
+    <div class="about-links reveal">
+        <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Tüm yazılar</a>
+        <a class="btn btn--ghost" href="~/feed.xml">RSS beslemesi</a>
+        <a class="btn btn--ghost" asp-controller="Home" asp-action="Privacy">Gizlilik</a>
+    </div>
+
+    @if (Model.Items.Count > 0)
+    {
+        <h2 class="about-section-title reveal">Son yazılar</h2>
+        <ol class="post-index reveal">
+            @foreach (var post in Model.Items)
+            {
+                var postUrl = Url.Action("Post", "Home", new { id = post.Id }) ?? "/";
+                <li class="index-row">
+                    <div class="index-row__date">
+                        @if (!string.IsNullOrEmpty(post.PublishedDisplay))
+                        {
+                            <time datetime="@post.PublishedIso">@post.PublishedDisplay</time>
+                        }
+                        <span class="index-row__read">@post.ReadingMinutes dk</span>
+                    </div>
+                    <div class="index-row__body">
+                        <h3 class="index-row__title"><a href="@postUrl">@post.Title</a></h3>
+                    </div>
+                </li>
+            }
+        </ol>
+    }
+</section>
