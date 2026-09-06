@@ -169,4 +169,7 @@ public class BlogImageService(IUnitOfWork unitOfWork, ActivityLogger activityLog
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCover, int? blogId, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.BlogImages.GetAdminStatusCountsAsync(AdminPredicate(query, isCover, blogId), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.BlogImages, action, ids, userId, "blog görseli", _activityLogger, cancellationToken);
 }

@@ -78,6 +78,7 @@
             if (!section) return;
             section.innerHTML = html;
             bindAll();           /* yeni DOM'a olayları bağla */
+            document.dispatchEvent(new CustomEvent('ft:table-rendered'));
         })
         .catch(function (err) {
             console.error('reloadTable hatası:', err);
@@ -197,4 +198,5 @@
     }
 
     document.addEventListener('DOMContentLoaded', bindAll);
+        document.addEventListener('ft:table-reload', reloadTable);
 })();

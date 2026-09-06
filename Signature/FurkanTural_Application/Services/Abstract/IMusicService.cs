@@ -4,7 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-public interface IMusicService : IService<MusicDto, CreateMusicDto, UpdateMusicDto>
+public interface IMusicService : IService<MusicDto, CreateMusicDto, UpdateMusicDto>, IBulkService
 {
     Task<Result<IEnumerable<AdminMusicDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminMusicDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);

@@ -4,7 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-public interface IEducationService : IService<EducationDto, CreateEducationDto, UpdateEducationDto>
+public interface IEducationService : IService<EducationDto, CreateEducationDto, UpdateEducationDto>, IBulkService
 {
     Task<Result<IEnumerable<AdminEducationDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminEducationDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);

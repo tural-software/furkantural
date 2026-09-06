@@ -174,4 +174,7 @@ public partial class CategoryService(IUnitOfWork unitOfWork, ActivityLogger acti
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Categories.GetAdminStatusCountsAsync(AdminPredicate(query), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Categories, action, ids, userId, "kategori", _activityLogger, cancellationToken);
 }

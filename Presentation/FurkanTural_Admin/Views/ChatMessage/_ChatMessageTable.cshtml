@@ -27,6 +27,7 @@
     <table class="data-table">
         <thead>
             <tr>
+                <th class="col-select"><input type="checkbox" class="row-select-all" aria-label="Sayfadaki tüm kayıtları seç" /></th>
                 <th class="col-id">ID</th>
                 <th>Gönderen</th>
                 <th>Alıcı</th>
@@ -42,6 +43,7 @@
             @foreach (var row in Model.Rows)
             {
                 <tr>
+                    <td class="col-select"><input type="checkbox" class="row-select" value="@row.Id" aria-label="Kaydı seç" /></td>
                     <td>@row.Id</td>
                     <td>@UserCell(row.SenderUsername, row.SenderId)</td>
                     <td>@UserCell(row.ReceiverUsername, row.ReceiverId)</td>
@@ -130,10 +132,21 @@
             }
             @if (!Model.Rows.Any())
             {
-                <tr class="empty-row"><td colspan="9">Kayıt bulunamadı.</td></tr>
+                <tr class="empty-row"><td colspan="10">Kayıt bulunamadı.</td></tr>
             }
         </tbody>
     </table>
+</div>
+
+<div class="bulk-bar" data-bulk-url="@Url.Action("Bulk")" role="region" aria-label="Seçili kayıtlar için toplu işlem" hidden>
+    <form class="bulk-bar__token">@Html.AntiForgeryToken()</form>
+    <strong class="bulk-bar__count" data-bulk-count>0 seçili</strong>
+    <div class="bulk-bar__actions">
+        <button type="button" class="btn-outline bulk-bar__btn" data-bulk-action="deactivate">Pasife Al</button>
+        <button type="button" class="btn-outline bulk-bar__btn" data-bulk-action="activate">Aktife Al</button>
+        <button type="button" class="btn-outline bulk-bar__btn" data-bulk-action="restore">Geri Yükle</button>
+        <button type="button" class="btn-outline bulk-bar__btn bulk-bar__btn--quiet" data-bulk-clear>Vazgeç</button>
+    </div>
 </div>
 
 @await Html.PartialAsync("_TableFooter", new TableFooterModel(

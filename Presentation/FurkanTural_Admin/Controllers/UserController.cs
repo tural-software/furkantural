@@ -105,6 +105,24 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Bulk(string? action, int[]? ids, CancellationToken cancellationToken = default)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
+
+        var wanted = (ids ?? []).Where(i => i > 0).Distinct().ToList();
+        if (string.IsNullOrWhiteSpace(action) || wanted.Count == 0)
+            return BadRequest(new { message = "İşlem türü ve en az bir kayıt gerekir." });
+
+        var result = await _userApiClient.BulkAsync(action.Trim().ToLowerInvariant(), wanted, token, cancellationToken);
+        return result is null
+            ? StatusCode(500, new { message = "Toplu işlem başarısız oldu." })
+            : Json(new { requested = result.Requested, affected = result.Affected, skipped = result.Skipped });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");

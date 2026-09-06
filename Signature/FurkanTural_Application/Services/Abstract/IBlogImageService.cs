@@ -4,7 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-public interface IBlogImageService : IService<BlogImageDto, CreateBlogImageDto, UpdateBlogImageDto>
+public interface IBlogImageService : IService<BlogImageDto, CreateBlogImageDto, UpdateBlogImageDto>, IBulkService
 {
     Task<Result<IEnumerable<BlogImageDto>>> GetByBlogIdAsync(int blogId, CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<AdminBlogImageDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);

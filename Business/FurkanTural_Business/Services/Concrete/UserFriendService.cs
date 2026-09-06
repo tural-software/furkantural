@@ -572,4 +572,7 @@ public class UserFriendService(
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? statusCode, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.UserFriends.GetAdminStatusCountsAsync(await AdminPredicateAsync(query, statusCode, cancellationToken), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.UserFriends, action, ids, userId, "arkadaşlık", _activityLogger, cancellationToken);
 }

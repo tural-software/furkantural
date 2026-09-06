@@ -171,4 +171,7 @@ public class RoleService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         var options = await _unitOfWork.Roles.GetAdminOptionsAsync(predicate, x => x.Name, x => new AdminOptionDto(x.Id, x.Name ?? ""), take, cancellationToken);
         return Result<IReadOnlyList<AdminOptionDto>>.Ok(options.Select(o => o.Label.Length > 0 ? o : o with { Label = $"Rol #{o.Id}" }).ToList());
     }
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Roles, action, ids, userId, "rol", _activityLogger, cancellationToken);
 }

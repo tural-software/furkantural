@@ -4,7 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-public interface ISkillService : IService<SkillDto, CreateSkillDto, UpdateSkillDto>
+public interface ISkillService : IService<SkillDto, CreateSkillDto, UpdateSkillDto>, IBulkService
 {
     Task<Result<IEnumerable<AdminSkillDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminSkillDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);

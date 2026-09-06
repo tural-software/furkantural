@@ -213,4 +213,35 @@ public class BlogImageApiClient(HttpClient httpClient, ILogger<BlogImageApiClien
     }
 
     private sealed record BlogImageIdResult(int Id);
+
+    public async Task<BulkResultModel?> BulkAsync(string action, IReadOnlyList<int> ids, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/v1/blogimage/admin/bulk")
+            {
+                Content = JsonContent.Create(new { ids, action })
+            };
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Toplu işlem reddedildi: {Action} → {Status}", action, (int)response.StatusCode);
+                return null;
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<ApiResult<BulkResultModel>>(JsonOptions, ct);
+            return wrapper?.Data;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Toplu işlem ucuna erişilemedi.");
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+    }
 }

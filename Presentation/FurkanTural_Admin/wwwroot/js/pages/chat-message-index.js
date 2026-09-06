@@ -143,4 +143,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () { bindAll(); });
+        document.addEventListener('ft:table-reload', reloadTable);
+    document.dispatchEvent(new CustomEvent('ft:table-rendered'));
 })();

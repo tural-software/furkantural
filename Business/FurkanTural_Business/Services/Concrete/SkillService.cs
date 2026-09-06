@@ -161,4 +161,7 @@ public class SkillService(IUnitOfWork unitOfWork, ActivityLogger activityLogger)
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Skills.GetAdminStatusCountsAsync(AdminPredicate(query), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Skills, action, ids, userId, "beceri", _activityLogger, cancellationToken);
 }

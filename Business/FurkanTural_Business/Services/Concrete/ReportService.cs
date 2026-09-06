@@ -202,4 +202,7 @@ public class ReportService(IUnitOfWork unitOfWork, ActivityLogger activityLogger
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? targetType, string? status, string[]? statuses, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Reports.GetAdminStatusCountsAsync(await AdminPredicateAsync(query, targetType, status, statuses, cancellationToken), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Reports, action, ids, userId, "şikayet", _activityLogger, cancellationToken);
 }

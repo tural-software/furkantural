@@ -169,4 +169,7 @@ public class MusicImageService(IUnitOfWork unitOfWork, ActivityLogger activityLo
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCover, int? musicId, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.MusicImages.GetAdminStatusCountsAsync(AdminPredicate(query, isCover, musicId), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.MusicImages, action, ids, userId, "müzik görseli", _activityLogger, cancellationToken);
 }

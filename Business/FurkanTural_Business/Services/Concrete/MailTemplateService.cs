@@ -223,4 +223,7 @@ public class MailTemplateService(IUnitOfWork unitOfWork, ActivityLogger activity
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.MailTemplates.GetAdminStatusCountsAsync(AdminPredicate(query), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.MailTemplates, action, ids, userId, "posta şablonu", _activityLogger, cancellationToken);
 }

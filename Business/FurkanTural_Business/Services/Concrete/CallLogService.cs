@@ -223,4 +223,7 @@ public class CallLogService(IUnitOfWork unitOfWork, IClock clock) : ICallLogServ
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? callType, string? status, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.CallLogs.GetAdminStatusCountsAsync(await AdminPredicateAsync(query, callType, status, cancellationToken), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.CallLogs, action, ids, userId, "arama", null, cancellationToken);
 }

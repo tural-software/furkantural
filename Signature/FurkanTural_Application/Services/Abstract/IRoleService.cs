@@ -4,7 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-public interface IRoleService : IService<RoleDto, CreateRoleDto, UpdateRoleDto>
+public interface IRoleService : IService<RoleDto, CreateRoleDto, UpdateRoleDto>, IBulkService
 {
     Task<Result<IEnumerable<AdminRoleDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminRoleDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);

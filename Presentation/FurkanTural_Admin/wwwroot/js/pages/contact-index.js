@@ -123,6 +123,7 @@
             if (!section) return;
             section.innerHTML = html;
             bindAll();
+            document.dispatchEvent(new CustomEvent('ft:table-rendered'));
         })
         .catch(function (err) {
             console.error('reloadTable hatası:', err);
@@ -287,6 +288,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('ft:table-reload', reloadTable);
         bindAll();
     });
 

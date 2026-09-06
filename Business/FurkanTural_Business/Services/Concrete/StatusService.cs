@@ -189,4 +189,7 @@ public class StatusService(IUnitOfWork unitOfWork, ActivityLogger activityLogger
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? group, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Statuses.GetAdminStatusCountsAsync(AdminPredicate(query, group), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Statuses, action, ids, userId, "durum", _activityLogger, cancellationToken);
 }

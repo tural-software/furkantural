@@ -267,53 +267,6 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         return Result<IReadOnlyList<AdminOptionDto>>.Ok(options.Select(o => o.Label.Length > 0 ? o : o with { Label = $"Blog #{o.Id}" }).ToList());
     }
 
-    public const int MaxBulk = 100;
-
-    public async Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
-    {
-        var wanted = ids.Where(i => i > 0).Distinct().ToList();
-        if (wanted.Count == 0)
-            return Result<BulkActionResultDto>.Fail("En az bir kayıt seçilmeli.", statusCode: 400);
-        if (wanted.Count > MaxBulk)
-            return Result<BulkActionResultDto>.Fail($"Tek istekte en çok {MaxBulk} kayıt işlenir.", statusCode: 400);
-
-        var rows = (await _unitOfWork.Blogs.GetAllForAdminAsync(x => wanted.Contains(x.Id), cancellationToken)).ToList();
-        var affected = new List<int>();
-        foreach (var row in rows)
-        {
-            var eligible = action switch
-            {
-                BulkAction.Delete => !row.IsDeleted,
-                BulkAction.Restore => row.IsDeleted,
-                BulkAction.Activate => !row.IsDeleted && !row.IsActive,
-                BulkAction.Deactivate => !row.IsDeleted && row.IsActive,
-                _ => false
-            };
-            if (!eligible) continue;
-
-            switch (action)
-            {
-                case BulkAction.Delete:
-                    await _unitOfWork.Blogs.SoftDeleteAsync(row, userId, cancellationToken);
-                    break;
-                case BulkAction.Restore:
-                    row.UpdatedBy = userId;
-                    await _unitOfWork.Blogs.RestoreAsync(row, cancellationToken);
-                    break;
-                default:
-                    row.IsActive = action == BulkAction.Activate;
-                    row.UpdatedBy = userId;
-                    await _unitOfWork.Blogs.UpdateAsync(row, cancellationToken);
-                    break;
-            }
-            affected.Add(row.Id);
-        }
-
-        if (affected.Count > 0)
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        var skipped = wanted.Except(affected).ToList();
-        await _activityLogger.LogAsync($"Toplu blog işlemi: {action}. Etkilenen: {affected.Count}, atlanan: {skipped.Count}.", cancellationToken);
-        return Result<BulkActionResultDto>.Ok(new BulkActionResultDto(wanted.Count, affected.Count, skipped));
-    }
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Blogs, action, ids, userId, "blog", _activityLogger, cancellationToken);
 }

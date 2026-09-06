@@ -1,3 +1,4 @@
+using FurkanTural_API.Models.Common;
 using FurkanTural_Application.DTOs.Common;
 using Asp.Versioning;
 using FurkanTural_Application.Services.Abstract;
@@ -172,4 +173,15 @@ public class FriendController(IUserFriendService userFriendService) : JwtBaseCon
         CancellationToken cancellationToken = default)
         => ToActionResult(await _userFriendService.GetAdminStatusCountsAsync(
             AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), statusCode, cancellationToken));
+
+    /// <summary>Seçili kayıtlara tek istekte uygulanır: siler, geri yükler, aktife ya da pasife alır. Uygun durumda olmayan kayıtlar atlanır ve yanıtta listelenir; en çok 100 kimlik</summary>
+    [HttpPost("admin/bulk")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Bulk([FromBody] BulkActionRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!Enum.TryParse<BulkAction>(request.Action, ignoreCase: true, out var action))
+            return BadRequest(new { success = false, statusCode = 400, errors = new[] { "Geçersiz toplu işlem türü." } });
+
+        return ToActionResult(await _userFriendService.BulkAsync(action, request.Ids ?? [], SortUserId(), cancellationToken));
+    }
 }

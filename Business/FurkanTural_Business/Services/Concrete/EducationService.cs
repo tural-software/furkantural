@@ -172,4 +172,7 @@ public class EducationService(IUnitOfWork unitOfWork, ActivityLogger activityLog
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? degree, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Educations.GetAdminStatusCountsAsync(AdminPredicate(query, degree), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Educations, action, ids, userId, "eğitim", _activityLogger, cancellationToken);
 }

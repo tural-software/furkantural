@@ -169,4 +169,7 @@ public class ProjectImageService(IUnitOfWork unitOfWork, ActivityLogger activity
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isCover, int? projectId, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.ProjectImages.GetAdminStatusCountsAsync(AdminPredicate(query, isCover, projectId), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.ProjectImages, action, ids, userId, "proje görseli", _activityLogger, cancellationToken);
 }

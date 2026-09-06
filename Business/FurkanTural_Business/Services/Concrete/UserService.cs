@@ -340,4 +340,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? roleId, DateTime? seenSince, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Users.GetAdminStatusCountsAsync(AdminPredicate(query, roleId, seenSince), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Users, action, ids, userId, "kullanıcı", _activityLogger, cancellationToken);
 }

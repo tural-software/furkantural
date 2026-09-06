@@ -14,4 +14,6 @@ public interface ISkillApiClient
     Task<ApiCallResult> DeleteAsync(int id, string token, CancellationToken ct = default);
     Task<ApiCallResult> ToggleActiveAsync(int id, string token, CancellationToken ct = default);
     Task<ApiCallResult> RestoreAsync(int id, string token, CancellationToken ct = default);
+
+    Task<BulkResultModel?> BulkAsync(string action, IReadOnlyList<int> ids, string token, CancellationToken ct = default);
 }

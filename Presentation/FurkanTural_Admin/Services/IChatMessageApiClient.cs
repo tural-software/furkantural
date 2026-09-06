@@ -14,4 +14,6 @@ public interface IChatMessageApiClient
 
     /// <summary>Sohbet ekini (ses/foto/video) API'nin yetkili ucundan akış olarak getirir. Chat ekleri API'de statik sunulmadığından admin önizlemesi bu proxy ile çalışır. Başarısızlıkta (null, null) döner.</summary>
     Task<(Stream? Stream, string? ContentType)> GetAttachmentAsync(string file, string token, CancellationToken ct = default);
+
+    Task<BulkResultModel?> BulkAsync(string action, IReadOnlyList<int> ids, string token, CancellationToken ct = default);
 }

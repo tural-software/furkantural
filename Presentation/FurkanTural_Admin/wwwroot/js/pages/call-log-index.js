@@ -134,4 +134,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () { bindAll(); bindSettings(); });
+        document.addEventListener('ft:table-reload', reloadTable);
+    document.dispatchEvent(new CustomEvent('ft:table-rendered'));
 })();

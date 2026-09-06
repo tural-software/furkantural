@@ -172,4 +172,7 @@ public class ExperienceService(IUnitOfWork unitOfWork, ActivityLogger activityLo
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? company, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Experiences.GetAdminStatusCountsAsync(AdminPredicate(query, company), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Experiences, action, ids, userId, "deneyim", _activityLogger, cancellationToken);
 }

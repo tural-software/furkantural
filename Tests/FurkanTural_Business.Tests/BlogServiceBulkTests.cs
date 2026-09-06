@@ -103,7 +103,7 @@ public class BlogServiceBulkTests
     public async Task Bos_ya_da_asiri_liste_400_doner()
     {
         var empty = await _sut.BulkAsync(BulkAction.Delete, [], userId: 7);
-        var tooMany = await _sut.BulkAsync(BulkAction.Delete, Enumerable.Range(1, BlogService.MaxBulk + 1).ToList(), userId: 7);
+        var tooMany = await _sut.BulkAsync(BulkAction.Delete, Enumerable.Range(1, BulkActions.MaxBulk + 1).ToList(), userId: 7);
 
         empty.Success.Should().BeFalse();
         empty.StatusCode.Should().Be(400);

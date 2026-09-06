@@ -153,7 +153,9 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('ft:table-reload', reloadTable);
         bindAll();
+        document.dispatchEvent(new CustomEvent('ft:table-rendered'));
         var addBtn = document.getElementById('status-add-btn');
         if (addBtn) addBtn.addEventListener('click', openCreateModal);
     });

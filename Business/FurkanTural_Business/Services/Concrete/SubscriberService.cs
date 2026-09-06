@@ -213,4 +213,7 @@ public class SubscriberService(IUnitOfWork unitOfWork, ActivityLogger activityLo
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Subscribers.GetAdminStatusCountsAsync(AdminPredicate(query), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Subscribers, action, ids, userId, "abone", _activityLogger, cancellationToken);
 }

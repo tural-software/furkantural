@@ -1,3 +1,4 @@
+using FurkanTural_API.Models.Common;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_API.Controllers.Base;
@@ -106,4 +107,15 @@ public class SubscriberController(ISubscriberService subscriberService) : JwtBas
         CancellationToken cancellationToken = default)
         => ToActionResult(await _subscriberService.GetAdminStatusCountsAsync(
             AdminListQuery.From(search, isActive, isDeleted, dateFrom, dateTo), cancellationToken));
+
+    /// <summary>Seçili kayıtlara tek istekte uygulanır: siler, geri yükler, aktife ya da pasife alır. Uygun durumda olmayan kayıtlar atlanır ve yanıtta listelenir; en çok 100 kimlik</summary>
+    [HttpPost("admin/bulk")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Bulk([FromBody] BulkActionRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!Enum.TryParse<BulkAction>(request.Action, ignoreCase: true, out var action))
+            return BadRequest(new { success = false, statusCode = 400, errors = new[] { "Geçersiz toplu işlem türü." } });
+
+        return ToActionResult(await _subscriberService.BulkAsync(action, request.Ids ?? [], SortUserId(), cancellationToken));
+    }
 }

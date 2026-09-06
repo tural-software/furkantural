@@ -4,7 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-public interface IExperienceService : IService<ExperienceDto, CreateExperienceDto, UpdateExperienceDto>
+public interface IExperienceService : IService<ExperienceDto, CreateExperienceDto, UpdateExperienceDto>, IBulkService
 {
     Task<Result<IEnumerable<AdminExperienceDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminExperienceDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);

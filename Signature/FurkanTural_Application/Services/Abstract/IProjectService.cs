@@ -4,7 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-public interface IProjectService : IService<ProjectDto, CreateProjectDto, UpdateProjectDto>
+public interface IProjectService : IService<ProjectDto, CreateProjectDto, UpdateProjectDto>, IBulkService
 {
     Task<Result<IEnumerable<AdminProjectDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminProjectDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);

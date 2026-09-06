@@ -4,7 +4,7 @@ using FurkanTural_Application.Wrappers;
 
 namespace FurkanTural_Application.Services.Abstract;
 
-public interface ICategoryService : IService<CategoryDto, CreateCategoryDto, UpdateCategoryDto>
+public interface ICategoryService : IService<CategoryDto, CreateCategoryDto, UpdateCategoryDto>, IBulkService
 {
     Task<Result<IEnumerable<AdminCategoryDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminCategoryDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);

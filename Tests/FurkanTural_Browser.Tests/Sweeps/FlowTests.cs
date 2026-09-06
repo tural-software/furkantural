@@ -287,13 +287,17 @@ public sealed class FlowTests(LiveSiteFixture site)
         kpis.Should().OnlyContain(k => !k.EndsWith("="), "her göstergenin bir değeri ya da tiresi olmalı, boş kutu olmamalı:" + string.Join(", ", kpis));
     }
 
-    [SkippableFact]
-    public async Task Blog_listesinde_secim_cubugu_sayar_onay_ister_ve_vazgecince_temizlenir()
+    [SkippableTheory]
+    [InlineData("Admin/Blog")]
+    [InlineData("Admin/Skill")]
+    [InlineData("Admin/User")]
+    [InlineData("Admin/Report")]
+    public async Task Listede_secim_cubugu_sayar_onay_ister_ve_vazgecince_temizlenir(string pageId)
     {
-        var result = await site.WithPageAsync(SweepData.Page("Admin/Blog"), async page =>
+        var result = await site.WithPageAsync(SweepData.Page(pageId), async page =>
         {
             var boxes = page.Locator(".data-table .row-select");
-            Skip.If(await boxes.CountAsync() < 2, "Admin/Blog: seçmek için en az iki satır gerekir");
+            Skip.If(await boxes.CountAsync() < 2, pageId + ": secmek icin en az iki satir gerekir");
 
             var barBefore = await page.Locator(".bulk-bar").IsVisibleAsync();
             await boxes.Nth(0).CheckAsync();

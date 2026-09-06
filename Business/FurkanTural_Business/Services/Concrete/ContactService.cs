@@ -224,4 +224,7 @@ public class ContactService(
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, bool? isRead, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Contacts.GetAdminStatusCountsAsync(AdminPredicate(query, isRead), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Contacts, action, ids, userId, "iletişim mesajı", _activityLogger, cancellationToken);
 }

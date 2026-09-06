@@ -5,7 +5,7 @@ using FurkanTural_Application.Wrappers;
 namespace FurkanTural_Application.Services.Abstract;
 
 /// <summary>Arkadaşlık ve engelleme. Bir kullanıcı çifti için tabloda tek satır tutulur ve o satır yeniden kullanılır: engelleme yeni kayıt açmaz, mevcut ilişkiyi Blocked statüsüne çevirip engelleyeni Requester tarafına taşır. UnblockUserAsync yalnızca engeli koyan tarafça çağrılabilir ve satırı yumuşak siler, yani ilişki sıfırlanır; taraflar baştan istek gönderebilir. Statüler Id ile değil <see cref="FurkanTural_Domain.Constants.StatusDefinitions"/> içindeki Group ve Code ikilisiyle çözülür. AreFriendsAsync ile IsBlockedBetweenAsync <see cref="Wrappers.Result"/> zarfı kullanmaz; statü satırı eksikse hata yerine false dönerler, dolayısıyla false "ilişki yok" ile "sistem yapılandırılmamış" durumlarını ayırmaz.</summary>
-public interface IUserFriendService
+public interface IUserFriendService : IBulkService
 {
     Task<Result> SendRequestAsync(int requesterId, int addresseeId, CancellationToken cancellationToken = default);
     Task<Result> AcceptRequestAsync(int requestId, int currentUserId, CancellationToken cancellationToken = default);

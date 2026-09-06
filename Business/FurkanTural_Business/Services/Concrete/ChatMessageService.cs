@@ -434,4 +434,7 @@ public class ChatMessageService(
 
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, string? username, string? messageType, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.ChatMessages.GetAdminStatusCountsAsync(await AdminPredicateAsync(query, username, messageType, cancellationToken), cancellationToken));
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.ChatMessages, action, ids, userId, "mesaj", _activityLogger, cancellationToken);
 }

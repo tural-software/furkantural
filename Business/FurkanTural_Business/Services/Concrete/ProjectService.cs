@@ -173,4 +173,7 @@ public class ProjectService(IUnitOfWork unitOfWork, ActivityLogger activityLogge
         var options = await _unitOfWork.Projects.GetAdminOptionsAsync(predicate, x => x.Title, x => new AdminOptionDto(x.Id, x.Title ?? ""), take, cancellationToken);
         return Result<IReadOnlyList<AdminOptionDto>>.Ok(options.Select(o => o.Label.Length > 0 ? o : o with { Label = $"Proje #{o.Id}" }).ToList());
     }
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Projects, action, ids, userId, "proje", _activityLogger, cancellationToken);
 }

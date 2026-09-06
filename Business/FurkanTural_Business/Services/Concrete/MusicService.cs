@@ -176,4 +176,7 @@ public class MusicService(IUnitOfWork unitOfWork, ActivityLogger activityLogger)
         var options = await _unitOfWork.Musics.GetAdminOptionsAsync(predicate, x => x.Name, x => new AdminOptionDto(x.Id, x.Name ?? ""), take, cancellationToken);
         return Result<IReadOnlyList<AdminOptionDto>>.Ok(options.Select(o => o.Label.Length > 0 ? o : o with { Label = $"Müzik #{o.Id}" }).ToList());
     }
+
+    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Musics, action, ids, userId, "müzik", _activityLogger, cancellationToken);
 }

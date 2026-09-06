@@ -14,4 +14,6 @@ public interface IEducationApiClient
     Task<bool> DeleteAsync(int id, string token, CancellationToken ct = default);
     Task<bool> ToggleActiveAsync(int id, string token, CancellationToken ct = default);
     Task<bool> RestoreAsync(int id, string token, CancellationToken ct = default);
+
+    Task<BulkResultModel?> BulkAsync(string action, IReadOnlyList<int> ids, string token, CancellationToken ct = default);
 }
