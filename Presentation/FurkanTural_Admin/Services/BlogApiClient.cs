@@ -130,7 +130,7 @@ public class BlogApiClient(HttpClient httpClient, ILogger<BlogApiClient> logger)
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/blog");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var body = new { title = dto.Title, content = dto.Content, categoryIds = dto.CategoryIds };
+            var body = new { title = dto.Title, content = dto.Content, categoryIds = dto.CategoryIds, tagIds = dto.TagIds };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request, ct);
@@ -149,7 +149,7 @@ public class BlogApiClient(HttpClient httpClient, ILogger<BlogApiClient> logger)
         {
             using var request = new HttpRequestMessage(HttpMethod.Put, "/api/v1/blog");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var body = new { id, title = dto.Title, slug = dto.Slug, content = dto.Content, categoryIds = dto.CategoryIds };
+            var body = new { id, title = dto.Title, slug = dto.Slug, content = dto.Content, categoryIds = dto.CategoryIds, tagIds = dto.TagIds };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request, ct);

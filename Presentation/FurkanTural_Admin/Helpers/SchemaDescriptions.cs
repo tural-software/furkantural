@@ -40,6 +40,8 @@ public static class SchemaDescriptions
         ["Contact.IsRead"] = "Mesajın okunma durumu",
         ["User.Username"] = "Giriş adı — benzersizdir",
         ["User.PasswordHash"] = "Parolanın karması; düz metin hiçbir yerde tutulmaz",
+        ["Tag.Name"] = "Etiket adı — benzersizdir",
+        ["Tag.Slug"] = "Etiketin kalıcı adres parçası; ad değişse de adres durur",
         ["Subscriber.Email"] = "Bülten abonesinin e-postası — benzersizdir",
         ["MailTemplate.Subject"] = "E-posta konu satırı",
         ["MailTemplate.Body"] = "E-posta gövdesi (HTML)",

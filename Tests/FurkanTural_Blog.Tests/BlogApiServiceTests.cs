@@ -380,7 +380,7 @@ public class BlogApiServiceTests
         var service = new BlogApiService(client, NullLogger<BlogApiService>.Instance);
 
         // Act
-        var result = await service.GetPostsPagedAsync(1, 10, null, null);
+        var result = await service.GetPostsPagedAsync(1, 10, null, null, null);
 
         // Assert
         result.Items.Should().HaveCount(2);
@@ -428,7 +428,7 @@ public class BlogApiServiceTests
         var service = new BlogApiService(client, NullLogger<BlogApiService>.Instance);
 
         // Act
-        var result = await service.GetPostsPagedAsync(1, 10, null, null);
+        var result = await service.GetPostsPagedAsync(1, 10, null, null, null);
 
         // Assert — fallback empty result
         result.Items.Should().BeEmpty();
@@ -482,7 +482,7 @@ public class BlogApiServiceTests
         var service = new BlogApiService(client, NullLogger<BlogApiService>.Instance);
 
         // Act
-        await service.GetPostsPagedAsync(1, 10, categoryId: 5, search: null);
+        await service.GetPostsPagedAsync(1, 10, categoryId: 5, tagId: null, search: null);
 
         // Assert — the second request should contain categoryId=5
         capturedRequest.Should().HaveCount(2);
@@ -535,7 +535,7 @@ public class BlogApiServiceTests
         var service = new BlogApiService(client, NullLogger<BlogApiService>.Instance);
 
         // Act
-        await service.GetPostsPagedAsync(1, 10, categoryId: null, search: "dotnet core");
+        await service.GetPostsPagedAsync(1, 10, categoryId: null, tagId: null, search: "dotnet core");
 
         // Assert — URL should contain encoded search term
         capturedRequest.Should().HaveCount(2);

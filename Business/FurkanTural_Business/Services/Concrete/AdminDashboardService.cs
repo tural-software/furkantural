@@ -23,7 +23,7 @@ public class AdminDashboardService(IUnitOfWork unitOfWork, ILogger<AdminDashboar
         var thisFrom = day.AddDays(-(window - 1));
         var lastFrom = day.AddDays(-(2 * window - 1));
 
-        var summaries = new Dictionary<string, EntitySummaryDto>(22);
+        var summaries = new Dictionary<string, EntitySummaryDto>(23);
         foreach (var (key, read) in Summaries())
         {
             try
@@ -74,6 +74,7 @@ public class AdminDashboardService(IUnitOfWork unitOfWork, ILogger<AdminDashboar
         yield return ("blog", ct => _unitOfWork.Blogs.GetAdminSummaryAsync(ct));
         yield return ("blogimage", ct => _unitOfWork.BlogImages.GetAdminSummaryAsync(ct));
         yield return ("category", ct => _unitOfWork.Categories.GetAdminSummaryAsync(ct));
+        yield return ("tag", ct => _unitOfWork.Tags.GetAdminSummaryAsync(ct));
         yield return ("project", ct => _unitOfWork.Projects.GetAdminSummaryAsync(ct));
         yield return ("projectimage", ct => _unitOfWork.ProjectImages.GetAdminSummaryAsync(ct));
         yield return ("music", ct => _unitOfWork.Musics.GetAdminSummaryAsync(ct));

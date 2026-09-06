@@ -85,7 +85,7 @@ public class SeoController(IBlogApiService blogApi) : Controller
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
         var nowR = DateTime.UtcNow.ToString("r");
 
-        var posts = (await _blogApi.GetPostsPagedAsync(1, 20, null, null, cancellationToken)).Items
+        var posts = (await _blogApi.GetPostsPagedAsync(1, 20, null, null, null, cancellationToken)).Items
             .OrderByDescending(p => p.CreatedAt)
             .ToList();
 

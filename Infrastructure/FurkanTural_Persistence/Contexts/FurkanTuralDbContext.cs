@@ -10,6 +10,8 @@ public class FurkanTuralDbContext(DbContextOptions<FurkanTuralDbContext> options
     public DbSet<Blog> Blogs => Set<Blog>();
     public DbSet<BlogImage> BlogImages => Set<BlogImage>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<BlogTag> BlogTags => Set<BlogTag>();
     public DbSet<BlogCategory> BlogCategories => Set<BlogCategory>();
     public DbSet<Education> Educations => Set<Education>();
     public DbSet<Experience> Experiences => Set<Experience>();

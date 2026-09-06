@@ -1,4 +1,5 @@
 using FurkanTural_Application.DTOs.Category;
+using FurkanTural_Application.DTOs.Tag;
 
 namespace FurkanTural_Application.DTOs.Blog;
 
@@ -19,4 +20,7 @@ public class AdminBlogDto
     public DateTime? DeletedAt { get; set; }
     public int? DeletedBy { get; set; }
     public List<CategoryDto> Categories { get; set; } = [];
+
+    /// <summary>Yazının ikincil sınıflandırması. Kategoriler gibi ayrı bir sorgudan doldurulur; etiketsiz yazıda boş liste kalır.</summary>
+    public List<TagDto> Tags { get; set; } = [];
 }

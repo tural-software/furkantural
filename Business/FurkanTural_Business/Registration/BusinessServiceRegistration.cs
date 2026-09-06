@@ -17,6 +17,7 @@ public static class BusinessServiceRegistration
         services.AddScoped<IAdminDashboardService, AdminDashboardService>();
         services.AddScoped<IBlogImageService, BlogImageService>();
         services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<ITagService, TagService>();
         services.AddScoped<IEducationService, EducationService>();
         services.AddScoped<IExperienceService, ExperienceService>();
         services.AddScoped<ILogService, LogService>();

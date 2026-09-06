@@ -14,6 +14,9 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
     /// <summary>Değer keyfi değil: kart ızgarası kapsayıcı genişliğine göre bir ilâ dört sütun çiziyor ve 12 dördüne de tam bölündüğü için hiçbir kırılma noktasında yarım satır kalmıyor. Izgaranın sütun sayısı değişirse bu sayı da yeniden seçilmelidir.</summary>
     private const int PageSize = 12;
 
+    /// <summary>Arşiv sayfasındaki etiket bulutunun tavanı. Bulut bir gezinme aracıdır, envanter değil: her etiketi göstermek okuru seçim yapamayacağı bir duvarla karşılaştırır.</summary>
+    private const int TagCloudSize = 24;
+
     /// <summary>Aralık dışı sayfa numarası hata değil, son geçerli sayfaya yönlendirme üretir ve filtreler korunur; elle yazılmış bir adres kullanıcıyı boş listeyle baş başa bırakmaz.<para>Kapak görselleri yalnızca bu sayfadaki yazılar için ve paralel çekilir. Çağrı sayısı böylece sayfa boyutunu hiç aşmaz ve arşiv büyüdükçe artmaz.</para><para>Kategori ve arama artık kendi adreslerinde yaşıyor. Buraya eski sorgu dizesiyle gelen istek kalıcı olarak oraya yönlendirilir: iki adres aynı listeyi gösterirse arama motoru hangisinin kanonik olduğunu bilemez.</para></summary>
     public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, CancellationToken cancellationToken = default)
     {
@@ -28,7 +31,7 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
         if (!string.IsNullOrWhiteSpace(search))
             return RedirectToActionPermanent(nameof(Search), new { q = search.Trim(), page = page > 1 ? page : (int?)null });
 
-        return await ListAsync(BlogListKind.Home, page, null, null, null, cancellationToken);
+        return await ListAsync(BlogListKind.Home, page, null, null, null, null, cancellationToken);
     }
 
     /// <summary>Kategori sayfası. Adres kategori adından üretilen slug'dır; eşleştirme de aynı dönüşümden geçer.<para>İki sınırı vardır ve ikisi de şemada slug sütunu olmamasından gelir: kategori adı değişirse eski adres 404 verir, iki ad aynı slug'a düşerse (<c>C#</c> ile <c>C</c> gibi) biri erişilemez kalır. Bugün on kategorinin onu da ayrı slug üretiyor. Eşleşme kimliğe göre sıralanır, böylece hangisinin kazandığı hiç değilse kararlıdır — API'nin döndürme sırasına göre değişmez.</para></summary>
@@ -42,34 +45,54 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
         if (category is null)
             return NotFound();
 
-        return await ListAsync(BlogListKind.Category, page, category.Id, null, category, cancellationToken);
+        return await ListAsync(BlogListKind.Category, page, category.Id, null, null, category, cancellationToken);
+    }
+
+    /// <summary>Etiket sayfası. Kategori sayfasından tek farkı eşleştirmenin nerede yapıldığıdır: kategoriler zaten filtre çubuğu için tümüyle çekildiğinden orada bellekte aranır, etiketler ise çok daha kalabalık olacağı için tek adres sorgusuyla API'den istenir.<para>Bulunamayan slug 404 döner; var olmayan bir etiketin tüm yazıları göstermesi, yanlış bağlantıyı sessizce doğru göstermek olurdu.</para></summary>
+    [Route("etiket/{slug}", Name = "BlogTag")]
+    public async Task<IActionResult> Tag(string slug, int page = 1, CancellationToken cancellationToken = default)
+    {
+        var tag = await _blogApi.GetTagBySlugAsync(slug, cancellationToken);
+        if (tag is null)
+            return NotFound();
+
+        return await ListAsync(BlogListKind.Tag, page, null, tag, null, null, cancellationToken);
     }
 
     /// <summary>Arama sonuçları. Sorgu boşsa liste değil boş durum gösterilir; boş aramayı tüm yazılara çevirmek, okuru aradığını bulmuş sanmasına yol açar.</summary>
     [Route("ara", Name = "BlogSearch")]
     public Task<IActionResult> Search(string? q = null, int page = 1, CancellationToken cancellationToken = default)
-        => ListAsync(BlogListKind.Search, page, null, q?.Trim(), null, cancellationToken);
+        => ListAsync(BlogListKind.Search, page, null, null, q?.Trim(), null, cancellationToken);
 
     [Route("hakkinda", Name = "BlogAbout")]
     public async Task<IActionResult> About(CancellationToken cancellationToken = default)
     {
-        var latest = await _blogApi.GetPostsPagedAsync(1, 5, null, null, cancellationToken);
+        var latest = await _blogApi.GetPostsPagedAsync(1, 5, null, null, null, cancellationToken);
         return View(latest);
     }
 
     /// <summary>Arşiv: yıl/ay gruplu tam liste, sayfalama yok. Tek çağrı bütün arşivi getirir, çünkü kaynak uç yalnızca kimlik, başlık ve tarih taşır — gövde veri tabanından hiç çıkmaz.<para>Bu, veri çekim kuralının "belirli bir sebeple tam çekim" istisnasıdır: arşivin işi tek ekranda taranmaktır, sayfalanmış bir arşiv arşiv olmaktan çıkar. Sayfa büyüdüğünde sınırlayan şey satır sayısı değil satır boyudur.</para></summary>
     [Route("arsiv", Name = "BlogArchive")]
     public async Task<IActionResult> Archive(CancellationToken cancellationToken = default)
-        => View(await _blogApi.GetArchiveAsync(cancellationToken));
+    {
+        var archiveTask = _blogApi.GetArchiveAsync(cancellationToken);
+        var tagsTask = _blogApi.GetPopularTagsAsync(TagCloudSize, cancellationToken);
+        await Task.WhenAll(archiveTask, tagsTask);
+
+        var archive = await archiveTask;
+        archive.Tags = await tagsTask;
+        return View(archive);
+    }
 
     private async Task<IActionResult> ListAsync(
-        BlogListKind kind, int page, int? categoryId, string? search, CategoryViewModel? activeCategory, CancellationToken cancellationToken)
+        BlogListKind kind, int page, int? categoryId, TagViewModel? activeTag, string? search, CategoryViewModel? activeCategory, CancellationToken cancellationToken)
     {
         if (page < 1) page = 1;
 
-        var paged = await _blogApi.GetPostsPagedAsync(page, PageSize, categoryId, search, cancellationToken);
+        var paged = await _blogApi.GetPostsPagedAsync(page, PageSize, categoryId, activeTag?.Id, search, cancellationToken);
         paged.Kind = kind;
         paged.ActiveCategory = activeCategory;
+        paged.ActiveTag = activeTag;
 
         if (paged.TotalPages > 0 && page > paged.TotalPages)
             return RedirectToRoute(RouteNameFor(kind), RouteValuesFor(paged, paged.TotalPages));
@@ -81,6 +104,7 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
     private static string RouteNameFor(BlogListKind kind) => kind switch
     {
         BlogListKind.Category => "BlogCategory",
+        BlogListKind.Tag => "BlogTag",
         BlogListKind.Search => "BlogSearch",
         _ => "default"
     };
@@ -88,6 +112,7 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
     private static object RouteValuesFor(PagedPostsViewModel model, int page) => model.Kind switch
     {
         BlogListKind.Category => new { slug = model.ActiveCategory?.Slug, page },
+        BlogListKind.Tag => new { slug = model.ActiveTag?.Slug, page },
         BlogListKind.Search => new { q = model.Search, page },
         _ => new { controller = "Home", action = "Index", page }
     };
@@ -95,6 +120,7 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
     private static string ViewNameFor(BlogListKind kind) => kind switch
     {
         BlogListKind.Category => "Category",
+        BlogListKind.Tag => "Tag",
         BlogListKind.Search => "Search",
         _ => "Index"
     };
@@ -170,7 +196,7 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
             return;
 
         var page = await _blogApi.GetPostsPagedAsync(
-            1, RelatedPosts.CandidatePageSize, primaryCategory, null, cancellationToken);
+            1, RelatedPosts.CandidatePageSize, primaryCategory, null, null, cancellationToken);
 
         post.Related = RelatedPosts.Pick(post, page.Items);
     }

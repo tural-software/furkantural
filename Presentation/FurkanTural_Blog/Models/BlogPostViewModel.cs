@@ -25,6 +25,8 @@ public class BlogPostViewModel
 
     public List<CategoryViewModel> Categories { get; set; } = [];
 
+    public List<TagViewModel> Tags { get; set; } = [];
+
     /// <summary>Denetleyici tarafından yalnızca yazı sayfasında doldurulur; liste satırlarında boş kalır. İç içe geçen kayıtların kendi listesi hiç doldurulmaz, dolayısıyla derinlik bir seviyeyle sınırlıdır.</summary>
     public IReadOnlyList<BlogPostViewModel> Related { get; set; } = [];
 

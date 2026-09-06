@@ -144,6 +144,18 @@
                 }
             </div>
         }
+        @if (Model.Tags.Any(t => t.Slug.Length > 0))
+        {
+            <div class="post-tags">
+                <span class="post-tags__label">Etiketler</span>
+                @foreach (var tag in Model.Tags.Where(t => t.Slug.Length > 0))
+                {
+                    <a class="post-tag-chip"
+                       href="@(Url.RouteUrl("BlogTag", new { slug = tag.Slug }) ?? "/")"
+                       aria-label="@tag.Name etiketini taşıyan yazılar">#@tag.Name</a>
+                }
+            </div>
+        }
         <a class="back-link" asp-controller="Home" asp-action="Index">Tüm yazılar</a>
     </footer>
 </article>
@@ -158,6 +170,10 @@
     @foreach (var cat in Model.Categories)
     {
         <meta property="article:tag" content="@cat.Name" />
+    }
+    @foreach (var tag in Model.Tags)
+    {
+        <meta property="article:tag" content="@tag.Name" />
     }
 }
 

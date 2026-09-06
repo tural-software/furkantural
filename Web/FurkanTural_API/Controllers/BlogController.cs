@@ -45,11 +45,11 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     public async Task<IActionResult> GetByIdForAdmin(int id, CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetByIdForAdminAsync(id, cancellationToken));
 
-    /// <summary>Blog yazılarını sayfalı listele</summary>
+    /// <summary>Blog yazılarını sayfalı listele. Kategori, etiket ve arama süzgeçleri isteğe bağlıdır; birden çoğu verilirse hepsini birden sağlayan yazılar döner.</summary>
     [HttpGet("paged")]
     [Authorize(Policy = "VisitorOrAbove")]
-    public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] int? categoryId = null, [FromQuery] string? search = null, CancellationToken cancellationToken = default)
-        => ToActionResult(await _blogService.GetPublishedPagedAsync(pageNumber, pageSize, categoryId, search, cancellationToken));
+    public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] int? categoryId = null, [FromQuery] int? tagId = null, [FromQuery] string? search = null, CancellationToken cancellationToken = default)
+        => ToActionResult(await _blogService.GetPublishedPagedAsync(pageNumber, pageSize, categoryId, tagId, search, cancellationToken));
 
     /// <summary>Sitemap/SEO için yayınlı yazıların hafif listesi (Id + tarihler; içerik taşınmaz)</summary>
     [HttpGet("sitemap")]
@@ -86,6 +86,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
             Title = request.Title,
             Content = request.Content,
             CategoryIds = request.CategoryIds,
+            TagIds = request.TagIds,
             CreatedBy = SortUserId()
         }, cancellationToken));
 
@@ -103,6 +104,7 @@ public class BlogController(IBlogService blogService) : JwtBaseController
             Slug = request.Slug,
             Content = request.Content,
             CategoryIds = request.CategoryIds,
+            TagIds = request.TagIds,
             UpdatedBy = SortUserId()
         }, cancellationToken));
     }

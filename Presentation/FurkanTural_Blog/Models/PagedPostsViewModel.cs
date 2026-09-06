@@ -5,6 +5,7 @@ public enum BlogListKind
 {
     Home,
     Category,
+    Tag,
     Search
 }
 
@@ -23,6 +24,9 @@ public class PagedPostsViewModel
     /// <summary>Seçili kategori (null = tümü).</summary>
     public int? CategoryId { get; init; }
 
+    /// <summary>Seçili etiket (null = tümü).</summary>
+    public int? TagId { get; init; }
+
     /// <summary>Başlık araması (null/boş = arama yok).</summary>
     public string? Search { get; init; }
 
@@ -32,11 +36,14 @@ public class PagedPostsViewModel
     public bool LoadFailed { get; init; }
 
     /// <summary>Herhangi bir filtre aktif mi (boş-sonuç mesajını ayarlamak için).</summary>
-    public bool HasActiveFilter => CategoryId.HasValue || !string.IsNullOrWhiteSpace(Search);
+    public bool HasActiveFilter => CategoryId.HasValue || TagId.HasValue || !string.IsNullOrWhiteSpace(Search);
 
     /// <summary>Listeyi gösteren sayfa. Ortak liste gövdesi bağlantılarını buna göre kurar.</summary>
     public BlogListKind Kind { get; set; } = BlogListKind.Home;
 
     /// <summary>Kategori sayfasında gösterilen kategori; başlık ve rengi buradan gelir. Diğer sayfalarda boştur.</summary>
     public CategoryViewModel? ActiveCategory { get; set; }
+
+    /// <summary>Etiket sayfasında gösterilen etiket; başlık buradan gelir. Diğer sayfalarda boştur.</summary>
+    public TagViewModel? ActiveTag { get; set; }
 }

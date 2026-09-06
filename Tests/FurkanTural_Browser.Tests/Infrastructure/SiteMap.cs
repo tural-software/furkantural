@@ -40,7 +40,7 @@ public static class SiteMap
     [
         "Dashboard", "Blog", "BlogImage", "CallLog", "Category", "ChatMessage", "Contact",
         "Education", "Experience", "Log", "MailTemplate", "Music", "MusicImage", "NewsletterIssue", "Project",
-        "ProjectImage", "Report", "Role", "Skill", "Status", "Subscriber", "User", "UserFriend"
+        "ProjectImage", "Report", "Role", "Skill", "Status", "Subscriber", "Tag", "User", "UserFriend"
     ];
 
     public static readonly IReadOnlyList<SitePage> Pages = BuildPages();
@@ -69,6 +69,7 @@ public static class SiteMap
             new(Blog, "/ara?q=ef"),
             new(Blog, "/yazi", Access.Public, Discover: "a[href*='/yazi/']", DiscoverFrom: "/"),
             new(Blog, "/kategori", Access.Public, Discover: "a[href*='/kategori/']", DiscoverFrom: "/"),
+            new(Blog, "/etiket", Access.Public, Discover: "a[href*='/etiket/']", DiscoverFrom: "/arsiv"),
 
             new(Portfolio, "/"),
             new(Portfolio, "/Home/Privacy"),

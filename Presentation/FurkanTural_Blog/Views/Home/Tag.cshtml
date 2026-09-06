@@ -1,0 +1,30 @@
+@model PagedPostsViewModel
+@{
+    var tag = Model.ActiveTag;
+    var pageNo = Model.PageNumber;
+    ViewData["Title"] = pageNo > 1 ? $"{tag?.Name} — Sayfa {pageNo}" : tag?.Name;
+    ViewData["MetaDescription"] = $"{tag?.Name} etiketini taşıyan blog yazıları.";
+
+    var basePath = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    ViewData["Canonical"] = pageNo > 1 ? $"{basePath}?page={pageNo}" : basePath;
+}
+
+<section class="page-head reveal">
+    <div class="container">
+        <nav class="crumb" aria-label="Konum">
+            <a href="@(Url.Action("Index", "Home") ?? "/")">Blog</a>
+            <span aria-hidden="true">/</span>
+            <span>@tag?.Name</span>
+        </nav>
+        <h1 class="page-head__title">
+            <span class="page-head__hash" aria-hidden="true">#</span>@tag?.Name
+        </h1>
+        <p class="page-head__lead">
+            Bu etiketi <strong>@Model.TotalCount</strong> yazı taşıyor.
+        </p>
+    </div>
+</section>
+
+<section class="container">
+    @await Html.PartialAsync("_PostIndex", Model)
+</section>

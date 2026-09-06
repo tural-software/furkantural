@@ -47,6 +47,21 @@
             }
         </nav>
 
+        @if (Model.Tags.Any(t => t.Slug.Length > 0))
+        {
+            <nav class="tag-cloud reveal" aria-label="Etiketler">
+                <h2 class="tag-cloud__title">Etiketler</h2>
+                <div class="tag-cloud__items">
+                    @foreach (var tag in Model.Tags.Where(t => t.Slug.Length > 0))
+                    {
+                        <a class="tag-cloud__chip" href="@(Url.RouteUrl("BlogTag", new { slug = tag.Slug }) ?? "/")">
+                            #@tag.Name<span class="tag-cloud__count">@tag.PostCount</span>
+                        </a>
+                    }
+                </div>
+            </nav>
+        }
+
         @foreach (var year in Model.Years)
         {
             <section class="archive-group reveal" id="@year.Anchor" aria-labelledby="@(year.Anchor)-baslik">

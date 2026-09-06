@@ -46,9 +46,9 @@ public class PageHeaderContractTests
     }
 
     [Fact]
-    public void Yirmi_iki_modulun_liste_sayfasi_vardir()
+    public void Yirmi_uc_modulun_liste_sayfasi_vardir()
     {
-        IndexViews().Should().HaveCount(22);
+        IndexViews().Should().HaveCount(23);
     }
 
     [Fact]

@@ -20,6 +20,8 @@
         }));
         window.__blogCategories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
             Model.AvailableCategories.Select(c => new { value = c.Id, label = c.Name, color = c.Color })));
+        window.__blogTags = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.AvailableTags.Select(t => new { value = t.Id, label = t.Name })));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
     <script src="~/js/confirm-modal.js" asp-append-version="true"></script>

@@ -7,4 +7,5 @@ public sealed class BlogFormDto
     public string? Slug { get; set; }
     public string? Content { get; set; }
     public List<int>? CategoryIds { get; set; }
+    public List<int>? TagIds { get; set; }
 }

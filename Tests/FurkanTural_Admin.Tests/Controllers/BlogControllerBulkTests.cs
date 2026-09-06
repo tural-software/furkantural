@@ -15,7 +15,7 @@ public class BlogControllerBulkTests
     private readonly Mock<IBlogApiClient> _client = new();
 
     private BlogController BuildSut(string? token)
-        => new(_client.Object, Mock.Of<ICategoryApiClient>())
+        => new(_client.Object, Mock.Of<ICategoryApiClient>(), Mock.Of<ITagApiClient>())
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext(token)
         };

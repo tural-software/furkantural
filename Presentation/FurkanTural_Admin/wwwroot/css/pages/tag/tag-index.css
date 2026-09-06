@@ -1,0 +1,45 @@
+.filter-group--actions {
+    flex-direction: row;
+    align-items: center;
+    gap: .45rem;
+    margin-left: auto;
+}
+
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: .22rem .6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--bg-inset);
+    font-size: var(--fs-2xs);
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-main);
+    white-space: nowrap;
+}
+
+.tag-slug {
+    font-size: var(--fs-2xs);
+    color: var(--text-dim);
+    word-break: break-all;
+}
+
+.tag-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    padding: .18rem .45rem;
+    border-radius: 6px;
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.tag-count--zero {
+    background: var(--pending-bg);
+    color: var(--pending-fg);
+}

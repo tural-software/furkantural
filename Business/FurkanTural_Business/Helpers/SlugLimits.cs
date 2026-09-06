@@ -5,6 +5,7 @@ public static class SlugLimits
 {
     public const int Blog = 200;
     public const int Category = 160;
+    public const int Tag = 120;
 
     /// <summary>Çakışma taramasında okunan en fazla satır. Önek eşleşmesi normalde sıfır ya da bir satır döndürür; sınır, elle aynı adres verilmeye çalışılan uç bir durumda sorgunun büyümesini engeller.</summary>
     public const int CollisionScan = 200;

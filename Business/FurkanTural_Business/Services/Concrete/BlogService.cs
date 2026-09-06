@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using FurkanTural_Application.DTOs.Blog;
 using FurkanTural_Application.DTOs.Category;
 using FurkanTural_Application.DTOs.Common;
+using FurkanTural_Application.DTOs.Tag;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
@@ -23,7 +24,7 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
             return Result<BlogDto>.Fail("Blog bulunamadı.", statusCode: 404);
 
         var dto = entity.ToDto();
-        dto.Categories = await GetCategoryDtosAsync(id, cancellationToken);
+        (dto.Categories, dto.Tags) = await TaxonomyAsync(id, cancellationToken);
         return Result<BlogDto>.Ok(dto);
     }
 
@@ -39,7 +40,7 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
             return Result<BlogDto>.Fail("Blog bulunamadı.", statusCode: 404);
 
         var dto = entity.ToDto();
-        dto.Categories = await GetCategoryDtosAsync(entity.Id, cancellationToken);
+        (dto.Categories, dto.Tags) = await TaxonomyAsync(entity.Id, cancellationToken);
         return Result<BlogDto>.Ok(dto);
     }
 
@@ -47,7 +48,7 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
     {
         var entities = await _unitOfWork.Blogs.GetAllAsync(cancellationToken);
         var dtos = entities.Select(e => e.ToDto()).ToList();
-        await AttachCategoriesAsync(dtos, cancellationToken);
+        await AttachTaxonomyAsync(dtos, cancellationToken);
         return Result<IEnumerable<BlogDto>>.Ok(dtos);
     }
 
@@ -55,12 +56,7 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
     {
         var entities = await _unitOfWork.Blogs.GetAllForAdminAsync(cancellationToken);
         var dtos = entities.Select(e => e.ToAdminDto()).ToList();
-
-        var map = await LoadCategoryMapAsync(dtos.Select(d => d.Id).ToList(), cancellationToken);
-        foreach (var dto in dtos)
-            if (map.TryGetValue(dto.Id, out var cats))
-                dto.Categories = cats;
-
+        await AttachTaxonomyAsync(dtos, cancellationToken);
         return Result<IEnumerable<AdminBlogDto>>.Ok(dtos);
     }
 
@@ -71,7 +67,7 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
             return Result<AdminBlogDto>.Fail("Blog bulunamadı.", statusCode: 404);
 
         var dto = entity.ToAdminDto();
-        dto.Categories = await GetCategoryDtosAsync(id, cancellationToken);
+        (dto.Categories, dto.Tags) = await TaxonomyAsync(id, cancellationToken);
         return Result<AdminBlogDto>.Ok(dto);
     }
 
@@ -112,13 +108,13 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
     }
 
     public Task<PagedResult<BlogDto>> GetAllPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
-        => GetPublishedPagedAsync(pageNumber, pageSize, categoryId: null, search: null, cancellationToken);
+        => GetPublishedPagedAsync(pageNumber, pageSize, categoryId: null, tagId: null, search: null, cancellationToken);
 
-    public async Task<PagedResult<BlogDto>> GetPublishedPagedAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<BlogDto>> GetPublishedPagedAsync(int pageNumber, int pageSize, int? categoryId, int? tagId, string? search, CancellationToken cancellationToken = default)
     {
-        var (entities, total) = await _unitOfWork.Blogs.GetPublishedPageAsync(pageNumber, pageSize, categoryId, search, cancellationToken);
+        var (entities, total) = await _unitOfWork.Blogs.GetPublishedPageAsync(pageNumber, pageSize, categoryId, tagId, search, cancellationToken);
         var dtos = entities.Select(e => e.ToDto()).ToList();
-        await AttachCategoriesAsync(dtos, cancellationToken);
+        await AttachTaxonomyAsync(dtos, cancellationToken);
         return PagedResult<BlogDto>.Ok(dtos, total, pageNumber, pageSize);
     }
 
@@ -149,16 +145,19 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         await _unitOfWork.Blogs.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        if (dto.CategoryIds is { Count: > 0 })
+        if (dto.CategoryIds is { Count: > 0 } || dto.TagIds is { Count: > 0 })
         {
-            await _unitOfWork.Blogs.SetCategoriesAsync(entity.Id, dto.CategoryIds, dto.CreatedBy, cancellationToken);
+            if (dto.CategoryIds is { Count: > 0 })
+                await _unitOfWork.Blogs.SetCategoriesAsync(entity.Id, dto.CategoryIds, dto.CreatedBy, cancellationToken);
+            if (dto.TagIds is { Count: > 0 })
+                await _unitOfWork.Blogs.SetTagsAsync(entity.Id, dto.TagIds, dto.CreatedBy, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
         await _activityLogger.LogAsync($"Blog oluşturuldu. Id: {entity.Id}", cancellationToken);
 
         var result = entity.ToDto();
-        result.Categories = await GetCategoryDtosAsync(entity.Id, cancellationToken);
+        (result.Categories, result.Tags) = await TaxonomyAsync(entity.Id, cancellationToken);
         return Result<BlogDto>.Ok(result);
     }
 
@@ -181,16 +180,19 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         await _unitOfWork.Blogs.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        if (dto.CategoryIds is not null)
+        if (dto.CategoryIds is not null || dto.TagIds is not null)
         {
-            await _unitOfWork.Blogs.SetCategoriesAsync(entity.Id, dto.CategoryIds, dto.UpdatedBy, cancellationToken);
+            if (dto.CategoryIds is not null)
+                await _unitOfWork.Blogs.SetCategoriesAsync(entity.Id, dto.CategoryIds, dto.UpdatedBy, cancellationToken);
+            if (dto.TagIds is not null)
+                await _unitOfWork.Blogs.SetTagsAsync(entity.Id, dto.TagIds, dto.UpdatedBy, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
         await _activityLogger.LogAsync($"Blog güncellendi. Id: {entity.Id}", cancellationToken);
 
         var result = entity.ToDto();
-        result.Categories = await GetCategoryDtosAsync(entity.Id, cancellationToken);
+        (result.Categories, result.Tags) = await TaxonomyAsync(entity.Id, cancellationToken);
         return Result<BlogDto>.Ok(result);
     }
 
@@ -213,10 +215,12 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         return Result<EntitySummaryDto>.Ok(summary);
     }
 
-    private async Task<List<CategoryDto>> GetCategoryDtosAsync(int blogId, CancellationToken cancellationToken)
+    /// <summary>Tek yazının kategorileri ve etiketleri. İki ayrı okuma yapar; tek sorguda birleştirmek iki farklı tabloyu aynı satıra çapraz çarpım olarak getirir ve her kategoriyi etiket sayısı kadar tekrarlardı.</summary>
+    private async Task<(List<CategoryDto> Categories, List<TagDto> Tags)> TaxonomyAsync(int blogId, CancellationToken cancellationToken)
     {
         var categories = await _unitOfWork.Blogs.GetCategoriesByBlogAsync(blogId, cancellationToken);
-        return categories.Select(c => c.ToDto()).ToList();
+        var tags = await _unitOfWork.Blogs.GetTagsByBlogAsync(blogId, cancellationToken);
+        return (categories.Select(c => c.ToDto()).ToList(), tags.Select(t => t.ToDto()).ToList());
     }
 
     /// <summary>Adresi başlıktan üretir ve çakışırsa sayı ekler. Aday listesi silinmiş satırları da kapsar: silinen bir yazının adresini başkasına vermek, o yazı geri yüklendiğinde tekil dizinde çakışırdı.<para>Yalnızca aynı önekle başlayan satırlar okunur ve okunan tek şey slug'dır; gövde bu sorguda hiç yer almaz. Önek eşleşmesi normalde sıfır ya da bir satır döndürür.</para></summary>
@@ -238,19 +242,38 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         return Slugifier.MakeUnique(basis, SlugLimits.Blog, taken.Contains);
     }
 
-    private async Task<Dictionary<int, List<CategoryDto>>> LoadCategoryMapAsync(IReadOnlyCollection<int> blogIds, CancellationToken cancellationToken)
+    /// <summary>Listedeki bütün yazıların kategorileri ve etiketleri iki okumada toplanır — yazı başına değil. Sayfa boyutu ne olursa olsun maliyet sabit iki sorgudur.</summary>
+    private async Task<(Dictionary<int, List<CategoryDto>> Categories, Dictionary<int, List<TagDto>> Tags)> TaxonomyMapAsync(
+        IReadOnlyCollection<int> blogIds, CancellationToken cancellationToken)
     {
-        var raw = await _unitOfWork.Blogs.GetCategoriesForBlogsAsync(blogIds, cancellationToken);
-        return raw.ToDictionary(kv => kv.Key, kv => kv.Value.Select(c => c.ToDto()).ToList());
+        var categories = await _unitOfWork.Blogs.GetCategoriesForBlogsAsync(blogIds, cancellationToken);
+        var tags = await _unitOfWork.Blogs.GetTagsForBlogsAsync(blogIds, cancellationToken);
+
+        return (
+            categories.ToDictionary(kv => kv.Key, kv => kv.Value.Select(c => c.ToDto()).ToList()),
+            tags.ToDictionary(kv => kv.Key, kv => kv.Value.Select(t => t.ToDto()).ToList()));
     }
 
-    private async Task AttachCategoriesAsync(IReadOnlyList<BlogDto> dtos, CancellationToken cancellationToken)
+    private async Task AttachTaxonomyAsync(IReadOnlyList<BlogDto> dtos, CancellationToken cancellationToken)
     {
         if (dtos.Count == 0) return;
-        var map = await LoadCategoryMapAsync(dtos.Select(d => d.Id).ToList(), cancellationToken);
+        var (categories, tags) = await TaxonomyMapAsync(dtos.Select(d => d.Id).ToList(), cancellationToken);
         foreach (var dto in dtos)
-            if (map.TryGetValue(dto.Id, out var cats))
-                dto.Categories = cats;
+        {
+            if (categories.TryGetValue(dto.Id, out var cats)) dto.Categories = cats;
+            if (tags.TryGetValue(dto.Id, out var tagList)) dto.Tags = tagList;
+        }
+    }
+
+    private async Task AttachTaxonomyAsync(IReadOnlyList<AdminBlogDto> dtos, CancellationToken cancellationToken)
+    {
+        if (dtos.Count == 0) return;
+        var (categories, tags) = await TaxonomyMapAsync(dtos.Select(d => d.Id).ToList(), cancellationToken);
+        foreach (var dto in dtos)
+        {
+            if (categories.TryGetValue(dto.Id, out var cats)) dto.Categories = cats;
+            if (tags.TryGetValue(dto.Id, out var tagList)) dto.Tags = tagList;
+        }
     }
 
     private static Expression<Func<Blog, bool>>? AdminPredicate(AdminListQuery query, int? blogId)
@@ -289,11 +312,7 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         var total = await _unitOfWork.Blogs.CountForAdminAsync(predicate, cancellationToken);
 
         var dtos = entities.Select(e => e.ToAdminDto()).ToList();
-        var map = await LoadCategoryMapAsync(dtos.Select(d => d.Id).ToList(), cancellationToken);
-        foreach (var dto in dtos)
-            if (map.TryGetValue(dto.Id, out var cats))
-                dto.Categories = cats;
-
+        await AttachTaxonomyAsync(dtos, cancellationToken);
         return PagedResult<AdminBlogDto>.Ok(dtos, total, query.SafePageNumber, query.SafePageSize);
     }
 

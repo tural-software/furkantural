@@ -8,6 +8,9 @@ public sealed class ArchiveViewModel
     /// <summary>API'ye ulaşılamadı. Boş arşivden ayrı tutulur: biri "henüz yazı yok", diğeri "liste şu an alınamıyor" demektir ve ikisi aynı ekranı göstermemelidir.</summary>
     public bool LoadFailed { get; init; }
 
+    /// <summary>Etiket bulutu. Denetleyici tarafından ayrı bir çağrıyla doldurulur; kaynağı arşivinkinden farklı bir uçtur ve etiketi olmayan bir arşiv de geçerlidir, dolayısıyla boş kalması hata değildir.</summary>
+    public IReadOnlyList<TagViewModel> Tags { get; set; } = [];
+
     public int TotalCount => Years.Sum(y => y.Count);
 
     /// <summary>Başlıksız ya da tarihsiz kayıt listeye alınmaz: metni olmayan bir bağlantı ekran okuyucuda hedefsiz kalır, tarihsiz kayıt da hangi gruba gireceğini bildirmez.</summary>

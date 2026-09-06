@@ -105,8 +105,22 @@
         };
     }
 
+    function tagField() {
+        var tags = window.__blogTags || [];
+        return {
+            name: 'tagIds',
+            label: 'Etiketler',
+            type: 'multiselect',
+            required: false,
+            options: tags,
+            helpText: tags.length
+                ? 'Yazının değindiği konuları seçin. Kategori yazının alanını, etiket konusunu söyler.'
+                : 'Henüz etiket yok — önce Etiketler sayfasından ekleyin.'
+        };
+    }
+
     function formFields() {
-        return BLOG_FORM_FIELDS.concat([categoryField()]);
+        return BLOG_FORM_FIELDS.concat([categoryField(), tagField()]);
     }
 
     function editFormFields() {
@@ -240,7 +254,8 @@
         }), {
             title:   record.title   || '',
             content: record.content || '',
-            categoryIds: (record.categories || []).map(function (c) { return c.id; })
+            categoryIds: (record.categories || []).map(function (c) { return c.id; }),
+            tagIds:      (record.tags || []).map(function (t) { return t.id; })
         });
     }
 

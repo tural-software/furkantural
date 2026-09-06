@@ -16,4 +16,6 @@ public sealed class BlogAdminDto
     public int? DeletedBy { get; set; }
 
     public List<BlogCategoryRef> Categories { get; set; } = [];
+
+    public List<BlogTagRef> Tags { get; set; } = [];
 }

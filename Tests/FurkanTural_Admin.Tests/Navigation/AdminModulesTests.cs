@@ -14,9 +14,9 @@ public class AdminModulesTests
               .Where(t => typeof(Controller).IsAssignableFrom(t) && !t.IsAbstract)];
 
     [Fact]
-    public void Yirmi_iki_modul_kayitlidir()
+    public void Yirmi_uc_modul_kayitlidir()
     {
-        AdminModules.All.Should().HaveCount(22);
+        AdminModules.All.Should().HaveCount(23);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class AdminModulesTests
         var icerik = AdminModules.Grouped().First(g => g.Key == AdminModules.GroupContent);
 
         icerik.Select(m => m.Slug).Should().Equal(
-            "blogs", "blog-images", "categories", "projects", "project-images", "music", "music-images");
+            "blogs", "blog-images", "categories", "tags", "projects", "project-images", "music", "music-images");
     }
 
     [Theory]

@@ -29,7 +29,7 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
         }
     }
 
-    public async Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken ct = default)
+    public async Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, int? categoryId, int? tagId, string? search, CancellationToken ct = default)
     {
         var categories = await GetCategoriesAsync(ct);
         try
@@ -37,6 +37,8 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
             var url = $"/api/v1/blog/paged?pageNumber={pageNumber}&pageSize={pageSize}";
             if (categoryId is int cid)
                 url += $"&categoryId={cid}";
+            if (tagId is int tid)
+                url += $"&tagId={tid}";
             if (!string.IsNullOrWhiteSpace(search))
                 url += $"&search={Uri.EscapeDataString(search.Trim())}";
 
@@ -53,6 +55,7 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
                 TotalCount = total,
                 TotalPages = size > 0 ? (int)Math.Ceiling(total / (double)size) : 0,
                 CategoryId = categoryId,
+                TagId = tagId,
                 Search = search,
                 AvailableCategories = categories
             };
@@ -66,6 +69,7 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 CategoryId = categoryId,
+                TagId = tagId,
                 Search = search,
                 AvailableCategories = categories
             };
@@ -85,6 +89,41 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Kategoriler alınamadı.");
+            return [];
+        }
+    }
+
+    public async Task<TagViewModel?> GetTagBySlugAsync(string slug, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            return null;
+
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<TagViewModel>>(
+                $"/api/v1/tag/by-slug/{Uri.EscapeDataString(slug.Trim())}", JsonOptions, ct);
+            return result?.Data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Etiket alınamadı. Slug={Slug}", slug);
+            return null;
+        }
+    }
+
+    public async Task<IReadOnlyList<TagViewModel>> GetPopularTagsAsync(int take, CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<ApiResult<IEnumerable<TagViewModel>>>(
+                $"/api/v1/tag/popular?take={take}", JsonOptions, ct);
+            return result?.Data?
+                .Where(t => !string.IsNullOrWhiteSpace(t.Name))
+                .ToList().AsReadOnly() ?? (IReadOnlyList<TagViewModel>)[];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Etiket bulutu alınamadı.");
             return [];
         }
     }

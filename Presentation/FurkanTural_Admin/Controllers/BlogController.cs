@@ -5,10 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FurkanTural_Admin.Controllers;
 
-public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient categoryApiClient) : Controller
+public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient categoryApiClient, ITagApiClient tagApiClient) : Controller
 {
     private readonly IBlogApiClient _blogApiClient = blogApiClient;
     private readonly ICategoryApiClient _categoryApiClient = categoryApiClient;
+    private readonly ITagApiClient _tagApiClient = tagApiClient;
 
     public async Task<IActionResult> Index(
         string? title,
@@ -61,11 +62,13 @@ public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient cat
         var countsTask = _blogApiClient.GetAdminCountsAsync(AdminListRequest.Unfiltered, token, cancellationToken);
         var pagedTask = _blogApiClient.GetAdminPagedAsync(request, token, cancellationToken);
         var categoriesTask = _categoryApiClient.GetAllForAdminAsync(token, cancellationToken);
-        await Task.WhenAll(countsTask, pagedTask, categoriesTask);
+        var tagsTask = _tagApiClient.GetAllForAdminAsync(token, cancellationToken);
+        await Task.WhenAll(countsTask, pagedTask, categoriesTask, tagsTask);
 
         var counts = await countsTask;
         var (rows, totalFiltered) = await pagedTask;
         var availableCategories = (await categoriesTask).Where(c => c.IsActive && !c.IsDeleted).ToList();
+        var availableTags = (await tagsTask).Where(t => t.IsActive && !t.IsDeleted).OrderBy(t => t.Name).ToList();
 
         return new BlogIndexViewModel
         {
@@ -83,7 +86,8 @@ public class BlogController(IBlogApiClient blogApiClient, ICategoryApiClient cat
             PageNumber    = request.PageNumber,
             PageSize      = request.PageSize,
             TotalFiltered = totalFiltered,
-            AvailableCategories = availableCategories
+            AvailableCategories = availableCategories,
+            AvailableTags = availableTags
         };
     }
 

@@ -93,7 +93,8 @@ public class SessionGuardTests
         // Arrange
         var blogMock     = new Mock<IBlogApiClient>(MockBehavior.Loose);
         var categoryMock = new Mock<ICategoryApiClient>(MockBehavior.Loose);
-        var sut = new BlogController(blogMock.Object, categoryMock.Object)
+        var tagMock      = new Mock<ITagApiClient>(MockBehavior.Loose);
+        var sut = new BlogController(blogMock.Object, categoryMock.Object, tagMock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };
@@ -112,7 +113,8 @@ public class SessionGuardTests
         // Arrange
         var blogMock     = new Mock<IBlogApiClient>(MockBehavior.Loose);
         var categoryMock = new Mock<ICategoryApiClient>(MockBehavior.Loose);
-        var sut = new BlogController(blogMock.Object, categoryMock.Object)
+        var tagMock      = new Mock<ITagApiClient>(MockBehavior.Loose);
+        var sut = new BlogController(blogMock.Object, categoryMock.Object, tagMock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };

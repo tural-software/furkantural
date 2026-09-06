@@ -28,6 +28,7 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
     public IBlogRepository Blogs => _blogs ??= new BlogRepository(context);
     public IRepository<BlogImage> BlogImages => _blogImages ??= new Repository<BlogImage>(context);
     public IRepository<Category> Categories => GetRepository<Category>();
+    public IRepository<Tag> Tags => GetRepository<Tag>();
     public ILogRepository Logs => _logs ??= new LogRepository(context);
     public IRepository<Education> Educations => GetRepository<Education>();
     public IRepository<Experience> Experiences => GetRepository<Experience>();

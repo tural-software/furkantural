@@ -6,4 +6,5 @@ public class CreateBlogDto
     public string? Content { get; set; }
     public int? CreatedBy { get; set; }
     public List<int>? CategoryIds { get; set; }
+    public List<int>? TagIds { get; set; }
 }

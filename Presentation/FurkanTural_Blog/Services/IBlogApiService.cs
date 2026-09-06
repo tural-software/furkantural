@@ -6,11 +6,17 @@ public interface IBlogApiService
 {
     Task<IReadOnlyList<BlogPostViewModel>> GetPostsAsync(CancellationToken ct = default);
 
-    /// <summary>Yayınlanmış yazıları en yeni en üstte, isteğe bağlı kategori + başlık aramasıyla sayfalı getirir (1000+ yazıya ölçeklenir).</summary>
-    Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, int? categoryId, string? search, CancellationToken ct = default);
+    /// <summary>Yayınlanmış yazıları en yeni en üstte, isteğe bağlı kategori, etiket ve başlık aramasıyla sayfalı getirir (1000+ yazıya ölçeklenir).</summary>
+    Task<PagedPostsViewModel> GetPostsPagedAsync(int pageNumber, int pageSize, int? categoryId, int? tagId, string? search, CancellationToken ct = default);
 
     /// <summary>Filtre çubuğu için tüm aktif kategoriler.</summary>
     Task<IReadOnlyList<CategoryViewModel>> GetCategoriesAsync(CancellationToken ct = default);
+
+    /// <summary>Etiketi kalıcı adres parçasıyla getirir; bulunamazsa null döner.</summary>
+    Task<TagViewModel?> GetTagBySlugAsync(string slug, CancellationToken ct = default);
+
+    /// <summary>Etiket bulutu: yazısı olan etiketler, yazı sayısına göre azalan. Yazısı olmayanlar hiç gelmez — boş bir etiket sayfası okuru hiçbir yere götürmez.</summary>
+    Task<IReadOnlyList<TagViewModel>> GetPopularTagsAsync(int take, CancellationToken ct = default);
 
     Task<BlogPostViewModel?> GetPostAsync(int id, CancellationToken ct = default);
 

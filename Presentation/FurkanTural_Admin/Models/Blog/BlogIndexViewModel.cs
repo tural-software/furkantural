@@ -8,6 +8,7 @@ public sealed class BlogIndexViewModel
 
     /// <summary>Forma kategori çoklu-seçimi için aktif kategoriler.</summary>
     public IReadOnlyList<CategoryAdminDto> AvailableCategories { get; init; } = [];
+    public IReadOnlyList<FurkanTural_Admin.Models.Tag.TagAdminDto> AvailableTags { get; init; } = [];
 
     public int TotalCount { get; init; }
     public int ActiveCount { get; init; }
