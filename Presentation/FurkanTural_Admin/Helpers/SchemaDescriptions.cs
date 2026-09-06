@@ -42,7 +42,12 @@ public static class SchemaDescriptions
         ["User.PasswordHash"] = "Parolanın karması; düz metin hiçbir yerde tutulmaz",
         ["Subscriber.Email"] = "Bülten abonesinin e-postası — benzersizdir",
         ["MailTemplate.Subject"] = "E-posta konu satırı",
-        ["MailTemplate.Body"] = "E-posta gövdesi (HTML)"
+        ["MailTemplate.Body"] = "E-posta gövdesi (HTML)",
+        ["NewsletterIssue.Subject"] = "Bültenin konu satırı; alıcının gelen kutusunda gördüğü metin",
+        ["NewsletterIssue.Body"] = "Bültenin HTML gövdesi; kabuk ve çıkış bağlantısı posta şablonundan gelir",
+        ["NewsletterIssue.Status"] = "Draft / Sending / Sent",
+        ["NewsletterIssue.QueuedAt"] = "Alıcı listesinin dondurulduğu an",
+        ["NewsletterIssue.RecipientCount"] = "Dondurma anındaki alıcı sayısı; sonradan değişmez"
     };
 
     public static string For(string entity, string column)

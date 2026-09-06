@@ -33,6 +33,8 @@ public interface IUnitOfWork
     IRepository<PushSubscription> PushSubscriptions { get; }
     IRepository<AccountActivation> AccountActivations { get; }
     IRepository<SubscriberVerification> SubscriberVerifications { get; }
+    IRepository<NewsletterIssue> NewsletterIssues { get; }
+    IRepository<NewsletterDelivery> NewsletterDeliveries { get; }
     ILogRepository Logs { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

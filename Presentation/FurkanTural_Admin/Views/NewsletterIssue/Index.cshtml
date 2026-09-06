@@ -1,0 +1,144 @@
+@using FurkanTural_Admin.Models.NewsletterIssue
+@model NewsletterIssueIndexViewModel
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/newsletter-issue/newsletter-issue-index.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.__newsletterMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+            subject       = Model.SearchSubject ?? "",
+            activeFilter  = Model.ActiveFilter ?? "",
+            deletedFilter = Model.DeletedFilter ?? "",
+            dateFrom      = Model.DateFrom ?? "",
+            dateTo        = Model.DateTo ?? "",
+            pageNumber    = Model.PageNumber,
+            pageSize      = Model.PageSize,
+            audience      = Model.ConfirmedSubscriberCount
+        }));
+    </script>
+    <script src="~/js/detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
+    <script src="~/js/form-modal.js" asp-append-version="true"></script>
+    <script src="~/js/html-preview-modal.js" asp-append-version="true"></script>
+    <script src="~/js/bulk-select.js" asp-append-version="true"></script>
+    <script src="~/js/pages/newsletter-issue-index.js" asp-append-version="true"></script>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container">
+
+    @await Html.PartialAsync("_Breadcrumb", "")
+
+    <div class="pg-header">
+        <div>
+            @await Html.PartialAsync("_PageTitle")
+            <p class="section-desc">Bülten sayılarını yazın, deneme gönderin ve doğrulanmış adreslere dağıtın.</p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "refresh")
+                Yenile
+            </a>
+            <a href="@Url.Action("TableDetail")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "table-icon")
+                Tablo Detayları
+            </a>
+            <button type="button" id="newsletter-add-btn" class="btn-primary">
+                @await Html.PartialAsync("_Icons", "plus")
+                Yeni Bülten Yaz
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--total">
+                @await Html.PartialAsync("_Icons", "newsletters")
+            </div>
+            <div>
+                <p class="stat-box__label">Toplam Bülten</p>
+                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <span class="stat-box__unit">sayı</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--active">
+                @await Html.PartialAsync("_Icons", "subscribers")
+            </div>
+            <div>
+                <p class="stat-box__label">Doğrulanmış Abone</p>
+                <div class="stat-box__value">@Model.ConfirmedSubscriberCount.ToString("N0")</div>
+                <span class="stat-box__unit">adres bültene girer</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--passive">
+                @await Html.PartialAsync("_Icons", "x-circle")
+            </div>
+            <div>
+                <p class="stat-box__label">Pasif Bülten</p>
+                <div class="stat-box__value">@Model.PassiveCount.ToString("N0")</div>
+                <span class="stat-box__unit">dağıtım duraklatılmış</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--deleted">
+                @await Html.PartialAsync("_Icons", "trash")
+            </div>
+            <div>
+                <p class="stat-box__label">Silinmiş Bülten</p>
+                <div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div>
+                <span class="stat-box__unit">kayıt</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+        <form method="get" action="@Url.Action("Index")">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Konu ara</label>
+                    <div class="filter-input-wrap">
+                        @await Html.PartialAsync("_Icons", "search")
+                        <input type="text" name="subject" value="@Model.SearchSubject"
+                               class="filter-input filter-input--search"
+                               placeholder="Bülten konusu ara..." />
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Aktiflik Durumu</label>
+                    <select aria-label="Aktiflik Durumu" name="activeFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.ActiveFilter))">Tümü</option>
+                        <option value="active" selected="@(Model.ActiveFilter == "active")">Aktif</option>
+                        <option value="passive" selected="@(Model.ActiveFilter == "passive")">Pasif</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Silinme Durumu</label>
+                    <select aria-label="Silinme Durumu" name="deletedFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.DeletedFilter))">Tümü</option>
+                        <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
+                        <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-group--actions">
+                    <button type="submit" class="btn-primary">
+                        @await Html.PartialAsync("_Icons", "filter-icon")
+                        Filtrele
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn-outline">@await Html.PartialAsync("_Icons", "x-mark") Temizle</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" id="newsletter-table-card" style="padding: 0; overflow: hidden;">
+        <div id="newsletter-table-section">
+            @await Html.PartialAsync("_NewsletterIssueTable", Model)
+        </div>
+    </div>
+
+</div>

@@ -39,7 +39,7 @@ public static class SiteMap
     private static readonly string[] AdminSections =
     [
         "Dashboard", "Blog", "BlogImage", "CallLog", "Category", "ChatMessage", "Contact",
-        "Education", "Experience", "Log", "MailTemplate", "Music", "MusicImage", "Project",
+        "Education", "Experience", "Log", "MailTemplate", "Music", "MusicImage", "NewsletterIssue", "Project",
         "ProjectImage", "Report", "Role", "Skill", "Status", "Subscriber", "User", "UserFriend"
     ];
 

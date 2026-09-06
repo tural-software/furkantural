@@ -1,0 +1,51 @@
+.filter-group--actions {
+    flex-direction: row;
+    align-items: center;
+    gap: .45rem;
+    margin-left: auto;
+}
+
+.data-table .nl-subject {
+    max-width: 320px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.nl-state {
+    display: inline-flex;
+    align-items: center;
+    padding: .22rem .55rem;
+    border-radius: 999px;
+    font-size: var(--fs-2xs);
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+.nl-state--draft { background: var(--pending-bg); color: var(--pending-fg); }
+.nl-state--sending { background: var(--accent-soft); color: var(--accent-text); }
+.nl-state--sent { background: var(--chip-create-bg); color: var(--chip-create-fg); }
+
+.nl-progress {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .15rem .5rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-main);
+}
+.nl-progress__done { font-weight: 600; }
+.nl-progress__total { color: var(--text-dim); }
+
+.nl-progress__note {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    font-size: var(--fs-2xs);
+}
+.nl-progress__failed { color: var(--chip-delete-fg); }
+.nl-progress__skipped { color: var(--text-dim); }
+
+.nl-progress__idle {
+    font-size: var(--fs-sm);
+    color: var(--text-dim);
+}

@@ -402,6 +402,17 @@
 }
 .cm-action-label { flex-shrink: 0; }
 
+.cm-note {
+    margin: .75rem 1.5rem 0;
+    padding: .625rem .75rem;
+    border-left: 3px solid var(--chip-update-fg);
+    border-radius: 0 6px 6px 0;
+    background: var(--bg-inset);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+    color: var(--text-main);
+}
+
 .cm-footer {
     display: flex;
     align-items: center;

@@ -14,9 +14,9 @@ public class AdminModulesTests
               .Where(t => typeof(Controller).IsAssignableFrom(t) && !t.IsAbstract)];
 
     [Fact]
-    public void Yirmi_bir_modul_kayitlidir()
+    public void Yirmi_iki_modul_kayitlidir()
     {
-        AdminModules.All.Should().HaveCount(21);
+        AdminModules.All.Should().HaveCount(22);
     }
 
     [Fact]

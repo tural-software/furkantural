@@ -8,4 +8,5 @@ public static class MailTemplateDefinitions
     public const string AccountActivation = "AccountActivation";
     public const string NewsletterConfirm = "NewsletterConfirm";
     public const string NewsletterUnsubscribe = "NewsletterUnsubscribe";
+    public const string NewsletterIssue = "NewsletterIssue";
 }

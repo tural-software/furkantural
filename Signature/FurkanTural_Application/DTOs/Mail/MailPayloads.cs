@@ -12,7 +12,8 @@ public static class MailPayloads
         [MailTemplateDefinitions.ContactUser] = typeof(ContactUserMailDto),
         [MailTemplateDefinitions.AccountActivation] = typeof(AccountActivationMailDto),
         [MailTemplateDefinitions.NewsletterConfirm] = typeof(NewsletterConfirmMailDto),
-        [MailTemplateDefinitions.NewsletterUnsubscribe] = typeof(NewsletterUnsubscribeMailDto)
+        [MailTemplateDefinitions.NewsletterUnsubscribe] = typeof(NewsletterUnsubscribeMailDto),
+        [MailTemplateDefinitions.NewsletterIssue] = typeof(NewsletterIssueMailDto)
     };
 
     public static IReadOnlyList<string> PlaceholdersOf(string? typeCode)
@@ -79,6 +80,17 @@ public class NewsletterUnsubscribeMailDto
     public string? ExpiresAt { get; set; }
     public string? IpAddress { get; set; }
     public string? Browser { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? CurrentYear { get; set; }
+}
+
+/// <summary>Doğrulanmış adreslere dağıtılan bülten sayısının gövdesi. <see cref="Body"/> yönetim panelinde yazılan HTML'dir ve şablona kaçışsız yerleştirilir; kaynağı yöneticinin kendisi olduğu için bu bilinçlidir.<para>UnsubscribeUrl alıcıya özeldir ve tek kullanımlık bir jeton taşır. Şablonda boş bırakılamaz: giden her bültenin tek tıkla çıkış bağlantısı taşıması hem yasal bir gerek hem de listenin izinli kalmasının tek yoludur.</para></summary>
+public class NewsletterIssueMailDto
+{
+    public string? Subject { get; set; }
+    public string? Body { get; set; }
+    public string? Email { get; set; }
+    public string? UnsubscribeUrl { get; set; }
     public string? ContactEmail { get; set; }
     public string? CurrentYear { get; set; }
 }

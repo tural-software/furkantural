@@ -1,0 +1,192 @@
+@using FurkanTural_Admin.Models.NewsletterIssue
+@using FurkanTural_Admin.Models.Common
+@using System.Text.Json
+@model NewsletterIssueIndexViewModel
+@{
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    static (string Css, string Label) Durum(string? status) => status switch
+    {
+        "Draft" => ("nl-state--draft", "Taslak"),
+        "Sending" => ("nl-state--sending", "Dağıtılıyor"),
+        "Sent" => ("nl-state--sent", "Gönderildi"),
+        _ => ("nl-state--draft", status ?? "—")
+    };
+}
+
+<script id="__newsletter-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
+
+<div class="data-table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th class="col-select"><input type="checkbox" class="row-select-all" aria-label="Sayfadaki tüm kayıtları seç" /></th>
+                <th class="col-id">ID</th>
+                <th>Konu</th>
+                <th>Durum</th>
+                <th>Dağıtım</th>
+                <th>Aktif</th>
+                <th>Silinmiş</th>
+                <th class="col-actions">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                var durum = Durum(row.Status);
+                var taslak = row.Status == "Draft";
+                <tr>
+                    <td class="col-select"><input type="checkbox" class="row-select" value="@row.Id" aria-label="Kaydı seç" /></td>
+                    <td>@row.Id</td>
+                    <td class="nl-subject">@(row.Subject ?? "—")</td>
+                    <td><span class="nl-state @durum.Css">@durum.Label</span></td>
+                    <td>
+                        @if (taslak)
+                        {
+                            <span class="nl-progress__idle">Henüz dağıtılmadı</span>
+                        }
+                        else
+                        {
+                            <span class="nl-progress" data-progress-for="@row.Id">
+                                <span class="nl-progress__done">@row.SentCount</span>/<span class="nl-progress__total">@row.RecipientCount</span>
+                                <span class="nl-progress__note">
+                                    @if (row.FailedCount > 0)
+                                    {
+                                        <span class="nl-progress__failed">@row.FailedCount başarısız</span>
+                                    }
+                                    @if (row.SkippedCount > 0)
+                                    {
+                                        <span class="nl-progress__skipped">@row.SkippedCount atlandı</span>
+                                    }
+                                </span>
+                            </span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.IsActive)
+                        {
+                            <span class="sbadge sbadge--active">
+                                @await Html.PartialAsync("_Icons", "check-circle")
+                                Aktif
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="sbadge sbadge--passive">
+                                @await Html.PartialAsync("_Icons", "x-circle")
+                                Pasif
+                            </span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.IsDeleted)
+                        {
+                            <span class="sbadge sbadge--deleted">Evet</span>
+                        }
+                        else
+                        {
+                            <span class="sbadge sbadge--safe">Hayır</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <button type="button" class="row-btn ft-view-btn" title="Görüntüle" data-id="@row.Id">
+                                @await Html.PartialAsync("_Icons", "eye")
+                            </button>
+
+                            <button type="button" class="row-btn nl-preview-btn" title="Gövdeyi önizle" data-id="@row.Id">
+                                @await Html.PartialAsync("_Icons", "file-text")
+                            </button>
+
+                            @if (!row.IsDeleted)
+                            {
+                                <button type="button" class="row-btn nl-test-btn" title="Deneme gönder" data-id="@row.Id">
+                                    @await Html.PartialAsync("_Icons", "mail")
+                                </button>
+                            }
+
+                            @if (taslak && !row.IsDeleted && row.IsActive)
+                            {
+                                <button type="button" class="row-btn nl-edit-btn" title="Düzenle" data-id="@row.Id">
+                                    @await Html.PartialAsync("_Icons", "pencil")
+                                </button>
+                                <button type="button" class="row-btn row-btn--success nl-queue-btn" title="Dağıtıma ver" data-id="@row.Id">
+                                    @await Html.PartialAsync("_Icons", "check")
+                                </button>
+                            }
+
+                            @if (!row.IsDeleted)
+                            {
+                                <form method="post" action="@Url.Action("ToggleActive")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    @if (row.IsActive)
+                                    {
+                                        <button type="submit" class="row-btn row-btn--warn" title="@(row.Status == "Sending" ? "Dağıtımı duraklat" : "Pasife Al")">
+                                            @await Html.PartialAsync("_Icons", "toggle-on")
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="row-btn row-btn--success" title="@(row.Status == "Sending" ? "Dağıtımı sürdür" : "Aktife Al")">
+                                            @await Html.PartialAsync("_Icons", "toggle-off")
+                                        </button>
+                                    }
+                                </form>
+                            }
+
+                            @if (row.IsDeleted)
+                            {
+                                <form method="post" action="@Url.Action("Restore")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button type="submit" class="row-btn row-btn--restore" title="Geri Yükle">
+                                        @await Html.PartialAsync("_Icons", "restore")
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" action="@Url.Action("Delete")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button type="submit" class="row-btn row-btn--delete" title="Sil">
+                                        @await Html.PartialAsync("_Icons", "trash")
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Rows.Any())
+            {
+                <tr class="empty-row">
+                    <td colspan="8">Kayıt bulunamadı.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="bulk-bar" data-bulk-url="@Url.Action("Bulk")" role="region" aria-label="Seçili kayıtlar için toplu işlem" hidden>
+    <form class="bulk-bar__token">@Html.AntiForgeryToken()</form>
+    <strong class="bulk-bar__count" data-bulk-count>0 seçili</strong>
+    <div class="bulk-bar__actions">
+        <button type="button" class="btn-outline bulk-bar__btn" data-bulk-action="deactivate">Pasife Al</button>
+        <button type="button" class="btn-outline bulk-bar__btn" data-bulk-action="activate">Aktife Al</button>
+        <button type="button" class="btn-outline bulk-bar__btn" data-bulk-action="restore">Geri Yükle</button>
+        <button type="button" class="btn-outline bulk-bar__btn bulk-bar__btn--danger" data-bulk-action="delete">Sil</button>
+        <button type="button" class="btn-outline bulk-bar__btn bulk-bar__btn--quiet" data-bulk-clear>Vazgeç</button>
+    </div>
+</div>
+
+@await Html.PartialAsync("_TableFooter", new TableFooterModel(
+    Model.PageNumber, Model.PageSize, Model.TotalPages, Model.TotalFiltered,
+    [
+        new("subject",       Model.SearchSubject),
+        new("activeFilter",  Model.ActiveFilter),
+        new("deletedFilter", Model.DeletedFilter),
+        new("dateFrom",      Model.DateFrom),
+        new("dateTo",        Model.DateTo),
+    ]))

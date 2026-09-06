@@ -3,7 +3,7 @@ using FurkanTural_Admin.Models.Navigation;
 
 namespace FurkanTural_Admin.Helpers;
 
-/// <summary>Yirmi bir yönetim modülünün tek kaydı. Ana ekran ızgarası, modül seçici ve kırıntı yolu buradan okur; modül adı, grubu ve controller'ı başka hiçbir yerde yazılı değildir.</summary>
+/// <summary>Yirmi iki yönetim modülünün tek kaydı. Ana ekran ızgarası, modül seçici ve kırıntı yolu buradan okur; modül adı, grubu ve controller'ı başka hiçbir yerde yazılı değildir.</summary>
 public static class AdminModules
 {
     public const string GroupContent = "İçerik";
@@ -79,6 +79,9 @@ public static class AdminModules
         new("subscribers", "subscriber", "Subscriber", "Subscriber", "Aboneler",
             "Bülten abonelerini görüntüleyin, ekleyin ve silin.",
             GroupContact, [EntityAction.Create, EntityAction.Read, EntityAction.Delete], "abone"),
+        new("newsletters", "newsletter", "NewsletterIssue", "NewsletterIssue", "Bültenler",
+            "Bülten sayılarını yazın, deneme gönderin ve doğrulanmış adreslere dağıtın.",
+            GroupContact, Crud, "bülten"),
 
         new("roles", "role", "Role", "Role", "Roller",
             "Kullanıcı rollerini görüntüleyin ve CRUD işlemlerini yönetin.",

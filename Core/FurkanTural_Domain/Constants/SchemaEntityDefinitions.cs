@@ -1,6 +1,6 @@
 namespace FurkanTural_Domain.Constants;
 
-/// <summary>Tablo şeması ucunun okumasına izin verilen entity adları. Uç bir istek parametresini EF modelinde arattığı için bu liste bir güvenlik sınırıdır: burada olmayan her ad 404 döner, aksi hâlde uç modeldeki her tipi yoklamak için kullanılabilirdi.<para>Liste yönetim panelinin yönettiği yirmi bir modülle birebir örtüşür; panelde karşılığı olmayan entity buraya eklenmez.</para></summary>
+/// <summary>Tablo şeması ucunun okumasına izin verilen entity adları. Uç bir istek parametresini EF modelinde arattığı için bu liste bir güvenlik sınırıdır: burada olmayan her ad 404 döner, aksi hâlde uç modeldeki her tipi yoklamak için kullanılabilirdi.<para>Liste yönetim panelinin yönettiği yirmi iki modülle birebir örtüşür; panelde karşılığı olmayan entity buraya eklenmez.</para></summary>
 public static class SchemaEntityDefinitions
 {
     public const string Blog = "Blog";
@@ -21,6 +21,7 @@ public static class SchemaEntityDefinitions
     public const string Contact = "Contact";
     public const string MailTemplate = "MailTemplate";
     public const string Subscriber = "Subscriber";
+    public const string NewsletterIssue = "NewsletterIssue";
     public const string Role = "Role";
     public const string Status = "Status";
     public const string Log = "Log";
@@ -30,7 +31,7 @@ public static class SchemaEntityDefinitions
         Blog, BlogImage, Category, Project, ProjectImage, Music, MusicImage,
         Skill, Experience, Education,
         User, UserFriend, ChatMessage, CallLog, Report,
-        Contact, MailTemplate, Subscriber,
+        Contact, MailTemplate, Subscriber, NewsletterIssue,
         Role, Status, Log
     };
 

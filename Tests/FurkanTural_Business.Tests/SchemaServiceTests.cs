@@ -77,9 +77,9 @@ public class SchemaServiceTests
     }
 
     [Fact]
-    public void Beyaz_liste_yirmi_bir_modulu_kapsar()
+    public void Beyaz_liste_yirmi_iki_modulu_kapsar()
     {
-        SchemaEntityDefinitions.All.Should().HaveCount(21);
+        SchemaEntityDefinitions.All.Should().HaveCount(22);
     }
 
     [Theory]

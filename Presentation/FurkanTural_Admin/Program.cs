@@ -130,6 +130,12 @@ builder.Services.AddHttpClient<IMailTemplateApiClient, MailTemplateApiClient>(cl
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+builder.Services.AddHttpClient<INewsletterIssueApiClient, NewsletterIssueApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 builder.Services.AddHttpClient<IStatusApiClient, StatusApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);

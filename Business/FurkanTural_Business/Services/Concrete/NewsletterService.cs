@@ -152,14 +152,16 @@ public class NewsletterService(
         return Result.Ok("Aboneliğiniz iptal edildi. Bundan sonra bülten göndermeyeceğiz.");
     }
 
-    /// <summary>Jeton üretir, kaydeder ve bağlantıyı postalar. Soğuma penceresi içinde bekleyen bir bağlantı varsa yenisi üretilmez ve sonuç yine <paramref name="neutralMessage"/> ile başarılı döner; duran bağlantı zaten yirmi dört saat geçerli olduğu için bekleyen kullanıcı bir şey kaybetmez.</summary>
+    /// <summary>Jeton üretir, kaydeder ve bağlantıyı postalar. Soğuma penceresi içinde bekleyen bir bağlantı varsa yenisi üretilmez ve sonuç yine <paramref name="neutralMessage"/> ile başarılı döner; duran bağlantı zaten yirmi dört saat geçerli olduğu için bekleyen kullanıcı bir şey kaybetmez.<para>Soğuma yalnızca kısa ömürlü, yani bu akışın kendi ürettiği bağlantıları sayar. Bültene gömülen çıkış bağlantıları çok daha uzun ömürlüdür ve bir posta isteğinin karşılığı değildir; onları da sayan bir pencere, bülteni yeni almış birinin çıkış isteğini sessizce yutardı.</para></summary>
     private async Task<Result> IssueAsync(
         Subscriber subscriber, string purpose, string mailType, string landingUrl,
         string? ipAddress, string? userAgent, string neutralMessage, CancellationToken cancellationToken)
     {
         var cutoff = _clock.UtcNow.Subtract(Cooldown);
+        var horizon = _clock.UtcNow.Add(Lifetime);
         var pending = await _unitOfWork.SubscriberVerifications.GetAsync(
-            x => x.SubscriberId == subscriber.Id && x.Purpose == purpose && x.ConsumedAt == null && x.CreatedAt > cutoff,
+            x => x.SubscriberId == subscriber.Id && x.Purpose == purpose && x.ConsumedAt == null
+                 && x.CreatedAt > cutoff && x.ExpiresAt <= horizon,
             cancellationToken);
 
         if (pending is not null)
