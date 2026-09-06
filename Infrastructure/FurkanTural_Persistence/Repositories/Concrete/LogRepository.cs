@@ -143,7 +143,7 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
             parameters.Add("DateFrom", dateFrom.Value);
         }
 
-        if (dateTo.HasValue)
+        if (dateTo.HasValue && dateTo.Value < DateTime.MaxValue.AddDays(-1))
         {
             sql.Append(" AND Date < @DateTo");
             parameters.Add("DateTo", dateTo.Value.AddDays(1));
