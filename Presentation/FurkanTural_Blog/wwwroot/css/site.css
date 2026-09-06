@@ -956,3 +956,72 @@ html.lightbox-open { overflow: hidden; }
 @media (min-width: 1920px) {
   .index-row__date { flex-basis: 120px; }
 }
+
+/* ── Yazı sayfası: odak düzeni ─────────────────────────────────────────────────
+   Tek kolon, ortalanmış. Paylaşım metnin solundaki dar rayda durur ve okuma
+   sütununun ölçüsüne hiç dokunmaz; 1200 altında metnin altındaki satıra iner.
+   Ray konumlandırma ile yerleştirilir, ızgarayla değil: ızgara olsaydı sütun
+   genişliği okuma ölçüsünden düşer ve satır uzunluğu dar ekranda bozulurdu. */
+.read-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 20;
+  background: transparent;
+  pointer-events: none;
+}
+.read-progress__bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+}
+
+.post-page .crumb { margin-bottom: 1rem; }
+.post-body { position: relative; }
+
+.post-share { margin: 1.75rem 0 0; }
+.post-share__inner { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.post-share__label {
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.post-share__btn {
+  min-height: 44px;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.post-share__btn:hover { border-color: var(--accent); color: var(--accent-text); }
+
+.post-foot {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Ray ancak konteynerin solunda taşacak yer varsa dışarı çıkabilir; 1200 altında
+   .content-page kenara zaten yakın. O yüzden tek eşik var: 1200'den itibaren ray
+   metnin solunda ve kaydırmayla gelir, altında metnin altındaki satırda kalır.
+   Mutlak konum kullanıldığı için okuma sütunu iki durumda da hiç daralmaz. */
+@media (min-width: 1200px) {
+  .post-share { position: absolute; left: -84px; top: 0; bottom: 0; margin: 0; width: 64px; }
+  .post-share__inner { position: sticky; top: 6rem; flex-direction: column; align-items: stretch; gap: 0.45rem; }
+  .post-share__label { text-align: center; }
+  .post-share__btn { padding: 0.5rem 0.35rem; font-size: var(--fs-2xs); line-height: 1.2; }
+}

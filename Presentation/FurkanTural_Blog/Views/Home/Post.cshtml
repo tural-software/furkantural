@@ -58,8 +58,21 @@
     });
 }
 
-<article class="container content-page">
-    <a class="back-link" asp-controller="Home" asp-action="Index">Tüm yazılar</a>
+@* Okuma ilerlemesi: yalnızca ne kadar kaldığını gösterir, odağı almaz. *@
+<div class="read-progress" role="progressbar" aria-label="Okuma ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <span class="read-progress__bar" data-read-progress></span>
+</div>
+
+<article class="container content-page post-page">
+    <nav class="crumb" aria-label="Konum">
+        <a asp-controller="Home" asp-action="Index">Blog</a>
+        @if (Model.Categories.FirstOrDefault(c => c.Slug.Length > 0) is { } lead)
+        {
+            <span aria-hidden="true">/</span>
+            <a href="@(Url.RouteUrl("BlogCategory", new { slug = lead.Slug }) ?? "/")">@lead.Name</a>
+        }
+    </nav>
+
     <h1>@Model.Title</h1>
     <div class="post-meta post-meta--detail">
         @if (!string.IsNullOrEmpty(Model.PublishedDisplay))
@@ -69,11 +82,40 @@
         }
         <span aria-label="@Model.ReadingMinutes dakika okuma">@Model.ReadingMinutes dk okuma</span>
     </div>
+
     @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
     {
         <img class="post-cover reveal" src="@Model.CoverImageUrl" alt="@(Model.CoverAltText ?? Model.Title)" loading="lazy" decoding="async" />
     }
-    <div class="post-content prose reveal">@Model.ContentHtml</div>
+
+    <div class="post-body">
+        <aside class="post-share" aria-label="Bu yazıyı paylaş">
+            <div class="post-share__inner">
+                <span class="post-share__label">Paylaş</span>
+                <button type="button" class="post-share__btn" data-share hidden>Paylaş</button>
+                <button type="button" class="post-share__btn" data-copy-link>Bağlantıyı kopyala</button>
+            </div>
+        </aside>
+
+        <div class="post-content prose reveal" data-read-target>@Model.ContentHtml</div>
+    </div>
+
+    <footer class="post-foot">
+        @if (Model.Categories.Count > 0)
+        {
+            <div class="index-row__cats">
+                @foreach (var cat in Model.Categories.Where(c => c.Slug.Length > 0))
+                {
+                    <a class="post-cat-chip" style="--chip-color:@cat.DisplayColor"
+                       href="@(Url.RouteUrl("BlogCategory", new { slug = cat.Slug }) ?? "/")"
+                       aria-label="@cat.Name kategorisindeki yazılar">
+                        <span class="post-cat-chip__dot" aria-hidden="true"></span>@cat.Name
+                    </a>
+                }
+            </div>
+        }
+        <a class="back-link" asp-controller="Home" asp-action="Index">Tüm yazılar</a>
+    </footer>
 </article>
 
 @section HeadMeta {
@@ -93,4 +135,8 @@
 @section JsonLd {
     @Html.Raw("<script type=\"application/ld+json\">" + articleJsonLd + "</script>")
     @Html.Raw("<script type=\"application/ld+json\">" + breadcrumbJsonLd + "</script>")
+}
+
+@section Scripts {
+    <script src="~/js/post.js" asp-append-version="true" defer></script>
 }
