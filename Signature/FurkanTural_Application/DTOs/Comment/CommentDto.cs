@@ -1,6 +1,6 @@
 namespace FurkanTural_Application.DTOs.Comment;
 
-/// <summary>Okura çizilen yorum. <b>Adres taşımaz</b> ve bu bir eksiklik değil sözleşmenin kendisidir: yorum listesi herkese açık bir uçtan gelir, adresi de taşısaydı sayfayı çeken biri yorumcuların adreslerini toplayabilirdi.<para>Yanıtlar iç içe değil tek düzey gelir. <see cref="Replies"/> yalnızca kök yorumlarda doludur; bir yanıtın kendi yanıtı olamayacağı için ağaç ikinci seviyede biter ve istemcinin ağaç kurması gerekmez.</para></summary>
+/// <summary>Okura çizilen yorum. <b>Adres taşımaz</b> ve bu bir eksiklik değil sözleşmenin kendisidir: yorum listesi herkese açık bir uçtan gelir, adresi de taşısaydı sayfayı çeken biri yorumcuların adreslerini toplayabilirdi.<para>Yanıtlar iç içe gelir ve <see cref="Replies"/> her seviyede dolabilir; ağacın derinliği konuşmanın kendi uzunluğudur. Düz bir liste gönderip istemciye ağaç kurdurmak da mümkündü ama o zaman her istemci — dört sunum projesinin dördü de — aynı kurma işini kendi kopyasında tekrar yazardı.</para></summary>
 public class CommentDto
 {
     public int Id { get; set; }

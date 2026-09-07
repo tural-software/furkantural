@@ -28,50 +28,7 @@
         <ol class="comment-list">
             @foreach (var root in thread.Items)
             {
-                <li class="comment" id="@root.Anchor">
-                    <article class="comment__card @(root.IsAuthor ? "comment__card--author" : "")">
-                        <header class="comment__head">
-                            <span class="comment__author">
-                                @root.AuthorName
-                                @if (root.IsAuthor)
-                                {
-                                    <span class="comment__badge">yazar</span>
-                                }
-                            </span>
-                            <time class="comment__date" datetime="@root.PublishedIso">@root.PublishedDisplay</time>
-                        </header>
-                        <p class="comment__body">@root.Body</p>
-                        <footer class="comment__foot">
-                            <button type="button" class="comment__reply" data-reply-to="@root.Id" data-reply-name="@root.AuthorName">
-                                Yanıtla
-                            </button>
-                        </footer>
-                    </article>
-
-                    @if (root.Replies.Count > 0)
-                    {
-                        <ol class="comment-list comment-list--replies">
-                            @foreach (var reply in root.Replies)
-                            {
-                                <li class="comment comment--reply" id="@reply.Anchor">
-                                    <article class="comment__card @(reply.IsAuthor ? "comment__card--author" : "")">
-                                        <header class="comment__head">
-                                            <span class="comment__author">
-                                                @reply.AuthorName
-                                                @if (reply.IsAuthor)
-                                                {
-                                                    <span class="comment__badge">yazar</span>
-                                                }
-                                            </span>
-                                            <time class="comment__date" datetime="@reply.PublishedIso">@reply.PublishedDisplay</time>
-                                        </header>
-                                        <p class="comment__body">@reply.Body</p>
-                                    </article>
-                                </li>
-                            }
-                        </ol>
-                    }
-                </li>
+                @await Html.PartialAsync("_CommentNode", root)
             }
         </ol>
 

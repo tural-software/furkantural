@@ -1,6 +1,6 @@
 namespace FurkanTural_Application.DTOs.Comment;
 
-/// <summary>Ziyaretçinin bıraktığı yorum. Alanların hiçbiri doğrulanmış bir kimlik değildir; ad ile adres yazanın beyanıdır.<para><see cref="ParentId"/> yalnızca kök bir yorumu gösterebilir. Yanıtın yanıtı reddedilir — sınır sunumsaldır, dar ekranda üçüncü seviyeden sonra metin sütunu okunmaz hâle gelir.</para></summary>
+/// <summary>Ziyaretçinin bıraktığı yorum. Alanların hiçbiri doğrulanmış bir kimlik değildir; ad ile adres yazanın beyanıdır.<para><see cref="ParentId"/> yayındaki herhangi bir yorumu gösterebilir; gösterdiği satırın kendisi de bir yanıt olabilir. Aranan tek şey üst yorumun aynı yazıya ait ve onaylanmış olmasıdır — onaysız bir yoruma yanıt verilebilseydi, form o yorumun varlığını ele veren bir araca dönüşürdü.</para></summary>
 public class SubmitCommentDto
 {
     public int BlogId { get; set; }

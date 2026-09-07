@@ -36,6 +36,9 @@ public class CommentService(
     /// <summary>Yanıt sayacı için tek okumada taranan en fazla satır. Sayı yalnızca silme kararına bilgi verir; sınır, bir sayfalık listenin yanıtlarının sınırsız büyümesini engeller.</summary>
     private const int ReplyScan = 1000;
 
+    /// <summary>Bir yazının yorum ağacında okunan en fazla yanıt satırı. Derinlik sınırsızdır, genişlik değildir: zincir kendiliğinden biter ama toplam satır bir yerde durmalıdır, yoksa sayfalamayı kök yorumlara uygulamış olmak bir şey ifade etmezdi.</summary>
+    private const int ThreadNodeScan = 500;
+
     /// <summary>Aynı adresin aynı yazıya arka arkaya yorum bırakamayacağı süre. Asıl işi çift gönderimi yutmaktır: form iki kez gönderildiğinde ikinci satır açılmaz ve kullanıcı yine aynı olumlu metni görür.</summary>
     private static readonly TimeSpan SubmitCooldown = TimeSpan.FromSeconds(60);
 
@@ -68,23 +71,7 @@ public class CommentService(
         var totalCount = await _unitOfWork.Comments.CountAsync(approved, cancellationToken);
 
         var items = roots.Select(r => r.ToDto()).ToList();
-
-        if (roots.Count > 0)
-        {
-            var rootIds = roots.Select(r => r.Id).ToList();
-            var replies = await _unitOfWork.Comments.GetAllAsync(
-                c => c.ParentId != null && rootIds.Contains(c.ParentId.Value) && c.Status == CommentStatuses.Approved,
-                cancellationToken);
-
-            var byParent = replies
-                .OrderBy(r => r.Id)
-                .GroupBy(r => r.ParentId!.Value)
-                .ToDictionary(g => g.Key, g => g.Select(r => r.ToDto()).ToList());
-
-            foreach (var item in items)
-                if (byParent.TryGetValue(item.Id, out var children))
-                    item.Replies = children;
-        }
+        await AttachRepliesAsync(items, cancellationToken);
 
         return Result<CommentThreadDto>.Ok(new CommentThreadDto
         {
@@ -95,6 +82,42 @@ public class CommentService(
             PageSize = ThreadPageSize,
             Items = items
         });
+    }
+
+    /// <summary>Kök yorumların altına, kaç seviye inerse insin, bütün yanıt zincirini yerleştirir. Yürüyüş seviye seviyedir: her tur bir önceki turda bulunan yorumların çocuklarını tek sorguda okur ve boş bir seviyeye varınca durur. Yanıt başına sorgu açan özyineleme, derinliği kullanıcının belirlediği bir yapıda sorgu sayısını da kullanıcıya bırakırdı.<para>Tur sayısı zincirin kendi derinliğiyle sınırlıdır; toplam satır <see cref="ThreadNodeScan"/> ile sınırlıdır. İkinci sınır olmasaydı tek bir yazının yorum ağacı, sayfalamayı kök yorumlara uygulamış olmamıza rağmen tabloyu baştan sona okuyabilirdi.</para><para>Bir çocuk, üstü sözlükte bulunamazsa atlanır. Bu yalnızca üst yorum yayından kalkmışken çocuğu yayındaysa olur; o satırı köke terfi ettirmek, okurun göremediği bir yoruma verilmiş yanıtı bağlamsız biçimde sayfaya çıkarırdı.</para></summary>
+    private async Task AttachRepliesAsync(List<CommentDto> roots, CancellationToken cancellationToken)
+    {
+        if (roots.Count == 0)
+            return;
+
+        var byId = roots.ToDictionary(r => r.Id);
+        var frontier = roots.Select(r => r.Id).ToList();
+        var scanned = 0;
+
+        while (frontier.Count > 0 && scanned < ThreadNodeScan)
+        {
+            var parentIds = frontier;
+            var level = (await _unitOfWork.Comments.GetAllAsync(
+                c => c.ParentId != null && parentIds.Contains(c.ParentId.Value) && c.Status == CommentStatuses.Approved,
+                cancellationToken)).OrderBy(c => c.Id).ToList();
+
+            if (level.Count == 0)
+                break;
+
+            scanned += level.Count;
+            frontier = [];
+
+            foreach (var row in level)
+            {
+                if (!byId.TryGetValue(row.ParentId!.Value, out var parent))
+                    continue;
+
+                var dto = row.ToDto();
+                parent.Replies.Add(dto);
+                byId[dto.Id] = dto;
+                frontier.Add(dto.Id);
+            }
+        }
     }
 
     public async Task<Result> SubmitAsync(SubmitCommentDto dto, string? turnstileToken, string? ipAddress, CancellationToken cancellationToken = default)
@@ -124,9 +147,6 @@ public class CommentService(
             var parent = await _unitOfWork.Comments.GetByIdAsync(requested, cancellationToken);
             if (parent is null || parent.BlogId != blog.Id || parent.Status != CommentStatuses.Approved)
                 return Result.Fail("Yanıtlanan yorum bulunamadı.", statusCode: 404);
-
-            if (parent.ParentId is not null)
-                return Result.Fail("Bir yanıta yanıt verilemez.");
 
             parentId = parent.Id;
         }
@@ -270,9 +290,6 @@ public class CommentService(
         var parent = await _unitOfWork.Comments.GetByIdForAdminAsync(dto.ParentId, cancellationToken);
         if (parent is null || parent.IsDeleted)
             return Result<AdminCommentDto>.Fail("Yanıtlanan yorum bulunamadı.", statusCode: 404);
-
-        if (parent.ParentId is not null)
-            return Result<AdminCommentDto>.Fail("Bir yanıta yanıt verilemez.");
 
         if (parent.Status != CommentStatuses.Approved)
             return Result<AdminCommentDto>.Fail("Yalnızca onaylanmış yoruma yanıt verilebilir.");

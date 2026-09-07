@@ -1,0 +1,36 @@
+@model CommentViewModel
+
+<li class="comment@(Model.Depth > 0 ? " comment--reply" : "")" id="@Model.Anchor">
+    <article class="comment__card @(Model.IsAuthor ? "comment__card--author" : "")">
+        <header class="comment__head">
+            <span class="comment__author">
+                @Model.AuthorName
+                @if (Model.IsAuthor)
+                {
+                    <span class="comment__badge">yazar</span>
+                }
+            </span>
+            @if (Model.Depth > 0 && !string.IsNullOrWhiteSpace(Model.ParentAuthorName))
+            {
+                <span class="comment__replyto">@Model.ParentAuthorName kişisine yanıt</span>
+            }
+            <time class="comment__date" datetime="@Model.PublishedIso">@Model.PublishedDisplay</time>
+        </header>
+        <p class="comment__body">@Model.Body</p>
+        <footer class="comment__foot">
+            <button type="button" class="comment__reply" data-reply-to="@Model.Id" data-reply-name="@Model.AuthorName">
+                Yanıtla
+            </button>
+        </footer>
+    </article>
+
+    @if (Model.Replies.Count > 0)
+    {
+        <ol class="comment-list comment-list--replies@(Model.IndentsReplies ? "" : " comment-list--flat")">
+            @foreach (var reply in Model.Replies)
+            {
+                @await Html.PartialAsync("_CommentNode", reply)
+            }
+        </ol>
+    }
+</li>

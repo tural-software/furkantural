@@ -128,7 +128,7 @@
                                 </form>
                             }
 
-                            @if (!row.IsDeleted && row.IsApproved && row.ParentId is null)
+                            @if (!row.IsDeleted && row.IsApproved)
                             {
                                 <button type="button" class="row-btn ft-reply-btn" title="Yanıtla" data-id="@row.Id">
                                     @await Html.PartialAsync("_Icons", "reply")

@@ -106,7 +106,7 @@
             { key: 'close', label: 'Kapat', variant: 'secondary' },
             {
                 key: 'reply', label: 'Yanıtla', icon: 'reply', variant: 'primary',
-                hidden: function (r) { return r.isDeleted || r.status !== 'Approved' || r.parentId; }
+                hidden: function (r) { return r.isDeleted || r.status !== 'Approved'; }
             }
         ]
     };

@@ -230,7 +230,7 @@ public class CommentServiceTests
     }
 
     [Fact]
-    public async Task Yanita_yanit_verilemez()
+    public async Task Yanitin_yaniti_da_kabul_edilir()
     {
         Post();
         Row(1);
@@ -238,8 +238,10 @@ public class CommentServiceTests
 
         var result = await _sut.SubmitAsync(Submission(parentId: 2), "jeton", null);
 
-        result.Success.Should().BeFalse();
-        result.Errors.Should().ContainSingle().Which.Should().Contain("yanıta yanıt");
+        result.Success.Should().BeTrue();
+        _commentRows.Should().HaveCount(3);
+        _commentRows[^1].ParentId.Should().Be(2,
+            "zincirin derinliği veriyle değil sunumla sınırlanır");
     }
 
     [Fact]
@@ -306,6 +308,38 @@ public class CommentServiceTests
         result.Data!.Items.Should().HaveCount(2, "yanıtlar kök sayılmaz");
         result.Data.Items[0].Replies.Select(r => r.Id).Should().Equal([2, 3]);
         result.Data.TotalCount.Should().Be(4, "başlıktaki sayı yanıtları da sayar");
+    }
+
+    [Fact]
+    public async Task Zincir_kac_seviye_inerse_insin_agaca_yerlesir()
+    {
+        Post();
+        Row(1);
+        Row(2, parentId: 1);
+        Row(3, parentId: 2);
+        Row(4, parentId: 3);
+
+        var result = await _sut.GetThreadAsync(7);
+
+        var kok = result.Data!.Items.Should().ContainSingle().Subject;
+        var birinci = kok.Replies.Should().ContainSingle().Subject;
+        var ikinci = birinci.Replies.Should().ContainSingle().Subject;
+        ikinci.Replies.Should().ContainSingle().Which.Id.Should().Be(4);
+        result.Data.TotalCount.Should().Be(4, "başlıktaki sayı zincirin tamamını sayar");
+    }
+
+    [Fact]
+    public async Task Yayindan_kalkan_yorumun_yaniti_koke_terfi_etmez()
+    {
+        Post();
+        Row(1);
+        Row(2, parentId: 1, status: CommentStatuses.Pending);
+        Row(3, parentId: 2);
+
+        var result = await _sut.GetThreadAsync(7);
+
+        var kok = result.Data!.Items.Should().ContainSingle().Subject;
+        kok.Replies.Should().BeEmpty("okurun göremediği bir yoruma verilen yanıt bağlamsız kalırdı");
     }
 
     [Fact]
@@ -441,16 +475,18 @@ public class CommentServiceTests
     }
 
     [Fact]
-    public async Task Panelden_yanita_yanit_verilemez()
+    public async Task Panelden_yanita_da_yanit_verilebilir()
     {
         Post();
         Row(1);
         Row(2, parentId: 1);
 
-        var result = await _sut.ReplyAsync(new AdminReplyCommentDto { ParentId = 2, Body = "Olmaz." }, 9);
+        var result = await _sut.ReplyAsync(new AdminReplyCommentDto { ParentId = 2, Body = "Devam edelim." }, 9);
 
-        result.Success.Should().BeFalse();
-        result.Errors.Should().ContainSingle().Which.Should().Contain("yanıta yanıt");
+        result.Success.Should().BeTrue();
+        _commentRows.Should().HaveCount(3);
+        _commentRows[^1].ParentId.Should().Be(2,
+            "yazarın bir yanıta karşılık verememesi, konuşmayı okurun başlattığı yerde bırakırdı");
     }
 
     [Fact]

@@ -2,12 +2,12 @@ using FurkanTural_Domain.Entities.Common;
 
 namespace FurkanTural_Domain.Entities;
 
-/// <summary>Bir yazının altına bırakılan yorum. Üyelik istenmez: <see cref="AuthorName"/> ile <see cref="AuthorEmail"/> yazanın kendi beyanıdır ve doğrulanmaz, dolayısıyla bir kimlik değil yalnızca bir imzadır.<para>Adres hiçbir yerde yayımlanmaz. İki işi vardır: aynı kişiyi turdan tura tanımak ve <see cref="NotifyOnReply"/> açıksa yoruma gelen yanıtı haber vermek. Gövdede saklanması bu ikinci iş yüzünden zorunludur — bildirim gönderilecek adres yorumun kendisinde durmazsa onu başka hiçbir yerden bulamayız.</para><para>Yayına girmek <see cref="Status"/>'e bağlıdır, aktifliğe değil. Ayrım bilinçli: aktiflik yöneticinin genel anahtarıdır ve her modülde aynı şeyi yapar, durum ise yorumun kendi denetim çizgisidir. Bir yorum onaylanmış ama pasife alınmış olabilir; o zaman da görünmez, çünkü okumalar iki koşulu birlikte arar.</para><para><see cref="ParentId"/> yalnızca bir düzey iner: yanıtın yanıtı yoktur. Sınır veri tabanında değil serviste durur, çünkü kural yapısal değil sunumsaldır — dar ekranda üçüncü seviyeden sonra metin sütunu okunmaz hâle gelir.</para></summary>
+/// <summary>Bir yazının altına bırakılan yorum. Üyelik istenmez: <see cref="AuthorName"/> ile <see cref="AuthorEmail"/> yazanın kendi beyanıdır ve doğrulanmaz, dolayısıyla bir kimlik değil yalnızca bir imzadır.<para>Adres hiçbir yerde yayımlanmaz. İki işi vardır: aynı kişiyi turdan tura tanımak ve <see cref="NotifyOnReply"/> açıksa yoruma gelen yanıtı haber vermek. Gövdede saklanması bu ikinci iş yüzünden zorunludur — bildirim gönderilecek adres yorumun kendisinde durmazsa onu başka hiçbir yerden bulamayız.</para><para>Yayına girmek <see cref="Status"/>'e bağlıdır, aktifliğe değil. Ayrım bilinçli: aktiflik yöneticinin genel anahtarıdır ve her modülde aynı şeyi yapar, durum ise yorumun kendi denetim çizgisidir. Bir yorum onaylanmış ama pasife alınmış olabilir; o zaman da görünmez, çünkü okumalar iki koşulu birlikte arar.</para><para><see cref="ParentId"/> derinlik sınırı tanımaz: yanıtın yanıtı da, onun yanıtı da açılabilir. Zincirin uzunluğu bir konuşmanın kaç el gidip geldiğine bağlıdır ve bunu veri tabanında kesmek, sohbeti veriyle değil şemayla susturmak olurdu. Dar ekranın sınırı ise gerçektir ama sunumdadır: girinti belli bir seviyeden sonra durur, yanıtın kime verildiği ok ile yazılır.</para></summary>
 public class Comment : BaseEntity
 {
     public int BlogId { get; set; }
 
-    /// <summary>Yanıt verilen yorum. Boşsa yorum doğrudan yazıya bırakılmıştır. Dolu bir değerin kendisi de yanıt olamaz; zincir tek düzeyde biter.</summary>
+    /// <summary>Yanıt verilen yorum. Boşsa yorum doğrudan yazıya bırakılmıştır. Dolu bir değer kendisi de bir yanıt olabilir; zincir kaç halka sürerse sürsün geçerlidir.</summary>
     public int? ParentId { get; set; }
 
     public string? AuthorName { get; set; }

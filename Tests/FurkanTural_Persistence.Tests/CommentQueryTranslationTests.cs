@@ -31,18 +31,18 @@ public class CommentQueryTranslationTests
     }
 
     [Fact]
-    public void Koklerin_yanitlari_tek_sorguda_cevrilebilir()
+    public void Bir_seviyenin_yanitlari_tek_sorguda_cevrilebilir()
     {
         using var db = Context();
-        var rootIds = new List<int> { 1, 2, 3 };
+        var parentIds = new List<int> { 1, 2, 3 };
 
         var sql = db.Comments
             .AsNoTracking()
-            .Where(c => c.ParentId != null && rootIds.Contains(c.ParentId.Value) && c.Status == CommentStatuses.Approved)
+            .Where(c => c.ParentId != null && parentIds.Contains(c.ParentId.Value) && c.Status == CommentStatuses.Approved)
             .ToQueryString();
 
         sql.Should().Contain("[ParentId]");
-        sql.Should().Contain("IN", "yanıtlar kök başına ayrı sorguyla değil tek IN ile alınmalı");
+        sql.Should().Contain("IN", "bir seviye, yorum başına ayrı sorguyla değil tek IN ile alınmalı");
     }
 
     [Fact]

@@ -112,12 +112,12 @@ public class CommentSubmitTests
     public async Task Api_reddederse_kendi_metni_gosterilir()
     {
         _comments.Setup(c => c.SubmitAsync(It.IsAny<CommentFormModel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new CommentOutcome(false, "Bir yanıta yanıt verilemez."));
+            .ReturnsAsync(new CommentOutcome(false, "Yanıtlanan yorum bulunamadı."));
 
         var result = await Build().Comment("ornek", Filled(), default);
 
         var model = result.Should().BeOfType<ViewResult>().Subject.Model.Should().BeOfType<BlogPostViewModel>().Subject;
-        model.CommentForm.ResultMessage.Should().Be("Bir yanıta yanıt verilemez.",
+        model.CommentForm.ResultMessage.Should().Be("Yanıtlanan yorum bulunamadı.",
             "API'nin cümlesi kullanıcıya daha çok şey söyler; genel bir metne indirmek sebebi gizlerdi");
     }
 

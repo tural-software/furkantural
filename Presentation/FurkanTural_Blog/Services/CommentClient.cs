@@ -24,7 +24,10 @@ public class CommentClient(HttpClient httpClient, ILogger<CommentClient> logger)
             var envelope = await _httpClient.GetFromJsonAsync<ApiResult<CommentThreadViewModel>>(
                 $"{Base}/blog/{blogId}", JsonOptions, ct);
 
-            return envelope?.Data ?? new CommentThreadViewModel { BlogId = blogId };
+            var thread = envelope?.Data ?? new CommentThreadViewModel { BlogId = blogId };
+            thread.StampTree();
+
+            return thread;
         }
         catch (Exception ex)
         {
