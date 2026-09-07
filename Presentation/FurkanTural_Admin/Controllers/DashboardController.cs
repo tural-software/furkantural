@@ -31,6 +31,9 @@ public class DashboardController(IAdminDashboardClient dashboardClient) : Contro
         if (data?.PendingReports is > 0)
             attention.Add(new AttentionItemViewModel("reports", "bekleyen", data.PendingReports.Value, "bekleyen şikayet",
                 Url.Action("Index", "Report", new { statusFilter = "Pending" })));
+        if (data?.PendingComments is > 0)
+            attention.Add(new AttentionItemViewModel("comments", "bekleyen", data.PendingComments.Value, "onay bekleyen yorum",
+                Url.Action("Index", "Comment", new { statusFilter = "Pending" })));
         var attentionBySlug = attention.ToDictionary(a => a.Slug);
 
         var modules = AdminModules.All;
@@ -93,10 +96,10 @@ public class DashboardController(IAdminDashboardClient dashboardClient) : Contro
             : $"{Format(thisWeek.Blogs)} yazı · {Format(thisWeek.Users)} kullanıcı · {Format(thisWeek.Contacts)} mesaj · {Format(thisWeek.Subscribers)} abone";
         var trend = freshTotal is { } now && lastTotal is { } before ? now - before : (int?)null;
 
-        var open = data is null ? (int?)null : data.UnreadContacts + data.PendingReports;
+        var open = data is null ? (int?)null : data.UnreadContacts + data.PendingReports + data.PendingComments;
         var openDetail = data is null
             ? null
-            : $"{Format(data.UnreadContacts)} okunmamış mesaj · {Format(data.PendingReports)} bekleyen şikayet";
+            : $"{Format(data.UnreadContacts)} okunmamış mesaj · {Format(data.PendingReports)} bekleyen şikayet · {Format(data.PendingComments)} bekleyen yorum";
 
         return
         [

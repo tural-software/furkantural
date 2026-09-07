@@ -9,7 +9,7 @@ using Moq;
 
 namespace FurkanTural_Business.Tests;
 
-/// <summary>Pano toplayıcısı yirmi bir varlığın özetini uçların yol adıyla anahtarlar ve dört sayacı süzgeçli sayımla alır. Süzgeçlerin anlamı burada derlenip doğrulanır: okunmamış = silinmemiş ve okunmamış; bekleyen = silinmemiş ve Pending; aktif kullanıcı = silinmemiş, aktif ve pencere başından beri görülmüş; haftalık = silinmemiş ve CreatedAt pencere içinde (bitiş dışlanır). Pencere 1-90 güne sıkıştırılır.</summary>
+/// <summary>Pano toplayıcısı yirmi dört varlığın özetini uçların yol adıyla anahtarlar ve beş sayacı süzgeçli sayımla alır. Süzgeçlerin anlamı burada derlenip doğrulanır: okunmamış = silinmemiş ve okunmamış; bekleyen şikayet = silinmemiş ve Pending; onay bekleyen yorum = silinmemiş ve Pending; aktif kullanıcı = silinmemiş, aktif ve pencere başından beri görülmüş; haftalık = silinmemiş ve CreatedAt pencere içinde (bitiş dışlanır). Pencere 1-90 güne sıkıştırılır.</summary>
 public class AdminDashboardServiceTests
 {
     private static readonly DateTime Today = new(2026, 9, 4);
@@ -17,6 +17,7 @@ public class AdminDashboardServiceTests
     private readonly Mock<IUnitOfWork> _uow = new() { DefaultValue = DefaultValue.Mock };
     private readonly Mock<IRepository<Contact>> _contacts = new();
     private readonly Mock<IRepository<Report>> _reports = new();
+    private readonly Mock<IRepository<Comment>> _comments = new();
     private readonly Mock<IUserRepository> _users = new();
     private readonly Mock<IBlogRepository> _blogs = new();
     private readonly Mock<ISubscriberRepository> _subscribers = new();
@@ -24,6 +25,7 @@ public class AdminDashboardServiceTests
     private readonly List<Expression<Func<Blog, bool>>> _blogPredicates = [];
     private Expression<Func<Contact, bool>>? _unreadPredicate;
     private Expression<Func<Report, bool>>? _pendingPredicate;
+    private Expression<Func<Comment, bool>>? _awaitingPredicate;
 
     public AdminDashboardServiceTests()
     {
@@ -33,6 +35,9 @@ public class AdminDashboardServiceTests
         _reports.Setup(r => r.CountForAdminAsync(It.IsAny<Expression<Func<Report, bool>>?>(), It.IsAny<CancellationToken>()))
             .Callback<Expression<Func<Report, bool>>?, CancellationToken>((p, _) => _pendingPredicate = p)
             .ReturnsAsync(2);
+        _comments.Setup(r => r.CountForAdminAsync(It.IsAny<Expression<Func<Comment, bool>>?>(), It.IsAny<CancellationToken>()))
+            .Callback<Expression<Func<Comment, bool>>?, CancellationToken>((p, _) => _awaitingPredicate = p)
+            .ReturnsAsync(5);
         _users.Setup(r => r.CountForAdminAsync(It.IsAny<Expression<Func<User, bool>>?>(), It.IsAny<CancellationToken>()))
             .Callback<Expression<Func<User, bool>>?, CancellationToken>((p, _) => _userPredicates.Add(p!))
             .ReturnsAsync(4);
@@ -42,11 +47,12 @@ public class AdminDashboardServiceTests
         _subscribers.Setup(r => r.CountForAdminAsync(It.IsAny<Expression<Func<Subscriber, bool>>?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
-        foreach (var repo in new object[] { _contacts, _reports, _users, _blogs, _subscribers })
+        foreach (var repo in new object[] { _contacts, _reports, _comments, _users, _blogs, _subscribers })
             SetupSummary(repo);
 
         _uow.SetupGet(u => u.Contacts).Returns(_contacts.Object);
         _uow.SetupGet(u => u.Reports).Returns(_reports.Object);
+        _uow.SetupGet(u => u.Comments).Returns(_comments.Object);
         _uow.SetupGet(u => u.Users).Returns(_users.Object);
         _uow.SetupGet(u => u.Blogs).Returns(_blogs.Object);
         _uow.SetupGet(u => u.Subscribers).Returns(_subscribers.Object);
@@ -58,6 +64,7 @@ public class AdminDashboardServiceTests
         {
             case Mock<IRepository<Contact>> c: c.Setup(r => r.GetAdminSummaryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new EntitySummaryDto(7, null)); break;
             case Mock<IRepository<Report>> r: r.Setup(x => x.GetAdminSummaryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new EntitySummaryDto(5, null)); break;
+            case Mock<IRepository<Comment>> k: k.Setup(x => x.GetAdminSummaryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new EntitySummaryDto(11, null)); break;
             case Mock<IUserRepository> u: u.Setup(x => x.GetAdminSummaryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new EntitySummaryDto(12, null)); break;
             case Mock<IBlogRepository> b: b.Setup(x => x.GetAdminSummaryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new EntitySummaryDto(28, new DateTime(2026, 9, 1))); break;
             case Mock<ISubscriberRepository> s: s.Setup(x => x.GetAdminSummaryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new EntitySummaryDto(9, null)); break;
@@ -87,6 +94,7 @@ public class AdminDashboardServiceTests
 
         result.Data!.UnreadContacts.Should().Be(3);
         result.Data.PendingReports.Should().Be(2);
+        result.Data.PendingComments.Should().Be(5);
         result.Data.ActiveUsers.Should().Be(4);
         result.Data.ThisWeek.Should().Be(new AdminWeeklyCountsDto(2, 4, 3, 1));
 
@@ -99,6 +107,12 @@ public class AdminDashboardServiceTests
         pending(new Report { Status = "Pending" }).Should().BeTrue();
         pending(new Report { Status = "Reviewed" }).Should().BeFalse();
         pending(new Report { Status = "Pending", IsDeleted = true }).Should().BeFalse();
+
+        var awaiting = _awaitingPredicate!.Compile();
+        awaiting(new Comment { Status = "Pending" }).Should().BeTrue();
+        awaiting(new Comment { Status = "Approved" }).Should().BeFalse("yayına giren yorum bekleyen iş değildir");
+        awaiting(new Comment { Status = "Rejected" }).Should().BeFalse("reddedilen yorum karara bağlanmıştır");
+        awaiting(new Comment { Status = "Pending", IsDeleted = true }).Should().BeFalse();
 
         var active = _userPredicates[0].Compile();
         active(new User { IsActive = true, LastSeenAt = Today.AddDays(-6) }).Should().BeTrue("pencerenin ilk günü dahil");
@@ -154,6 +168,7 @@ public class AdminDashboardServiceTests
         result.Data.Summaries.Should().ContainKey("user", "yanındaki özetler etkilenmez");
         result.Data.PendingReports.Should().BeNull("okunamayan sayaç boştur; sıfır yazmak uydurma olurdu");
         result.Data.UnreadContacts.Should().Be(3);
+        result.Data.PendingComments.Should().Be(5, "yanındaki bekleyen iş sayacı ayrı bir sorgudur");
         result.Data.ActiveUsers.Should().Be(4);
         result.Data.ThisWeek.Should().Be(new AdminWeeklyCountsDto(2, 4, 3, 1), "haftalık sayaçlar ayrı sorgulardır, şikayet sayacıyla düşmez");
     }

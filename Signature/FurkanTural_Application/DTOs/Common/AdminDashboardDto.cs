@@ -3,11 +3,12 @@ namespace FurkanTural_Application.DTOs.Common;
 /// <summary>Panelin dört haftalık sayacı: son yedi günde (ya da istenen pencerede) eklenen blog yazısı, kullanıcı, iletişim mesajı ve abone; silinmişler sayılmaz. Bir sayaç okunamazsa boş gelir; sıfır ile karıştırılmamalıdır.</summary>
 public sealed record AdminWeeklyCountsDto(int? Blogs, int? Users, int? Contacts, int? Subscribers);
 
-/// <summary>Yönetim panelinin açılış ekranı için tek yanıt: yirmi bir varlığın özeti (anahtar, uçların yol adıdır: blog, blogimage, user, log …), okunmamış iletişim ve bekleyen şikayet sayısı, pencere içinde görülen aktif kullanıcı sayısı ve iki haftalık sayaç. Panel önceden bunları otuz iki ayrı istekle topluyordu; bu uç aynı bilgiyi tek gidiş-dönüşte verir, tek tek uçlar yine yerinde durur.<para>Yanıt kısmidir: okunamayan bir sayaç boş döner, okunamayan bir özet sözlükte hiç yer almaz. Tek bir sorgunun düşmesi yanıtın tamamını götürmez.</para></summary>
+/// <summary>Yönetim panelinin açılış ekranı için tek yanıt: yirmi dört varlığın özeti (anahtar, uçların yol adıdır: blog, blogimage, user, log …), yöneticiyi bekleyen üç sayaç — okunmamış iletişim, bekleyen şikayet, onay bekleyen yorum —, pencere içinde görülen aktif kullanıcı sayısı ve iki haftalık sayaç. Panel önceden bunları otuz iki ayrı istekle topluyordu; bu uç aynı bilgiyi tek gidiş-dönüşte verir, tek tek uçlar yine yerinde durur.<para>Yanıt kısmidir: okunamayan bir sayaç boş döner, okunamayan bir özet sözlükte hiç yer almaz. Tek bir sorgunun düşmesi yanıtın tamamını götürmez.</para></summary>
 public sealed record AdminDashboardDto(
     IReadOnlyDictionary<string, EntitySummaryDto> Summaries,
     int? UnreadContacts,
     int? PendingReports,
+    int? PendingComments,
     int? ActiveUsers,
     AdminWeeklyCountsDto ThisWeek,
     AdminWeeklyCountsDto LastWeek);

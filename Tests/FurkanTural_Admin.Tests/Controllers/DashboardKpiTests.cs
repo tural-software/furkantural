@@ -42,6 +42,7 @@ public class DashboardKpiTests
         },
         UnreadContacts = 3,
         PendingReports = 2,
+        PendingComments = 4,
         ActiveUsers = 4,
         ThisWeek = new AdminWeeklyCountsModel { Blogs = 2, Users = 5, Contacts = 3, Subscribers = 1 },
         LastWeek = new AdminWeeklyCountsModel { Blogs = 1, Users = 2, Contacts = 0, Subscribers = 1 }
@@ -67,12 +68,12 @@ public class DashboardKpiTests
         vm.Kpis.Single(k => k.Key == "active-users").Value.Should().Be("4");
 
         var open = vm.Kpis.Single(k => k.Key == "open-work");
-        open.Value.Should().Be("5");
-        open.Detail.Should().Be("3 okunmamış mesaj · 2 bekleyen şikayet");
+        open.Value.Should().Be("9");
+        open.Detail.Should().Be("3 okunmamış mesaj · 2 bekleyen şikayet · 4 bekleyen yorum");
         open.Url.Should().Be("#dash-attention-title");
 
-        vm.Attention.Select(a => (a.Slug, a.Count)).Should().Equal(("contact", 3), ("reports", 2));
-        vm.Attention.Select(a => a.Url).Should().Equal("/Contact", "/Report");
+        vm.Attention.Select(a => (a.Slug, a.Count)).Should().Equal(("contact", 3), ("reports", 2), ("comments", 4));
+        vm.Attention.Select(a => a.Url).Should().Equal("/Contact", "/Report", "/Comment");
 
         var cards = vm.Groups.SelectMany(g => g.Modules).ToDictionary(c => c.Slug);
         cards["blogs"].TotalCount.Should().Be(28, "özet anahtarı modülün API yol adıyla eşleşir");
@@ -80,7 +81,8 @@ public class DashboardKpiTests
         cards["categories"].TotalCount.Should().BeNull("toplayıcının vermediği varlık boş kalır");
         cards["contact"].AttentionCount.Should().Be(3);
         cards["reports"].AttentionCount.Should().Be(2);
-        cards.Values.Where(c => c.Slug is not ("contact" or "reports")).Should().OnlyContain(c => c.AttentionCount == null);
+        cards["comments"].AttentionCount.Should().Be(4);
+        cards.Values.Where(c => c.Slug is not ("contact" or "reports" or "comments")).Should().OnlyContain(c => c.AttentionCount == null);
     }
 
     [Fact]
@@ -105,6 +107,7 @@ public class DashboardKpiTests
         var data = Sample();
         data.UnreadContacts = 0;
         data.PendingReports = 0;
+        data.PendingComments = 0;
         var sut = BuildSut(data, out _);
 
         var vm = ViewModelOf(await sut.Index(CancellationToken.None));
@@ -132,10 +135,10 @@ public class DashboardKpiTests
 
         var open = vm.Kpis.Single(k => k.Key == "open-work");
         open.Value.Should().Be("—");
-        open.Detail.Should().Be("3 okunmamış mesaj · — bekleyen şikayet");
+        open.Detail.Should().Be("3 okunmamış mesaj · — bekleyen şikayet · 4 bekleyen yorum");
         open.Url.Should().BeNull();
 
-        vm.Attention.Select(a => a.Slug).Should().Equal(new[] { "contact" },
+        vm.Attention.Select(a => a.Slug).Should().Equal(new[] { "contact", "comments" },
             "okunamayan sayaç şerit çizmez; sıfırmış gibi de davranmaz, yalnızca susar");
         vm.Kpis.Single(k => k.Key == "active-users").Value.Should().Be("4", "yanındaki sayaç etkilenmez");
     }

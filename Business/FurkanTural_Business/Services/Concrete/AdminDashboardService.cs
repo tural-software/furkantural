@@ -2,6 +2,7 @@ using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities.Common;
 using Microsoft.Extensions.Logging;
 
@@ -38,12 +39,13 @@ public class AdminDashboardService(IUnitOfWork unitOfWork, ILogger<AdminDashboar
 
         var unread = await TryCountAsync(() => _unitOfWork.Contacts.CountForAdminAsync(x => !x.IsDeleted && !x.IsRead, cancellationToken), "okunmamış mesaj", cancellationToken);
         var pending = await TryCountAsync(() => _unitOfWork.Reports.CountForAdminAsync(x => !x.IsDeleted && x.Status == PendingStatus, cancellationToken), "bekleyen şikayet", cancellationToken);
+        var awaiting = await TryCountAsync(() => _unitOfWork.Comments.CountForAdminAsync(x => !x.IsDeleted && x.Status == CommentStatuses.Pending, cancellationToken), "bekleyen yorum", cancellationToken);
         var active = await TryCountAsync(() => _unitOfWork.Users.CountForAdminAsync(x => !x.IsDeleted && x.IsActive && x.LastSeenAt != null && x.LastSeenAt >= thisFrom, cancellationToken), "aktif kullanıcı", cancellationToken);
 
         var thisWeek = await WeekAsync("bu hafta", thisFrom, day.AddDays(1), cancellationToken);
         var lastWeek = await WeekAsync("geçen hafta", lastFrom, thisFrom, cancellationToken);
 
-        return Result<AdminDashboardDto>.Ok(new AdminDashboardDto(summaries, unread, pending, active, thisWeek, lastWeek));
+        return Result<AdminDashboardDto>.Ok(new AdminDashboardDto(summaries, unread, pending, awaiting, active, thisWeek, lastWeek));
     }
 
     private async Task<AdminWeeklyCountsDto> WeekAsync(string window, DateTime from, DateTime toExclusive, CancellationToken cancellationToken)
