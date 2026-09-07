@@ -1,0 +1,50 @@
+@model CommentNotificationViewModel
+@{
+    ViewData["Title"] = Model.TokenMissing ? "Yorum bildirimleri" : (Model.Succeeded ? "Bildirimler kapatıldı" : "Bağlantı geçersiz");
+    ViewData["MetaDescription"] = "Yorum yanıtı bildirimi bağlantısının sonucu.";
+    ViewData["Robots"] = "noindex, nofollow";
+}
+
+<section class="page-head reveal">
+    <div class="container">
+        <nav class="crumb" aria-label="Konum">
+            <a href="@(Url.Action("Index", "Home") ?? "/")">Blog</a>
+        </nav>
+        <h1 class="page-head__title">@ViewData["Title"]</h1>
+    </div>
+</section>
+
+<section class="container newsletter-page">
+    <div class="newsletter-card reveal">
+        @if (Model.TokenMissing)
+        {
+            <div class="newsletter-result newsletter-result--ok">
+                <h2 class="newsletter-result__title">Bağlantıyı e-postanızda bulabilirsiniz</h2>
+                <p class="newsletter-result__text">
+                    Bu sayfa, yanıt bildirimi postasının altındaki bağlantıyla açılır. Elinizde bağlantı
+                    yoksa yeni bir yorum bırakırken bildirim kutusunu işaretlemeden bırakabilirsiniz.
+                </p>
+                <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Yazılara dön</a>
+            </div>
+        }
+        else if (Model.Succeeded)
+        {
+            <div class="newsletter-result newsletter-result--ok" role="status">
+                <h2 class="newsletter-result__title">Kapatıldı</h2>
+                <p class="newsletter-result__text">@Model.Message</p>
+                <p class="newsletter-result__text">
+                    Yorumlarınız yerinde duruyor; yalnızca yanıt geldiğinde posta göndermeyi bıraktık.
+                </p>
+                <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Yazılara dön</a>
+            </div>
+        }
+        else
+        {
+            <div class="newsletter-result newsletter-result--ok" role="alert">
+                <h2 class="newsletter-result__title">Bağlantı işe yaramadı</h2>
+                <p class="newsletter-result__text">@Model.Message</p>
+                <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Yazılara dön</a>
+            </div>
+        }
+    </div>
+</section>

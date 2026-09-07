@@ -16,6 +16,7 @@
                 <th class="col-select"><input type="checkbox" class="row-select-all" aria-label="Sayfadaki tüm kayıtları seç" /></th>
                 <th class="col-id">ID</th>
                 <th>Başlık</th>
+                <th>Okunma</th>
                 <th>Aktif</th>
                 <th>Silinmiş</th>
                 <th class="col-actions">İşlemler</th>
@@ -28,6 +29,7 @@
                     <td class="col-select"><input type="checkbox" class="row-select" value="@row.Id" aria-label="Kaydı seç: @(row.Title ?? row.Id.ToString())" /></td>
                     <td>@row.Id</td>
                     <td>@(row.Title ?? "—")</td>
+                    <td><span class="blog-views">@row.ViewCount.ToString("N0")</span></td>
                     <td>
                         @if (row.IsActive)
                         {
@@ -120,7 +122,7 @@
             @if (!Model.Rows.Any())
             {
                 <tr class="empty-row">
-                    <td colspan="6">Kayıt bulunamadı.</td>
+                    <td colspan="7">Kayıt bulunamadı.</td>
                 </tr>
             }
         </tbody>

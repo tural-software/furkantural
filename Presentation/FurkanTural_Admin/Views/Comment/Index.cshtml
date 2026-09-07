@@ -1,0 +1,155 @@
+@using FurkanTural_Admin.Models.Comment
+@model CommentIndexViewModel
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/comment/comment-index.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.__commentMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+            name          = Model.SearchName ?? "",
+            statusFilter  = Model.StatusFilter ?? "",
+            activeFilter  = Model.ActiveFilter ?? "",
+            deletedFilter = Model.DeletedFilter ?? "",
+            dateFrom      = Model.DateFrom ?? "",
+            dateTo        = Model.DateTo ?? "",
+            pageNumber    = Model.PageNumber,
+            pageSize      = Model.PageSize
+        }));
+    </script>
+    <script src="~/js/detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/confirm-modal.js" asp-append-version="true"></script>
+    <script src="~/js/form-modal.js" asp-append-version="true"></script>
+    <script src="~/js/bulk-select.js" asp-append-version="true"></script>
+    <script src="~/js/pages/comment-index.js" asp-append-version="true"></script>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container">
+
+    @await Html.PartialAsync("_Breadcrumb", "")
+
+    <div class="pg-header">
+        <div>
+            @await Html.PartialAsync("_PageTitle")
+            <p class="section-desc">Yazılara bırakılan yorumları denetleyin, yanıtlayın ve yönetin.</p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "refresh")
+                Yenile
+            </a>
+            <a href="@Url.Action("TableDetail")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "table-icon")
+                Tablo Detayları
+            </a>
+            @if (Model.PendingCount > 0)
+            {
+                <a href="@Url.Action("Index", new { statusFilter = "pending" })" class="btn-primary">
+                    @await Html.PartialAsync("_Icons", "clock")
+                    Bekleyenleri Göster (@Model.PendingCount)
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--passive">
+                @await Html.PartialAsync("_Icons", "clock")
+            </div>
+            <div>
+                <p class="stat-box__label">Onay Bekleyen</p>
+                <div class="stat-box__value">@Model.PendingCount.ToString("N0")</div>
+                <span class="stat-box__unit">yorum</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--active">
+                @await Html.PartialAsync("_Icons", "check-circle")
+            </div>
+            <div>
+                <p class="stat-box__label">Yayında</p>
+                <div class="stat-box__value">@Model.ApprovedCount.ToString("N0")</div>
+                <span class="stat-box__unit">yorum</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--deleted">
+                @await Html.PartialAsync("_Icons", "x-circle")
+            </div>
+            <div>
+                <p class="stat-box__label">Reddedilen</p>
+                <div class="stat-box__value">@Model.RejectedCount.ToString("N0")</div>
+                <span class="stat-box__unit">yorum</span>
+            </div>
+        </div>
+        <div class="card stat-box">
+            <div class="stat-box__icon stat-box__icon--total">
+                @await Html.PartialAsync("_Icons", "comments")
+            </div>
+            <div>
+                <p class="stat-box__label">Toplam Kayıt</p>
+                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <span class="stat-box__unit">silinmişler dâhil</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+        <form method="get" action="@Url.Action("Index")">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Ara</label>
+                    <div class="filter-input-wrap">
+                        @await Html.PartialAsync("_Icons", "search")
+                        <input type="text" name="name" value="@Model.SearchName"
+                               class="filter-input filter-input--search"
+                               placeholder="Ad, e-posta veya yorum metni..." />
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Denetim Durumu</label>
+                    <select aria-label="Denetim Durumu" name="statusFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.StatusFilter))">Tümü</option>
+                        <option value="pending" selected="@(Model.StatusFilter == "pending")">Bekliyor</option>
+                        <option value="approved" selected="@(Model.StatusFilter == "approved")">Onaylı</option>
+                        <option value="rejected" selected="@(Model.StatusFilter == "rejected")">Reddedildi</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Aktiflik Durumu</label>
+                    <select aria-label="Aktiflik Durumu" name="activeFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.ActiveFilter))">Tümü</option>
+                        <option value="active" selected="@(Model.ActiveFilter == "active")">Aktif</option>
+                        <option value="passive" selected="@(Model.ActiveFilter == "passive")">Pasif</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Silinme Durumu</label>
+                    <select aria-label="Silinme Durumu" name="deletedFilter" class="filter-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.DeletedFilter))">Tümü</option>
+                        <option value="notDeleted" selected="@(Model.DeletedFilter == "notDeleted")">Silinmemiş</option>
+                        <option value="deleted" selected="@(Model.DeletedFilter == "deleted")">Silinmiş</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-group--actions">
+                    <button type="submit" class="btn-primary">
+                        @await Html.PartialAsync("_Icons", "filter-icon")
+                        Filtrele
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn-outline">@await Html.PartialAsync("_Icons", "x-mark") Temizle</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" id="comment-table-card" style="padding: 0; overflow: hidden;">
+        <div id="comment-table-section">
+            @await Html.PartialAsync("_CommentTable", Model)
+        </div>
+    </div>
+
+</div>

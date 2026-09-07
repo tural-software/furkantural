@@ -12,7 +12,8 @@ public static class BlogMapper
         Slug = entity.Slug,
         Content = entity.Content,
         CreatedAt = entity.CreatedAt,
-        UpdatedAt = entity.UpdatedAt
+        UpdatedAt = entity.UpdatedAt,
+        ViewCount = entity.ViewCount
     };
 
     public static AdminBlogDto ToAdminDto(this Blog entity) => new()
@@ -28,7 +29,8 @@ public static class BlogMapper
         UpdatedAt = entity.UpdatedAt,
         UpdatedBy = entity.UpdatedBy,
         DeletedAt = entity.DeletedAt,
-        DeletedBy = entity.DeletedBy
+        DeletedBy = entity.DeletedBy,
+        ViewCount = entity.ViewCount
     };
 
     public static Blog ToEntity(this CreateBlogDto dto) => new()

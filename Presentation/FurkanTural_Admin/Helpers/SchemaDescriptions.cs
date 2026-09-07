@@ -42,6 +42,17 @@ public static class SchemaDescriptions
         ["User.PasswordHash"] = "Parolanın karması; düz metin hiçbir yerde tutulmaz",
         ["Tag.Name"] = "Etiket adı — benzersizdir",
         ["Tag.Slug"] = "Etiketin kalıcı adres parçası; ad değişse de adres durur",
+
+        ["Blog.ViewCount"] = "Okunma sayısı; okurun tarayıcısından gelen ayrı bir istekle artar, aynı okur günde bir kez sayılır",
+
+        ["Comment.BlogId"] = "Yorumun bırakıldığı yazı",
+        ["Comment.ParentId"] = "Yanıtlanan yorum; boşsa yazıya doğrudan bırakılmıştır",
+        ["Comment.AuthorName"] = "Yazanın beyan ettiği ad — doğrulanmaz",
+        ["Comment.AuthorEmail"] = "Yazanın adresi; yayımlanmaz, yalnızca panelde görünür",
+        ["Comment.Body"] = "Yorumun metni",
+        ["Comment.Status"] = "Denetim durumu: Pending, Approved ya da Rejected",
+        ["Comment.ApprovedAt"] = "İlk onaylandığı an",
+        ["Comment.NotifyOnReply"] = "Yanıt gelince adrese posta gönderilsin mi",
         ["Subscriber.Email"] = "Bülten abonesinin e-postası — benzersizdir",
         ["MailTemplate.Subject"] = "E-posta konu satırı",
         ["MailTemplate.Body"] = "E-posta gövdesi (HTML)",

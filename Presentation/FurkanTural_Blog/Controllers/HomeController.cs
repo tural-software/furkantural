@@ -6,9 +6,15 @@ using FurkanTural_Blog.Services;
 
 namespace FurkanTural_Blog.Controllers;
 
-public class HomeController(IBlogApiService blogApi, IConfiguration configuration) : Controller
+public class HomeController(
+    IBlogApiService blogApi,
+    ICommentClient commentClient,
+    IAppConfigService appConfig,
+    IConfiguration configuration) : Controller
 {
     private readonly IBlogApiService _blogApi = blogApi;
+    private readonly ICommentClient _commentClient = commentClient;
+    private readonly IAppConfigService _appConfig = appConfig;
     private readonly string _apiBase = (configuration["Api:BaseUrl"] ?? string.Empty).TrimEnd('/');
 
     /// <summary>Değer keyfi değil: kart ızgarası kapsayıcı genişliğine göre bir ilâ dört sütun çiziyor ve 12 dördüne de tam bölündüğü için hiçbir kırılma noktasında yarım satır kalmıyor. Izgaranın sütun sayısı değişirse bu sayı da yeniden seçilmelidir.</summary>
@@ -16,6 +22,9 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
 
     /// <summary>Arşiv sayfasındaki etiket bulutunun tavanı. Bulut bir gezinme aracıdır, envanter değil: her etiketi göstermek okuru seçim yapamayacağı bir duvarla karşılaştırır.</summary>
     private const int TagCloudSize = 24;
+
+    /// <summary>Gönderim sonrası adres satırında taşınan işaret. Sonucu oturuma yazmak yerine adreste taşımak, hem çerez gerektirmez hem de yenilenen sayfada onay metninin kaybolmasını doğal kılar.</summary>
+    private const string SubmittedFlag = "alindi";
 
     /// <summary>Aralık dışı sayfa numarası hata değil, son geçerli sayfaya yönlendirme üretir ve filtreler korunur; elle yazılmış bir adres kullanıcıyı boş listeyle baş başa bırakmaz.<para>Kapak görselleri yalnızca bu sayfadaki yazılar için ve paralel çekilir. Çağrı sayısı böylece sayfa boyutunu hiç aşmaz ve arşiv büyüdükçe artmaz.</para><para>Kategori ve arama artık kendi adreslerinde yaşıyor. Buraya eski sorgu dizesiyle gelen istek kalıcı olarak oraya yönlendirilir: iki adres aynı listeyi gösterirse arama motoru hangisinin kanonik olduğunu bilemez.</para></summary>
     public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, CancellationToken cancellationToken = default)
@@ -164,14 +173,71 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
 
     /// <summary>Yazının kanonik adresi. Slug kalıcıdır: başlık değişse de adres durur, dolayısıyla paylaşılmış bağlantılar kırılmaz.</summary>
     [Route("yazi/{slug}", Name = "BlogPost")]
-    public async Task<IActionResult> Detail(string slug, CancellationToken cancellationToken)
+    public async Task<IActionResult> Detail(string slug, string? yorum = null, CancellationToken cancellationToken = default)
     {
         var post = await _blogApi.GetPostBySlugAsync(slug, cancellationToken);
         if (post is null)
             return NotFound();
 
         await AttachDetailAsync(post, cancellationToken);
+
+        if (yorum == SubmittedFlag)
+        {
+            post.CommentForm.Submitted = true;
+            post.CommentForm.Succeeded = true;
+            post.CommentForm.ResultMessage = "Yorumunuz alındı. Onaylandıktan sonra sayfada görünecek.";
+        }
+
         return View(nameof(Post), post);
+    }
+
+    /// <summary>Yorum gönderimi. Yazı sayfasının kendi denetleyicisinde durur, çünkü başarısızlıkta çizilmesi gereken şey o sayfanın tamamıdır: doğrulama hatası kullanıcıyı yazdığı metinden etmemeli, form aynı yerde ve dolu hâlde geri gelmelidir.<para>Başarıda ise yönlendirme yapılır ve sonuç adres satırındaki bir işaretle taşınır. Bülten sayfasından ayrıldığı tek yer budur: orada sayfada kalmanın bedeli yeniden gönderim uyarısıdır, burada tarayıcının yenile tuşu ikinci bir yorum kaydı açardı.</para><para>Tuzak alan doluysa istek API'ye hiç çıkmaz ama ekranda başarı görünür; gerekçesi bülten formuyla aynıdır.</para></summary>
+    [HttpPost]
+    [Route("yazi/{slug}/yorum", Name = "BlogCommentSubmit")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Comment(string slug, CommentFormModel form, CancellationToken cancellationToken)
+    {
+        var post = await _blogApi.GetPostBySlugAsync(slug, cancellationToken);
+        if (post is null)
+            return NotFound();
+
+        if (!string.IsNullOrWhiteSpace(form.Website))
+            return RedirectToRoute("BlogPost", new { slug, yorum = SubmittedFlag });
+
+        await AttachDetailAsync(post, cancellationToken);
+        post.CommentForm = form;
+        form.BlogId = post.Id;
+        form.Submitted = true;
+        form.Succeeded = false;
+
+        if (!ModelState.IsValid)
+            return View(nameof(Post), post);
+
+        if (string.IsNullOrWhiteSpace(form.TurnstileToken))
+        {
+            form.ResultMessage = "Bot doğrulaması tamamlanmadı. Lütfen tekrar deneyin.";
+            return View(nameof(Post), post);
+        }
+
+        var outcome = await _commentClient.SubmitAsync(form, cancellationToken);
+        if (outcome.Succeeded)
+            return RedirectToRoute("BlogPost", new { slug, yorum = SubmittedFlag });
+
+        form.ResultMessage = string.IsNullOrWhiteSpace(outcome.Message)
+            ? "Yorum şu anda alınamıyor. Kısa süre sonra tekrar deneyin."
+            : outcome.Message;
+
+        return View(nameof(Post), post);
+    }
+
+    /// <summary>Okunma sayacını artırır. Sayfanın kendisi çizilirken artırılmaz: JavaScript çalıştırmayan gezginler böylece sayıya girmez ve aynı okuru günde bir kez saymanın işareti tarayıcıda durur.<para>Yanıt daima boştur ve daima 204'tür. Sayacın artıp artmadığını ele veren bir yanıt, ucu "bu yazı sayıldı mı" diye yoklanabilir hâle getirir; sayfanın da bu bilgiye ihtiyacı yok.</para></summary>
+    [HttpPost]
+    [Route("okuma/{id:int}", Name = "BlogPostView")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RegisterView(int id, CancellationToken cancellationToken)
+    {
+        await _blogApi.RegisterViewAsync(id, cancellationToken);
+        return NoContent();
     }
 
     /// <summary>Kapak ile ilgili yazıları yazıya iliştirir. Görseller yalnızca kimliğe bağlı olduğu için hemen istenir; ilgili yazılar ancak kategoriler bilindikten sonra istenebilir, dolayısıyla o çağrı sonra gelir.</summary>
@@ -185,7 +251,13 @@ public class HomeController(IBlogApiService blogApi, IConfiguration configuratio
             post.CoverAltText = cover.AltText;
         }
 
+        var comments = _commentClient.GetThreadAsync(post.Id, cancellationToken);
+        var siteKey = _appConfig.GetTurnstileSiteKeyAsync(cancellationToken);
         await AttachRelatedAsync(post, cancellationToken);
+
+        post.Comments = await comments;
+        post.TurnstileSiteKey = await siteKey;
+        post.CommentForm.BlogId = post.Id;
     }
 
     /// <summary>Adaylar yazının ilk kategorisinden tek sayfada çekilir. Kategori başına ayrı çağrı yapılmaz: her sayfalı çağrı kendi içinde kategori sözlüğünü de istediği için maliyet çağrı sayısının iki katıdır ve üç kart için orantısız kalır. Sıralama yine de yazının bütün kategorilerine bakar, çünkü dönen adaylar kendi kategorilerini taşır.</summary>

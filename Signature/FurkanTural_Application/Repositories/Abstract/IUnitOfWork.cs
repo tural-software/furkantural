@@ -36,6 +36,8 @@ public interface IUnitOfWork
     IRepository<SubscriberVerification> SubscriberVerifications { get; }
     IRepository<NewsletterIssue> NewsletterIssues { get; }
     IRepository<NewsletterDelivery> NewsletterDeliveries { get; }
+    IRepository<Comment> Comments { get; }
+    IRepository<CommentNotification> CommentNotifications { get; }
     ILogRepository Logs { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

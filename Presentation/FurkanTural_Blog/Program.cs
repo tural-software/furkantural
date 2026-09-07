@@ -44,6 +44,14 @@ builder.Services.AddScoped<INewsletterClient>(sp =>
     return new NewsletterClient(client, logger);
 });
 
+builder.Services.AddScoped<ICommentClient>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    var client = factory.CreateClient("ApiClient");
+    var logger = sp.GetRequiredService<ILogger<CommentClient>>();
+    return new CommentClient(client, logger);
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

@@ -14,6 +14,10 @@ public class BlogDto
     public string? Content { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>Yazının okunma sayısı. Sayfanın çizilmesiyle değil, tarayıcıdan gelen ayrı bir istekle artar; bu yüzden JavaScript çalıştırmayan gezginler sayıya girmez.</summary>
+    public int ViewCount { get; set; }
+
     public List<CategoryDto> Categories { get; set; } = [];
 
     /// <summary>Yazının ikincil sınıflandırması. Kategoriler gibi ayrı bir sorgudan doldurulur; etiketsiz yazıda boş liste kalır.</summary>

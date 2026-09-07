@@ -75,6 +75,7 @@ public class AdminDashboardService(IUnitOfWork unitOfWork, ILogger<AdminDashboar
         yield return ("blogimage", ct => _unitOfWork.BlogImages.GetAdminSummaryAsync(ct));
         yield return ("category", ct => _unitOfWork.Categories.GetAdminSummaryAsync(ct));
         yield return ("tag", ct => _unitOfWork.Tags.GetAdminSummaryAsync(ct));
+        yield return ("comment", ct => _unitOfWork.Comments.GetAdminSummaryAsync(ct));
         yield return ("project", ct => _unitOfWork.Projects.GetAdminSummaryAsync(ct));
         yield return ("projectimage", ct => _unitOfWork.ProjectImages.GetAdminSummaryAsync(ct));
         yield return ("music", ct => _unitOfWork.Musics.GetAdminSummaryAsync(ct));

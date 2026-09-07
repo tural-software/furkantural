@@ -15,6 +15,9 @@ public sealed class BlogAdminDto
     public DateTime? DeletedAt { get; set; }
     public int? DeletedBy { get; set; }
 
+    /// <summary>Yazının okunma sayısı. Sayfa çizilirken değil, okurun tarayıcısından gelen ayrı bir istekle artar; aynı okur günde bir kez sayılır.</summary>
+    public int ViewCount { get; set; }
+
     public List<BlogCategoryRef> Categories { get; set; } = [];
 
     public List<BlogTagRef> Tags { get; set; } = [];

@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace FurkanTural_Business.Registration;
 
-/// <summary>Yalnızca bu derlemedeki servisleri kaydeder. Bağımlılıklarının bir kısmı burada kurulmaz ve çağıranın sorumluluğunda kalır: <see cref="IUnitOfWork"/> (Persistence), <see cref="IPresenceTracker"/> ile <see cref="IChatNotifier"/> (SignalR gerektirdiği için API'de), <c>IHttpContextAccessor</c>, <c>IHttpClientFactory</c>, <c>IOptions&lt;AppTokenSettings&gt;</c> ve somut olarak çözülen <see cref="FurkanTural_Application.Settings.FileStorageSettings"/>. Eksikleri bu metot değil, ilk çözümleme anında DI fark ettirir.<para>Tek arka plan işi buradan kaydedilir: <see cref="FurkanTural_Business.Services.Concrete.NewsletterDispatchWorker"/> barındıran süreç ayakta olduğu sürece bülten kuyruğunu boşaltır, dolayısıyla bu metodu çağıran her host aynı zamanda bülten dağıtıcısını da üstlenir.</para><para>Durum tutan sınıflar singleton'dır: hız sınırlayıcılar ve giriş kilidi sayaçlarını, saat ise saat dilimini bir kez çözüp süreç boyunca taşır. <see cref="IMessageProtector"/> de singleton'dır ve yapıcısı eksik anahtarda istisna fırlattığından, yapılandırma hatası uygulama açılışında değil o servisin ilk çözümlendiği istekte yüzeye çıkar.</para></summary>
+/// <summary>Yalnızca bu derlemedeki servisleri kaydeder. Bağımlılıklarının bir kısmı burada kurulmaz ve çağıranın sorumluluğunda kalır: <see cref="IUnitOfWork"/> (Persistence), <see cref="IPresenceTracker"/> ile <see cref="IChatNotifier"/> (SignalR gerektirdiği için API'de), <c>IHttpContextAccessor</c>, <c>IHttpClientFactory</c>, <c>IOptions&lt;AppTokenSettings&gt;</c> ve somut olarak çözülen <see cref="FurkanTural_Application.Settings.FileStorageSettings"/>. Eksikleri bu metot değil, ilk çözümleme anında DI fark ettirir.<para>Arka plan işleri buradan kaydedilir: <see cref="FurkanTural_Business.Services.Concrete.NewsletterDispatchWorker"/> bülten kuyruğunu, <see cref="FurkanTural_Business.Services.Concrete.CommentNotifyWorker"/> ise yorum yanıtı bildirimlerini barındıran süreç ayakta olduğu sürece boşaltır; dolayısıyla bu metodu çağıran her host aynı zamanda iki dağıtıcıyı da üstlenir.</para><para>Durum tutan sınıflar singleton'dır: hız sınırlayıcılar ve giriş kilidi sayaçlarını, saat ise saat dilimini bir kez çözüp süreç boyunca taşır. <see cref="IMessageProtector"/> de singleton'dır ve yapıcısı eksik anahtarda istisna fırlattığından, yapılandırma hatası uygulama açılışında değil o servisin ilk çözümlendiği istekte yüzeye çıkar.</para></summary>
 public static class BusinessServiceRegistration
 {
     public static IServiceCollection AddBusinessServices(this IServiceCollection services)
@@ -38,6 +38,12 @@ public static class BusinessServiceRegistration
         services.AddScoped<INewsletterDispatcher, NewsletterDispatcher>();
         services.AddSingleton<NewsletterDispatchSignal>();
         services.AddHostedService<NewsletterDispatchWorker>();
+
+        services.AddScoped<ICommentService, CommentService>();
+        services.AddScoped<ICommentNotifier, CommentNotifier>();
+        services.AddSingleton<CommentNotifySignal>();
+        services.AddHostedService<CommentNotifyWorker>();
+
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IContactService, ContactService>();

@@ -1,0 +1,76 @@
+.filter-group--actions {
+    flex-direction: row;
+    align-items: center;
+    gap: .45rem;
+    margin-left: auto;
+}
+
+.cm-author {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+    min-width: 0;
+}
+
+.cm-author__name {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.cm-author__mail {
+    font-size: var(--fs-2xs);
+    color: var(--text-dim);
+    word-break: break-all;
+}
+
+.cm-owner-chip {
+    padding: .1rem .4rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    font-size: var(--fs-3xs, .625rem);
+    font-weight: 700;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+
+.cm-body {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    max-width: 32rem;
+}
+
+.cm-body__text {
+    font-size: var(--fs-2xs);
+    line-height: 1.55;
+    color: var(--text-main);
+}
+
+.cm-reply-to {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: var(--fs-3xs, .625rem);
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.cm-reply-to svg {
+    width: .75rem;
+    height: .75rem;
+}
+
+.cm-post {
+    display: inline-block;
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--fs-2xs);
+    color: var(--text-dim);
+}

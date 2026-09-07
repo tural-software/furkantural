@@ -27,6 +27,21 @@ public class BlogPostViewModel
 
     public List<TagViewModel> Tags { get; set; } = [];
 
+    /// <summary>Yazının okunma sayısı. API'den gelir ve sayfa çizilirken okunur; sayacı artıran istek ayrıca gönderilir, dolayısıyla ekranda görünen sayı o ziyareti henüz içermez.</summary>
+    public int ViewCount { get; set; }
+
+    /// <summary>Okunma sayısının ekranda görünen hâli. Sıfır ve bir okuma gösterilmez: "1 okuma" yazan bir sayaç okura kendi ziyaretini gösterir ve yazının okunmadığını söyler, ki ikisi de bilgi değildir.</summary>
+    public string? ViewCountDisplay => ViewCount < 2 ? null : ViewCount.ToString("N0", Tr);
+
+    /// <summary>Yazının yorum bölümü. Yalnızca yazı sayfasında doldurulur; liste satırlarında boş kalır ve orada hiç çizilmez.</summary>
+    public CommentThreadViewModel Comments { get; set; } = new();
+
+    /// <summary>Yorum formunun durumu. Gönderim başarısız olduğunda aynı nesne yazılmış metni geri taşır: doğrulama hatası yüzünden kullanıcının yazdığını silmek, formu ikinci kez doldurmaya zorlamak olurdu.</summary>
+    public CommentFormModel CommentForm { get; set; } = new();
+
+    /// <summary>Turnstile widget'ının anahtarı. Boşsa form çizilir ama gönderim ağa çıkmadan elenir; anahtarsız bir doğrulama kutusu okuru sebebi görünmeyen bir hatayla baş başa bırakırdı.</summary>
+    public string? TurnstileSiteKey { get; set; }
+
     /// <summary>Denetleyici tarafından yalnızca yazı sayfasında doldurulur; liste satırlarında boş kalır. İç içe geçen kayıtların kendi listesi hiç doldurulmaz, dolayısıyla derinlik bir seviyeyle sınırlıdır.</summary>
     public IReadOnlyList<BlogPostViewModel> Related { get; set; } = [];
 

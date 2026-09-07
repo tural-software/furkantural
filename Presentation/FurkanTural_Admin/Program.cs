@@ -64,6 +64,12 @@ builder.Services.AddHttpClient<ITagApiClient, TagApiClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+builder.Services.AddHttpClient<ICommentApiClient, CommentApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 builder.Services.AddHttpClient<IBlogImageApiClient, BlogImageApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);

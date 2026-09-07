@@ -72,7 +72,7 @@ public class AdminDashboardServiceTests
         var result = await Sut().GetAsync(Today, 7);
 
         result.Success.Should().BeTrue();
-        result.Data!.Summaries.Should().HaveCount(23, "panelin yirmi üç modülü var; her biri için bir anahtar");
+        result.Data!.Summaries.Should().HaveCount(24, "panelin yirmi dört modülü var; her biri için bir anahtar");
         result.Data.Summaries["blog"].Should().Be(new EntitySummaryDto(28, new DateTime(2026, 9, 1)));
         result.Data.Summaries["user"].TotalCount.Should().Be(12);
         result.Data.Summaries.Keys.Should().Contain(["blogimage", "mailtemplate", "log"],

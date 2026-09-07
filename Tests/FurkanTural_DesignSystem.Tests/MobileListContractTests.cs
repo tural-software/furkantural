@@ -35,9 +35,9 @@ public class MobileListContractTests
     }
 
     [Fact]
-    public void Yirmi_uc_modulun_tablo_parcasi_vardir()
+    public void Yirmi_dort_modulun_tablo_parcasi_vardir()
     {
-        TablePartials().Should().HaveCount(23);
+        TablePartials().Should().HaveCount(24);
     }
 
     [Fact]

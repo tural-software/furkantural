@@ -77,6 +77,11 @@
             <span class="post-meta__sep" aria-hidden="true">•</span>
         }
         <span aria-label="@Model.ReadingMinutes dakika okuma">@Model.ReadingMinutes dk okuma</span>
+        @if (Model.ViewCountDisplay is { } views)
+        {
+            <span class="post-meta__sep" aria-hidden="true">•</span>
+            <span aria-label="@views okuma">@views okuma</span>
+        }
     </div>
 
     @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
@@ -160,6 +165,8 @@
     </footer>
 </article>
 
+@await Html.PartialAsync("_Comments", Model)
+
 @section HeadMeta {
     @if (!string.IsNullOrEmpty(Model.PublishedIso))
     {
@@ -184,4 +191,10 @@
 
 @section Scripts {
     <script src="~/js/post.js" asp-append-version="true" defer></script>
+    @if (!string.IsNullOrEmpty(Model.TurnstileSiteKey))
+    {
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    }
+    <script src="~/js/comments.js" asp-append-version="true" defer></script>
+    <script src="~/js/view-count.js" asp-append-version="true" data-post-id="@Model.Id" data-view-url="@(Url.RouteUrl("BlogPostView", new { id = Model.Id }))" defer></script>
 }

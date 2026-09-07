@@ -197,4 +197,14 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
 
         return rows.ToDictionary(r => r.TagId, r => r.Count);
     }
+
+    /// <summary>Sayaç satır yüklenmeden artırılır. Okuyup değiştirip kaydetmek iki gidiş dönüş ister ve aynı anda okuyan iki kişi aynı eski değeri okuyup aynı yeni değeri yazardı; tek deyimde artırmak bunu veri tabanına havale eder.<para>Koşul canlı satırla sınırlıdır, dolayısıyla yayından kalkmış bir yazının sayacı adresine elle istek gönderilerek şişirilemez. Sıfır satır güncellendiyse çağıran bunu <c>false</c> olarak görür.</para></summary>
+    public async Task<bool> IncrementViewCountAsync(int blogId, CancellationToken cancellationToken = default)
+    {
+        var affected = await _context.Set<Blog>()
+            .Where(b => b.Id == blogId)
+            .ExecuteUpdateAsync(s => s.SetProperty(b => b.ViewCount, b => b.ViewCount + 1), cancellationToken);
+
+        return affected > 0;
+    }
 }

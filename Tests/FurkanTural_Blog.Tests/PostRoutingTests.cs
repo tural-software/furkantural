@@ -22,7 +22,7 @@ public class PostRoutingTests
             .AddInMemoryCollection(new Dictionary<string, string?> { ["Api:BaseUrl"] = "https://api.test" })
             .Build();
 
-        return new HomeController(api.Object, config);
+        return new HomeController(api.Object, BlogStubs.EmptyComments(), Mock.Of<IAppConfigService>(), config);
     }
 
     private static BlogPostViewModel Post(int id, string slug) =>

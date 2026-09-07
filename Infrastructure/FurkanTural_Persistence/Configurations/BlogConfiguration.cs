@@ -13,6 +13,7 @@ public class BlogConfiguration : BaseEntityConfiguration<Blog>
         builder.Property(e => e.Title).HasMaxLength(500);
         builder.Property(e => e.Content).HasColumnType("nvarchar(max)");
         builder.Property(e => e.Slug).HasMaxLength(200).IsRequired();
+        builder.Property(e => e.ViewCount).HasDefaultValue(0);
         builder.HasIndex(e => e.Slug).IsUnique();
     }
 }

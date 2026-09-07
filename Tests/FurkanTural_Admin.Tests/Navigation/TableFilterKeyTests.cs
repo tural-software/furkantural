@@ -50,12 +50,12 @@ public class TableFilterKeyTests
     }
 
     [Fact]
-    public void Yirmi_uc_listenin_hepsi_alt_banda_suzgec_verir()
+    public void Yirmi_dort_listenin_hepsi_alt_banda_suzgec_verir()
     {
         var bos = FooterFilters().Where(f => f.Keys.Count == 0).Select(f => f.Controller).ToList();
 
         bos.Should().BeEmpty("süzgeç listesi okunamayan partial, aşağıdaki denetimden sessizce kaçar");
-        FooterFilters().Should().HaveCount(23);
+        FooterFilters().Should().HaveCount(24);
     }
 
     [Fact]

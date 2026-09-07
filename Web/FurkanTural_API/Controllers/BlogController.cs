@@ -27,6 +27,12 @@ public class BlogController(IBlogService blogService) : JwtBaseController
     public async Task<IActionResult> GetBySlug(string slug, CancellationToken cancellationToken)
         => ToActionResult(await _blogService.GetBySlugAsync(slug, cancellationToken));
 
+    /// <summary>Yazının okunma sayacını bir artır. Sayfanın çizilmesiyle değil, tarayıcıdan gelen ayrı bir istekle çağrılır; tekrarı eleyen işaret tarayıcıda durur</summary>
+    [HttpPost("{id:int}/view")]
+    [Authorize(Policy = "VisitorOrAbove")]
+    public async Task<IActionResult> RegisterView(int id, CancellationToken cancellationToken)
+        => ToActionResult(await _blogService.RegisterViewAsync(id, cancellationToken));
+
     /// <summary>Tüm blog yazılarını listele</summary>
     [HttpGet]
     [Authorize(Policy = "VisitorOrAbove")]

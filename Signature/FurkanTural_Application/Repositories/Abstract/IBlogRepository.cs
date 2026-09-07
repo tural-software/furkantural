@@ -19,4 +19,7 @@ public interface IBlogRepository : IRepository<Blog>
 
     /// <summary>Verilen etiketlerin her birine bağlı yayındaki yazı sayısı. Yönetim listesi ve etiket bulutu bunu tek okumada alır; etiket başına ayrı sayım, listenin kendisi kadar sorgu açardı. Hiç yazısı olmayan etiket sözlükte sıfırla değil, hiç yer almaz.</summary>
     Task<Dictionary<int, int>> GetPostCountsForTagsAsync(IReadOnlyCollection<int> tagIds, CancellationToken cancellationToken = default);
+
+    /// <summary>Yazının okunma sayısını bir artırır ve satırın gerçekten güncellenip güncellenmediğini döndürür. Varlık yüklenmez: tek bir güncelleme deyimi çalışır, dolayısıyla aynı anda okuyan iki kişi birbirinin artışını ezemez ve sayaç için tabloya ikinci bir gidiş dönüş yapılmaz.<para>Yalnızca yayındaki satırı günceller; pasife alınmış ya da silinmiş bir yazının sayacı, adresine elle istek gönderilerek şişirilemez.</para><para>Bu metot kendi kaydını kendi yapar — <see cref="IUnitOfWork.SaveChangesAsync"/> beklemez — çünkü değişiklik izleyicisinden geçmez.</para></summary>
+    Task<bool> IncrementViewCountAsync(int blogId, CancellationToken cancellationToken = default);
 }

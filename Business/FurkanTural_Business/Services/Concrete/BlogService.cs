@@ -44,6 +44,19 @@ public class BlogService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) 
         return Result<BlogDto>.Ok(dto);
     }
 
+    /// <summary>Sayaç, satır yüklenmeden tek bir güncelleme deyimiyle artırılır ve deponun kendisi kaydeder; değişiklik izleyicisinden geçmediği için burada ayrı bir kaydetme çağrısı yoktur.<para>Bu okumanın etkinlik kaydına yazılmaması bilinçli: her sayfa görüntülenmesi bir satır açsaydı kayıt defteri kısa sürede yalnızca bu satırlardan oluşurdu.</para></summary>
+    public async Task<Result> RegisterViewAsync(int id, CancellationToken cancellationToken = default)
+    {
+        if (id <= 0)
+            return Result.Fail("Blog bulunamadı.", statusCode: 404);
+
+        var counted = await _unitOfWork.Blogs.IncrementViewCountAsync(id, cancellationToken);
+
+        return counted
+            ? Result.Ok()
+            : Result.Fail("Blog bulunamadı.", statusCode: 404);
+    }
+
     public async Task<Result<IEnumerable<BlogDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _unitOfWork.Blogs.GetAllAsync(cancellationToken);

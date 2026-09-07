@@ -11,6 +11,9 @@ public interface IBlogService : IService<BlogDto, CreateBlogDto, UpdateBlogDto>,
 
     /// <summary>Yazıyı kalıcı adres parçasıyla getirir. Bulunamayan slug 404 döner ve kimlik adresine düşmez; var olmayan bir adresin başka bir yazıyı açması yanlış bağlantıyı sessizce doğru gösterirdi.</summary>
     Task<Result<BlogDto>> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+
+    /// <summary>Yazının okunma sayısını bir artırır. Sayfanın çizilmesiyle değil, tarayıcıdan gelen ayrı bir istekle çağrılır; JavaScript çalıştırmayan gezginler böylece sayıya girmez ve aynı okuru günde bir kez saymanın işareti tarayıcıda durur.<para>Yayında olmayan yazı için 404 döner: adresine elle istek gönderilerek yayından kalkmış bir yazının sayacı şişirilemez.</para></summary>
+    Task<Result> RegisterViewAsync(int id, CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<BlogSitemapDto>>> GetSitemapAsync(CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<AdminBlogDto>>> GetAllForAdminAsync(CancellationToken cancellationToken = default);
     Task<Result<AdminBlogDto>> GetByIdForAdminAsync(int id, CancellationToken cancellationToken = default);

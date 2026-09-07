@@ -1,0 +1,158 @@
+@model BlogPostViewModel
+@{
+    var thread = Model.Comments;
+    var form = Model.CommentForm;
+    var siteKey = Model.TurnstileSiteKey;
+    var postUrl = Url.RouteUrl("BlogCommentSubmit", new { slug = Model.Slug }) ?? $"/yazi/{Model.Slug}/yorum";
+}
+
+<section class="comments container" id="yorumlar" aria-labelledby="yorumlar-baslik">
+
+    <h2 class="comments__title" id="yorumlar-baslik">
+        @if (thread.TotalCount == 0)
+        {
+            <span>Yorumlar</span>
+        }
+        else
+        {
+            <span>@thread.TotalCount yorum</span>
+        }
+    </h2>
+
+    @if (thread.Items.Count == 0)
+    {
+        <p class="comments__empty">Bu yazıya henüz yorum bırakılmamış. İlk sözü siz söyleyin.</p>
+    }
+    else
+    {
+        <ol class="comment-list">
+            @foreach (var root in thread.Items)
+            {
+                <li class="comment" id="@root.Anchor">
+                    <article class="comment__card @(root.IsAuthor ? "comment__card--author" : "")">
+                        <header class="comment__head">
+                            <span class="comment__author">
+                                @root.AuthorName
+                                @if (root.IsAuthor)
+                                {
+                                    <span class="comment__badge">yazar</span>
+                                }
+                            </span>
+                            <time class="comment__date" datetime="@root.PublishedIso">@root.PublishedDisplay</time>
+                        </header>
+                        <p class="comment__body">@root.Body</p>
+                        <footer class="comment__foot">
+                            <button type="button" class="comment__reply" data-reply-to="@root.Id" data-reply-name="@root.AuthorName">
+                                Yanıtla
+                            </button>
+                        </footer>
+                    </article>
+
+                    @if (root.Replies.Count > 0)
+                    {
+                        <ol class="comment-list comment-list--replies">
+                            @foreach (var reply in root.Replies)
+                            {
+                                <li class="comment comment--reply" id="@reply.Anchor">
+                                    <article class="comment__card @(reply.IsAuthor ? "comment__card--author" : "")">
+                                        <header class="comment__head">
+                                            <span class="comment__author">
+                                                @reply.AuthorName
+                                                @if (reply.IsAuthor)
+                                                {
+                                                    <span class="comment__badge">yazar</span>
+                                                }
+                                            </span>
+                                            <time class="comment__date" datetime="@reply.PublishedIso">@reply.PublishedDisplay</time>
+                                        </header>
+                                        <p class="comment__body">@reply.Body</p>
+                                    </article>
+                                </li>
+                            }
+                        </ol>
+                    }
+                </li>
+            }
+        </ol>
+
+        @if (thread.HasMore)
+        {
+            <p class="comments__more">
+                Bu yazıda @thread.RootCount konuşma başlığı var; ilk @thread.PageSize tanesi gösteriliyor.
+            </p>
+        }
+    }
+
+    <div class="comment-form-wrap" id="yorum-formu">
+        <h3 class="comment-form__title">Yorum bırakın</h3>
+
+        @if (form.Submitted && form.Succeeded)
+        {
+            <p class="comment-alert comment-alert--ok" role="status">@form.ResultMessage</p>
+        }
+        else if (form.Submitted && !string.IsNullOrEmpty(form.ResultMessage))
+        {
+            <p class="comment-alert comment-alert--warn" role="alert">@form.ResultMessage</p>
+        }
+
+        <form method="post" action="@postUrl" class="comment-form" id="commentForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="BlogId" value="@Model.Id" />
+            <input type="hidden" name="ParentId" id="commentParentId" value="@(form.ParentId?.ToString() ?? "")" />
+
+            <p class="comment-form__replying" id="commentReplyingTo" hidden>
+                <span id="commentReplyingName"></span> kişisine yanıt veriyorsunuz.
+                <button type="button" class="comment-form__cancel" id="commentReplyCancel">Vazgeç</button>
+            </p>
+
+            <div class="comment-form__row">
+                <label class="comment-field">
+                    <span class="comment-field__label">Adınız</span>
+                    <input class="comment-field__input" type="text" name="AuthorName" value="@form.AuthorName"
+                           maxlength="80" required autocomplete="name" />
+                </label>
+                <label class="comment-field">
+                    <span class="comment-field__label">E-posta adresiniz</span>
+                    <input class="comment-field__input" type="email" name="AuthorEmail" value="@form.AuthorEmail"
+                           placeholder="ornek@@eposta.com" required autocomplete="email" spellcheck="false"
+                           aria-describedby="yorum-mail-not" />
+                </label>
+            </div>
+            <span class="comment-field__error">@Html.ValidationMessage("AuthorName")</span>
+            <span class="comment-field__error">@Html.ValidationMessage("AuthorEmail")</span>
+            <p class="comment-form__hint" id="yorum-mail-not">Adresiniz yayımlanmaz; yalnızca sizi tanımak ve istediyseniz yanıt bildirmek için saklanır.</p>
+
+            <label class="comment-field">
+                <span class="comment-field__label">Yorumunuz</span>
+                <textarea class="comment-field__input comment-field__input--area" name="Body" rows="6"
+                          maxlength="4000" required>@form.Body</textarea>
+            </label>
+            <span class="comment-field__error">@Html.ValidationMessage("Body")</span>
+
+            <label class="comment-check">
+                <input type="checkbox" name="NotifyOnReply" value="true" @(form.NotifyOnReply ? "checked" : "") />
+                <input type="hidden" name="NotifyOnReply" value="false" />
+                <span>Yorumuma yanıt gelirse e-posta ile haber ver</span>
+            </label>
+
+            <div class="comment-trap" aria-hidden="true">
+                <label for="yorum-website">Bu alanı boş bırakın</label>
+                <input id="yorum-website" type="text" name="Website" value="" tabindex="-1" autocomplete="off" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(siteKey))
+            {
+                <div class="cf-turnstile" data-sitekey="@siteKey" data-callback="onCommentTurnstileSuccess"></div>
+            }
+            <input type="hidden" id="commentTurnstileToken" name="TurnstileToken" />
+
+            <button class="btn btn--primary comment-form__submit" type="submit">Yorumu gönder</button>
+
+            <p class="comment-form__note">
+                Yorumlar onaydan sonra yayımlanır, dolayısıyla gönderdiğiniz yazı hemen görünmez.
+                Bildirim istediyseniz postanın altındaki bağlantıyla tek tıkla kapatabilirsiniz.
+            </p>
+        </form>
+    </div>
+
+</section>

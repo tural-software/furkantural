@@ -13,3 +13,17 @@
     font-style: italic;
     opacity: .5;
 }
+
+.blog-views {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    padding: .18rem .45rem;
+    border-radius: 6px;
+    background: var(--bg-inset);
+    color: var(--text-dim);
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}

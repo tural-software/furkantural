@@ -160,6 +160,21 @@ public class BlogApiService(HttpClient httpClient, ILogger<BlogApiService> logge
         }
     }
 
+    public async Task RegisterViewAsync(int blogId, CancellationToken ct = default)
+    {
+        if (blogId <= 0)
+            return;
+
+        try
+        {
+            await _httpClient.PostAsync($"/api/v1/blog/{blogId}/view", null, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Okunma sayacı artırılamadı. Id={BlogId}", blogId);
+        }
+    }
+
     public async Task<IReadOnlyList<BlogSitemapItem>> GetSitemapItemsAsync(CancellationToken ct = default)
     {
         try

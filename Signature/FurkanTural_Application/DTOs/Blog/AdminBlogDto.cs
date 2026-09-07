@@ -19,6 +19,10 @@ public class AdminBlogDto
     public int? UpdatedBy { get; set; }
     public DateTime? DeletedAt { get; set; }
     public int? DeletedBy { get; set; }
+
+    /// <summary>Yazının okunma sayısı. Sayfanın çizilmesiyle değil, tarayıcıdan gelen ayrı bir istekle artar; bu yüzden JavaScript çalıştırmayan gezginler sayıya girmez.</summary>
+    public int ViewCount { get; set; }
+
     public List<CategoryDto> Categories { get; set; } = [];
 
     /// <summary>Yazının ikincil sınıflandırması. Kategoriler gibi ayrı bir sorgudan doldurulur; etiketsiz yazıda boş liste kalır.</summary>

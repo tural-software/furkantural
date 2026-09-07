@@ -26,7 +26,7 @@ public class TagRoutingTests
             .AddInMemoryCollection(new Dictionary<string, string?> { ["Api:BaseUrl"] = "https://api.test" })
             .Build();
 
-        return new HomeController(_api.Object, config);
+        return new HomeController(_api.Object, BlogStubs.EmptyComments(), Mock.Of<IAppConfigService>(), config);
     }
 
     private void TagIs(TagViewModel? tag)

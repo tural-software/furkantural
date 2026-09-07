@@ -3,7 +3,7 @@ using FurkanTural_Admin.Models.Navigation;
 
 namespace FurkanTural_Admin.Helpers;
 
-/// <summary>Yirmi üç yönetim modülünün tek kaydı. Ana ekran ızgarası, modül seçici ve kırıntı yolu buradan okur; modül adı, grubu ve controller'ı başka hiçbir yerde yazılı değildir.</summary>
+/// <summary>Yirmi dört yönetim modülünün tek kaydı. Ana ekran ızgarası, modül seçici ve kırıntı yolu buradan okur; modül adı, grubu ve controller'ı başka hiçbir yerde yazılı değildir.</summary>
 public static class AdminModules
 {
     public const string GroupContent = "İçerik";
@@ -34,6 +34,9 @@ public static class AdminModules
         new("tags", "tag", "Tag", "Tag", "Etiketler",
             "Yazıların ikincil sınıflandırmasını görüntüleyin ve CRUD işlemlerini yönetin.",
             GroupContent, Crud, "etiket"),
+        new("comments", "comment", "Comment", "Comment", "Yorumlar",
+            "Yazılara bırakılan yorumları denetleyin, yanıtlayın ve yönetin.",
+            GroupContent, [EntityAction.Create, EntityAction.Read, EntityAction.Delete], "yorum"),
         new("projects", "project", "Project", "Project", "Projeler",
             "Proje kayıtlarını görüntüleyin ve CRUD işlemlerini yönetin.",
             GroupContent, Crud, "proje"),

@@ -14,10 +14,10 @@ public class BulkActionsCoverageTests
         .ToArray();
 
     [Fact]
-    public void Yirmi_iki_modul_toplu_islem_sozlesmesini_tasir()
+    public void Yirmi_uc_modul_toplu_islem_sozlesmesini_tasir()
     {
-        Services.Select(t => t.Name).Should().HaveCount(22,
-            "panelde satır eylemi olan yirmi iki modülün hepsi toplu işlem sunar; kayıt defteri tek istisnadır çünkü satırı silinmez");
+        Services.Select(t => t.Name).Should().HaveCount(23,
+            "panelde satır eylemi olan yirmi üç modülün hepsi toplu işlem sunar; kayıt defteri tek istisnadır çünkü satırı silinmez");
         Services.Select(t => t.Name).Should().Contain(["BlogService", "UserService", "ReportService", "CallLogService"]);
         Services.Select(t => t.Name).Should().NotContain("LogService");
     }
@@ -34,7 +34,7 @@ public class BulkActionsCoverageTests
             .ToArray();
 
         own.Should().BeEmpty(
-            "gövdesi büyüyen servis ortak yardımcıya devretmiyor demektir; kural yirmi iki yerde ayrı ayrı yazılırsa biri eskir:" +
+            "gövdesi büyüyen servis ortak yardımcıya devretmiyor demektir; kural yirmi üç yerde ayrı ayrı yazılırsa biri eskir:" +
             Environment.NewLine + string.Join(Environment.NewLine, own.Select(n => "  - " + n)));
     }
 }

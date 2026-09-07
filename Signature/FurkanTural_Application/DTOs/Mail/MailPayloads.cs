@@ -13,7 +13,8 @@ public static class MailPayloads
         [MailTemplateDefinitions.AccountActivation] = typeof(AccountActivationMailDto),
         [MailTemplateDefinitions.NewsletterConfirm] = typeof(NewsletterConfirmMailDto),
         [MailTemplateDefinitions.NewsletterUnsubscribe] = typeof(NewsletterUnsubscribeMailDto),
-        [MailTemplateDefinitions.NewsletterIssue] = typeof(NewsletterIssueMailDto)
+        [MailTemplateDefinitions.NewsletterIssue] = typeof(NewsletterIssueMailDto),
+        [MailTemplateDefinitions.CommentReply] = typeof(CommentReplyMailDto)
     };
 
     public static IReadOnlyList<string> PlaceholdersOf(string? typeCode)
@@ -89,6 +90,21 @@ public class NewsletterIssueMailDto
 {
     public string? Subject { get; set; }
     public string? Body { get; set; }
+    public string? Email { get; set; }
+    public string? UnsubscribeUrl { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? CurrentYear { get; set; }
+}
+
+/// <summary>Bir yoruma yanıt geldiğinde, yanıtlanan yorumun sahibine giden bildirimin gövdesi. Yalnızca bildirimi açıkça isteyenlere gider.<para>ReplyBody kaçışla yerleştirilir. Bülten gövdesinden ayrıldığı tek yer budur: orada metni yazan yöneticinin kendisidir, burada ziyaretçidir.</para><para>UnsubscribeUrl alıcıya özeldir ve tek kullanımlık bir jeton taşır; şablonda boş bırakılamaz. Giden her bildirimin tek tıkla kapatma bağlantısı taşıması, adresin izinli kalmasının tek yoludur.</para></summary>
+public class CommentReplyMailDto
+{
+    public string? RecipientName { get; set; }
+    public string? PostTitle { get; set; }
+    public string? PostUrl { get; set; }
+    public string? ReplyAuthorName { get; set; }
+    public string? ReplyBody { get; set; }
+    public string? ReplyDate { get; set; }
     public string? Email { get; set; }
     public string? UnsubscribeUrl { get; set; }
     public string? ContactEmail { get; set; }

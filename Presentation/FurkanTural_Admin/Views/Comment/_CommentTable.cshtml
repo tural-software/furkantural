@@ -1,0 +1,213 @@
+@using FurkanTural_Admin.Models.Comment
+@using FurkanTural_Admin.Models.Common
+@using System.Text.Json
+@model CommentIndexViewModel
+@{
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    static string Excerpt(string? body, int max = 140)
+    {
+        if (string.IsNullOrWhiteSpace(body)) return "—";
+        var text = body.Trim().ReplaceLineEndings(" ");
+        return text.Length <= max ? text : text[..max] + "…";
+    }
+}
+
+<script id="__comment-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
+
+<div class="data-table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th class="col-select"><input type="checkbox" class="row-select-all" aria-label="Sayfadaki tüm kayıtları seç" /></th>
+                <th class="col-id">ID</th>
+                <th>Yazan</th>
+                <th>Yorum</th>
+                <th>Yazı</th>
+                <th>Denetim</th>
+                <th>Aktif</th>
+                <th>Silinmiş</th>
+                <th class="col-actions">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                <tr>
+                    <td class="col-select"><input type="checkbox" class="row-select" value="@row.Id" aria-label="Kaydı seç" /></td>
+                    <td>@row.Id</td>
+                    <td>
+                        <div class="cm-author">
+                            <span class="cm-author__name">
+                                @(row.AuthorName ?? "—")
+                                @if (row.IsAuthorReply)
+                                {
+                                    <span class="cm-owner-chip" title="Panelden yazının sahibi olarak verilen yanıt">yazar</span>
+                                }
+                            </span>
+                            <span class="cm-author__mail">@(row.AuthorEmail ?? "—")</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cm-body">
+                            @if (row.ParentId is not null)
+                            {
+                                <span class="cm-reply-to">@await Html.PartialAsync("_Icons", "reply") @(row.ParentAuthorName ?? "yorum") kişisine yanıt</span>
+                            }
+                            <span class="cm-body__text">@Excerpt(row.Body)</span>
+                        </div>
+                    </td>
+                    <td><span class="cm-post">@(row.BlogTitle ?? "—")</span></td>
+                    <td>
+                        @if (row.IsApproved)
+                        {
+                            <span class="sbadge sbadge--active">@await Html.PartialAsync("_Icons", "check-circle") Onaylı</span>
+                        }
+                        else if (row.IsRejected)
+                        {
+                            <span class="sbadge sbadge--deleted">Reddedildi</span>
+                        }
+                        else
+                        {
+                            <span class="sbadge sbadge--passive">@await Html.PartialAsync("_Icons", "clock") Bekliyor</span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.IsActive)
+                        {
+                            <span class="sbadge sbadge--active">
+                                @await Html.PartialAsync("_Icons", "check-circle")
+                                Aktif
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="sbadge sbadge--passive">
+                                @await Html.PartialAsync("_Icons", "x-circle")
+                                Pasif
+                            </span>
+                        }
+                    </td>
+                    <td>
+                        @if (row.IsDeleted)
+                        {
+                            <span class="sbadge sbadge--deleted">Evet</span>
+                        }
+                        else
+                        {
+                            <span class="sbadge sbadge--safe">Hayır</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <button type="button" class="row-btn ft-view-btn" title="Görüntüle" data-id="@row.Id">
+                                @await Html.PartialAsync("_Icons", "eye")
+                            </button>
+
+                            @if (!row.IsDeleted && !row.IsApproved)
+                            {
+                                <form method="post" action="@Url.Action("SetStatus")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <input type="hidden" name="status" value="approved" />
+                                    <button type="submit" class="row-btn row-btn--success" title="Onayla">
+                                        @await Html.PartialAsync("_Icons", "check")
+                                    </button>
+                                </form>
+                            }
+
+                            @if (!row.IsDeleted && !row.IsRejected)
+                            {
+                                <form method="post" action="@Url.Action("SetStatus")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <input type="hidden" name="status" value="rejected" />
+                                    <button type="submit" class="row-btn row-btn--warn" title="Reddet">
+                                        @await Html.PartialAsync("_Icons", "x-circle")
+                                    </button>
+                                </form>
+                            }
+
+                            @if (!row.IsDeleted && row.IsApproved && row.ParentId is null)
+                            {
+                                <button type="button" class="row-btn ft-reply-btn" title="Yanıtla" data-id="@row.Id">
+                                    @await Html.PartialAsync("_Icons", "reply")
+                                </button>
+                            }
+
+                            @if (!row.IsDeleted)
+                            {
+                                <form method="post" action="@Url.Action("ToggleActive")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    @if (row.IsActive)
+                                    {
+                                        <button type="submit" class="row-btn row-btn--warn" title="Pasife Al">
+                                            @await Html.PartialAsync("_Icons", "toggle-on")
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="row-btn row-btn--success" title="Aktife Al">
+                                            @await Html.PartialAsync("_Icons", "toggle-off")
+                                        </button>
+                                    }
+                                </form>
+                            }
+
+                            @if (row.IsDeleted)
+                            {
+                                <form method="post" action="@Url.Action("Restore")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button type="submit" class="row-btn row-btn--restore" title="Geri Yükle">
+                                        @await Html.PartialAsync("_Icons", "restore")
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" action="@Url.Action("Delete")" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row.Id" />
+                                    <button type="submit" class="row-btn row-btn--delete" title="Sil">
+                                        @await Html.PartialAsync("_Icons", "trash")
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Rows.Any())
+            {
+                <tr class="empty-row">
+                    <td colspan="9">Kayıt bulunamadı.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="bulk-bar" data-bulk-url="@Url.Action("Bulk")" role="region" aria-label="Seçili kayıtlar için toplu işlem" hidden>
+    <form class="bulk-bar__token">@Html.AntiForgeryToken()</form>
+    <strong class="bulk-bar__count" data-bulk-count>0 seçili</strong>
+    <div class="bulk-bar__actions">
+        <button type="button" class="btn-outline bulk-bar__btn" data-bulk-action="deactivate">Pasife Al</button>
+        <button type="button" class="btn-outline bulk-bar__btn" data-bulk-action="activate">Aktife Al</button>
+        <button type="button" class="btn-outline bulk-bar__btn" data-bulk-action="restore">Geri Yükle</button>
+        <button type="button" class="btn-outline bulk-bar__btn bulk-bar__btn--danger" data-bulk-action="delete">Sil</button>
+        <button type="button" class="btn-outline bulk-bar__btn bulk-bar__btn--quiet" data-bulk-clear>Vazgeç</button>
+    </div>
+</div>
+
+@await Html.PartialAsync("_TableFooter", new TableFooterModel(
+    Model.PageNumber, Model.PageSize, Model.TotalPages, Model.TotalFiltered,
+    [
+        new("name",          Model.SearchName),
+        new("statusFilter",  Model.StatusFilter),
+        new("activeFilter",  Model.ActiveFilter),
+        new("deletedFilter", Model.DeletedFilter),
+        new("dateFrom",      Model.DateFrom),
+        new("dateTo",        Model.DateTo),
+    ]))

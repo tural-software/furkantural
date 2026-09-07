@@ -29,6 +29,9 @@ public interface IBlogApiService
     /// <summary>Arşiv sayfası: aynı hafif listeyi yıl/ay gruplu döndürür. Ayrı bir yöntem olmasının nedeni hata durumudur — sitemap.xml arıza hâlinde bilerek boş liste döner, arşiv sayfası ise boş arşivi arızadan ayırt etmek zorundadır.</summary>
     Task<ArchiveViewModel> GetArchiveAsync(CancellationToken ct = default);
 
+    /// <summary>Okunma sayacını bir artırır. Sayfa çizilirken değil, tarayıcıdan gelen ayrı bir istekle çağrılır; arıza hâlinde sessizce yutulur — sayaç, sayfanın çalışmasını engelleyecek kadar önemli değildir.</summary>
+    Task RegisterViewAsync(int blogId, CancellationToken ct = default);
+
     /// <summary>Belirli bir bloğa ait görseller (detay sayfası kapağı/galerisi için).</summary>
     Task<IReadOnlyList<BlogImageViewModel>> GetImagesByBlogAsync(int blogId, CancellationToken ct = default);
 }
