@@ -292,7 +292,7 @@
     padding: 0 0.4rem;
     border-radius: var(--radius-pill);
     background: var(--chip-update-fg);
-    color: var(--on-accent);
+    color: var(--on-chip-strong);
     font-weight: 700;
     font-size: var(--fs-xs);
 }

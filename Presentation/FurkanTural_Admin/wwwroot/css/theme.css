@@ -74,6 +74,7 @@
     --divider: rgba(255, 255, 255, 0.08);
     --bg-inset: #262933;
     --on-accent: #0f172a;
+    --on-chip-strong: #0f172a;
     --error: #f87171;
     --shadow-overlay: 0 18px 40px rgba(0, 0, 0, 0.45);
     --scrim: rgba(8, 10, 14, 0.66);
@@ -121,6 +122,7 @@
     --divider: rgba(15, 23, 42, 0.08);
     --bg-inset: #eef2f7;
     --on-accent: #0f172a;
+    --on-chip-strong: #ffffff;
     --error: #b91c1c;
     --shadow-overlay: 0 18px 40px rgba(15, 23, 42, 0.14);
     --scrim: rgba(15, 23, 42, 0.35);
