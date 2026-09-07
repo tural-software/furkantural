@@ -99,6 +99,10 @@
     /* "Yakında" rozeti */
     --pending-bg: rgba(148, 163, 184, 0.15);
     --pending-fg: #cbd5e1;
+
+    /* Onay kutusu */
+    --check-bg: rgba(148, 163, 184, 0.12);
+    --check-border: rgba(148, 163, 184, 0.45);
 }
 
 /* LIGHT */
@@ -140,6 +144,9 @@
 
     --pending-bg: rgba(15, 23, 42, 0.06);
     --pending-fg: #475569;
+
+    --check-bg: #ffffff;
+    --check-border: rgba(15, 23, 42, 0.28);
 }
 
 /* Smooth tema geçişi — global */
