@@ -89,21 +89,32 @@
         @if (form.Submitted && form.Succeeded)
         {
             <p class="comment-alert comment-alert--ok" role="status">@form.ResultMessage</p>
+
+            <dialog class="comment-done" id="commentDoneDialog" aria-labelledby="commentDoneTitle">
+                <h2 class="comment-done__title" id="commentDoneTitle">Yorumunuz alındı</h2>
+                <p class="comment-done__text">
+                    Yorumlar yayımlanmadan önce onaydan geçiyor, bu yüzden yazdığınız metin sayfada
+                    <strong>hemen görünmeyecek</strong>. Onaylandığında bu yazının altında yerini alacak.
+                </p>
+                <p class="comment-done__text">
+                    Yanıt bildirimi istediyseniz, yorumunuza cevap geldiğinde e-posta ile haber vereceğiz;
+                    o postanın altındaki bağlantıyla bildirimleri tek tıkla kapatabilirsiniz.
+                </p>
+                <button type="button" class="btn btn--primary comment-done__close" id="commentDoneClose" autofocus>
+                    Anladım
+                </button>
+            </dialog>
         }
         else if (form.Submitted && !string.IsNullOrEmpty(form.ResultMessage))
         {
             <p class="comment-alert comment-alert--warn" role="alert">@form.ResultMessage</p>
         }
 
+        <div class="comment-compose" id="commentCompose">
         <form method="post" action="@postUrl" class="comment-form" id="commentForm">
             @Html.AntiForgeryToken()
             <input type="hidden" name="BlogId" value="@Model.Id" />
             <input type="hidden" name="ParentId" id="commentParentId" value="@(form.ParentId?.ToString() ?? "")" />
-
-            <p class="comment-form__replying" id="commentReplyingTo" hidden>
-                <span id="commentReplyingName"></span> kişisine yanıt veriyorsunuz.
-                <button type="button" class="comment-form__cancel" id="commentReplyCancel">Vazgeç</button>
-            </p>
 
             <div class="comment-form__row">
                 <label class="comment-field">
@@ -124,7 +135,7 @@
 
             <label class="comment-field">
                 <span class="comment-field__label">Yorumunuz</span>
-                <textarea class="comment-field__input comment-field__input--area" name="Body" rows="6"
+                <textarea class="comment-field__input comment-field__input--area" name="Body" rows="4"
                           maxlength="4000" required>@form.Body</textarea>
             </label>
             <span class="comment-field__error">@Html.ValidationMessage("Body")</span>
@@ -153,6 +164,15 @@
                 Bildirim istediyseniz postanın altındaki bağlantıyla tek tıkla kapatabilirsiniz.
             </p>
         </form>
+
+        <aside class="comment-target" id="commentTarget" aria-live="polite" hidden>
+            <p class="comment-target__lead">Şu yoruma yanıt veriyorsunuz</p>
+            <p class="comment-target__author" id="commentTargetName"></p>
+            <p class="comment-target__date" id="commentTargetDate"></p>
+            <blockquote class="comment-target__body" id="commentTargetBody"></blockquote>
+            <button type="button" class="comment-form__cancel" id="commentReplyCancel">Yanıttan vazgeç</button>
+        </aside>
+        </div>
     </div>
 
 </section>

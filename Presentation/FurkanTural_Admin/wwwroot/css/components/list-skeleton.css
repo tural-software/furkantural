@@ -47,7 +47,10 @@
 .data-table-wrap { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
 .data-table th { padding: .75rem 1rem; text-align: left; font-size: var(--fs-2xs); font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .055em; border-bottom: 1px solid var(--border-color); white-space: nowrap; background: var(--bg-inset); }
-.data-table td { padding: .875rem 1rem; color: var(--text-main); border-bottom: 1px solid var(--divider); white-space: nowrap; }
+.data-table td { padding: .875rem 1rem; color: var(--text-main); border-bottom: 1px solid var(--divider); white-space: nowrap; max-width: 28ch; overflow: hidden; text-overflow: ellipsis; }
+.data-table .col-select, .data-table .col-actions, .data-table td:has(.row-actions) { max-width: none; overflow: visible; }
+.data-table td:not(.col-select):not(.col-actions):not(:has(.row-actions)) > *,
+.data-table td:not(.col-select):not(.col-actions):not(:has(.row-actions)) > * > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .data-table tr:last-child td { border-bottom: none; }
 .data-table tr:hover td { background: rgba(var(--accent-rgb), .04); }
 .data-table .col-id { width: 64px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
@@ -167,7 +170,13 @@
         padding: .3rem 0;
         border-bottom: none;
         white-space: normal;
+        max-width: none;
+        overflow: visible;
+        text-overflow: clip;
     }
+
+    .data-table td > *,
+    .data-table td > * > * { overflow: visible; text-overflow: clip; }
     .data-table td::before {
         content: attr(data-label);
         flex: 0 0 auto;
