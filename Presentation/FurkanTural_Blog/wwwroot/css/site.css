@@ -315,7 +315,7 @@ a:hover { color: var(--accent-text-hover); }
 .placeholder-card h2 { margin-top: 0; }
 .placeholder-card p { color: var(--text-muted); margin-bottom: 0; }
 
-.content-page { padding: 3rem 0 4rem; max-width: 720px; }
+.content-page { padding-block: 3rem 4rem; max-width: 720px; }
 .content-page h1 { margin-top: 0; }
 .content-page p { color: var(--text-muted); }
 
@@ -784,7 +784,7 @@ html.lightbox-open { overflow: hidden; }
    561–1199px arası hiç kural yoktu; masaüstü boşlukları bu aralıkta fazla ferah kalıyordu. */
 @media (max-width: 900px) {
   .hero { padding: 4.5rem 0 3rem; }
-  .content-page { padding: 2.5rem 0 3.25rem; }
+  .content-page { padding-block: 2.5rem 3.25rem; }
   .post-grid { gap: 1.25rem; }
 }
 
@@ -813,7 +813,7 @@ html.lightbox-open { overflow: hidden; }
   .hero__actions .btn { width: 100%; }
 
   .post-card__body { padding: 1.1rem 1.15rem 1.25rem; }
-  .content-page { padding: 2rem 0 3rem; }
+  .content-page { padding-block: 2rem 3rem; }
   .post-cover { margin: 1.15rem 0; }
 
   .footer-inner { justify-content: center; text-align: center; row-gap: 0.35rem; }
