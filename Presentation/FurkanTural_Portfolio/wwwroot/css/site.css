@@ -399,7 +399,7 @@ main:focus { outline: none; }
 .about-stat__num { font-size: var(--fs-3xl); font-weight: 800; color: var(--color-accent-text); line-height: 1; letter-spacing: -0.02em; }
 .about-stat__label { font-size: var(--fs-sm); color: var(--color-text-muted); margin-top: 0.3rem; }
 
-.skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+.skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.25rem; }
 .skill-card {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
@@ -442,7 +442,7 @@ main:focus { outline: none; }
 .timeline-date { display: block; color: var(--color-text-muted); font-size: var(--fs-sm); margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
 
 .projects-section { background: transparent; }
-.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 1.5rem; }
 .project-card {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
@@ -482,7 +482,7 @@ main:focus { outline: none; }
 .tag:hover { border-color: var(--color-accent); transform: translateY(-2px); }
 .project-card__footer { padding: 1rem 1.5rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.75rem; }
 
-.songs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 0.75rem; }
+.songs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 0.75rem; }
 .song-card {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
@@ -660,7 +660,7 @@ a.song-card__link:hover { color: var(--color-accent-text); }
 [data-theme="light"] .skill-chip { background: rgba(0, 0, 0, 0.03); }
 
 /* Hizmet kartları ("Birlikte Çalışalım" — eski boş pricing yerine) */
-.services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; }
+.services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 1.25rem; }
 .service-card {
   background: var(--color-bg-card-translucent);
   border: 1px solid var(--color-border);
@@ -756,13 +756,13 @@ a.song-card__link:hover { color: var(--color-accent-text); }
     color: var(--color-accent-text); margin-bottom: 1rem;
 }
 .detail-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; }
-.detail-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.detail-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 1rem; }
 .detail-gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--color-border); }
 .project-card__link { color: inherit; }
 .project-card__link:hover { color: var(--color-accent-text); }
 
 /* Müzik detayı — meta liste + sözler + YouTube Music butonu */
-.detail-meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.detail-meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); gap: 1rem; margin-top: 1.5rem; }
 .detail-meta__item { display: flex; flex-direction: column; gap: 0.2rem; }
 .detail-meta__label { font-size: var(--fs-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
 .detail-meta__value { font-weight: 600; }
