@@ -463,7 +463,7 @@ select:focus-visible,
 .auth-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
 /* Turnstile widget'ı formda ortala */
-.auth-form .cf-turnstile { display: flex; justify-content: center; align-items: center; min-height: 65px; margin-top: 10px; }
+.auth-form .cf-turnstile { display: flex; justify-content: center; align-items: center; min-height: var(--ts-h, 65px); margin-top: 10px; }
 
 /* Validation: hatalı alan kırmızı kenarlık */
 .auth-form input.input-validation-error {
@@ -1527,3 +1527,11 @@ html[data-consent="1"] .consent-overlay { display: none; }
     .legal-card { padding: 24px 20px; }
 }
 
+
+@media (max-width: 400px) {
+  .cf-turnstile { transform: scale(0.85); transform-origin: center top; --ts-h: 56px; }
+}
+
+@media (max-width: 360px) {
+  .cf-turnstile { transform: scale(0.72); transform-origin: center top; --ts-h: 47px; }
+}

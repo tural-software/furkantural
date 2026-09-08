@@ -827,3 +827,10 @@ html.lightbox-open { overflow: hidden; }
     scroll-behavior: auto !important;
   }
 }
+@media (max-width: 400px) {
+  .cf-turnstile { transform: scale(0.85); transform-origin: center top; --ts-h: 56px; }
+}
+
+@media (max-width: 360px) {
+  .cf-turnstile { transform: scale(0.72); transform-origin: center top; --ts-h: 47px; }
+}
