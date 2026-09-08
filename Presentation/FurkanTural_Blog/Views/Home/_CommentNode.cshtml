@@ -26,7 +26,7 @@
 
     @if (Model.Replies.Count > 0)
     {
-        <ol class="comment-list comment-list--replies@(Model.IndentsReplies ? "" : " comment-list--flat")">
+        <ol class="comment-list comment-list--replies">
             @foreach (var reply in Model.Replies)
             {
                 @await Html.PartialAsync("_CommentNode", reply)

@@ -20,17 +20,9 @@ public sealed class CommentViewModel
 
     public List<CommentViewModel> Replies { get; set; } = [];
 
-    /// <summary>Girintinin durduğu seviye. Zincirin kendisi sınırsızdır; sayfada girinti sınırsız olamaz çünkü her seviye metin sütunundan bir parça alır ve dar ekranda birkaç seviye sonra okunacak genişlik kalmaz.<para>Girinti durduğunda yapı kaybolmaz, yer değiştirir: yanıtın kime verildiği o noktadan sonra girintiden değil satır başındaki oktan okunur.</para></summary>
-    public const int MaxIndentDepth = 3;
-
-    /// <summary>Kök yorumdan kaç halka uzakta olduğu; kök için sıfırdır. API bu değeri taşımaz, ağacın kendi biçiminden okunur — derinlik sunuma ait bir sorudur ve sözleşmede yeri yoktur.</summary>
     public int Depth { get; set; }
 
-    /// <summary>Yanıt verilen yorumun sahibi. Ağaçta zaten bir üst düğümdür; satıra kopyalanması, girinti durduktan sonra yanıtın kime verildiğini söyleyen tek işaretin bu olmasındandır.</summary>
     public string? ParentAuthorName { get; set; }
-
-    /// <summary>Bu yorumun yanıtları girintilenecek mi. Sınıra varan düğüm çocuklarını kendi hizasında çizer; zincir sürer, girinti durur.</summary>
-    public bool IndentsReplies => Depth < MaxIndentDepth;
 
     public string PublishedDisplay =>
         CreatedAt == default ? string.Empty : CreatedAt.ToString("d MMMM yyyy HH:mm", Tr);
@@ -56,7 +48,6 @@ public sealed class CommentThreadViewModel
     /// <summary>Sayfaya sığmayan kök yorum var mı. Varsa okura bir uyarı çizilir; sessizce kesmek, konuşmanın orada bittiği izlenimini verirdi.</summary>
     public bool HasMore => TotalPages > 1;
 
-    /// <summary>Ağaçtan okunabilen ama satırın kendisinde durmayan iki değeri damgalar: derinlik ve üst yorumun sahibi. İkisi de API'den gelmez, gelmemelidir de — biri sunum kararıdır, diğeri ağacın biçiminde zaten vardır ve sözleşmeye kopyalanması aynı bilgiyi iki yerde tutmak olurdu.<para>Çizim anında hesaplamak yerine burada bir kez yürünür: partial kendini özyineleyerek çağırdığı için, üst düğümün adını her seviyede ayrıca taşımak görünümü modelin işini yapmak zorunda bırakırdı.</para></summary>
     public void StampTree()
     {
         Walk(Items, 0, null);

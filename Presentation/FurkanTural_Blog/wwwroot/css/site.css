@@ -1376,13 +1376,7 @@ html.lightbox-open { overflow: hidden; }
 
 .comment-list--replies {
   margin: 0.85rem 0 0;
-  padding-left: 1.6rem;
-  border-left: 2px solid var(--border);
-}
-
-.comment-list--flat {
-  padding-left: 0;
-  border-left: 0;
+  padding-left: 1.9rem;
 }
 
 .comment--reply {
@@ -1390,17 +1384,13 @@ html.lightbox-open { overflow: hidden; }
 }
 
 .comment--reply::before {
-  content: "";
+  content: "\21B3";
   position: absolute;
-  top: 1.15rem;
-  left: -1.6rem;
-  width: 1.1rem;
-  height: 2px;
-  background: var(--border);
-}
-
-.comment-list--flat > .comment--reply::before {
-  display: none;
+  left: -1.55rem;
+  top: 0.55rem;
+  color: var(--accent-text);
+  font-size: 1.15rem;
+  line-height: 1;
 }
 
 .comment__card {
@@ -1410,18 +1400,8 @@ html.lightbox-open { overflow: hidden; }
   background: var(--bg-elev);
 }
 
-.comment--reply > .comment__card {
-  padding: 0.7rem 0.9rem;
-  border-color: transparent;
-  background: transparent;
-}
-
 .comment__card--author {
   border-left: 3px solid var(--accent);
-}
-
-.comment--reply > .comment__card--author {
-  border-left-color: var(--accent);
 }
 
 .comment__head {
@@ -1452,18 +1432,8 @@ html.lightbox-open { overflow: hidden; }
 }
 
 .comment__replyto {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
   color: var(--text-muted);
   font-size: var(--fs-xs);
-}
-
-.comment__replyto::before {
-  content: "\21B3";
-  color: var(--accent-text);
-  font-size: 1.15em;
-  line-height: 1;
 }
 
 .comment__date {
@@ -1714,10 +1684,9 @@ html.lightbox-open { overflow: hidden; }
 
 @media (max-width: 640px) {
   .comment-form-wrap { padding: 1.15rem; }
-  .comment-list--replies { padding-left: 0.85rem; }
-  .comment-list--flat { padding-left: 0; }
-  .comment--reply::before { left: -0.85rem; width: 0.5rem; }
-  .comment--reply > .comment__card { padding: 0.7rem 0.6rem; }
+  .comment-list--replies { padding-left: 1.1rem; }
+  .comment--reply::before { left: -1rem; font-size: 0.95rem; }
+  .comment__card { padding: 0.85rem 0.8rem; }
 
   .comment-compose { grid-template-columns: minmax(0, 1fr); }
   .comment-compose.is-replying { grid-template-columns: minmax(0, 1fr); column-gap: 0; row-gap: 1rem; }

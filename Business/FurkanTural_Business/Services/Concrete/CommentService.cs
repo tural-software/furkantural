@@ -36,7 +36,6 @@ public class CommentService(
     /// <summary>Yanıt sayacı için tek okumada taranan en fazla satır. Sayı yalnızca silme kararına bilgi verir; sınır, bir sayfalık listenin yanıtlarının sınırsız büyümesini engeller.</summary>
     private const int ReplyScan = 1000;
 
-    /// <summary>Bir yazının yorum ağacında okunan en fazla yanıt satırı. Derinlik sınırsızdır, genişlik değildir: zincir kendiliğinden biter ama toplam satır bir yerde durmalıdır, yoksa sayfalamayı kök yorumlara uygulamış olmak bir şey ifade etmezdi.</summary>
     private const int ThreadNodeScan = 500;
 
     /// <summary>Aynı adresin aynı yazıya arka arkaya yorum bırakamayacağı süre. Asıl işi çift gönderimi yutmaktır: form iki kez gönderildiğinde ikinci satır açılmaz ve kullanıcı yine aynı olumlu metni görür.</summary>
@@ -84,7 +83,6 @@ public class CommentService(
         });
     }
 
-    /// <summary>Kök yorumların altına, kaç seviye inerse insin, bütün yanıt zincirini yerleştirir. Yürüyüş seviye seviyedir: her tur bir önceki turda bulunan yorumların çocuklarını tek sorguda okur ve boş bir seviyeye varınca durur. Yanıt başına sorgu açan özyineleme, derinliği kullanıcının belirlediği bir yapıda sorgu sayısını da kullanıcıya bırakırdı.<para>Tur sayısı zincirin kendi derinliğiyle sınırlıdır; toplam satır <see cref="ThreadNodeScan"/> ile sınırlıdır. İkinci sınır olmasaydı tek bir yazının yorum ağacı, sayfalamayı kök yorumlara uygulamış olmamıza rağmen tabloyu baştan sona okuyabilirdi.</para><para>Bir çocuk, üstü sözlükte bulunamazsa atlanır. Bu yalnızca üst yorum yayından kalkmışken çocuğu yayındaysa olur; o satırı köke terfi ettirmek, okurun göremediği bir yoruma verilmiş yanıtı bağlamsız biçimde sayfaya çıkarırdı.</para></summary>
     private async Task AttachRepliesAsync(List<CommentDto> roots, CancellationToken cancellationToken)
     {
         if (roots.Count == 0)
