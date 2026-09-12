@@ -448,4 +448,95 @@ public sealed class FlowTests(LiveSiteFixture site)
         canonical.Should().Contain("/yazi/", "kanonik etiket slug adresini göstermeli");
         idLinks.Should().Be(0, "sayfada eski kimlik adresine bağlantı kalmamalı");
     }
+
+    /// <summary>Liste gezinmesi tabloyu yerinde tazeler. Sayfa numarasına basmak tam yenileme yaparsa okunan filtre, kaydırma konumu ve açık olan her şey sıfırlanır; bu yüzden ölçüt adresin değişmesi değil, belgenin AYNI belge kalmasıdır.<para>Nöbetçi değişken bunun için var: tam yenileme olsaydı pencere yeniden kurulur ve o değişken kaybolurdu. Geri tuşu da aynı ölçüte tabidir — pushState ile düşen geçmiş kaydı yeni bir belge yüklememelidir.</para></summary>
+    [SkippableFact]
+    public async Task Admin_listesinde_sayfa_degistirmek_belgeyi_yeniden_yuklemez()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Category"), async page =>
+        {
+            var second = page.Locator(".pagination a[href*='pageNumber=2']").First;
+            Skip.If(await second.CountAsync() == 0, "Admin/Category: ikinci sayfa yok");
+
+            await page.EvaluateAsync("window.__sweepSentinel = 'duruyor'");
+
+            await second.ClickAsync();
+            await page.WaitForFunctionAsync("() => location.search.indexOf('pageNumber=2') !== -1");
+            await page.WaitForFunctionAsync("() => !document.querySelector('[data-list-controller][aria-busy]')");
+
+            var urlAfter = page.Url;
+            var sentinelAfter = await page.EvaluateAsync<string?>("() => window.__sweepSentinel || null");
+            var activeAfter = (await page.Locator(".pag-btn--active").First.InnerTextAsync()).Trim();
+
+            await page.GoBackAsync();
+            await page.WaitForFunctionAsync("() => location.search.indexOf('pageNumber=2') === -1");
+            await page.WaitForFunctionAsync("() => !document.querySelector('[data-list-controller][aria-busy]')");
+
+            var sentinelBack = await page.EvaluateAsync<string?>("() => window.__sweepSentinel || null");
+            var activeBack = (await page.Locator(".pag-btn--active").First.InnerTextAsync()).Trim();
+
+            return (urlAfter, sentinelAfter, activeAfter, sentinelBack, activeBack);
+        });
+
+        result.urlAfter.Should().Contain("pageNumber=2",
+            "adres hangi sayfada olunduğunu söylemeli, yoksa filtrelenmiş bir liste paylaşılamaz");
+        result.sentinelAfter.Should().Be("duruyor", "sayfa değiştirmek belgeyi yeniden yüklememeli");
+        result.activeAfter.Should().Be("2", "alt bant hangi sayfanın etkin olduğunu göstermeli");
+        result.sentinelBack.Should().Be("duruyor", "geri tuşu da yerinde çalışmalı, yeni bir belge yüklememeli");
+        result.activeBack.Should().Be("1", "geri tuşu bir önceki sayfaya dönmeli");
+    }
+
+    /// <summary>Sayaç kutuları tablonun dışında duruyor, dolayısıyla tazelenen bölgeye girmiyorlar. Tazeleme onları güncellemezse panel, silinen kaydı listeden düşürüp sayacı eski değerde bırakır ve kullanıcıya aynı anda iki farklı gerçek gösterir.</summary>
+    [SkippableFact]
+    public async Task Admin_listesinde_sayaclar_tazelemeden_sonra_dolu_kalir()
+    {
+        var values = await site.WithPageAsync(SweepData.Page("Admin/Category"), async page =>
+        {
+            Skip.If(await page.Locator("[data-stat]").CountAsync() == 0, "Admin/Category: sayaç kutusu yok");
+
+            var second = page.Locator(".pagination a[href*='pageNumber=2']").First;
+            Skip.If(await second.CountAsync() == 0, "Admin/Category: ikinci sayfa yok");
+
+            await second.ClickAsync();
+            await page.WaitForFunctionAsync("() => !document.querySelector('[data-list-controller][aria-busy]')");
+
+            return await page.EvaluateAsync<string[]>(
+                "() => Array.from(document.querySelectorAll('[data-stat]')).map(n => n.dataset.stat + '=' + (n.textContent || '').trim())");
+        });
+
+        values.Should().NotBeEmpty();
+        values.Should().OnlyContain(v => !v.EndsWith("="),
+            "her sayaç tazelemeden sonra da bir değer taşımalı: " + string.Join(", ", values));
+    }
+
+    /// <summary>Filtre çubuğu da tabloyu yerinde tazeler. Sayfalamadan ayrı bir yol izler — parametreler bağlantının adresinden değil formun alanlarından kurulur — bu yüzden ayrıca sınanır.<para>Boş alanların adrese yazılmaması kasıtlı: sunucu için eksik ile boş aynı şeydir ve paylaşılan bağlantının okunabilir kalması tercih edilir.</para></summary>
+    [SkippableFact]
+    public async Task Admin_listesinde_filtrelemek_belgeyi_yeniden_yuklemez()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Category"), async page =>
+        {
+            var select = page.Locator(".filter-bar select[name='deletedFilter']").First;
+            Skip.If(await select.CountAsync() == 0, "Admin/Category: silinme süzgeci yok");
+
+            await page.EvaluateAsync("window.__sweepSentinel = 'duruyor'");
+
+            await select.SelectOptionAsync("deleted");
+            await page.Locator(".filter-actions button[type='submit']").First.ClickAsync();
+            await page.WaitForFunctionAsync("() => location.search.indexOf('deletedFilter=deleted') !== -1");
+            await page.WaitForFunctionAsync("() => !document.querySelector('[data-list-controller][aria-busy]')");
+
+            var sentinel = await page.EvaluateAsync<string?>("() => window.__sweepSentinel || null");
+            var kept = await page.InputValueAsync(".filter-bar select[name='deletedFilter']");
+            var meta = await page.EvaluateAsync<string?>("() => (window.__categoryMeta || {}).deletedFilter || null");
+
+            return (page.Url, sentinel, kept, meta);
+        });
+
+        result.sentinel.Should().Be("duruyor", "filtrelemek belgeyi yeniden yüklememeli");
+        result.Url.Should().Contain("deletedFilter=deleted", "adres hangi süzgecin etkin olduğunu söylemeli");
+        result.Url.Should().NotContain("name=&", "boş süzgeç adrese yazılmamalı");
+        result.kept.Should().Be("deleted", "süzgeç çubuğu seçili değeri korumalı");
+        result.meta.Should().Be("deleted",
+            "sayfa durumu ortak modülle aynı gerçeği taşımalı; ayrışırsa kayıt silindikten sonraki tazeleme süzgeci düşürür");
+    }
 }
