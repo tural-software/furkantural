@@ -20,6 +20,7 @@ public class CommentServiceTests
 {
     private static readonly DateTime Now = new(2026, 9, 7, 12, 0, 0, DateTimeKind.Utc);
 
+    private readonly Mock<IAdminNotifier> _adminNotifier = new();
     private readonly Mock<IUnitOfWork> _uow = new();
     private readonly Mock<IBlogRepository> _blogs = new();
     private readonly Mock<IRepository<Comment>> _comments = new();
@@ -104,7 +105,7 @@ public class CommentServiceTests
         _sut = new CommentService(
             _uow.Object, _turnstile.Object, config,
             new ActivityLogger(Mock.Of<ILogService>(), Mock.Of<IHttpContextAccessor>(), clock),
-            _signal, NullLogger<CommentService>.Instance, clock);
+            _signal, NullLogger<CommentService>.Instance, _adminNotifier.Object, clock);
     }
 
     private static IEnumerable<T> Live<T>(IEnumerable<T> rows) where T : FurkanTural_Domain.Entities.Common.BaseEntity
@@ -608,4 +609,46 @@ public class CommentServiceTests
 
     private static string Hash(string token)
         => Convert.ToBase64String(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
+
+    /// <summary>Yeni yorum, açık duran yönetici paneline haber gitmesini gerektirir. Bildirim kaydın yerine geçmez — düşerse sayı bir sonraki sayfa yüklemesinde düzelir — ama hiç gönderilmezse sekmesini açık bırakan yönetici kuyruğun boş olduğunu sanır.</summary>
+    [Fact]
+    public async Task Yeni_yorum_yoneticiye_haber_verir()
+    {
+        Post();
+
+        await _sut.SubmitAsync(Submission(), "jeton", null);
+
+        _adminNotifier.Verify(
+            n => n.NotifyPendingWorkChangedAsync(AdminWorkKinds.Comment, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    /// <summary>Cooldown dalı kayıt açmaz, dolayısıyla haber verecek bir şey de yoktur. Buradan bildirim çıkarsa panelde olmayan bir iş görünür ve yönetici boş kuyruğa bakmaya gider.</summary>
+    [Fact]
+    public async Task Yutulan_gonderim_yoneticiye_haber_vermez()
+    {
+        Post();
+        Row(1, email: "okur@site.test", status: CommentStatuses.Pending).CreatedAt = Now.AddSeconds(-10);
+
+        await _sut.SubmitAsync(Submission(email: "okur@site.test"), "jeton", null);
+
+        _adminNotifier.Verify(
+            n => n.NotifyPendingWorkChangedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    /// <summary>Doğrulamada elenen gönderim de kayıt açmaz; bildirim yalnızca gerçekten satır açıldığında çıkmalı.</summary>
+    [Fact]
+    public async Task Bot_dogrulamasi_gecilemezse_haber_gitmez()
+    {
+        Post();
+        _turnstile.Setup(t => t.VerifyAsync(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        await _sut.SubmitAsync(Submission(), null, null);
+
+        _adminNotifier.Verify(
+            n => n.NotifyPendingWorkChangedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
 }

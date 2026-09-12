@@ -20,6 +20,7 @@ public class ContactService(
     IConfiguration configuration,
     ActivityLogger activityLogger,
     ITurnstileVerifier turnstileVerifier,
+    IAdminNotifier adminNotifier,
     IClock clock) : IContactService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -27,6 +28,7 @@ public class ContactService(
     private readonly IConfiguration _configuration = configuration;
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
+    private readonly IAdminNotifier _adminNotifier = adminNotifier;
     private readonly IClock _clock = clock;
 
     public async Task<Result> SubmitAsync(SubmitContactDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
@@ -54,6 +56,7 @@ public class ContactService(
         await _unitOfWork.Contacts.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Yeni iletişim mesajı alındı. Id: {entity.Id}", cancellationToken);
+        await _adminNotifier.NotifyPendingWorkChangedAsync(AdminWorkKinds.Contact, cancellationToken);
 
         await SendEmailsAsync(dto, ipAddress, userAgent, cancellationToken);
 

@@ -74,6 +74,7 @@ builder.Services.AddSignalR().AddJsonProtocol(o =>
     o.PayloadSerializerOptions.Converters.Add(new NullableUtcDateTimeJsonConverter());
 });
 builder.Services.AddScoped<IChatNotifier, ChatNotifier>();
+builder.Services.AddScoped<IAdminNotifier, AdminNotifier>();
 builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 builder.Services.AddSingleton<IPresenceTracker, PresenceTracker>();
 builder.Services.Configure<AppTokenSettings>(builder.Configuration.GetSection("AppTokens"));
@@ -280,6 +281,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<AdminHub>("/hubs/admin");
 
 app.Run();
 

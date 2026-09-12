@@ -11,9 +11,10 @@ using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class ReportService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IReportService
+public class ReportService(IUnitOfWork unitOfWork, ActivityLogger activityLogger, IAdminNotifier adminNotifier) : IReportService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IAdminNotifier _adminNotifier = adminNotifier;
     private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result> CreateAsync(int reporterId, CreateReportDto dto, CancellationToken cancellationToken = default)
@@ -43,6 +44,7 @@ public class ReportService(IUnitOfWork unitOfWork, ActivityLogger activityLogger
         await _unitOfWork.Reports.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Şikayet oluşturuldu. Reporter: {reporterId}, Tür: {dto.TargetType}", cancellationToken);
+        await _adminNotifier.NotifyPendingWorkChangedAsync(AdminWorkKinds.Report, cancellationToken);
 
         return Result.Ok("Şikayetiniz alındı. En kısa sürede incelenecektir.");
     }
