@@ -26,6 +26,8 @@ public class HomeController(
     /// <summary>Gönderim sonrası adres satırında taşınan işaret. Sonucu oturuma yazmak yerine adreste taşımak, hem çerez gerektirmez hem de yenilenen sayfada onay metninin kaybolmasını doğal kılar.</summary>
     private const string SubmittedFlag = "alindi";
 
+    private const string SubmittedMessage = "Yorumunuz alındı. Onaylandıktan sonra sayfada görünecek.";
+
     /// <summary>Aralık dışı sayfa numarası hata değil, son geçerli sayfaya yönlendirme üretir ve filtreler korunur; elle yazılmış bir adres kullanıcıyı boş listeyle baş başa bırakmaz.<para>Kapak görselleri yalnızca bu sayfadaki yazılar için ve paralel çekilir. Çağrı sayısı böylece sayfa boyutunu hiç aşmaz ve arşiv büyüdükçe artmaz.</para><para>Kategori ve arama artık kendi adreslerinde yaşıyor. Buraya eski sorgu dizesiyle gelen istek kalıcı olarak oraya yönlendirilir: iki adres aynı listeyi gösterirse arama motoru hangisinin kanonik olduğunu bilemez.</para></summary>
     public async Task<IActionResult> Index(int page = 1, int? categoryId = null, string? search = null, CancellationToken cancellationToken = default)
     {
@@ -185,7 +187,7 @@ public class HomeController(
         {
             post.CommentForm.Submitted = true;
             post.CommentForm.Succeeded = true;
-            post.CommentForm.ResultMessage = "Yorumunuz alındı. Onaylandıktan sonra sayfada görünecek.";
+            post.CommentForm.ResultMessage = SubmittedMessage;
         }
 
         return View(nameof(Post), post);
@@ -201,34 +203,57 @@ public class HomeController(
         if (post is null)
             return NotFound();
 
-        if (!string.IsNullOrWhiteSpace(form.Website))
-            return RedirectToRoute("BlogPost", new { slug, yorum = SubmittedFlag });
+        var scripted = IsScriptedRequest();
 
-        await AttachDetailAsync(post, cancellationToken);
-        post.CommentForm = form;
+        if (!string.IsNullOrWhiteSpace(form.Website))
+            return scripted
+                ? Json(new { ok = true, message = SubmittedMessage })
+                : RedirectToRoute("BlogPost", new { slug, yorum = SubmittedFlag });
+
         form.BlogId = post.Id;
         form.Submitted = true;
         form.Succeeded = false;
 
-        if (!ModelState.IsValid)
-            return View(nameof(Post), post);
+        string? failure = null;
 
-        if (string.IsNullOrWhiteSpace(form.TurnstileToken))
+        if (ModelState.IsValid)
         {
-            form.ResultMessage = "Bot doğrulaması tamamlanmadı. Lütfen tekrar deneyin.";
-            return View(nameof(Post), post);
+            if (string.IsNullOrWhiteSpace(form.TurnstileToken))
+            {
+                failure = "Bot doğrulaması tamamlanmadı. Lütfen tekrar deneyin.";
+            }
+            else
+            {
+                var outcome = await _commentClient.SubmitAsync(form, cancellationToken);
+                if (outcome.Succeeded)
+                    return scripted
+                        ? Json(new { ok = true, message = SubmittedMessage })
+                        : RedirectToRoute("BlogPost", new { slug, yorum = SubmittedFlag });
+
+                failure = string.IsNullOrWhiteSpace(outcome.Message)
+                    ? "Yorum şu anda alınamıyor. Kısa süre sonra tekrar deneyin."
+                    : outcome.Message;
+            }
         }
 
-        var outcome = await _commentClient.SubmitAsync(form, cancellationToken);
-        if (outcome.Succeeded)
-            return RedirectToRoute("BlogPost", new { slug, yorum = SubmittedFlag });
+        if (scripted)
+            return Json(new { ok = false, message = failure, errors = FieldErrors() });
 
-        form.ResultMessage = string.IsNullOrWhiteSpace(outcome.Message)
-            ? "Yorum şu anda alınamıyor. Kısa süre sonra tekrar deneyin."
-            : outcome.Message;
+        form.ResultMessage = failure;
+        await AttachDetailAsync(post, cancellationToken);
+        post.CommentForm = form;
 
         return View(nameof(Post), post);
     }
+
+    private bool IsScriptedRequest() =>
+        HttpContext is not null
+        && string.Equals(Request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+
+    private Dictionary<string, string> FieldErrors() =>
+        ModelState
+            .Where(entry => entry.Value is { Errors.Count: > 0 })
+            .ToDictionary(entry => entry.Key, entry => entry.Value!.Errors[0].ErrorMessage);
 
     /// <summary>Okunma sayacını artırır. Sayfanın kendisi çizilirken artırılmaz: JavaScript çalıştırmayan gezginler böylece sayıya girmez ve aynı okuru günde bir kez saymanın işareti tarayıcıda durur.<para>Yanıt daima boştur ve daima 204'tür. Sayacın artıp artmadığını ele veren bir yanıt, ucu "bu yazı sayıldı mı" diye yoklanabilir hâle getirir; sayfanın da bu bilgiye ihtiyacı yok.</para></summary>
     [HttpPost]

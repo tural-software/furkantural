@@ -1664,6 +1664,8 @@ html.lightbox-open { overflow: hidden; }
 
 .comment-alert--warn { border-left-color: var(--danger); }
 
+.comment-done:not([open]) { display: none; }
+
 .comment-done {
   width: min(32rem, calc(100vw - 2.5rem));
   padding: 1.6rem;

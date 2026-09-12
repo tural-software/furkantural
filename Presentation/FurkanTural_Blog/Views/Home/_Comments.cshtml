@@ -46,26 +46,29 @@
         @if (form.Submitted && form.Succeeded)
         {
             <p class="comment-alert comment-alert--ok" role="status">@form.ResultMessage</p>
-
-            <dialog class="comment-done" id="commentDoneDialog" aria-labelledby="commentDoneTitle">
-                <h2 class="comment-done__title" id="commentDoneTitle">Yorumunuz alındı</h2>
-                <p class="comment-done__text">
-                    Yorumlar yayımlanmadan önce onaydan geçiyor, bu yüzden yazdığınız metin sayfada
-                    <strong>hemen görünmeyecek</strong>. Onaylandığında bu yazının altında yerini alacak.
-                </p>
-                <p class="comment-done__text">
-                    Yanıt bildirimi istediyseniz, yorumunuza cevap geldiğinde e-posta ile haber vereceğiz;
-                    o postanın altındaki bağlantıyla bildirimleri tek tıkla kapatabilirsiniz.
-                </p>
-                <button type="button" class="btn btn--primary comment-done__close" id="commentDoneClose" autofocus>
-                    Anladım
-                </button>
-            </dialog>
         }
         else if (form.Submitted && !string.IsNullOrEmpty(form.ResultMessage))
         {
             <p class="comment-alert comment-alert--warn" role="alert">@form.ResultMessage</p>
         }
+
+        <div class="comment-alert-slot" id="commentAlert" aria-live="polite"></div>
+
+        <dialog class="comment-done" id="commentDoneDialog" aria-labelledby="commentDoneTitle"
+                data-auto-open="@((form.Submitted && form.Succeeded) ? "true" : "false")">
+            <h2 class="comment-done__title" id="commentDoneTitle">Yorumunuz alındı</h2>
+            <p class="comment-done__text">
+                Yorumlar yayımlanmadan önce onaydan geçiyor, bu yüzden yazdığınız metin sayfada
+                <strong>hemen görünmeyecek</strong>. Onaylandığında bu yazının altında yerini alacak.
+            </p>
+            <p class="comment-done__text">
+                Yanıt bildirimi istediyseniz, yorumunuza cevap geldiğinde e-posta ile haber vereceğiz;
+                o postanın altındaki bağlantıyla bildirimleri tek tıkla kapatabilirsiniz.
+            </p>
+            <button type="button" class="btn btn--primary comment-done__close" id="commentDoneClose" autofocus>
+                Anladım
+            </button>
+        </dialog>
 
         <div class="comment-compose" id="commentCompose">
         <form method="post" action="@postUrl" class="comment-form" id="commentForm">
@@ -86,8 +89,8 @@
                            aria-describedby="yorum-mail-not" />
                 </label>
             </div>
-            <span class="comment-field__error">@Html.ValidationMessage("AuthorName")</span>
-            <span class="comment-field__error">@Html.ValidationMessage("AuthorEmail")</span>
+            <span class="comment-field__error" data-error-for="AuthorName">@Html.ValidationMessage("AuthorName")</span>
+            <span class="comment-field__error" data-error-for="AuthorEmail">@Html.ValidationMessage("AuthorEmail")</span>
             <p class="comment-form__hint" id="yorum-mail-not">Adresiniz yayımlanmaz; yalnızca sizi tanımak ve istediyseniz yanıt bildirmek için saklanır.</p>
 
             <label class="comment-field">
@@ -95,7 +98,7 @@
                 <textarea class="comment-field__input comment-field__input--area" name="Body" rows="4"
                           maxlength="4000" required>@form.Body</textarea>
             </label>
-            <span class="comment-field__error">@Html.ValidationMessage("Body")</span>
+            <span class="comment-field__error" data-error-for="Body">@Html.ValidationMessage("Body")</span>
 
             <label class="comment-check">
                 <input type="checkbox" name="NotifyOnReply" value="true" @(form.NotifyOnReply ? "checked" : "") />

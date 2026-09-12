@@ -7,21 +7,10 @@
     };
 
     document.addEventListener('DOMContentLoaded', function () {
+        var form = document.getElementById('commentForm');
         var done = document.getElementById('commentDoneDialog');
-        if (done && typeof done.showModal === 'function') {
-            try {
-                done.showModal();
-                var adres = new URL(window.location.href);
-                if (adres.searchParams.has('yorum')) {
-                    adres.searchParams.delete('yorum');
-                    window.history.replaceState({}, '', adres.pathname + adres.search + adres.hash);
-                }
-            } catch (e) { }
-
-            var kapat = document.getElementById('commentDoneClose');
-            if (kapat) kapat.addEventListener('click', function () { done.close(); });
-        }
-
+        var alertSlot = document.getElementById('commentAlert');
+        var tokenInput = document.getElementById('commentTurnstileToken');
         var parentInput = document.getElementById('commentParentId');
         var compose = document.getElementById('commentCompose');
         var target = document.getElementById('commentTarget');
@@ -31,8 +20,32 @@
         var cancelBtn = document.getElementById('commentReplyCancel');
         var formWrap = document.getElementById('yorum-formu');
         var bodyInput = document.querySelector('#commentForm [name="Body"]');
+        var serverAlert = document.querySelector('.comment-form-wrap > .comment-alert');
 
-        if (!parentInput || !compose || !target) return;
+        function adresiTemizle() {
+            try {
+                var adres = new URL(window.location.href);
+                if (adres.searchParams.has('yorum')) {
+                    adres.searchParams.delete('yorum');
+                    window.history.replaceState({}, '', adres.pathname + adres.search + adres.hash);
+                }
+            } catch (e) { }
+        }
+
+        function onayiGoster() {
+            if (!done || typeof done.showModal !== 'function') return;
+            try { done.showModal(); } catch (e) { }
+        }
+
+        if (done) {
+            var kapatDugmesi = document.getElementById('commentDoneClose');
+            if (kapatDugmesi) kapatDugmesi.addEventListener('click', function () { done.close(); });
+
+            if (done.dataset.autoOpen === 'true') {
+                onayiGoster();
+                adresiTemizle();
+            }
+        }
 
         var kapanisSayaci = null;
 
@@ -51,6 +64,7 @@
         }
 
         function ac(id, kart) {
+            if (!parentInput || !compose || !target) return;
             if (kapanisSayaci) { clearTimeout(kapanisSayaci); kapanisSayaci = null; }
             parentInput.value = id;
             doldur(kart);
@@ -61,6 +75,7 @@
         }
 
         function kapat() {
+            if (!parentInput || !compose || !target) return;
             parentInput.value = '';
             compose.classList.remove('is-replying');
             if (kapanisSayaci) clearTimeout(kapanisSayaci);
@@ -85,9 +100,115 @@
             });
         }
 
-        if (parentInput.value) {
+        if (parentInput && parentInput.value) {
             var aktif = document.querySelector('.comment__reply[data-reply-to="' + parentInput.value + '"]');
             ac(parentInput.value, aktif ? aktif.closest('.comment__card') : null);
         }
+
+        if (!form || !window.fetch || !window.FormData) return;
+
+        var submitBtn = form.querySelector('.comment-form__submit');
+        var submitMetni = submitBtn ? submitBtn.textContent : '';
+        var gonderiliyor = false;
+
+        function hatalariTemizle() {
+            form.querySelectorAll('[data-error-for]').forEach(function (kutu) {
+                kutu.textContent = '';
+            });
+        }
+
+        function alanHatasi(ad, mesaj) {
+            var kutu = form.querySelector('[data-error-for="' + ad + '"]');
+            if (kutu) kutu.textContent = mesaj || '';
+        }
+
+        function uyari(mesaj, iyi) {
+            if (!alertSlot) return;
+            alertSlot.textContent = '';
+            if (!mesaj) return;
+            var p = document.createElement('p');
+            p.className = iyi ? 'comment-alert comment-alert--ok' : 'comment-alert comment-alert--warn';
+            p.textContent = mesaj;
+            alertSlot.appendChild(p);
+        }
+
+        function turnstileSifirla() {
+            if (tokenInput) tokenInput.value = '';
+            var widget = form.querySelector('.cf-turnstile');
+            if (!widget || !window.turnstile || typeof window.turnstile.reset !== 'function') return;
+            try { window.turnstile.reset(widget); } catch (e) { }
+        }
+
+        function basari(mesaj) {
+            if (bodyInput) bodyInput.value = '';
+            kapat();
+            uyari(mesaj || 'Yorumunuz alındı. Onaylandıktan sonra sayfada görünecek.', true);
+            onayiGoster();
+        }
+
+        function basarisiz(sonuc) {
+            var hatalar = sonuc && sonuc.errors;
+            var ilkAlan = null;
+
+            if (hatalar) {
+                Object.keys(hatalar).forEach(function (anahtar) {
+                    var ad = anahtar.indexOf('.') >= 0 ? anahtar.slice(anahtar.lastIndexOf('.') + 1) : anahtar;
+                    alanHatasi(ad, hatalar[anahtar]);
+                    if (!ilkAlan) ilkAlan = form.querySelector('[name="' + ad + '"]');
+                });
+            }
+
+            uyari((sonuc && sonuc.message) || 'Yorum şu anda alınamıyor. Kısa süre sonra tekrar deneyin.', false);
+
+            if (ilkAlan && typeof ilkAlan.focus === 'function') ilkAlan.focus();
+            else if (alertSlot) alertSlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function bitir() {
+            gonderiliyor = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = submitMetni;
+            }
+            turnstileSifirla();
+        }
+
+        form.addEventListener('submit', function (olay) {
+            if (gonderiliyor) {
+                olay.preventDefault();
+                return;
+            }
+
+            olay.preventDefault();
+            gonderiliyor = true;
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Gönderiliyor…';
+            }
+
+            if (serverAlert && serverAlert.parentNode) {
+                serverAlert.parentNode.removeChild(serverAlert);
+                serverAlert = null;
+            }
+
+            hatalariTemizle();
+            uyari('');
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                body: new FormData(form),
+                credentials: 'same-origin'
+            }).then(function (yanit) {
+                if (!yanit.ok) throw new Error(String(yanit.status));
+                return yanit.json();
+            }).then(function (sonuc) {
+                if (sonuc && sonuc.ok) basari(sonuc.message);
+                else basarisiz(sonuc);
+            }).catch(function () {
+                uyari('Yorum şu anda gönderilemedi. Bağlantınızı denetleyip tekrar deneyin.', false);
+            }).then(bitir);
+        });
     });
 })();

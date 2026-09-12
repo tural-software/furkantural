@@ -2,6 +2,7 @@ using FluentAssertions;
 using FurkanTural_Blog.Controllers;
 using FurkanTural_Blog.Models;
 using FurkanTural_Blog.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Configuration;
@@ -26,14 +27,24 @@ public class CommentSubmitTests
             .ReturnsAsync(new CommentOutcome(true, "Yorumunuz alındı."));
     }
 
-    private HomeController Build()
+    private HomeController Build(bool scripted = false)
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?> { ["Api:BaseUrl"] = "https://api.test" })
             .Build();
 
-        return new HomeController(_api.Object, _comments.Object, Mock.Of<IAppConfigService>(), config);
+        var http = new DefaultHttpContext();
+        if (scripted)
+            http.Request.Headers.XRequestedWith = "XMLHttpRequest";
+
+        return new HomeController(_api.Object, _comments.Object, Mock.Of<IAppConfigService>(), config)
+        {
+            ControllerContext = new ControllerContext { HttpContext = http }
+        };
     }
+
+    private static Dictionary<string, string>? ErrorsOf(object payload) =>
+        payload.GetType().GetProperty("errors")?.GetValue(payload) as Dictionary<string, string>;
 
     private static CommentFormModel Filled() => new()
     {
@@ -131,6 +142,79 @@ public class CommentSubmitTests
 
         var model = result.Should().BeOfType<ViewResult>().Subject.Model.Should().BeOfType<BlogPostViewModel>().Subject;
         model.CommentForm.ResultMessage.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Betikli_gonderim_yonlendirme_yerine_json_doner()
+    {
+        var result = await Build(scripted: true).Comment("ornek", Filled(), default);
+
+        var payload = result.Should().BeOfType<JsonResult>().Subject.Value!;
+        payload.Should().BeEquivalentTo(new { ok = true },
+            options => options.ExcludingMissingMembers());
+    }
+
+    [Fact]
+    public async Task Betikli_gonderimde_yazi_sayfasi_yeniden_cizilmez()
+    {
+        await Build(scripted: true).Comment("ornek", Filled(), default);
+
+        _api.Verify(a => a.GetImagesByBlogAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never,
+            "sayfa yerinde durduğu için kapak, ilgili yazı ve yorum listesi yeniden çekilmemeli");
+        _comments.Verify(c => c.GetThreadAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Betikli_dogrulama_hatasi_alan_adiyla_birlikte_doner()
+    {
+        var controller = Build(scripted: true);
+        controller.ModelState.AddModelError("Body", "Yorumunuzu yazın.");
+
+        var result = await controller.Comment("ornek", Filled(), default);
+
+        var payload = result.Should().BeOfType<JsonResult>().Subject.Value!;
+        payload.Should().BeEquivalentTo(new { ok = false }, options => options.ExcludingMissingMembers());
+
+        var errors = ErrorsOf(payload);
+        errors.Should().NotBeNull();
+        errors!["Body"].Should().Be("Yorumunuzu yazın.",
+            "hata alan adıyla döner ki sayfa onu doğru kutunun altına yazabilsin");
+        _comments.Verify(c => c.SubmitAsync(It.IsAny<CommentFormModel>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Betikli_istekte_api_reddi_kendi_metniyle_doner()
+    {
+        _comments.Setup(c => c.SubmitAsync(It.IsAny<CommentFormModel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new CommentOutcome(false, "Yanıtlanan yorum bulunamadı."));
+
+        var result = await Build(scripted: true).Comment("ornek", Filled(), default);
+
+        var payload = result.Should().BeOfType<JsonResult>().Subject.Value!;
+        payload.Should().BeEquivalentTo(new { ok = false, message = "Yanıtlanan yorum bulunamadı." },
+            options => options.ExcludingMissingMembers());
+    }
+
+    [Fact]
+    public async Task Betikli_istekte_tuzak_alan_yine_basari_gosterir()
+    {
+        var form = Filled();
+        form.Website = "https://spam.example";
+
+        var result = await Build(scripted: true).Comment("ornek", form, default);
+
+        var payload = result.Should().BeOfType<JsonResult>().Subject.Value!;
+        payload.Should().BeEquivalentTo(new { ok = true }, options => options.ExcludingMissingMembers());
+        _comments.Verify(c => c.SubmitAsync(It.IsAny<CommentFormModel>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Basliksiz_gonderim_javascriptsiz_yolu_surer()
+    {
+        var result = await Build(scripted: false).Comment("ornek", Filled(), default);
+
+        result.Should().BeOfType<RedirectToRouteResult>(
+            "başlığı yalnızca sayfanın kendi betiği koyar; başka yoldan gelen gönderim eski yolu izler");
     }
 
     [Fact]
