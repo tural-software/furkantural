@@ -600,4 +600,32 @@ public sealed class FlowTests(LiveSiteFixture site)
         result.restored.Should().Be(result.before,
             "kayıt aktife alınınca sayaçlar başladığı yere dönmeli; dönmezse sayaçlar işlemi değil kendi geçmişini gösteriyor demektir");
     }
+
+    /// <summary>Sayaca bağlı başlık düğmesi sıfırken de sayfada durmalı ve yalnızca gizlenmeli. Sunucuda koşullu çizilseydi sıfırken hiç var olmaz, tazeleme de onu geri getiremezdi: güncellenecek bir düğüm yoktur.<para>İkinci risk gizlemenin kendisinde: düğme <c>.btn-primary</c> ile bir görüntüleme kuralı taşıyor ve yazar kuralı, tarayıcının <c>hidden</c> için koyduğu kuralı yener. Bu yüzden gizlemenin gerçekten gizlediği ölçülür, öznitelik varlığı yeterli sayılmaz.</para></summary>
+    [SkippableFact]
+    public async Task Admin_yorumlarda_bekleyen_dugmesi_gizlenebilir_kalir()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Comment"), async page =>
+        {
+            var link = page.Locator("[data-stat-when='pendingCount']");
+            Skip.If(await link.CountAsync() == 0, "Admin/Comment: bekleyen düğmesi sayfada yok");
+
+            var channelHasKey = await page.EvaluateAsync<bool>(
+                "() => { var el = document.querySelector('#__list-stats-json'); if (!el) return false; try { return 'pendingCount' in JSON.parse(el.textContent || '{}'); } catch (e) { return false; } }");
+
+            await page.EvaluateAsync("() => { document.querySelector(\"[data-stat-when='pendingCount']\").hidden = true; }");
+            var hiddenNow = await link.IsVisibleAsync();
+
+            await page.EvaluateAsync("() => { document.querySelector(\"[data-stat-when='pendingCount']\").hidden = false; }");
+            var shownAgain = await link.IsVisibleAsync();
+
+            return (channelHasKey, hiddenNow, shownAgain);
+        });
+
+        result.channelHasKey.Should().BeTrue(
+            "düğmenin bağlı olduğu anahtar sayaç kanalında yoksa tazeleme onu ne gösterir ne gizler");
+        result.hiddenNow.Should().BeFalse(
+            "hidden verildiğinde düğme gerçekten kaybolmalı; buton stili tarayıcının gizleme kuralını yenerse öğe ekranda kalır");
+        result.shownAgain.Should().BeTrue("gizleme kaldırıldığında düğme geri gelmeli");
+    }
 }

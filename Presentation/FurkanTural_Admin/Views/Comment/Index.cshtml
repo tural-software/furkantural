@@ -45,13 +45,11 @@
                 @await Html.PartialAsync("_Icons", "table-icon")
                 Tablo Detayları
             </a>
-            @if (Model.PendingCount > 0)
-            {
-                <a href="@Url.Action("Index", new { statusFilter = "pending" })" class="btn-primary">
-                    @await Html.PartialAsync("_Icons", "clock")
-                    Bekleyenleri Göster (@Model.PendingCount)
-                </a>
-            }
+            <a href="@Url.Action("Index", new { statusFilter = "pending" })" class="btn-primary"
+               data-stat-when="pendingCount" hidden="@(Model.PendingCount == 0)">
+                @await Html.PartialAsync("_Icons", "clock")
+                Bekleyenleri Göster (<span data-stat="pendingCount">@Model.PendingCount.ToString("N0")</span>)
+            </a>
         </div>
     </div>
 

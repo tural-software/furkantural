@@ -156,4 +156,53 @@ public class ListNavContractTests
         layout.Should().Contain("js/list-nav.js",
             "betik ortak yerleşimden gelir; sayfa başına bağlanırsa bir listede unutulması kimseye fark ettirmez");
     }
+
+    [Fact]
+    public void Sayaca_bagli_ogeler_sifirken_de_sayfada_durur()
+    {
+        var sapan = new List<string>();
+
+        foreach (var (module, _, content) in ListPages())
+        {
+            foreach (Match marked in Regex.Matches(content, @"data-stat-when=""(?<ad>\w+)"""))
+            {
+                var key = marked.Groups["ad"].Value;
+                var start = content.LastIndexOf('<', marked.Index);
+                var end = content.IndexOf('>', marked.Index);
+                var openTag = start >= 0 && end > start ? content[start..end] : string.Empty;
+
+                if (!openTag.Contains("hidden="))
+                    sapan.Add($"{module}: \"{key}\" öğesinde hidden bağı yok");
+            }
+
+            foreach (Match conditional in Regex.Matches(content, @"@if \(Model\.\w*Count [<>=!]+ 0\)"))
+                sapan.Add($"{module}: sayaç koşulu görünümde kalmış — {conditional.Value}");
+        }
+
+        sapan.Should().BeEmpty(
+            "sayaca bağlı öğe sunucuda koşullu çizilirse sıfırken hiç var olmaz; tazeleme onu geri getiremez, çünkü güncellenecek bir düğüm yoktur");
+    }
+
+    [Fact]
+    public void Sayaca_bagli_her_anahtar_kanalda_karsilik_bulur()
+    {
+        var sapan = new List<string>();
+
+        foreach (var (module, path, content) in ListPages())
+        {
+            var table = Path.Combine(Path.GetDirectoryName(path)!, $"_{module}Table.cshtml");
+            if (!File.Exists(table)) continue;
+
+            var channel = File.ReadAllText(table);
+
+            foreach (Match marked in Regex.Matches(content, @"data-stat-when=""(?<ad>\w+)"""))
+            {
+                var key = marked.Groups["ad"].Value;
+                if (!Regex.IsMatch(channel, $@"\b{Regex.Escape(key)}\s*="))
+                    sapan.Add($"{module}: \"{key}\" sayaç kanalında yok");
+            }
+        }
+
+        sapan.Should().BeEmpty("kanalda karşılığı olmayan anahtar öğeyi ne gösterir ne gizler; öğe ilk hâlinde donar");
+    }
 }

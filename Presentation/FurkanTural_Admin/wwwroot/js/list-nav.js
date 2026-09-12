@@ -81,7 +81,14 @@
             document.querySelectorAll('[data-stat="' + key + '"]').forEach(function (node) {
                 node.textContent = stats[key];
             });
+            document.querySelectorAll('[data-stat-when="' + key + '"]').forEach(function (node) {
+                node.hidden = !sifirdanBuyuk(stats[key]);
+            });
         });
+    }
+
+    function sifirdanBuyuk(value) {
+        return /[1-9]/.test(String(value === null || value === undefined ? '' : value));
     }
 
     function settle(announce) {

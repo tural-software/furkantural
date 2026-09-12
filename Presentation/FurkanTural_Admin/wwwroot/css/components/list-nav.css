@@ -3,6 +3,10 @@
     pointer-events: none;
 }
 
+[data-stat-when][hidden] {
+    display: none;
+}
+
 .ft-list-live {
     position: absolute;
     width: 1px;
