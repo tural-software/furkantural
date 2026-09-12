@@ -158,35 +158,7 @@
     }
 
     function reloadTable() {
-        var meta = window.__blogMeta || {};
-        var params = new URLSearchParams({
-            title:         meta.title         || '',
-            activeFilter:  meta.activeFilter  || '',
-            deletedFilter: meta.deletedFilter || '',
-            dateFrom:      meta.dateFrom      || '',
-            dateTo:        meta.dateTo        || '',
-            blogId:        meta.blogId        || '',
-            pageNumber:    meta.pageNumber    || 1,
-            pageSize:      meta.pageSize      || 10
-        });
-
-        fetch('/Blog/TablePartial?' + params.toString(), {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function (r) {
-            if (!r.ok) throw new Error('TablePartial ' + r.status);
-            return r.text();
-        })
-        .then(function (html) {
-            var section = document.getElementById('blog-table-section');
-            if (!section) return;
-            section.innerHTML = html;
-            bindAll();
-            document.dispatchEvent(new CustomEvent('ft:table-rendered'));
-        })
-        .catch(function (err) {
-            console.error('reloadTable hatası:', err);
-        });
+        FtList.reload();
     }
 
     var ACTION_MESSAGES = {
@@ -366,7 +338,7 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         bindAll();
-        document.addEventListener('ft:table-reload', reloadTable);
+        document.addEventListener('ft:table-rendered', bindAll);
 
         var addBtn = document.getElementById('blog-add-btn');
         if (addBtn) {

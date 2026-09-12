@@ -8,6 +8,12 @@
 
 @* Satırlar JSON olarak gömülür; application/json türü tarayıcının bu bloğu betik gibi çalıştırmasını engeller. *@
 <script id="__skill-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
+<script id="__list-stats-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(new {
+    totalCount = Model.TotalCount.ToString("N0"),
+    activeCount = Model.ActiveCount.ToString("N0"),
+    passiveCount = Model.PassiveCount.ToString("N0"),
+    deletedCount = Model.DeletedCount.ToString("N0")
+}, jsonOpts))</script>
 
 <div class="data-table-wrap">
     <table class="data-table">

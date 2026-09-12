@@ -7,6 +7,12 @@
 }
 
 <script id="__contact-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
+<script id="__list-stats-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(new {
+    totalCount = Model.TotalCount.ToString("N0"),
+    activeCount = Model.ActiveCount.ToString("N0"),
+    unreadCount = Model.UnreadCount.ToString("N0"),
+    deletedCount = Model.DeletedCount.ToString("N0")
+}, jsonOpts))</script>
 
 <div class="data-table-wrap">
     <table class="data-table">

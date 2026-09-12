@@ -54,7 +54,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Toplam Mesaj</p>
-                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="totalCount">@Model.TotalCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -64,7 +64,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Aktif Kayıt</p>
-                <div class="stat-box__value">@Model.ActiveCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="activeCount">@Model.ActiveCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -74,7 +74,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Okunmamış</p>
-                <div class="stat-box__value">@Model.UnreadCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="unreadCount">@Model.UnreadCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -84,7 +84,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Silinmiş Kayıt</p>
-                <div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="deletedCount">@Model.DeletedCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -146,7 +146,7 @@
     </div>
 
     <div class="card" id="contact-table-card" style="padding: 0; overflow: hidden;">
-        <div id="contact-table-section">
+        <div id="contact-table-section" data-list-controller="Contact" data-list-meta="__contactMeta">
             @await Html.PartialAsync("_ContactTable", Model)
         </div>
     </div>

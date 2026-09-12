@@ -62,7 +62,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Toplam Kayıt</p>
-                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="totalCount">@Model.TotalCount.ToString("N0")</div>
                 <span class="stat-box__unit">proje</span>
             </div>
         </div>
@@ -72,7 +72,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Aktif Kayıt</p>
-                <div class="stat-box__value">@Model.ActiveCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="activeCount">@Model.ActiveCount.ToString("N0")</div>
                 <span class="stat-box__unit">proje</span>
             </div>
         </div>
@@ -82,7 +82,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Pasif Kayıt</p>
-                <div class="stat-box__value">@Model.PassiveCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="passiveCount">@Model.PassiveCount.ToString("N0")</div>
                 <span class="stat-box__unit">proje</span>
             </div>
         </div>
@@ -92,7 +92,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Silinmiş Kayıt</p>
-                <div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="deletedCount">@Model.DeletedCount.ToString("N0")</div>
                 <span class="stat-box__unit">proje</span>
             </div>
         </div>
@@ -169,7 +169,7 @@
     </div>
 
     <div class="card" id="project-table-card" style="padding: 0; overflow: hidden;">
-        <div id="project-table-section">
+        <div id="project-table-section" data-list-controller="Project" data-list-meta="__projectMeta">
             @await Html.PartialAsync("_ProjectTable", Model)
         </div>
     </div>

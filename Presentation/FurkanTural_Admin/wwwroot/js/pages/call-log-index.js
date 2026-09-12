@@ -54,17 +54,7 @@
     }
 
     function reloadTable() {
-        var meta = window.__callMeta || {};
-        var params = new URLSearchParams({
-            search: meta.search || '', typeFilter: meta.typeFilter || '', statusFilter: meta.statusFilter || '',
-            activeFilter: meta.activeFilter || '', deletedFilter: meta.deletedFilter || '',
-            dateFrom: meta.dateFrom || '', dateTo: meta.dateTo || '',
-            pageNumber: meta.pageNumber || 1, pageSize: meta.pageSize || 10
-        });
-        fetch('/CallLog/TablePartial?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(function (r) { if (!r.ok) throw new Error('TablePartial ' + r.status); return r.text(); })
-            .then(function (html) { var s = document.getElementById('call-table-section'); if (!s) return; s.innerHTML = html; bindAll(); })
-            .catch(function (err) { console.error('reloadTable hatası:', err); });
+        FtList.reload();
     }
 
     function submitAction(form, isActive, actionKey) {
@@ -134,6 +124,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () { bindAll(); bindSettings(); });
-        document.addEventListener('ft:table-reload', reloadTable);
+        document.addEventListener('ft:table-rendered', bindAll);
     document.dispatchEvent(new CustomEvent('ft:table-rendered'));
 })();

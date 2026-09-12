@@ -72,7 +72,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Toplam Şablon</p>
-                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="totalCount">@Model.TotalCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -82,7 +82,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Aktif Şablon</p>
-                <div class="stat-box__value">@Model.ActiveCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="activeCount">@Model.ActiveCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -92,7 +92,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Pasif Şablon</p>
-                <div class="stat-box__value">@Model.PassiveCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="passiveCount">@Model.PassiveCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -102,7 +102,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Silinmiş Şablon</p>
-                <div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="deletedCount">@Model.DeletedCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -148,7 +148,7 @@
     </div>
 
     <div class="card" id="mail-template-table-card" style="padding: 0; overflow: hidden;">
-        <div id="mail-template-table-section">
+        <div id="mail-template-table-section" data-list-controller="MailTemplate" data-list-meta="__mailTemplateMeta">
             @await Html.PartialAsync("_MailTemplateTable", Model)
         </div>
     </div>

@@ -62,7 +62,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Onay Bekleyen</p>
-                <div class="stat-box__value">@Model.PendingCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="pendingCount">@Model.PendingCount.ToString("N0")</div>
                 <span class="stat-box__unit">yorum</span>
             </div>
         </div>
@@ -72,7 +72,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Yayında</p>
-                <div class="stat-box__value">@Model.ApprovedCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="approvedCount">@Model.ApprovedCount.ToString("N0")</div>
                 <span class="stat-box__unit">yorum</span>
             </div>
         </div>
@@ -82,7 +82,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Reddedilen</p>
-                <div class="stat-box__value">@Model.RejectedCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="rejectedCount">@Model.RejectedCount.ToString("N0")</div>
                 <span class="stat-box__unit">yorum</span>
             </div>
         </div>
@@ -92,7 +92,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Toplam Kayıt</p>
-                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="totalCount">@Model.TotalCount.ToString("N0")</div>
                 <span class="stat-box__unit">silinmişler dâhil</span>
             </div>
         </div>
@@ -147,7 +147,7 @@
     </div>
 
     <div class="card" id="comment-table-card" style="padding: 0; overflow: hidden;">
-        <div id="comment-table-section">
+        <div id="comment-table-section" data-list-controller="Comment" data-list-meta="__commentMeta">
             @await Html.PartialAsync("_CommentTable", Model)
         </div>
     </div>

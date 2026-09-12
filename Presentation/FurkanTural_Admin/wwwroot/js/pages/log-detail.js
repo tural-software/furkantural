@@ -110,33 +110,7 @@
     }
 
     function reloadTable() {
-        var meta = window.__logMeta || {};
-        var params = new URLSearchParams({
-            levelFilter:   meta.levelFilter   || '',
-            searchProject: meta.searchProject || '',
-            searchMessage: meta.searchMessage || '',
-            dateFrom:      meta.dateFrom      || '',
-            dateTo:        meta.dateTo        || '',
-            pageNumber:    meta.pageNumber    || 1,
-            pageSize:      meta.pageSize      || 10
-        });
-
-        fetch('/Log/TablePartial?' + params.toString(), {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function (r) {
-            if (!r.ok) throw new Error('TablePartial ' + r.status);
-            return r.text();
-        })
-        .then(function (html) {
-            var section = document.getElementById('log-table-section');
-            if (!section) return;
-            section.innerHTML = html;
-            bindAll();
-        })
-        .catch(function (err) {
-            console.error('reloadTable hatası:', err);
-        });
+        FtList.reload();
     }
 
     function bindAll() {
@@ -156,6 +130,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('ft:table-rendered', bindAll);
         bindAll();
     });
 })();

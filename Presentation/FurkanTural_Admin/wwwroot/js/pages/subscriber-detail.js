@@ -64,34 +64,7 @@
 
     /* Sadece tablo bölümünü yeniler, tam sayfa yükleme yapmaz */
     function reloadTable() {
-        var meta = window.__subscriberMeta || {};
-        var params = new URLSearchParams({
-            email:         meta.email         || '',
-            activeFilter:  meta.activeFilter  || '',
-            deletedFilter: meta.deletedFilter || '',
-            dateFrom:      meta.dateFrom      || '',
-            dateTo:        meta.dateTo        || '',
-            pageNumber:    meta.pageNumber    || 1,
-            pageSize:      meta.pageSize      || 10
-        });
-
-        fetch('/Subscriber/TablePartial?' + params.toString(), {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function (r) {
-            if (!r.ok) throw new Error('TablePartial ' + r.status);
-            return r.text();
-        })
-        .then(function (html) {
-            var section = document.getElementById('subscriber-table-section');
-            if (!section) return;
-            section.innerHTML = html;
-            bindAll();           /* yeni DOM'a olayları bağla */
-            document.dispatchEvent(new CustomEvent('ft:table-rendered'));
-        })
-        .catch(function (err) {
-            console.error('reloadTable hatası:', err);
-        });
+        FtList.reload();
     }
 
     var ACTION_MESSAGES = {
@@ -207,5 +180,5 @@
     }
 
     document.addEventListener('DOMContentLoaded', bindAll);
-        document.addEventListener('ft:table-reload', reloadTable);
+        document.addEventListener('ft:table-rendered', bindAll);
 })();

@@ -60,7 +60,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Toplam Bülten</p>
-                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="totalCount">@Model.TotalCount.ToString("N0")</div>
                 <span class="stat-box__unit">sayı</span>
             </div>
         </div>
@@ -70,7 +70,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Doğrulanmış Abone</p>
-                <div class="stat-box__value">@Model.ConfirmedSubscriberCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="confirmedSubscriberCount">@Model.ConfirmedSubscriberCount.ToString("N0")</div>
                 <span class="stat-box__unit">adres bültene girer</span>
             </div>
         </div>
@@ -80,7 +80,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Pasif Bülten</p>
-                <div class="stat-box__value">@Model.PassiveCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="passiveCount">@Model.PassiveCount.ToString("N0")</div>
                 <span class="stat-box__unit">dağıtım duraklatılmış</span>
             </div>
         </div>
@@ -90,7 +90,7 @@
             </div>
             <div>
                 <p class="stat-box__label">Silinmiş Bülten</p>
-                <div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="deletedCount">@Model.DeletedCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -136,7 +136,7 @@
     </div>
 
     <div class="card" id="newsletter-table-card" style="padding: 0; overflow: hidden;">
-        <div id="newsletter-table-section">
+        <div id="newsletter-table-section" data-list-controller="NewsletterIssue" data-list-meta="__newsletterMeta">
             @await Html.PartialAsync("_NewsletterIssueTable", Model)
         </div>
     </div>

@@ -450,13 +450,18 @@ public sealed class FlowTests(LiveSiteFixture site)
     }
 
     /// <summary>Liste gezinmesi tabloyu yerinde tazeler. Sayfa numarasına basmak tam yenileme yaparsa okunan filtre, kaydırma konumu ve açık olan her şey sıfırlanır; bu yüzden ölçüt adresin değişmesi değil, belgenin AYNI belge kalmasıdır.<para>Nöbetçi değişken bunun için var: tam yenileme olsaydı pencere yeniden kurulur ve o değişken kaybolurdu. Geri tuşu da aynı ölçüte tabidir — pushState ile düşen geçmiş kaydı yeni bir belge yüklememelidir.</para></summary>
-    [SkippableFact]
-    public async Task Admin_listesinde_sayfa_degistirmek_belgeyi_yeniden_yuklemez()
+    [SkippableTheory]
+    [InlineData("Admin/Category")]
+    [InlineData("Admin/Blog")]
+    [InlineData("Admin/User")]
+    [InlineData("Admin/Log")]
+    [InlineData("Admin/Report")]
+    public async Task Admin_listesinde_sayfa_degistirmek_belgeyi_yeniden_yuklemez(string pageId)
     {
-        var result = await site.WithPageAsync(SweepData.Page("Admin/Category"), async page =>
+        var result = await site.WithPageAsync(SweepData.Page(pageId), async page =>
         {
-            var second = page.Locator(".pagination a[href*='pageNumber=2']").First;
-            Skip.If(await second.CountAsync() == 0, "Admin/Category: ikinci sayfa yok");
+            var second = page.Locator(".pagination a.pag-btn:not(.pag-btn--off)[href*='pageNumber=2']").First;
+            Skip.If(await second.CountAsync() == 0, pageId + ": ikinci sayfa yok");
 
             await page.EvaluateAsync("window.__sweepSentinel = 'duruyor'");
 
@@ -487,15 +492,20 @@ public sealed class FlowTests(LiveSiteFixture site)
     }
 
     /// <summary>Sayaç kutuları tablonun dışında duruyor, dolayısıyla tazelenen bölgeye girmiyorlar. Tazeleme onları güncellemezse panel, silinen kaydı listeden düşürüp sayacı eski değerde bırakır ve kullanıcıya aynı anda iki farklı gerçek gösterir.</summary>
-    [SkippableFact]
-    public async Task Admin_listesinde_sayaclar_tazelemeden_sonra_dolu_kalir()
+    [SkippableTheory]
+    [InlineData("Admin/Category")]
+    [InlineData("Admin/Blog")]
+    [InlineData("Admin/User")]
+    [InlineData("Admin/Log")]
+    [InlineData("Admin/Report")]
+    public async Task Admin_listesinde_sayaclar_tazelemeden_sonra_dolu_kalir(string pageId)
     {
-        var values = await site.WithPageAsync(SweepData.Page("Admin/Category"), async page =>
+        var values = await site.WithPageAsync(SweepData.Page(pageId), async page =>
         {
-            Skip.If(await page.Locator("[data-stat]").CountAsync() == 0, "Admin/Category: sayaç kutusu yok");
+            Skip.If(await page.Locator("[data-stat]").CountAsync() == 0, pageId + ": sayaç kutusu yok");
 
-            var second = page.Locator(".pagination a[href*='pageNumber=2']").First;
-            Skip.If(await second.CountAsync() == 0, "Admin/Category: ikinci sayfa yok");
+            var second = page.Locator(".pagination a.pag-btn:not(.pag-btn--off)[href*='pageNumber=2']").First;
+            Skip.If(await second.CountAsync() == 0, pageId + ": ikinci sayfa yok");
 
             await second.ClickAsync();
             await page.WaitForFunctionAsync("() => !document.querySelector('[data-list-controller][aria-busy]')");
@@ -513,7 +523,8 @@ public sealed class FlowTests(LiveSiteFixture site)
     [SkippableFact]
     public async Task Admin_listesinde_filtrelemek_belgeyi_yeniden_yuklemez()
     {
-        var result = await site.WithPageAsync(SweepData.Page("Admin/Category"), async page =>
+        const string pageId = "Admin/Category";
+        var result = await site.WithPageAsync(SweepData.Page(pageId), async page =>
         {
             var select = page.Locator(".filter-bar select[name='deletedFilter']").First;
             Skip.If(await select.CountAsync() == 0, "Admin/Category: silinme süzgeci yok");

@@ -183,34 +183,7 @@
     }
 
     function reloadTable() {
-        var m = meta();
-        var params = new URLSearchParams({
-            subject:       m.subject       || '',
-            activeFilter:  m.activeFilter  || '',
-            deletedFilter: m.deletedFilter || '',
-            dateFrom:      m.dateFrom      || '',
-            dateTo:        m.dateTo        || '',
-            pageNumber:    m.pageNumber    || 1,
-            pageSize:      m.pageSize      || 10
-        });
-
-        fetch('/NewsletterIssue/TablePartial?' + params.toString(), {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function (r) {
-            if (!r.ok) throw new Error('TablePartial ' + r.status);
-            return r.text();
-        })
-        .then(function (html) {
-            var section = document.getElementById('newsletter-table-section');
-            if (!section) return;
-            section.innerHTML = html;
-            bindAll();
-            document.dispatchEvent(new CustomEvent('ft:table-rendered'));
-        })
-        .catch(function (err) {
-            console.error('reloadTable hatası:', err);
-        });
+        FtList.reload();
     }
 
     var ACTION_MESSAGES = {
@@ -480,7 +453,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        document.addEventListener('ft:table-reload', reloadTable);
+        document.addEventListener('ft:table-rendered', bindAll);
         bindAll();
 
         var addBtn = document.getElementById('newsletter-add-btn');

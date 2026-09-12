@@ -56,7 +56,7 @@
             <div class="stat-box__icon stat-box__icon--total">@await Html.PartialAsync("_Icons", "statuses")</div>
             <div>
                 <p class="stat-box__label">Toplam Kayıt</p>
-                <div class="stat-box__value">@Model.TotalCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="totalCount">@Model.TotalCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -64,7 +64,7 @@
             <div class="stat-box__icon stat-box__icon--active">@await Html.PartialAsync("_Icons", "check-circle")</div>
             <div>
                 <p class="stat-box__label">Aktif Kayıt</p>
-                <div class="stat-box__value">@Model.ActiveCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="activeCount">@Model.ActiveCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -72,7 +72,7 @@
             <div class="stat-box__icon stat-box__icon--passive">@await Html.PartialAsync("_Icons", "x-circle")</div>
             <div>
                 <p class="stat-box__label">Pasif Kayıt</p>
-                <div class="stat-box__value">@Model.PassiveCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="passiveCount">@Model.PassiveCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -80,7 +80,7 @@
             <div class="stat-box__icon stat-box__icon--deleted">@await Html.PartialAsync("_Icons", "trash")</div>
             <div>
                 <p class="stat-box__label">Silinmiş Kayıt</p>
-                <div class="stat-box__value">@Model.DeletedCount.ToString("N0")</div>
+                <div class="stat-box__value" data-stat="deletedCount">@Model.DeletedCount.ToString("N0")</div>
                 <span class="stat-box__unit">kayıt</span>
             </div>
         </div>
@@ -134,7 +134,7 @@
     </div>
 
     <div class="card" id="status-table-card" style="padding: 0; overflow: hidden;">
-        <div id="status-table-section">
+        <div id="status-table-section" data-list-controller="Status" data-list-meta="__statusMeta">
             @await Html.PartialAsync("_StatusTable", Model)
         </div>
     </div>

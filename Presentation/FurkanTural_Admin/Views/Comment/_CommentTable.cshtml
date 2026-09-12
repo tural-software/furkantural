@@ -14,6 +14,12 @@
 }
 
 <script id="__comment-rows-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Rows, jsonOpts))</script>
+<script id="__list-stats-json" type="application/json">@Html.Raw(JsonSerializer.Serialize(new {
+    pendingCount = Model.PendingCount.ToString("N0"),
+    approvedCount = Model.ApprovedCount.ToString("N0"),
+    rejectedCount = Model.RejectedCount.ToString("N0"),
+    totalCount = Model.TotalCount.ToString("N0")
+}, jsonOpts))</script>
 
 <div class="data-table-wrap">
     <table class="data-table">

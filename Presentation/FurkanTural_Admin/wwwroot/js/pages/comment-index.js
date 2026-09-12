@@ -142,35 +142,7 @@
     }
 
     function reloadTable() {
-        var meta = window.__commentMeta || {};
-        var params = new URLSearchParams({
-            name:          meta.name          || '',
-            statusFilter:  meta.statusFilter  || '',
-            activeFilter:  meta.activeFilter  || '',
-            deletedFilter: meta.deletedFilter || '',
-            dateFrom:      meta.dateFrom      || '',
-            dateTo:        meta.dateTo        || '',
-            pageNumber:    meta.pageNumber    || 1,
-            pageSize:      meta.pageSize      || 10
-        });
-
-        fetch('/Comment/TablePartial?' + params.toString(), {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function (r) {
-            if (!r.ok) throw new Error('TablePartial ' + r.status);
-            return r.text();
-        })
-        .then(function (html) {
-            var section = document.getElementById('comment-table-section');
-            if (!section) return;
-            section.innerHTML = html;
-            bindAll();
-            document.dispatchEvent(new CustomEvent('ft:table-rendered'));
-        })
-        .catch(function (err) {
-            console.error('reloadTable hatası:', err);
-        });
+        FtList.reload();
     }
 
     var ACTION_MESSAGES = {
@@ -332,7 +304,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        document.addEventListener('ft:table-reload', reloadTable);
+        document.addEventListener('ft:table-rendered', bindAll);
         bindAll();
     });
 
