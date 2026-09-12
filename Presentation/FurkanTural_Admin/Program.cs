@@ -1,6 +1,9 @@
-﻿using FurkanTural_Admin;
+using System.Net.Http.Headers;
+using FurkanTural_Admin;
 using FurkanTural_Admin.Models.Common;
 using FurkanTural_Admin.Services;
+using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,60 @@ builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 });
+
+builder.Services.AddHttpClient("AppTokenClient", client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+var bffRoutes = new[]
+{
+    new RouteConfig
+    {
+        RouteId = "bff",
+        ClusterId = "api",
+        Match = new RouteMatch { Path = "/bff/{**catch-all}" }
+    }
+    .WithTransformPathRemovePrefix("/bff")
+};
+
+var bffClusters = new[]
+{
+    new ClusterConfig
+    {
+        ClusterId = "api",
+        Destinations = new Dictionary<string, DestinationConfig>
+        {
+            ["api"] = new DestinationConfig { Address = apiBaseUrl }
+        }
+    }
+};
+
+builder.Services.AddReverseProxy()
+    .LoadFromMemory(bffRoutes, bffClusters)
+    .AddTransforms(transforms =>
+    {
+        transforms.AddRequestTransform(async ctx =>
+        {
+            await ctx.HttpContext.Session.LoadAsync();
+            var session = ctx.HttpContext.Session;
+            var token = session.GetString("token");
+            if (string.IsNullOrEmpty(token))
+                return;
+
+            var expiresRaw = session.GetString("expiresAt");
+            if (DateTimeOffset.TryParse(expiresRaw, null, System.Globalization.DateTimeStyles.RoundtripKind, out var expiresAt)
+                && expiresAt - DateTimeOffset.UtcNow <= TimeSpan.FromMinutes(10))
+            {
+                var refreshed = await TryRefreshTokenAsync(ctx.HttpContext, token);
+                if (refreshed is not null)
+                    token = refreshed;
+            }
+
+            ctx.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        });
+    });
 
 builder.Services.AddHttpClient<IAdminDashboardClient, AdminDashboardClient>(client =>
 {
@@ -228,7 +285,7 @@ app.Use(async (context, next) =>
         "font-src 'self' data:; " +
         $"img-src 'self' data: blob: {apiOrigin}; " +
         $"media-src 'self' blob: {apiOrigin}; " +
-        $"connect-src 'self' {apiOrigin} https://cloudflareinsights.com; " +
+        $"connect-src 'self' {apiOrigin} ws://{context.Request.Host} wss://{context.Request.Host} https://cloudflareinsights.com; " +
         "frame-ancestors 'none'; " +
         "base-uri 'self'; " +
         "form-action 'self';";
@@ -239,6 +296,8 @@ app.UseRouting();
 
 app.UseSession();
 app.UseAuthorization();
+
+app.MapReverseProxy();
 
 app.MapStaticAssets();
 
@@ -254,3 +313,42 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
+
+static async Task<string?> TryRefreshTokenAsync(HttpContext httpContext, string currentToken)
+{
+    try
+    {
+        var factory = httpContext.RequestServices.GetRequiredService<IHttpClientFactory>();
+        var client = factory.CreateClient("AppTokenClient");
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/Auth/refresh");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", currentToken);
+        using var response = await client.SendAsync(request, httpContext.RequestAborted);
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var payload = await response.Content.ReadFromJsonAsync<TokenRefreshResponse>(cancellationToken: httpContext.RequestAborted);
+        var data = payload?.Data;
+        if (data?.Token is null)
+            return null;
+
+        httpContext.Session.SetString("token", data.Token);
+        httpContext.Session.SetString("expiresAt", data.ExpiresAt.ToString("O"));
+        return data.Token;
+    }
+    catch
+    {
+        return null;
+    }
+}
+
+internal sealed class TokenRefreshResponse
+{
+    public TokenRefreshData? Data { get; set; }
+}
+
+internal sealed class TokenRefreshData
+{
+    public string? Token { get; set; }
+    public DateTime ExpiresAt { get; set; }
+}
