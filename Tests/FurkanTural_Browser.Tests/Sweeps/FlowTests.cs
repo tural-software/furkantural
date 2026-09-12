@@ -550,4 +550,54 @@ public sealed class FlowTests(LiveSiteFixture site)
         result.meta.Should().Be("deleted",
             "sayfa durumu ortak modülle aynı gerçeği taşımalı; ayrışırsa kayıt silindikten sonraki tazeleme süzgeci düşürür");
     }
+
+    /// <summary>Asıl sınav sayfa değiştirmek değil, kayıt değiştirmek. Sayaç kutuları tazelenen bölgenin dışında durduğu için bir kaydı pasife almak listeyi değiştirip sayaçları eski değerinde bırakabilir; kullanıcı o zaman aynı ekranda birbirini tutmayan iki sayı görür.<para>Test durumu kendi geri alır: kaydı pasife alır, sayaçların kaydığını doğrular, sonra aynı kaydı aktife alıp sayıların başladığı yere döndüğünü doğrular. Yarıda kalırsa geride tek bir pasif kayıt kalır ve panelden geri alınabilir.</para></summary>
+    [SkippableFact]
+    public async Task Admin_listesinde_kayit_degisince_sayaclar_da_degisir()
+    {
+        const string pageId = "Admin/Category";
+
+        var result = await site.WithPageAsync(SweepData.Page(pageId), async page =>
+        {
+            var passivate = page.Locator("form[action*='ToggleActive'] button[title='Pasife Al']").First;
+            Skip.If(await passivate.CountAsync() == 0, pageId + ": pasife alınabilecek kayıt yok");
+
+            async Task<(string Active, string Passive)> ReadAsync()
+            {
+                var active = await page.Locator("[data-stat='activeCount']").InnerTextAsync();
+                var passive = await page.Locator("[data-stat='passiveCount']").InnerTextAsync();
+                return (active.Trim(), passive.Trim());
+            }
+
+            var before = await ReadAsync();
+
+            var rowId = await passivate.Locator("xpath=ancestor::form").Locator("input[name='id']").GetAttributeAsync("value");
+            Skip.If(string.IsNullOrEmpty(rowId), pageId + ": satır kimliği okunamadı");
+
+            await passivate.ClickAsync();
+            await page.Locator("#cm-confirm").ClickAsync();
+            await page.WaitForFunctionAsync(
+                "beklenen => (document.querySelector(\"[data-stat='passiveCount']\").textContent || '').trim() !== beklenen",
+                before.Passive);
+
+            var after = await ReadAsync();
+
+            var row = page.Locator($".data-table tr:has(input[name='id'][value='{rowId}'])");
+            await row.Locator("button[title='Aktife Al']").ClickAsync();
+            await page.Locator("#cm-confirm").ClickAsync();
+            await page.WaitForFunctionAsync(
+                "beklenen => (document.querySelector(\"[data-stat='passiveCount']\").textContent || '').trim() === beklenen",
+                before.Passive);
+
+            var restored = await ReadAsync();
+            return (before, after, restored);
+        });
+
+        result.after.Passive.Should().NotBe(result.before.Passive,
+            "pasife alınan kayıt pasif sayacına yansımalı; yansımazsa liste ile sayaç aynı ekranda çelişir");
+        result.after.Active.Should().NotBe(result.before.Active,
+            "aynı işlem aktif sayacından da düşmeli");
+        result.restored.Should().Be(result.before,
+            "kayıt aktife alınınca sayaçlar başladığı yere dönmeli; dönmezse sayaçlar işlemi değil kendi geçmişini gösteriyor demektir");
+    }
 }
