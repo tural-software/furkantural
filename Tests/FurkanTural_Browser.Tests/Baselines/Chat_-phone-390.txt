@@ -9,8 +9,8 @@ div.shell  0,61,390,783
 div.shell > main#main  0,61,390,962
 div.shell > main#main > section.hero  0,61,390,700
 div.shell > main#main > section.hero > div.hero-col  20,101,350,317
-main#main > section.hero > div.hero-col > p.hero-chip  98,101,194,27
-section.hero > div.hero-col > p.hero-chip > span.hero-dot  110,112,6,6
+main#main > section.hero > div.hero-col > p.hero-chip  101,101,187,27
+section.hero > div.hero-col > p.hero-chip > span.hero-dot  113,112,6,6
 main#main > section.hero > div.hero-col > h1.hero-title  20,152,350,65
 main#main > section.hero > div.hero-col > p.hero-lede  20,235,350,106
 main#main > section.hero > div.hero-col > div.hero-cta  20,370,350,48
@@ -48,4 +48,4 @@ main#main > section.features > div.feature > p.feature-text  35,955,320,20
 div.shell > footer.sitefoot  0,1023,390,149
 div.shell > footer.sitefoot > span.sitefoot-brand  145,1044,99,15
 div.shell > footer.sitefoot > nav.sitefoot-links  142,1069,105,58
-div.shell > footer.sitefoot > a.sitefoot-mail  121,1137,149,15
+div.shell > footer.sitefoot > a.sitefoot-mail  122,1137,145,15

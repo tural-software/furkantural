@@ -29,4 +29,4 @@ div.legal-wrap > article.legal-card > div.legal-actions > a.btn-outline  388,123
 div.shell > footer.sitefoot  0,1350,1400,65
 div.shell > footer.sitefoot > span.sitefoot-brand  22,1376,554,15
 div.shell > footer.sitefoot > nav.sitefoot-links  592,1371,217,24
-div.shell > footer.sitefoot > a.sitefoot-mail  1229,1376,149,15
+div.shell > footer.sitefoot > a.sitefoot-mail  1233,1376,145,15

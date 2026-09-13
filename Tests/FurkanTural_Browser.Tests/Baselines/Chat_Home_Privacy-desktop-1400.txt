@@ -34,4 +34,4 @@ div.legal-wrap > article.legal-card > div.legal-actions > button.btn-outline  38
 div.shell > footer.sitefoot  0,2330,1400,65
 div.shell > footer.sitefoot > span.sitefoot-brand  22,2356,554,15
 div.shell > footer.sitefoot > nav.sitefoot-links  592,2351,217,24
-div.shell > footer.sitefoot > a.sitefoot-mail  1229,2356,149,15
+div.shell > footer.sitefoot > a.sitefoot-mail  1233,2356,145,15
