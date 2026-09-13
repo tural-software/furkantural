@@ -38,8 +38,10 @@ public class ChatLegalPageTests
     }
 
     [Theory]
-    [InlineData("Agreement", 6)]
-    [InlineData("Privacy", 11)]
+    [InlineData("Agreement", 16)]
+    [InlineData("Privacy", 16)]
+    [InlineData("Rules", 10)]
+    [InlineData("Imprint", 5)]
     public void Yasal_sayfalar_dizin_geri_baglantisi_ve_iletisim_kutusu_tasir(string sayfa, int madde)
     {
         var view = ChatFile("Views", "Home", $"{sayfa}.cshtml");
@@ -56,7 +58,7 @@ public class ChatLegalPageTests
     [Fact]
     public void Dizin_madde_adlarini_gorunumde_yinelemez()
     {
-        foreach (var sayfa in new[] { "Agreement", "Privacy" })
+        foreach (var sayfa in new[] { "Agreement", "Privacy", "Rules", "Imprint" })
         {
             var view = ChatFile("Views", "Home", $"{sayfa}.cshtml");
             var liste = Regex.Match(view, @"<ol class=""legal-index-list""[^>]*>(.*?)</ol>", RegexOptions.Singleline);
@@ -65,6 +67,41 @@ public class ChatLegalPageTests
             liste.Groups[1].Value.Trim().Should().BeEmpty(
                 $"{sayfa}: madde adları elle yazılırsa başlık metniyle zamanla ayrışır; liste betikle dolar");
         }
+    }
+
+    [Fact]
+    public void Sozlesme_sayfasindaki_surum_yururlukteki_surumle_aynidir()
+    {
+        var sabit = File.ReadAllText(Path.Combine(FindSolutionRoot(), "Core", "FurkanTural_Domain", "Constants", "AgreementDefinitions.cs"));
+        var surum = Regex.Match(sabit, @"CurrentVersion = ""([^""]+)""").Groups[1].Value;
+
+        surum.Should().NotBeEmpty("yürürlükteki sözleşme sürümü sabitten okunamadı");
+        ChatFile("Views", "Home", "Agreement.cshtml").Should().Contain($"Sürüm {surum} —",
+            "metin değişip sabit ilerletilmezse üyeler yeni metni onaylamadan kullanmaya devam eder; " +
+            "sabit ilerletilip metin değişmezse onay penceresi eski metni yeniden onaylatır");
+    }
+
+    [Theory]
+    [InlineData("Rules", "Topluluk Kuralları")]
+    [InlineData("Privacy", "Gizlilik Politikası")]
+    [InlineData("Agreement", "Üyelik Sözleşmesi")]
+    public void Uygulama_ici_yasal_belgeler_sayfalarla_ayni_adresi_kullanir(string sayfa, string baslik)
+    {
+        var betik = ChatFile("wwwroot", "js", "call.js");
+
+        betik.Should().Contain($"url: '/Home/{sayfa}'", "ayarlardaki belge penceresi sayfanın kendisini okur");
+        betik.Should().Contain($">{baslik}</button>", "belgeye ayarlardan ulaşan bir düğme olmalı");
+    }
+
+    [Theory]
+    [InlineData("Agreement")]
+    [InlineData("Rules")]
+    [InlineData("Privacy")]
+    [InlineData("Imprint")]
+    public void Alt_bilgi_her_yasal_sayfaya_baglanir(string sayfa)
+    {
+        ChatFile("Views", "Shared", "_Footer.cshtml").Should().Contain($"asp-action=\"{sayfa}\"",
+            "yasal metinler giriş yapmadan da her sayfanın altından ulaşılabilir olmalı");
     }
 
     [Fact]

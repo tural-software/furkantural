@@ -364,6 +364,7 @@
                     '<div class="dev-legal-actions">' +
                       '<button type="button" class="dev-legal btn-outline" data-doc="agreement">Üyelik Sözleşmesi</button>' +
                       '<button type="button" class="dev-legal btn-outline" data-doc="privacy">Gizlilik Politikası</button>' +
+                      '<button type="button" class="dev-legal btn-outline" data-doc="rules">Topluluk Kuralları</button>' +
                     '</div>' +
                   '</div>' +
                 '</div>';
@@ -396,7 +397,8 @@
         var legalCache = {};
         var LEGAL_DOCS = {
             agreement: { url: '/Home/Agreement', title: 'Üyelik Sözleşmesi' },
-            privacy:   { url: '/Home/Privacy',   title: 'Gizlilik Politikası' }
+            privacy:   { url: '/Home/Privacy',   title: 'Gizlilik Politikası' },
+            rules:     { url: '/Home/Rules',     title: 'Topluluk Kuralları' }
         };
 
         function closeLegal() {

@@ -23,8 +23,11 @@ public class RegisterRequestModel
         "Parola 6-64 karakter olmalı; bir büyük harf, bir küçük harf, bir rakam ve bir sembol içermeli.")]
     public string? Password { get; set; }
 
-    [Range(typeof(bool), "true", "true", ErrorMessage = "Üyelik sözleşmesini ve Gizlilik Politikasını kabul etmelisiniz.")]
+    [Range(typeof(bool), "true", "true", ErrorMessage = "Üyelik sözleşmesini kabul etmelisiniz.")]
     public bool AcceptAgreement { get; set; }
+
+    [Range(typeof(bool), "true", "true", ErrorMessage = "Üye olmak için 18 yaşını doldurmuş olmalısınız.")]
+    public bool ConfirmAdult { get; set; }
 
     public string? TurnstileToken { get; set; }
 }

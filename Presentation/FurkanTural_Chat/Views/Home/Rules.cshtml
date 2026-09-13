@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Topluluk Kuralları";
+}
+<div class="legal-wrap">
+    <nav class="legal-index" aria-label="Bölümler" hidden>
+        <p class="legal-index-title">Bölümler</p>
+        <ol class="legal-index-list"></ol>
+    </nav>
+
+    <article class="legal-card">
+        <a class="legal-back" asp-controller="Home" asp-action="Index">‹ Ana sayfa</a>
+        <h1>Chatural Topluluk Kuralları</h1>
+        <p class="legal-meta">Sürüm 1.0 — Son güncelleme: 14 Eylül 2026</p>
+
+        <p>
+            Chatural'ın herkes için güvenli ve saygılı bir yer olması için bu kurallara uyulması gerekir. Topluluk Kuralları,
+            <a asp-controller="Home" asp-action="Agreement">Üyelik Sözleşmesi</a>'nin ayrılmaz parçasıdır. Kurallara aykırı
+            davranan üyenin içeriği kaldırılabilir ve hesabı kapatılabilir.
+        </p>
+
+        <h2>1. Saygılı İletişim</h2>
+        <p>Şunlara izin verilmez:</p>
+        <ul>
+            <li>tehdit etmek, taciz etmek, istemeyen birine ısrarla mesaj göndermek ya da onu aramak,</li>
+            <li>hakaret etmek, aşağılamak, küçük düşürmek,</li>
+            <li>ırk, etnik köken, din, cinsiyet, cinsel yönelim ya da engellilik gibi özellikler nedeniyle ayrımcılık yapmak ve nefret söylemi,</li>
+            <li>karşı tarafın istemediği cinsel içerikli mesaj, fotoğraf ya da video göndermek.</li>
+        </ul>
+
+        <h2>2. Hukuka Aykırı İçerik</h2>
+        <ul>
+            <li>
+                Çocukların cinsel istismarını içeren ya da çocukları cinselleştiren her türlü içerik kesinlikle yasaktır. Bu
+                içerikler hesabın derhâl kapatılmasına ve yetkili mercilere bildirilmesine yol açar.
+            </li>
+            <li>Terör, silahlı saldırı ya da intihar gibi eylemleri öven, özendiren ya da bunlara yönlendiren içerik paylaşılamaz.</li>
+            <li>Yasa dışı madde, silah ya da hizmet ticareti yapılamaz.</li>
+            <li>Dolandırıcılık, sahte kampanya ya da aldatıcı para toplama girişiminde bulunulamaz.</li>
+            <li>Başkalarına ait telif ve diğer fikri hakları ihlal eden içerik paylaşılamaz.</li>
+        </ul>
+
+        <h2>3. Mahremiyet ve Kişilik Hakları</h2>
+        <ul>
+            <li>Başkalarının telefon, adres ya da kimlik bilgisi gibi kişisel verileri izinleri olmadan paylaşılamaz.</li>
+            <li>Bir kişinin özel görüntüleri rızası olmadan paylaşılamaz; paylaşmakla tehdit edilemez.</li>
+            <li>Sesli ya da görüntülü görüşmeler karşı tarafın bilgisi olmadan kaydedilemez, kayıtlar yayılamaz.</li>
+            <li>Bir konuşmada size güvenilerek anlatılanlar, kişiyi zor durumda bırakacak şekilde başkalarına ifşa edilemez.</li>
+        </ul>
+
+        <h2>4. Kimlik ve Dürüstlük</h2>
+        <ul>
+            <li>Başka bir kişi ya da kurum taklit edilemez.</li>
+            <li>Kuralları dolanmak için sahte ya da birden çok hesap kullanılamaz.</li>
+            <li>Sizi engellemiş bir kişiye başka bir hesapla ulaşmaya çalışılamaz.</li>
+            <li>18 yaşını doldurmamış kişiler hesap açamaz.</li>
+        </ul>
+
+        <h2>5. Hizmetin Güvenliği</h2>
+        <ul>
+            <li>Toplu ya da istenmeyen ileti gönderilemez.</li>
+            <li>Zararlı yazılım ya da kimlik bilgisi toplamaya yönelik bağlantı paylaşılamaz.</li>
+            <li>Güvenlik açıkları istismar edilemez; hizmete otomatik araçlarla erişilemez ve hizmet aşırı yüklenemez.</li>
+        </ul>
+        <p>Bir güvenlik açığı fark ederseniz lütfen kullanmadan destek adresine bildirin.</p>
+
+        <h2>6. Engelleme</h2>
+        <p>
+            İstemediğiniz bir kişiyi engelleyebilirsiniz. Engellediğiniz kişi size mesaj gönderemez, sizi arayamaz ve
+            aramada sizi bulamaz; siz de onu aramada görmezsiniz. Engeli yalnızca engelleyen üye kaldırabilir.
+        </p>
+
+        <h2>7. Şikayet Etme</h2>
+        <p>
+            Kurallara aykırı bir kullanıcıyı, mesajı, fotoğraf, video ya da sesli mesajı veya aramayı uygulama içinden
+            şikayet edebilirsiniz. Şikayetinizi kimin yaptığı şikayet edilen kişiye söylenmez. Hayati bir tehlike varsa
+            şikayeti beklemeden 112'yi arayın.
+        </p>
+
+        <h2>8. İnceleme ve Yaptırımlar</h2>
+        <p>
+            Şikayetleri inceleyerek şikayet edilen içeriği ve gerektiği ölçüde ilgili konuşmayı değerlendiririz. Kurallara
+            aykırılık tespit edersek aykırılığın ağırlığına göre içeriği kaldırır, hesabı geçici olarak ya da süresiz
+            kapatırız. Suç oluşturabilecek durumları yetkili mercilere bildirebiliriz. Ayrıntılar
+            <a asp-controller="Home" asp-action="Agreement">Üyelik Sözleşmesi</a>'nin 9. maddesindedir.
+        </p>
+
+        <h2>9. Üye Olmayanlar ve Hak Sahipleri İçin Bildirim</h2>
+        <p>
+            Chatural'da kişilik haklarınızı ihlal eden ya da hukuka aykırı olduğunu düşündüğünüz bir içerikten haberdar
+            olduysanız, üye olmasanız da destek@@furkantural.com ya da support@@furkantural.com adresine yazabilirsiniz.
+            Bildiriminizde içeriği bulmamıza yarayacak bilgileri (kullanıcı adı, tarih, varsa ekran görüntüsü), ihlalin
+            gerekçesini ve iletişim bilgilerinizi belirtin. Kişilik hakkı ihlaline ilişkin bildirimleri en geç 24 saat
+            içinde yanıtlarız.
+        </p>
+
+        <h2>10. İtiraz</h2>
+        <p>
+            Hakkınızda verilen bir karara, karar size bildirildikten sonra destek adresine yazarak itiraz edebilirsiniz.
+            İtirazınızı yeniden değerlendirir ve sonucunu size bildiririz.
+        </p>
+
+        @await Html.PartialAsync("_LegalContact")
+
+        <div class="legal-actions">
+            <button type="button" class="btn-outline" data-history-back>Geri dön</button>
+        </div>
+    </article>
+</div>
+
+@section Scripts {
+    <script src="~/js/legal-index.js" asp-append-version="true"></script>
+}
+

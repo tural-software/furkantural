@@ -52,6 +52,8 @@ public static class SiteMap
             new(Chat, "/"),
             new(Chat, "/Home/Privacy"),
             new(Chat, "/Home/Agreement"),
+            new(Chat, "/Home/Rules"),
+            new(Chat, "/Home/Imprint"),
             new(Chat, "/Account/Login"),
             new(Chat, "/Account/Register"),
             new(Chat, "/Account/Activate"),

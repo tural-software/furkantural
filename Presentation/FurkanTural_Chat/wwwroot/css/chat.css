@@ -490,6 +490,7 @@ select:focus-visible,
     word-break: break-all;
 }
 .pw-note { font-size: var(--fs-xs); color: var(--accent-text); margin: 2px 0 0; min-height: 1.1em; }
+.auth-legal-note { font-size: var(--fs-xs); color: var(--text-dim); line-height: 1.5; margin: 2px 0 0; }
 
 /* Opsiyonel alan etiketi */
 .auth-optional { font-size: var(--fs-sm); color: var(--text-dim); font-weight: 400; }
@@ -894,6 +895,8 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 }
 .legal-modal-body h2:first-child { margin-top: 0; }
 .legal-modal-body strong { color: var(--text-main); }
+.legal-modal-body ul { margin: 0 0 .75rem; padding-left: 1.25rem; }
+.legal-modal-body li { margin: 0 0 .35rem; }
 .legal-modal-body a { color: var(--accent-text); }
 .legal-modal-body .legal-meta { font-size: var(--fs-xs); opacity: .8; }
 
@@ -1311,6 +1314,18 @@ html[data-consent="1"] .consent-notice { display: none; }
     hyphens: auto;
 }
 .legal-card strong { color: var(--text-main); }
+.legal-card ul {
+    margin: 0 0 14px;
+    padding-left: 22px;
+}
+.legal-card li {
+    margin: 0 0 6px;
+    font-size: 15.5px;
+    line-height: 1.7;
+    color: var(--text-dim);
+    text-align: justify;
+    hyphens: auto;
+}
 
 .legal-contact {
     margin-top: 30px;

@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Künye";
+}
+<div class="legal-wrap">
+    <nav class="legal-index" aria-label="Bölümler" hidden>
+        <p class="legal-index-title">Bölümler</p>
+        <ol class="legal-index-list"></ol>
+    </nav>
+
+    <article class="legal-card">
+        <a class="legal-back" asp-controller="Home" asp-action="Index">‹ Ana sayfa</a>
+        <h1>Chatural Künye</h1>
+        <p class="legal-meta">Son güncelleme: 14 Eylül 2026</p>
+
+        <p>Bu sayfa, 5651 sayılı Kanun kapsamında Chatural'ı sunan kişiye ve hizmet alınan sağlayıcılara ilişkin bilgileri içerir.</p>
+
+        <h2>1. Hizmet</h2>
+        <p>Chatural, üyelerin birebir mesajlaşmasını ve sesli ya da görüntülü arama yapmasını sağlayan ücretsiz bir web uygulamasıdır.</p>
+
+        <h2>2. Hizmet Sağlayıcı</h2>
+        <p>
+            <strong>Furkan Tural</strong> (gerçek kişi). Chatural, Furkan Tural tarafından bireysel olarak geliştirilir ve
+            işletilir; bir şirket tarafından sunulmaz.
+        </p>
+        <p>E-posta: destek@@furkantural.com, support@@furkantural.com</p>
+
+        <h2>3. Yer Sağlayıcı</h2>
+        <p>
+            <strong>Webhosting Bilişim Teknolojileri A.Ş.</strong> (Hosting.com.tr)<br />
+            Meclis Mahallesi Derviş Sokak Fuat Özal Plaza No:38/1 Sancaktepe / İstanbul
+        </p>
+
+        <h2>4. Ağ ve Güvenlik Hizmeti</h2>
+        <p>
+            <strong>Cloudflare, Inc.</strong><br />
+            101 Townsend Street, San Francisco, CA 94107, ABD
+        </p>
+
+        <h2>5. Hukuka Aykırı İçerik Bildirimi</h2>
+        <p>
+            Hukuka aykırı olduğunu ya da kişilik haklarınızı ihlal ettiğini düşündüğünüz içerikleri, üye olmasanız da
+            destek adresine bildirebilirsiniz. Bildirimin nasıl yapılacağı
+            <a asp-controller="Home" asp-action="Rules">Topluluk Kuralları</a>'nın 9. maddesinde anlatılmıştır.
+        </p>
+
+        @await Html.PartialAsync("_LegalContact")
+
+        <div class="legal-actions">
+            <button type="button" class="btn-outline" data-history-back>Geri dön</button>
+        </div>
+    </article>
+</div>
+
+@section Scripts {
+    <script src="~/js/legal-index.js" asp-append-version="true"></script>
+}
+

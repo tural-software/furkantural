@@ -80,7 +80,8 @@ public class ValidationTests
             Username = "newuser",
             Email = "new@example.com",
             Password = "P@ss1234",
-            AcceptAgreement = true
+            AcceptAgreement = true,
+            ConfirmAdult = true
         };
 
         // Act
@@ -200,7 +201,7 @@ public class ValidationTests
         var model = new RegisterRequestModel
         {
             Username = "validuser", Email = "e@e.com",
-            Password = "Abc1!" + new string('x', 59), AcceptAgreement = true
+            Password = "Abc1!" + new string('x', 59), AcceptAgreement = true, ConfirmAdult = true
         };
         var errors = Validate(model);
         errors.Should().BeEmpty();
@@ -214,7 +215,7 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com", Password = password, AcceptAgreement = true
+            Username = "validuser", Email = "e@e.com", Password = password, AcceptAgreement = true, ConfirmAdult = true
         };
         var errors = Validate(model);
         errors.Should().BeEmpty();
@@ -233,13 +234,25 @@ public class ValidationTests
     }
 
     [Fact]
+    public void RegisterRequestModel_ConfirmAdult_False_HasValidationError()
+    {
+        var model = new RegisterRequestModel
+        {
+            Username = "validuser", Email = "e@e.com", Password = "P@ss1234", AcceptAgreement = true, ConfirmAdult = false
+        };
+        var errors = Validate(model);
+        errors.Should().ContainSingle(e => e.MemberNames.Contains(nameof(RegisterRequestModel.ConfirmAdult)),
+            "sözleşmeyi kabul etmek yaş beyanının yerine geçmez");
+    }
+
+    [Fact]
     public void RegisterRequestModel_DisplayName_IsOptional()
     {
         // DisplayName attribute yok (sadece Display) -- null olsa da gecerli
         var model = new RegisterRequestModel
         {
             Username = "validuser", Email = "e@e.com", Password = "P@ss1234",
-            AcceptAgreement = true, DisplayName = null
+            AcceptAgreement = true, ConfirmAdult = true, DisplayName = null
         };
         var errors = Validate(model);
         errors.Should().BeEmpty();

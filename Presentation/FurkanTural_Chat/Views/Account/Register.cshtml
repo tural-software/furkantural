@@ -60,13 +60,25 @@
             <label class="agreement-check">
                 <input asp-for="AcceptAgreement" aria-required="true" aria-describedby="reg-agreement-err" />
                 <span>
-                    <a asp-controller="Home" asp-action="Agreement" target="_blank" rel="noopener">Üyelik sözleşmesini</a>
-                    ve
-                    <a asp-controller="Home" asp-action="Privacy" target="_blank" rel="noopener">Gizlilik Politikasını</a>
+                    <a asp-controller="Home" asp-action="Agreement" target="_blank" rel="noopener">Üyelik Sözleşmesi</a>'ni
+                    ve parçası olan
+                    <a asp-controller="Home" asp-action="Rules" target="_blank" rel="noopener">Topluluk Kuralları</a>'nı
                     okudum, kabul ediyorum.
                 </span>
             </label>
             <span asp-validation-for="AcceptAgreement" class="field-error" id="reg-agreement-err" role="alert"></span>
+
+            <label class="agreement-check">
+                <input asp-for="ConfirmAdult" aria-required="true" aria-describedby="reg-adult-err" />
+                <span>18 yaşını doldurdum.</span>
+            </label>
+            <span asp-validation-for="ConfirmAdult" class="field-error" id="reg-adult-err" role="alert"></span>
+
+            <p class="auth-legal-note">
+                Kişisel verilerinin nasıl işlendiğini
+                <a asp-controller="Home" asp-action="Privacy" target="_blank" rel="noopener">Aydınlatma Metni</a>'nde
+                okuyabilirsin.
+            </p>
 
             <button type="submit" class="btn-primary" data-loading-text="Kayıt yapılıyor…"
                     disabled>Üye ol</button>
