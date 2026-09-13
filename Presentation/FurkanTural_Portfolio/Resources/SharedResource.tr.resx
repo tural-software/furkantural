@@ -116,6 +116,8 @@
   <data name="Contact_Form_Message" xml:space="preserve"><value>Mesajınız</value></data>
   <data name="Contact_Form_Submit" xml:space="preserve"><value>Gönder</value></data>
   <data name="Contact_Form_Sending" xml:space="preserve"><value>Gönderiliyor...</value></data>
+  <data name="Contact_Form_PrivacyNote" xml:space="preserve"><value>Adınız, e-posta adresiniz ve mesajınız, IP adresiniz ve tarayıcı bilgilerinizle birlikte size yanıt verebilmem için saklanır. Ayrıntılar:</value></data>
+  <data name="Contact_Form_PrivacyLink" xml:space="preserve"><value>Gizlilik Politikası</value></data>
   <data name="Contact_Toast_Success" xml:space="preserve"><value>Mesajınız başarıyla gönderildi!</value></data>
   <data name="Contact_Toast_Error" xml:space="preserve"><value>Mesaj gönderilemedi. Lütfen tekrar deneyin.</value></data>
 
@@ -137,4 +139,5 @@
 
   <!-- Footer -->
   <data name="Footer_Privacy" xml:space="preserve"><value>Gizlilik Politikası</value></data>
+  <data name="Footer_Imprint" xml:space="preserve"><value>Künye</value></data>
 </root>

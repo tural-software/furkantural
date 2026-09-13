@@ -35,6 +35,7 @@ public class SeoController(IPortfolioApiService apiService) : Controller
         {
             ($"{baseUrl}/", "1.0", "monthly"),
             ($"{baseUrl}/Home/Privacy", "0.3", "yearly"),
+            ($"{baseUrl}/Home/Imprint", "0.2", "yearly"),
         };
 
         var projectsTask = _apiService.GetProjectsAsync(cancellationToken);

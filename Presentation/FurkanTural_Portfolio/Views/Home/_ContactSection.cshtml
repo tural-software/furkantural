@@ -34,6 +34,10 @@
                     <span id="contactSubmitText">@SharedLocalizer["Contact_Form_Submit"]</span>
                     <span id="contactSendingText" style="display:none" aria-live="polite">@SharedLocalizer["Contact_Form_Sending"]</span>
                 </button>
+                <p class="contact-privacy-note">
+                    @SharedLocalizer["Contact_Form_PrivacyNote"]
+                    <a asp-controller="Home" asp-action="Privacy">@SharedLocalizer["Contact_Form_PrivacyLink"]</a>
+                </p>
             </form>
         </div>
     </div>

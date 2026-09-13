@@ -63,6 +63,8 @@ public static class SiteMap
 
             new(Blog, "/"),
             new(Blog, "/Home/Privacy"),
+            new(Blog, "/yorum-kurallari"),
+            new(Blog, "/kunye"),
             new(Blog, "/hakkinda"),
             new(Blog, "/arsiv"),
             new(Blog, "/bulten"),
@@ -76,6 +78,7 @@ public static class SiteMap
 
             new(Portfolio, "/"),
             new(Portfolio, "/Home/Privacy"),
+            new(Portfolio, "/Home/Imprint"),
             new(Portfolio, "/Projects/Detail", Access.Public, Discover: "a[href*='/Projects/Detail/']", DiscoverFrom: "/"),
             new(Portfolio, "/Music/Detail", Access.Public, Discover: "a[href*='/Music/Detail/']", DiscoverFrom: "/"),
 
