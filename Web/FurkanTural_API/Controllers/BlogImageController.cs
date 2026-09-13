@@ -43,7 +43,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
 
     /// <summary>Blog görselinin aktiflik durumunu değiştir</summary>
     [HttpPatch("{id:int}/toggle-active")]
-    [Authorize(Policy = "UserOrAdmin")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
     {
         if (!await HasOwnershipOrAdmin(id, cancellationToken))
@@ -53,7 +53,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
 
     /// <summary>Silinmiş blog görselini geri yükle</summary>
     [HttpPatch("{id:int}/restore")]
-    [Authorize(Policy = "UserOrAdmin")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Restore(int id, CancellationToken cancellationToken)
     {
         if (!await HasOwnershipOrAdmin(id, cancellationToken))
@@ -75,7 +75,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
 
     /// <summary>Blog görseli yükle ve kaydet</summary>
     [HttpPost]
-    [Authorize(Policy = "UserOrAdmin")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateBlogImageRequest request, CancellationToken cancellationToken)
     {
         if (request.ImageData.Length == 0)
@@ -98,7 +98,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
 
     /// <summary>Blog görselini güncelle</summary>
     [HttpPut]
-    [Authorize(Policy = "UserOrAdmin")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateBlogImageRequest request, CancellationToken cancellationToken)
     {
         if (!await HasOwnershipOrAdmin(request.Id, cancellationToken))
@@ -172,7 +172,7 @@ public class BlogImageController(IBlogImageService blogImageService, IFileServic
 
     /// <summary>Blog görselini sil</summary>
     [HttpDelete("{id:int}")]
-    [Authorize(Policy = "UserOrAdmin")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         if (!await HasOwnershipOrAdmin(id, cancellationToken))
