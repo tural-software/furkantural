@@ -98,7 +98,7 @@ public class LiveNoticeContractTests
         var client = AdminFile("wwwroot", "js", "admin-live.js");
 
         client.Should().Contain("ft:table-rendered",
-            "yöneticinin kendi işlemi — onay, silme, toplu işlem — hub olayı üretmez; rozet ancak liste tazelenince yeniden sorulursa doğru kalır");
+            "yöneticinin kendi işleminin haberi ancak pencere dolunca gelir; liste tazelenir tazelenmez rozet sunucudan yeniden sorulmazsa arada bayat kalır");
         client.Should().Contain("invoke('RefreshPendingWork')",
             "rozet sayısını sunucu hesaplar; istemci kendi tahminiyle düşürürse başka sekmedeki işlemleri kaçırır");
     }
@@ -120,5 +120,58 @@ public class LiveNoticeContractTests
             "sayaç tazelemesi liste tazelemesi sayılmaz; olayı yayarsa bildirim şeridi hemen kapanır");
 
         nav.Should().Contain("refreshStats: refreshStats", "istemci betiği yalnızca yayımlanan yüzeyi görür");
+    }
+
+    private static string RootFile(params string[] parts) =>
+        File.ReadAllText(Path.Combine([FindSolutionRoot(), .. parts]));
+
+    [Fact]
+    public void Istemci_sunucunun_yayinladigi_her_olayi_dinler()
+    {
+        var events = RootFile("Web", "FurkanTural_API", "Hubs", "AdminHubEvents.cs");
+        var client = AdminFile("wwwroot", "js", "admin-live.js");
+
+        var names = Regex.Matches(events, @"const string \w+ = ""(?<ad>\w+)""").Select(m => m.Groups["ad"].Value).ToList();
+
+        names.Should().NotBeEmpty("olay adları bulunamıyorsa bu test hiçbir şeyi doğrulamıyor demektir");
+        names.Where(n => !client.Contains($"on('{n}'")).Should().BeEmpty(
+            "sunucunun gönderdiği ama istemcinin dinlemediği olay sessizce kaybolur; SignalR yalnızca konsola uyarı yazar");
+    }
+
+    [Fact]
+    public void Istemcinin_tanidigi_turler_sunucuyla_ve_liste_sayfalariyla_ortusur()
+    {
+        var client = AdminFile("wwwroot", "js", "admin-live.js");
+        var block = Regex.Match(client, @"var KINDS = \{(?<govde>.*?)\n    \};", RegexOptions.Singleline).Groups["govde"].Value;
+
+        var clientKinds = Regex.Matches(block, @"(?<tur>\w+):\s*\{").Select(m => m.Groups["tur"].Value).ToList();
+        var controllers = Regex.Matches(block, @"controller:\s*'(?<ad>\w+)'").Select(m => m.Groups["ad"].Value).ToList();
+
+        string[] dtos = ["Signature", "FurkanTural_Application", "DTOs", "Common"];
+        var serverSource = RootFile([.. dtos, "AdminListKinds.cs"]) + RootFile([.. dtos, "AdminPendingWorkDto.cs"]);
+        var serverKinds = Regex.Matches(serverSource, @"const string \w+ = ""(?<tur>\w+)""").Select(m => m.Groups["tur"].Value).Distinct().ToList();
+
+        serverKinds.Should().HaveCount(9, "kararlaştırılan kapsam dokuz tablo");
+        clientKinds.Should().BeEquivalentTo(serverKinds,
+            "istemcinin tanımadığı türün haberi sessizce düşer; sunucuda karşılığı olmayan tür ölü koddur");
+
+        foreach (var controller in controllers)
+        {
+            AdminFile("Views", controller, "Index.cshtml").Should().Contain($"data-list-controller=\"{controller}\"",
+                "haber, sayfadaki liste bildirimiyle eşleşerek hedefini bulur");
+            AdminFile("Controllers", $"{controller}Controller.cs").Should().Contain("TablePartial(",
+                "sayaçlar bu uçtan tazelenir");
+        }
+    }
+
+    [Fact]
+    public void Tabloyu_yalnizca_yonetici_tazeler()
+    {
+        var client = AdminFile("wwwroot", "js", "admin-live.js");
+
+        Regex.Matches(client, @"FtList\.reload\(").Count.Should().Be(1,
+            "canlı haber satırları kendiliğinden yeniden çizmemeli; yönetici tıklamak üzereyken tablo kaymamalı");
+        client.Should().MatchRegex(@"addEventListener\('click',\s*function\s*\(\)\s*\{[^}]*FtList\.reload\(",
+            "tek tazeleme şeritteki düğmeye bağlı olmalı");
     }
 }

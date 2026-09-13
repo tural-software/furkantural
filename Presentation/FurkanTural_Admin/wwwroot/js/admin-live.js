@@ -5,15 +5,22 @@
     var RETRY_MS = 3000;
 
     var KINDS = {
-        comment: { label: 'yorum', controller: 'Comment', field: 'comments' },
-        contact: { label: 'iletişim mesajı', controller: 'Contact', field: 'contacts' },
-        report: { label: 'şikayet', controller: 'Report', field: 'reports' }
+        comment: { label: 'yorum', controller: 'Comment' },
+        contact: { label: 'iletişim mesajı', controller: 'Contact' },
+        report: { label: 'şikayet', controller: 'Report' },
+        user: { label: 'kullanıcı', controller: 'User' },
+        friend: { label: 'arkadaşlık kaydı', controller: 'UserFriend' },
+        message: { label: 'mesaj', controller: 'ChatMessage' },
+        call: { label: 'arama kaydı', controller: 'CallLog' },
+        subscriber: { label: 'abone', controller: 'Subscriber' },
+        newsletter: { label: 'bülten', controller: 'NewsletterIssue' }
     };
 
     var badge = null;
     var badgeCount = null;
     var notice = null;
-    var pendingSince = 0;
+    var noticeAdded = 0;
+    var myId = 0;
     var live = null;
 
     function gorunenListe() {
@@ -49,15 +56,12 @@
     function seridiKaldir() {
         if (notice && notice.parentNode) notice.parentNode.removeChild(notice);
         notice = null;
-        pendingSince = 0;
+        noticeAdded = 0;
     }
 
-    function seridiGoster(kind, adet) {
+    function seridiGoster(tanim, added) {
         var section = document.querySelector('[data-list-controller]');
         if (!section) return;
-
-        var tanim = KINDS[kind];
-        if (!tanim || tanim.controller !== section.dataset.listController) return;
 
         if (!notice) {
             notice = document.createElement('div');
@@ -81,27 +85,51 @@
             section.parentNode.insertBefore(notice, section);
         }
 
-        pendingSince += adet;
-        notice.querySelector('.live-notice__text').textContent =
-            pendingSince + ' yeni ' + tanim.label + ' geldi.';
+        noticeAdded += added;
+        notice.querySelector('.live-notice__text').textContent = noticeAdded > 0
+            ? sayi(noticeAdded) + ' yeni ' + tanim.label + ' geldi.'
+            : 'Listede güncellenen kayıtlar var.';
     }
 
-    function olayGeldi(payload) {
+    function oturumBasladi(payload) {
+        myId = payload && payload.userId ? payload.userId : 0;
+    }
+
+    function bekleyenIsDegisti(payload) {
         if (!payload) return;
-
-        var onceki = parseInt(((badgeCount && badgeCount.textContent) || '0').replace(/\D/g, ''), 10) || 0;
-        var total = payload.total || 0;
-        rozetiYaz(total);
+        rozetiYaz(payload.total || 0);
         panoyuYaz(payload);
+    }
 
-        var tanim = KINDS[payload.kind];
+    function listelerDegisti(payload) {
+        if (!payload || !payload.changes) return;
+
+        var controller = gorunenListe();
+        if (!controller) return;
+
+        var tanim = null;
+        var added = 0;
+        var changed = 0;
+
+        payload.changes.forEach(function (change) {
+            var aday = KINDS[change.kind];
+            if (!aday || aday.controller !== controller) return;
+
+            tanim = aday;
+            if (change.actorId && change.actorId === myId) return;
+
+            added += change.added || 0;
+            changed += change.changed || 0;
+        });
+
         if (!tanim) return;
 
-        var artis = total - onceki;
-        seridiGoster(payload.kind, artis > 0 ? artis : 1);
-
-        if (tanim.controller === gorunenListe() && window.FtList && typeof FtList.refreshStats === 'function') {
+        if (window.FtList && typeof FtList.refreshStats === 'function') {
             FtList.refreshStats();
+        }
+
+        if (added > 0 || changed > 0) {
+            seridiGoster(tanim, added);
         }
     }
 
@@ -119,7 +147,9 @@
             .build();
 
         live = connection;
-        connection.on('PendingWorkChanged', olayGeldi);
+        connection.on('AdminSession', oturumBasladi);
+        connection.on('PendingWorkChanged', bekleyenIsDegisti);
+        connection.on('ListsChanged', listelerDegisti);
 
         connection.onclose(function () {
             window.setTimeout(function () { baslat(connection); }, RETRY_MS);
