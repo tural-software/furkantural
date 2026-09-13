@@ -42,7 +42,7 @@ Kimlik bilgileri koda ve depoya yazılmaz; yalnızca ortamdan okunur.
 | `ConsoleSweepTests` | Konsola hata yazılmaz; hiçbir kaynak başarısız olmaz |
 | `NavigationSweepTests` | Yanıt < 400; oturumlu sayfa giriş ekranına düşmez |
 | `KeyboardSweepTests` | Tab ile gezilen her durakta odak görünür değişir; odaklanan öge ekranda kalır; klavye tuzağı yok; pozitif `tabindex` yok; tekrar eden gezinme atlanabilir; sayfanın tek bir `main` bölgesi var |
-| `ConsentGateTests` | Çerez onayı ilk ziyarette çıkar, bir kez kabul edilince bir daha sorulmaz; onay çerezi yazılır ve katman sunucudan hiç gelmez; katman hiçbir betik çalışmadan ekrandadır; önceden onay vermiş ziyaretçide hiç görünmez |
+| `ConsentGateTests` | Çerez bilgilendirmesi ilk ziyarette çıkar ve giriş formunu örtmez; Tamam denince bir daha gösterilmez; kapatma çerezi yazılır ve kart sunucudan hiç gelmez; kart hiçbir betik çalışmadan ekrandadır; önceden kapatmış ziyaretçide hiç görünmez |
 | `RealtimeTests` | Sohbet ekranı BFF üzerinden gerçek bir WebSocket açar |
 | `FlowTests` | Blog araması sonuca götürür; proje kartı detaya götürür; yönetim modalı odağı içeride tutar ve Escape ile kapanır; tema seçimi sayfa değişince korunur; uygulama içi yasal belge sayfaya ait düğmeleri taşımaz; onay penceresi uygulama içinde açılır ve Escape ile vazgeçilir |
 | `LayoutBaselineTests` | İzlenen sayfaların yerleşimi onaylı temelden sapmaz |
@@ -96,17 +96,21 @@ yerleşimleri Cloudflare'a erişilip erişilemediğine bağlıdır. Bu sayfalar 
 denetimlerde yine taranır. Turnstile widget'ının kendisi ölçüm dışıdır; yüksekliği CSS'te
 ayrıldığı için doğrulama yüklendiğinde form sıçramaz.
 
-### Çerez onayının zamanı
+### Çerez bilgilendirmesinin zamanı
 
-Katmanı **sunucu** açık basar. Görünürlüğü betiğe bırakmak, pencerenin sayfa boyandıktan
-sonra üstüne düşmesi demekti: kullanıcı önce siteyi görüyor, sonra kutu patlıyordu. Onay
-çerezde durduğu için sunucu kararı isteği alırken verebiliyor; kabul edilmişse katman
-HTML'e hiç girmiyor. `Katman_hicbir_betik_calismadan_ekranda` bunu JavaScript kapalı bir
+Site yalnızca zorunlu çerez kullandığı için bilgilendirme onay beklemez ve sayfayı
+kilitlemez; sayfanın altında bir kart olarak durur. `Bilgilendirme_giris_formunu_ortmez`
+bunu giriş formunun alanına tıklanabildiğini doğrulayarak ölçer.
+
+Kartı **sunucu** açık basar. Görünürlüğü betiğe bırakmak, kartın sayfa boyandıktan sonra
+üstüne düşmesi demekti: kullanıcı önce siteyi görüyor, sonra kutu patlıyordu. Kapatma kaydı
+çerezde durduğu için sunucu kararı isteği alırken verebiliyor; kapatılmışsa kart HTML'e hiç
+girmiyor. `Bilgilendirme_hicbir_betik_calismadan_ekranda` bunu JavaScript kapalı bir
 ziyaretle ölçer — betik çalışmadan görünüyorsa gecikme de yok demektir.
 
-Onayı yalnızca localStorage'da olan eski ziyaretçi için `<head>`'de tek bir betik var:
-çerezi yazar ve `data-consent` niteliğini koyar, CSS de katmanı ilk boyamadan önce gizler.
-Bu yol `Onceden_onay_vermis_ziyaretcide_katman_hic_gorunmez` ile ayrıca ölçülür.
+Kapatma kaydı yalnızca localStorage'da olan eski ziyaretçi için `<head>`'de tek bir betik
+var: çerezi yazar ve `data-consent` niteliğini koyar, CSS de kartı ilk boyamadan önce gizler.
+Bu yol `Onceden_kapatmis_ziyaretcide_bilgilendirme_hic_gorunmez` ile ayrıca ölçülür.
 
 ### Üst üste binen bölgeler
 
@@ -129,8 +133,8 @@ tema değiştirme. Kayıt açan/silen akış yoktur; test verisi birikmesin diye
   anahtarlarını kullanır. Cloudflare'a erişilemezse Chat oturumlu sayfaları atlanır.
 - Kontrast ölçümü, arkasında `background-image` veya `opacity < 1` bulunan metinleri
   "ölçülemez" sayar ve atlar; bunlar `Unmeasurable` alanında toplanır.
-- Tarama, çerez onayı verilmiş bir ziyaretçiyi taklit eder. Onay katmanının kendisi
-  `ConsentGateTests` ile ayrıca denetlenir.
+- Tarama, çerez bilgilendirmesini kapatmış bir ziyaretçiyi taklit eder. Bilgilendirmenin
+  kendisi `ConsentGateTests` ile ayrıca denetlenir.
 - Oturum kurulduğu **adresle değil DOM ile** doğrulanır: Admin'in giriş ekranı kök adreste
   durduğu için adreste "login" geçmez ve adrese bakan bir denetim, giriş sayfasını o sayfa
   sanarak sahte kapsama üretir.

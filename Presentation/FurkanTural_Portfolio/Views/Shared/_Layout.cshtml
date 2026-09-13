@@ -114,11 +114,10 @@
         </div>
     </footer>
 
-    <div class="consent-banner" id="consentBanner" style="display:none">
-        <p>@SharedLocalizer["Consent_Message"]</p>
+    <div class="consent-banner" id="consentBanner" role="region" aria-label="@SharedLocalizer["Consent_Title"]" style="display:none">
+        <p>@SharedLocalizer["Consent_Message"] <a asp-controller="Home" asp-action="Privacy">@SharedLocalizer["Consent_Details"]</a></p>
         <div class="consent-actions">
-            <button class="btn-consent-accept" id="consentAccept">@SharedLocalizer["Consent_Accept"]</button>
-            <button class="btn-consent-decline" id="consentDecline">@SharedLocalizer["Consent_Decline"]</button>
+            <button type="button" class="btn-consent-accept" id="consentOk">@SharedLocalizer["Consent_Ok"]</button>
         </div>
     </div>
 

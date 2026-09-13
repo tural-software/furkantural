@@ -1071,24 +1071,20 @@ a.landing-btn { display: block; text-align: center; text-decoration: none; }
 .ask-actions { display: flex; gap: .6rem; margin-top: 18px; }
 .ask-btn { flex: 1; justify-content: center; text-align: center; }
 
-.consent-overlay {
-    position: fixed; inset: 0; z-index: 10000; display: none;
-    align-items: center; justify-content: center; padding: 1rem;
-    background: var(--scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-}
-.consent-overlay.open { display: flex; }
-html[data-consent="1"] .consent-overlay { display: none; }
-.consent-modal {
-    width: 100%; max-width: 380px; background: var(--bg-card-solid);
+.consent-notice {
+    position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%);
+    z-index: var(--z-chrome); width: calc(100% - 2rem); max-width: 420px;
+    background: var(--bg-card-solid);
     border: 1px solid var(--border-color); border-radius: var(--radius-lg, 16px);
-    padding: 22px 20px; box-shadow: var(--shadow-overlay); color: var(--text-main);
+    padding: 18px 20px; box-shadow: var(--shadow-overlay); color: var(--text-main);
 }
+html[data-consent="1"] .consent-notice { display: none; }
 .consent-title { font-size: var(--fs-base); font-weight: 700; margin-bottom: .6rem; }
 .consent-text { font-size: var(--fs-sm); color: var(--text-dim); line-height: 1.5; }
-.consent-actions { display: flex; gap: .6rem; margin-top: 1.4rem; }
+.consent-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1rem; }
 .btn-consent {
-    flex: 1; text-align: center; font-size: var(--fs-md); font-weight: 600;
-    border-radius: var(--radius-md); padding: .7rem 1rem; border: 0; cursor: pointer;
+    text-align: center; font-size: var(--fs-md); font-weight: 600;
+    border-radius: var(--radius-md); padding: .6rem 1.4rem; border: 0; cursor: pointer;
 }
 .btn-consent-primary { background: var(--accent); color: var(--on-accent); }
 .btn-consent-primary:hover { box-shadow: 0 0 12px rgba(var(--accent-rgb), .4); }
@@ -1492,6 +1488,7 @@ html[data-consent="1"] .consent-overlay { display: none; }
     .pwa-install-bar { bottom: max(72px, calc(env(safe-area-inset-bottom) + 64px)); }
     .pwa-update-bar { bottom: max(124px, calc(env(safe-area-inset-bottom) + 116px)); }
     #toastBox { bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+    .consent-notice { bottom: max(1.5rem, env(safe-area-inset-bottom)); }
 
     /* iOS odak zoom'unu engelle (input font-size ≥ 16px) */
     .composer input[type=text],

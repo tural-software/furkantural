@@ -8,56 +8,56 @@ namespace FurkanTural_Browser.Tests.Sweeps;
 public sealed class ConsentGateTests(LiveSiteFixture site)
 {
     [SkippableFact]
-    public async Task Ilk_ziyarette_cerez_onayi_karsilar()
+    public async Task Ilk_ziyarette_cerez_bilgilendirmesi_gorunur()
     {
-        var open = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/", async page =>
-            await page.Locator("#consentOverlay.open").IsVisibleAsync());
+        var shown = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/", async page =>
+            await page.Locator("#consentNotice").IsVisibleAsync());
 
-        open.Should().BeTrue(
-            "çerez onayı ilk ziyarette açılmazsa hiç sorulmamış olur");
+        shown.Should().BeTrue(
+            "bilgilendirme ilk ziyarette görünmezse ziyaretçi hangi çerezlerin kullanıldığını hiç duymamış olur");
     }
 
     [SkippableFact]
-    public async Task Onay_verildiginde_kapanir_ve_bir_daha_sorulmaz()
+    public async Task Tamam_denince_kapanir_ve_bir_daha_gosterilmez()
     {
-        var stillOpen = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/", async page =>
+        var stillShown = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/", async page =>
         {
             await page.ClickAsync("#consentOk");
-            await page.Locator("#consentOverlay.open").WaitForAsync(
+            await page.Locator("#consentNotice").WaitForAsync(
                 new LocatorWaitForOptions { State = WaitForSelectorState.Hidden, Timeout = 5000 });
 
             await page.GotoAsync(SiteMap.Chat.BaseUrl + "/Account/Login",
                 new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
 
-            return await page.Locator("#consentOverlay.open").IsVisibleAsync();
+            return await page.Locator("#consentNotice").IsVisibleAsync();
         });
 
-        stillOpen.Should().BeFalse(
-            "onay bir kez verildikten sonra her sayfada yeniden sorulursa kullanıcı formlara ulaşamaz");
+        stillShown.Should().BeFalse(
+            "kapatılan bilgilendirme her sayfada yeniden çıkarsa formların üstünde durmaya devam eder");
     }
 
     [SkippableFact]
-    public async Task Onay_katmani_giris_formunu_engeller()
+    public async Task Bilgilendirme_giris_formunu_ortmez()
     {
-        var blocked = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/Account/Login", async page =>
+        var covered = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/Account/Login", async page =>
             await page.EvaluateAsync<bool>(
                 """
                 () => {
-                  const b = document.querySelector("form#loginForm button[type='submit']");
-                  if (!b) return false;
-                  const r = b.getBoundingClientRect();
+                  const field = document.querySelector("form#loginForm input[name='Username']");
+                  if (!field) return true;
+                  const r = field.getBoundingClientRect();
                   const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-                  return !!(hit && hit.closest('#consentOverlay'));
+                  return !hit || !!hit.closest('#consentNotice');
                 }
                 """));
 
-        blocked.Should().BeTrue(
-            "onay katmanı formu gerçekten örtmelidir; örtmüyorsa kullanıcı onay vermeden giriş deneyebilir " +
-            "ve bu testin diğer iki iddiası da anlamını yitirir");
+        covered.Should().BeFalse(
+            "yalnızca zorunlu çerez kullanıldığı için onay beklenmez; bilgilendirme sayfayı kilitlerse " +
+            "ziyaretçiden gereksiz bir onay koparılmış olur");
     }
 
     [SkippableFact]
-    public async Task Onay_cerezi_yazilir_ve_katman_sunucudan_hic_gelmez()
+    public async Task Kapatma_cerezi_yazilir_ve_bilgilendirme_sunucudan_hic_gelmez()
     {
         var (cookieWritten, stillRendered) = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/", async page =>
         {
@@ -67,46 +67,30 @@ public sealed class ConsentGateTests(LiveSiteFixture site)
             await page.GotoAsync(SiteMap.Chat.BaseUrl + "/Account/Login",
                 new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
 
-            return (cookies.Contains("ft.consent=1"), await page.Locator("#consentOverlay").CountAsync());
+            return (cookies.Contains("ft.consent=1"), await page.Locator("#consentNotice").CountAsync());
         });
 
         cookieWritten.Should().BeTrue(
-            "onay yalnızca localStorage'da tutulursa sunucu onu göremez; katmanı her sayfada yeniden basar " +
-            "ve localStorage yazılamayan bir tarayıcıda onay hiç yapışmaz");
+            "kapatma yalnızca localStorage'da tutulursa sunucu onu göremez; bilgilendirmeyi her sayfada yeniden " +
+            "basar ve localStorage yazılamayan bir tarayıcıda kapatma hiç yapışmaz");
         stillRendered.Should().Be(0,
-            "onaydan sonra katman HTML'e hiç girmemeli; girerse görünürlüğü yine JS zamanlamasına kalır " +
-            "ve sayfa açılışında bir görünüp kaybolur");
+            "kapatıldıktan sonra bilgilendirme HTML'e hiç girmemeli; girerse görünürlüğü yine JS zamanlamasına " +
+            "kalır ve sayfa açılışında bir görünüp kaybolur");
     }
 
     [SkippableFact]
-    public async Task Katman_hicbir_betik_calismadan_ekranda()
+    public async Task Bilgilendirme_hicbir_betik_calismadan_ekranda()
     {
-        var (visible, blocking) = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/Account/Login", async page =>
-        {
-            var overlay = page.Locator("#consentOverlay");
-            var submit = page.Locator("form#loginForm button[type='submit']");
-
-            var shown = await overlay.IsVisibleAsync();
-
-            var layer = await overlay.BoundingBoxAsync();
-            var target = await submit.BoundingBoxAsync();
-            var covers = layer is not null && target is not null &&
-                         layer.X <= target.X && layer.Y <= target.Y &&
-                         layer.X + layer.Width >= target.X + target.Width &&
-                         layer.Y + layer.Height >= target.Y + target.Height;
-
-            return (shown, covers);
-        }, scripts: false);
+        var visible = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/Account/Login", async page =>
+            await page.Locator("#consentNotice").IsVisibleAsync(), scripts: false);
 
         visible.Should().BeTrue(
-            "onay katmanını görünür yapan şey betik olursa, katman sayfa boyandıktan sonra üstüne " +
-            "düşer; kullanıcı önce siteyi görür, sonra pencere patlar. Sunucu onu açık basmalı");
-        blocking.Should().BeTrue(
-            "katman ekranda olup formu örtmüyorsa onay yine atlanabilir");
+            "bilgilendirmeyi görünür yapan şey betik olursa sayfa boyandıktan sonra üstüne düşer; " +
+            "sunucu onu açık basmalı");
     }
 
     [SkippableFact]
-    public async Task Onceden_onay_vermis_ziyaretcide_katman_hic_gorunmez()
+    public async Task Onceden_kapatmis_ziyaretcide_bilgilendirme_hic_gorunmez()
     {
         var (flashed, cookieCarried) = await site.WithFirstTimeVisitorAsync(SiteMap.Chat, "/Account/Login", async page =>
         {
@@ -114,7 +98,7 @@ public sealed class ConsentGateTests(LiveSiteFixture site)
             await page.EvaluateAsync("() => document.cookie = 'ft.consent=; Max-Age=0; Path=/'");
 
             await page.ReloadAsync(new PageReloadOptions { WaitUntil = WaitUntilState.Commit });
-            var seen = await page.Locator("#consentOverlay").IsVisibleAsync();
+            var seen = await page.Locator("#consentNotice").IsVisibleAsync();
 
             await page.WaitForLoadStateAsync(LoadState.Load);
             var cookies = await page.EvaluateAsync<string>("() => document.cookie");
@@ -123,9 +107,9 @@ public sealed class ConsentGateTests(LiveSiteFixture site)
         });
 
         flashed.Should().BeFalse(
-            "eski ziyaretçinin onayı yalnızca localStorage'da duruyor; sunucu katmanı yine basar ve " +
-            "gizleyen kural ilk boyamadan önce işlemezse pencere bir görünüp kaybolur");
+            "eski ziyaretçinin kapatma kaydı yalnızca localStorage'da duruyor; sunucu bilgilendirmeyi yine basar ve " +
+            "gizleyen kural ilk boyamadan önce işlemezse bir görünüp kaybolur");
         cookieCarried.Should().BeTrue(
-            "onay çereze taşınmazsa sunucu her istekte katmanı basmaya devam eder");
+            "kapatma çereze taşınmazsa sunucu her istekte bilgilendirmeyi basmaya devam eder");
     }
 }

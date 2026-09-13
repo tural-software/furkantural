@@ -24,19 +24,14 @@
 (function () {
     const banner = document.getElementById('consentBanner');
     if (!banner) return;
-    const CONSENT_KEY = 'ft-consent';
+    const CONSENT_KEY = 'ft.consent';
 
-    if (!localStorage.getItem(CONSENT_KEY)) {
+    if (localStorage.getItem(CONSENT_KEY) !== '1') {
         banner.style.display = 'flex';
     }
 
-    document.getElementById('consentAccept')?.addEventListener('click', () => {
-        localStorage.setItem(CONSENT_KEY, 'accepted');
-        banner.style.display = 'none';
-    });
-
-    document.getElementById('consentDecline')?.addEventListener('click', () => {
-        localStorage.setItem(CONSENT_KEY, 'declined');
+    document.getElementById('consentOk')?.addEventListener('click', () => {
+        localStorage.setItem(CONSENT_KEY, '1');
         banner.style.display = 'none';
     });
 })();

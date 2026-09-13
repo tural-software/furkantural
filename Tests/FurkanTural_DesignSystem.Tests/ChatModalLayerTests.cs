@@ -52,7 +52,6 @@ public class ChatModalLayerTests
 
     [Theory]
     [InlineData(".device-modal")]
-    [InlineData(".consent-overlay")]
     [InlineData(".profile-overlay")]
     [InlineData(".agreement-overlay")]
     [InlineData(".ask-overlay")]
@@ -133,11 +132,30 @@ public class ChatModalLayerTests
     {
         var css = ChatCss();
 
-        foreach (var kart in new[] { ".dev-card", ".consent-modal", ".agreement-card", ".profile-card", ".ask-card" })
+        foreach (var kart in new[] { ".dev-card", ".consent-notice", ".agreement-card", ".profile-card", ".ask-card" })
         {
             RuleBody(css, kart).Should().Contain("var(--shadow-overlay)",
                 $"'{kart}' tema yüzeyinde duruyor; sabit %60 siyah gölge açık temada leke bırakır");
         }
+    }
+
+    [Fact]
+    public void Cerez_bilgilendirmesi_sayfayi_kilitlemez()
+    {
+        var kural = RuleBody(ChatCss(), ".consent-notice");
+
+        kural.Should().NotMatchRegex(@"inset:\s*0",
+            "site yalnızca zorunlu çerez kullanıyor; tam ekran örtü ziyaretçiden gereksiz bir onay koparır");
+        kural.Should().NotContain("var(--scrim)",
+            "perde sayfayı kilitli gösterir; bilgilendirme sayfanın üstünde bir kart olarak durmalı");
+
+        var layout = File.ReadAllText(Path.Combine(
+            FindSolutionRoot(), "Presentation", "FurkanTural_Chat", "Views", "Shared", "_Layout.cshtml"));
+        var etiket = Regex.Match(layout, @"<div id=""consentNotice""[^>]*>");
+
+        etiket.Success.Should().BeTrue("betik ve testler bilgilendirmeyi bu kimlikle bulur");
+        etiket.Value.Should().NotContain("aria-modal",
+            "modal olarak duyurulan bir kart, ekran okuyucuya sayfanın geri kalanı erişilemezmiş gibi anlatılır");
     }
 
     [Fact]

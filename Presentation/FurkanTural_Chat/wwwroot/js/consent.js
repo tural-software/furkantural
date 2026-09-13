@@ -1,19 +1,18 @@
 // Çerez onay katmanını sunucu açık basar (bkz. _Layout); burası yalnızca onayı alır ve saklar.
 (function () {
     'use strict';
-    var overlay = document.getElementById('consentOverlay');
-    if (!overlay) return;
+    var notice = document.getElementById('consentNotice');
+    if (!notice) return;
 
-    // Açık onay zorunlu: modal dışına tıklamak kapatmaz.
-    function accept() {
+    function dismiss() {
         try { localStorage.setItem('ft.consent', '1'); } catch (e) { }
         document.cookie = 'ft.consent=1; Max-Age=31536000; Path=/; SameSite=Lax' +
             (location.protocol === 'https:' ? '; Secure' : '');
-        overlay.classList.remove('open');
+        notice.hidden = true;
     }
 
     var okBtn = document.getElementById('consentOk');
-    if (okBtn) okBtn.addEventListener('click', accept);
+    if (okBtn) okBtn.addEventListener('click', dismiss);
 })();
 
 // "Geri dön" düğmeleri: CSP (nonce) altında inline onclick yasak olduğundan delegasyonla bağlanır.

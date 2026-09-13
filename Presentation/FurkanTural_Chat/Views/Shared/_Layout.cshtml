@@ -130,16 +130,14 @@
     @* Çerez onayı sunucuda karara bağlanır: çerez yoksa katman basılır. Yerleşimi _Layout dışına taşınırsa bazı sayfalarda kaybolur. *@
     @if (!consentGiven)
     {
-        <div id="consentOverlay" class="consent-overlay open">
-            <div class="consent-modal" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
-                <div class="consent-title" id="consentTitle">Çerez Bilgilendirmesi</div>
-                <div class="consent-text">
-                    Chatural'ı kullanarak, hizmetin düzgün çalışması için gerekli tüm çerezleri kabul etmiş
-                    olursunuz. Ayrıntılar için <a asp-controller="Home" asp-action="Privacy">gizlilik politikamıza</a> bakabilirsiniz.
-                </div>
-                <div class="consent-actions">
-                    <button id="consentOk" type="button" class="btn-consent btn-consent-primary">Kabul et ve devam et</button>
-                </div>
+        <div id="consentNotice" class="consent-notice" role="region" aria-labelledby="consentTitle">
+            <div class="consent-title" id="consentTitle">Çerez Bilgilendirmesi</div>
+            <div class="consent-text">
+                Chatural yalnızca çalışması için gerekli çerezleri kullanır: oturumunu açık tutan ve formları
+                koruyan çerezler. Ayrıntılar için <a asp-controller="Home" asp-action="Privacy">gizlilik politikamıza</a> bakabilirsiniz.
+            </div>
+            <div class="consent-actions">
+                <button id="consentOk" type="button" class="btn-consent btn-consent-primary">Tamam</button>
             </div>
         </div>
     }

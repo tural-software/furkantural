@@ -564,7 +564,6 @@ a.song-card__link:hover { color: var(--color-accent-text); }
 }
 .consent-actions { display: flex; gap: 0.75rem; }
 .btn-consent-accept { flex: 1; background: var(--color-accent); color: var(--color-on-accent); border: none; border-radius: var(--radius-sm); padding: 0.5rem 1rem; font-weight: 600; cursor: pointer; }
-.btn-consent-decline { flex: 1; background: transparent; color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer; }
 
 .toast-container {
     position: fixed; bottom: 1.5rem; right: 1.5rem;

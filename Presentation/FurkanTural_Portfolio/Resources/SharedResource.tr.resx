@@ -131,9 +131,9 @@
 
   <!-- Consent -->
   <data name="Consent_Title" xml:space="preserve"><value>Çerez Bildirimi</value></data>
-  <data name="Consent_Message" xml:space="preserve"><value>Bu site deneyimi iyileştirmek için çerezler kullanmaktadır.</value></data>
-  <data name="Consent_Accept" xml:space="preserve"><value>Kabul Et</value></data>
-  <data name="Consent_Decline" xml:space="preserve"><value>Reddet</value></data>
+  <data name="Consent_Message" xml:space="preserve"><value>Bu site yalnızca çalışması için gerekli çerezleri kullanır.</value></data>
+  <data name="Consent_Details" xml:space="preserve"><value>Ayrıntılar</value></data>
+  <data name="Consent_Ok" xml:space="preserve"><value>Tamam</value></data>
 
   <!-- Footer -->
   <data name="Footer_Privacy" xml:space="preserve"><value>Gizlilik Politikası</value></data>
