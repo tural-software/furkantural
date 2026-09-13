@@ -121,7 +121,9 @@
 
             <p class="comment-form__note">
                 Yorumlar onaydan sonra yayımlanır, dolayısıyla gönderdiğiniz yazı hemen görünmez.
-                Bildirim istediyseniz postanın altındaki bağlantıyla tek tıkla kapatabilirsiniz.
+                Bildirim istediyseniz postanın altındaki bağlantıyla tek tıkla kapatabilirsiniz. Göndermeden önce
+                <a href="@(Url.RouteUrl("BlogCommentRules") ?? "/yorum-kurallari")">yorum kurallarına</a> göz atabilirsiniz;
+                verilerinizin nasıl işlendiği <a asp-controller="Home" asp-action="Privacy">gizlilik politikasında</a> anlatılır.
             </p>
         </form>
 

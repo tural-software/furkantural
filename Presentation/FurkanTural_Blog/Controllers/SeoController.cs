@@ -26,7 +26,7 @@ public class SeoController(IBlogApiService blogApi) : Controller
         return Content(sb.ToString(), "text/plain", Encoding.UTF8);
     }
 
-    /// <summary>Anasayfanın son değişiklik tarihi en güncel yazınınkinden alınır, çünkü sayfa yazıları listeler ve kendi başına bir değişiklik tarihi yoktur. Gizlilik sayfası sabit bir tarih taşır; içeriği değişirse buradaki değer de elle güncellenmelidir.</summary>
+    /// <summary>Anasayfanın son değişiklik tarihi en güncel yazınınkinden alınır, çünkü sayfa yazıları listeler ve kendi başına bir değişiklik tarihi yoktur. Yasal sayfalar sabit bir tarih taşır; içerikleri değişirse buradaki değer de elle güncellenmelidir.</summary>
     [HttpGet("sitemap.xml")]
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
@@ -44,7 +44,9 @@ public class SeoController(IBlogApiService blogApi) : Controller
             ($"{baseUrl}/", Iso(homeLastMod), "1.0", "weekly"),
             ($"{baseUrl}/arsiv", Iso(homeLastMod), "0.6", "weekly"),
             ($"{baseUrl}/hakkinda", Iso(homeLastMod), "0.5", "monthly"),
-            ($"{baseUrl}/Home/Privacy", "2026-01-01", "0.3", "yearly"),
+            ($"{baseUrl}/Home/Privacy", "2026-09-14", "0.3", "yearly"),
+            ($"{baseUrl}/yorum-kurallari", "2026-09-14", "0.2", "yearly"),
+            ($"{baseUrl}/kunye", "2026-09-14", "0.2", "yearly"),
         };
 
         var categories = await _blogApi.GetCategoriesAsync(cancellationToken);

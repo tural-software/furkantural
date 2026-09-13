@@ -1,0 +1,43 @@
+@{
+    ViewData["Title"] = "Künye";
+    ViewData["MetaDescription"] = "Furkan Tural Blog künyesi: içerik sağlayıcı, yer sağlayıcı ve iletişim bilgileri.";
+}
+
+<section class="container content-page">
+    <h1>Künye</h1>
+    <p>Son güncelleme: 14 Eylül 2026</p>
+
+    <div class="post-content prose">
+        <p>Bu sayfa, 5651 sayılı Kanun kapsamında blogu yayımlayan kişiye ve hizmet alınan sağlayıcılara ilişkin bilgileri içerir.</p>
+
+        <h2>Site</h2>
+        <p>Furkan Tural Blog, yazılım, teknoloji ve geliştirme üzerine yazılan kişisel bir blogdur.</p>
+
+        <h2>İçerik Sağlayıcı</h2>
+        <p>
+            <strong>Furkan Tural</strong> (gerçek kişi)<br />
+            E-posta: destek@@furkantural.com, support@@furkantural.com
+        </p>
+
+        <h2>Yer Sağlayıcı</h2>
+        <p>
+            <strong>Webhosting Bilişim Teknolojileri A.Ş.</strong> (Hosting.com.tr)<br />
+            Meclis Mahallesi Derviş Sokak Fuat Özal Plaza No:38/1 Sancaktepe / İstanbul
+        </p>
+
+        <h2>Ağ ve Güvenlik Hizmeti</h2>
+        <p>
+            <strong>Cloudflare, Inc.</strong><br />
+            101 Townsend Street, San Francisco, CA 94107, ABD
+        </p>
+
+        <h2>Hukuka Aykırı İçerik Bildirimi</h2>
+        <p>
+            Hukuka aykırı olduğunu ya da kişilik haklarınızı ihlal ettiğini düşündüğünüz içerikleri e-posta ile
+            bildirebilirsiniz. Bildirimin nasıl yapılacağı
+            <a href="@(Url.RouteUrl("BlogCommentRules") ?? "/yorum-kurallari")">Yorum Kuralları</a>'nın 7. maddesinde
+            anlatılmıştır; kişisel verilerinizin işlenmesi <a asp-controller="Home" asp-action="Privacy">Gizlilik Politikası</a>'nda
+            açıklanmıştır.
+        </p>
+    </div>
+</section>

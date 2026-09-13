@@ -307,6 +307,18 @@ public class HomeController(
         return View();
     }
 
+    [Route("yorum-kurallari", Name = "BlogCommentRules")]
+    public IActionResult CommentRules()
+    {
+        return View();
+    }
+
+    [Route("kunye", Name = "BlogImprint")]
+    public IActionResult Imprint()
+    {
+        return View();
+    }
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error(int? code = null)
     {
