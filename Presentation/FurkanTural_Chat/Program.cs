@@ -125,7 +125,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Chat'e özgü kısıtlamalar:
-//   • SignalR: cdn.jsdelivr.net (script) + wss: (connect)
+//   • SignalR: wss: (connect)
 //   • Turnstile: challenges.cloudflare.com (script + frame)
 //   • WebRTC: RTCPeerConnection — CSP kısıtlaması yok, tarayıcı API'si.
 //   • Medya: getUserMedia (mikrofon/kamera) — CSP kısıtlaması yok.
@@ -165,11 +165,11 @@ app.Use(async (context, next) =>
 
     headers["Content-Security-Policy"] =
         "default-src 'none'; " +
-        // Inline scriptler yalnız 'nonce-...' ile; dış scriptler host izniyle (Turnstile, SignalR CDN).
+        // Inline scriptler yalnız 'nonce-...' ile; dış scriptler host izniyle (Turnstile).
         // 'strict-dynamic' KULLANILMAZ → host allowlist'i ('self' + CDN'ler) geçerli kalır, dış
         // <script src> etiketleri nonce gerektirmez. 'unsafe-inline' nonce varlığında yok sayılır.
         // Cloudflare Web Analytics beacon dış script olduğundan nonce gerektirmez; host izni yeterli.
-        $"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net https://challenges.cloudflare.com https://static.cloudflareinsights.com; " +
+        $"script-src 'self' 'nonce-{nonce}' https://challenges.cloudflare.com https://static.cloudflareinsights.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         // font-src ZORUNLU: default-src 'none' olduğu için bu direktif yokken
         // kendi sunucumuzdaki Inter dosyaları da engellenirdi.

@@ -1,10 +1,6 @@
 // Sayfanın tamamına yayılan sabit parçacık arka planı. Hareket azaltma tercihi açıksa, WebGL
 // yoksa veya kütüphane yüklenemezse sahne hiç başlamaz ve arka plan düz rengiyle kalır; üç
 // durumda da hata gösterilmez, çünkü bu katman tümüyle dekoratiftir.
-//
-// Kütüphane sabit bir sürümle dinamik import edilir. Dinamik import bütünlük doğrulamasını
-// desteklemediğinden sürümün sabitlenmesi tek güvencedir; aralık verilirse yüklenen kod habersiz
-// değişebilir.
 (function () {
   'use strict';
 
@@ -24,7 +20,7 @@
   }
   if (!webglSupported()) return;
 
-  var THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
+  var THREE_URL = '/lib/three/build/three.module.min.js';
 
   import(THREE_URL)
     .then(function (THREE) { initScene(THREE); })

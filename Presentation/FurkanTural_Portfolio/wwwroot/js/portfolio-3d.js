@@ -22,7 +22,7 @@
     } catch (e) { return false; }
   }
 
-  var THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
+  var THREE_URL = '/lib/three/build/three.module.min.js';
 
   document.addEventListener('DOMContentLoaded', function () {
     initTilt();                 // saf CSS 3D — WebGL gerektirmez

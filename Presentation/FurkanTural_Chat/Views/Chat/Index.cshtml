@@ -171,7 +171,7 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@@8.0.7/dist/browser/signalr.min.js"></script>
+    <script src="~/lib/signalr/signalr.min.js" asp-append-version="true"></script>
     <script nonce="@nonce">window.CHAT = @Html.Raw(chatConfig);</script>
     <script src="~/js/chat.js" asp-append-version="true"></script>
     <script src="~/js/call.js" asp-append-version="true"></script>

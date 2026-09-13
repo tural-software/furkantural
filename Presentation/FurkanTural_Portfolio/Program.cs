@@ -73,18 +73,13 @@ app.Use(async (context, next) =>
     // Nonce tabanlı yaklaşım, bu iki ayrı inline bloğun her birine middleware nonce enjeksiyonu
     // ve Razor tag güncellemesi gerektirir — siteyi bozma riski taşır.
     // 'unsafe-eval' eklenmedi: hiçbir yerde eval/Function() kullanımı yok.
-    // script-src cdn.jsdelivr.net: dekoratif 3D sahneler (background-three.js arka plan
-    //   parçacık/uydu "siber ay" sahnesi + portfolio-3d.js hero "siber Dünya"/Ay) three.js'i
-    //   sürüm-sabitli (three@0.160.0) DİNAMİK import() ile bu CDN'den yükler. İzin verilmezse
-    //   import bloke olur ve TÜM 3D sessizce statik içeriğe düşer. (Chat sitesi CSP'si ile
-    //   tutarlı — orada da SignalR için cdn.jsdelivr.net izinlidir.)
     // frame-src: Turnstile doğrulama widget'ı challenges.cloudflare.com iframe'i açar.
     // img-src https: — API sunucusu (proje/müzik görselleri) domain'i config'e göre değişir;
     //   'self' + https: ile tüm HTTPS origin'lere izin verildi.
     headers["Content-Security-Policy"] =
         "default-src 'self'; " +
         // static.cloudflareinsights.com → Cloudflare Web Analytics beacon (önde enjekte edilir).
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com https://static.cloudflareinsights.com; " +
+        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
         "font-src 'self'; " +
