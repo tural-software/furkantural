@@ -24,7 +24,6 @@ public class CommentService(
     ActivityLogger activityLogger,
     CommentNotifySignal notifySignal,
     ILogger<CommentService> logger,
-    IAdminNotifier adminNotifier,
     IClock clock) : ICommentService
 {
     /// <summary>Bir sayfada gösterilen kök yorum sayısı. Yanıtlar bu sayıya girmez; onlar köklerinin altında gelir.</summary>
@@ -52,7 +51,6 @@ public class CommentService(
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly CommentNotifySignal _notifySignal = notifySignal;
     private readonly ILogger<CommentService> _logger = logger;
-    private readonly IAdminNotifier _adminNotifier = adminNotifier;
     private readonly IClock _clock = clock;
 
     public async Task<Result<CommentThreadDto>> GetThreadAsync(int blogId, CancellationToken cancellationToken = default)
@@ -174,7 +172,6 @@ public class CommentService(
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Yorum bırakıldı, onay bekliyor. Yazı: {blog.Id}", cancellationToken);
-        await _adminNotifier.NotifyPendingWorkChangedAsync(AdminWorkKinds.Comment, cancellationToken);
 
         return Result.Ok(NeutralSubmitMessage);
     }

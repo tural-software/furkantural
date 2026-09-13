@@ -74,7 +74,6 @@ builder.Services.AddSignalR().AddJsonProtocol(o =>
     o.PayloadSerializerOptions.Converters.Add(new NullableUtcDateTimeJsonConverter());
 });
 builder.Services.AddScoped<IChatNotifier, ChatNotifier>();
-builder.Services.AddScoped<IAdminNotifier, AdminNotifier>();
 builder.Services.AddSingleton<AdminLiveBroadcaster>();
 builder.Services.AddSingleton<IAdminChangeFeed>(sp => sp.GetRequiredService<AdminLiveBroadcaster>());
 builder.Services.AddHostedService(sp => sp.GetRequiredService<AdminLiveBroadcaster>());

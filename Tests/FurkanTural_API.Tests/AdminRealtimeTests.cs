@@ -1,10 +1,8 @@
 using FluentAssertions;
 using FurkanTural_API.Hubs;
-using FurkanTural_API.Realtime;
 using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Services.Abstract;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace FurkanTural_API.Tests;
@@ -13,13 +11,6 @@ namespace FurkanTural_API.Tests;
 public class AdminRealtimeTests
 {
     private readonly Mock<IAdminPendingWorkService> _pending = new();
-
-    private static object? SentPayload(Mock<IClientProxy> proxy)
-    {
-        var call = proxy.Invocations.Single(i => i.Method.Name == nameof(IClientProxy.SendCoreAsync));
-        call.Arguments[0].Should().Be("PendingWorkChanged");
-        return ((object?[])call.Arguments[1]!).Single();
-    }
 
     [Fact]
     public async Task Hub_yenileme_istegi_yalnizca_cagirana_guncel_sayilari_gonderir()
@@ -84,45 +75,5 @@ public class AdminRealtimeTests
 
         _pending.Verify(p => p.GetAsync(string.Empty, It.IsAny<CancellationToken>()), Times.Once,
             "istemci şeridi türe bakarak açar; yenileme yeni bir iş değildir, tür taşırsa yönetici olmayan bir 'yeni kayıt' görür");
-    }
-
-    [Fact]
-    public async Task Bildirici_tum_yoneticilere_turuyle_birlikte_gonderir()
-    {
-        var payload = new AdminPendingWorkDto(AdminWorkKinds.Report, 1, 0, 1);
-        _pending.Setup(p => p.GetAsync(AdminWorkKinds.Report, It.IsAny<CancellationToken>())).ReturnsAsync(payload);
-
-        var all = new Mock<IClientProxy>();
-        var hubClients = new Mock<IHubClients>();
-        hubClients.Setup(c => c.All).Returns(all.Object);
-        var hubContext = new Mock<IHubContext<AdminHub>>();
-        hubContext.Setup(h => h.Clients).Returns(hubClients.Object);
-
-        var notifier = new AdminNotifier(hubContext.Object, _pending.Object, NullLogger<AdminNotifier>.Instance);
-
-        await notifier.NotifyPendingWorkChangedAsync(AdminWorkKinds.Report);
-
-        SentPayload(all).Should().BeSameAs(payload);
-    }
-
-    [Fact]
-    public async Task Sayim_duserse_bildirici_hata_firlatmaz_ve_bir_sey_gondermez()
-    {
-        _pending.Setup(p => p.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("veri tabanı yok"));
-
-        var all = new Mock<IClientProxy>();
-        var hubClients = new Mock<IHubClients>();
-        hubClients.Setup(c => c.All).Returns(all.Object);
-        var hubContext = new Mock<IHubContext<AdminHub>>();
-        hubContext.Setup(h => h.Clients).Returns(hubClients.Object);
-
-        var notifier = new AdminNotifier(hubContext.Object, _pending.Object, NullLogger<AdminNotifier>.Instance);
-
-        var act = () => notifier.NotifyPendingWorkChangedAsync(AdminWorkKinds.Comment);
-
-        await act.Should().NotThrowAsync(
-            "bildirim kaydın yerine geçmez; düşerse ziyaretçinin yorumu hata almış gibi görünmemeli");
-        all.Invocations.Should().BeEmpty();
     }
 }
