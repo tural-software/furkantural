@@ -3,6 +3,7 @@
 
     var HUB = '/bff/hubs/admin';
     var RETRY_MS = 3000;
+    var DASHBOARD_DELAY_MS = 5000;
 
     var KINDS = {
         comment: { label: 'yorum', controller: 'Comment' },
@@ -22,6 +23,8 @@
     var noticeAdded = 0;
     var myId = 0;
     var live = null;
+    var dashboardTimer = null;
+    var dashboardStale = false;
 
     function gorunenListe() {
         var section = document.querySelector('[data-list-controller]');
@@ -51,6 +54,44 @@
                 + sayi(payload.reports) + ' bekleyen şikayet · '
                 + sayi(payload.comments) + ' bekleyen yorum';
         }
+    }
+
+    function panoyuTazele() {
+        var region = document.querySelector('[data-dashboard-live]');
+        if (!region) return;
+
+        if (document.visibilityState === 'hidden') {
+            dashboardStale = true;
+            return;
+        }
+
+        dashboardStale = false;
+
+        fetch('/Dashboard/Live', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (response) {
+                if (response.status === 401) {
+                    window.location.href = '/Auth/Login';
+                    return null;
+                }
+                return response.ok ? response.text() : null;
+            })
+            .then(function (html) {
+                if (html === null) return;
+                region.innerHTML = html;
+                region.querySelectorAll('.reveal').forEach(function (node) {
+                    node.classList.add('active');
+                });
+            })
+            .catch(function () { });
+    }
+
+    function panoyuPlanla() {
+        if (dashboardTimer || !document.querySelector('[data-dashboard-live]')) return;
+
+        dashboardTimer = window.setTimeout(function () {
+            dashboardTimer = null;
+            panoyuTazele();
+        }, DASHBOARD_DELAY_MS);
     }
 
     function seridiKaldir() {
@@ -103,6 +144,8 @@
 
     function listelerDegisti(payload) {
         if (!payload || !payload.changes) return;
+
+        panoyuPlanla();
 
         var controller = gorunenListe();
         if (!controller) return;
@@ -177,6 +220,13 @@
             seridiKaldir();
             esitle();
         });
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible' && dashboardStale) {
+                panoyuTazele();
+            }
+        });
+
         baglan();
     }
 

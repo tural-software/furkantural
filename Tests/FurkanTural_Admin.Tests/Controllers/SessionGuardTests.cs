@@ -147,6 +147,22 @@ public class SessionGuardTests
         result.As<RedirectToActionResult>().ControllerName.Should().Be("Auth");
     }
 
+    [Fact]
+    public async Task DashboardController_Live_WithoutToken_Returns401()
+    {
+        var mock = new Mock<IAdminDashboardClient>(MockBehavior.Loose);
+        var sut  = new DashboardController(mock.Object)
+        {
+            ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
+        };
+
+        var result = await sut.Live(CancellationToken.None);
+
+        result.Should().BeOfType<UnauthorizedResult>(
+            "canlı tazeleme betikten çağrılır; yönlendirme olursa giriş sayfasının HTML'i panoya gömülür, 401 ise istemciyi girişe gönderir");
+        mock.Verify(c => c.GetAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
     // ── SkillController — token varken Index çalışır ─────────────────────────
 
     [Fact]

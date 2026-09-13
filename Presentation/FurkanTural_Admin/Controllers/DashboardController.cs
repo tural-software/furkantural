@@ -21,6 +21,21 @@ public class DashboardController(IAdminDashboardClient dashboardClient) : Contro
         if (string.IsNullOrEmpty(token))
             return RedirectToAction("Login", "Auth");
 
+        return View(await BuildAsync(token, cancellationToken));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Live(CancellationToken cancellationToken)
+    {
+        var token = HttpContext.Session.GetString("token");
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized();
+
+        return PartialView("_DashboardBody", await BuildAsync(token, cancellationToken));
+    }
+
+    private async Task<DashboardViewModel> BuildAsync(string token, CancellationToken cancellationToken)
+    {
         var data = await _dashboardClient.GetAsync(WindowDays, token, cancellationToken);
         var summaries = data?.Summaries ?? new Dictionary<string, EntitySummaryModel>(StringComparer.OrdinalIgnoreCase);
 
@@ -70,7 +85,7 @@ public class DashboardController(IAdminDashboardClient dashboardClient) : Contro
 
         var totalRecords = summaries.Count == 0 ? (int?)null : summaries.Values.Sum(s => s.TotalCount);
 
-        var vm = new DashboardViewModel
+        return new DashboardViewModel
         {
             Username = HttpContext.Session.GetString("username"),
             Groups = groups,
@@ -78,8 +93,6 @@ public class DashboardController(IAdminDashboardClient dashboardClient) : Contro
             Attention = attention,
             Kpis = BuildKpis(data, totalRecords, summaries.Count)
         };
-
-        return View(vm);
     }
 
     private IReadOnlyList<KpiViewModel> BuildKpis(AdminDashboardModel? data, int? totalRecords, int reportedModules)

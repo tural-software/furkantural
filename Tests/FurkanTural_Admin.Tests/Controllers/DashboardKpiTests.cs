@@ -163,4 +163,19 @@ public class DashboardKpiTests
         records.Detail.Should().Be($"3 / {AdminModules.All.Count} modül",
             "eksik toplamı sessizce göstermek yanıltır; kaç modülün cevap verdiği yazılır");
     }
+
+    [Fact]
+    public async Task Canli_tazeleme_sayfayla_ayni_modeli_parca_olarak_doner()
+    {
+        var page = ViewModelOf(await BuildSut(Sample(), out _).Index(CancellationToken.None));
+
+        var result = await BuildSut(Sample(), out var client).Live(CancellationToken.None);
+
+        var partial = result.Should().BeOfType<PartialViewResult>().Subject;
+        partial.ViewName.Should().Be("_DashboardBody",
+            "canlı tazeleme sayfanın gövdesini aynı parçadan çizer; ayrı bir şablon zamanla sayfadan ayrışır");
+        partial.Model.Should().BeEquivalentTo(page,
+            "canlı tazelenen pano, sayfa yenilenince görünenle aynı sayıları göstermeli");
+        client.Verify(c => c.GetAsync(DashboardController.WindowDays, "token", It.IsAny<CancellationToken>()), Times.Once);
+    }
 }
