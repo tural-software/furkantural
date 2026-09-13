@@ -717,10 +717,7 @@ public sealed class FlowTests(LiveSiteFixture site)
             await page.EvaluateAsync(
                 "() => document.querySelectorAll(\"[data-stat='pendingCount'], [data-stat='totalCount']\").forEach(n => { n.textContent = '999'; })");
 
-            var badge = (await page.Locator("#adminPendingCount").InnerTextAsync()).Trim();
-            var nextTotal = (int.TryParse(badge.Replace(".", ""), out var current) ? current : 0) + 1;
-            pageSide!.Send("{\"type\":1,\"target\":\"PendingWorkChanged\",\"arguments\":[{\"kind\":\"comment\",\"comments\":"
-                + nextTotal + ",\"contacts\":0,\"reports\":0,\"total\":" + nextTotal + "}]}");
+            pageSide!.Send("{\"type\":1,\"target\":\"ListsChanged\",\"arguments\":[{\"changes\":[{\"kind\":\"comment\",\"actorId\":0,\"added\":1,\"changed\":0}]}]}\u001e");
 
             await page.WaitForFunctionAsync(
                 "beklenen => (document.querySelector(\"[data-stat='pendingCount']\").textContent || '').trim() === beklenen[0]"
@@ -739,5 +736,49 @@ public sealed class FlowTests(LiveSiteFixture site)
         result.rowKept.Should().BeTrue(
             "canlı olay satırları yeniden çizmemeli; yönetici tıklamak üzereyken tablo kaymamalı");
         result.notice.Should().BeTrue("yeni kayıt tabloya kendiliğinden girmediği için şerit yöneticiye haber vermeli");
+    }
+
+    [SkippableFact]
+    public async Task Admin_kendi_isleminin_haberi_serit_acmaz_ama_sayaclari_tazeler()
+    {
+        var notices = await site.WithPageAsync(SweepData.Page("Admin/Comment"), async page =>
+        {
+            IWebSocketRoute? pageSide = null;
+            var snapshot = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await page.RouteWebSocketAsync(new System.Text.RegularExpressions.Regex("/bff/hubs/admin"), ws =>
+            {
+                pageSide = ws;
+                var server = ws.ConnectToServer();
+                server.OnMessage(frame =>
+                {
+                    if (frame.Text is null) return;
+                    ws.Send(frame.Text);
+                    if (frame.Text.Contains("PendingWorkChanged")) snapshot.TrySetResult();
+                });
+            });
+
+            await page.ReloadAsync(new PageReloadOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+
+            try { await snapshot.Task.WaitAsync(TimeSpan.FromSeconds(10)); }
+            catch (TimeoutException) { Skip.If(true, "Admin/Comment: hub WebSocket üzerinden bağlanmadı"); }
+
+            var truth = await page.EvaluateAsync<string>(
+                "() => JSON.parse(document.querySelector('#__list-stats-json').textContent || '{}').totalCount");
+
+            await page.EvaluateAsync("() => document.querySelectorAll(\"[data-stat='totalCount']\").forEach(n => { n.textContent = '999'; })");
+
+            pageSide!.Send("{\"type\":1,\"target\":\"AdminSession\",\"arguments\":[{\"userId\":424242}]}\u001e");
+            pageSide.Send("{\"type\":1,\"target\":\"ListsChanged\",\"arguments\":[{\"changes\":[{\"kind\":\"comment\",\"actorId\":424242,\"added\":1,\"changed\":0}]}]}\u001e");
+
+            await page.WaitForFunctionAsync(
+                "beklenen => (document.querySelector(\"[data-stat='totalCount']\").textContent || '').trim() === beklenen",
+                truth, new PageWaitForFunctionOptions { Timeout = 10000 });
+
+            return await page.Locator(".live-notice").CountAsync();
+        });
+
+        notices.Should().Be(0,
+            "yöneticinin kendi işlemi ona 'yeni kayıt geldi' demez; liste o işlemle zaten tazelendi, şerit yalnızca başkasının değişikliğini duyurur");
     }
 }
