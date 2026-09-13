@@ -43,7 +43,7 @@ public class CallController(
         }
         else
         {
-            var ice = await _turnCredentialProvider.GetIceServersAsync(userId, cancellationToken);
+            var ice = await _turnCredentialProvider.GetIceServersAsync(cancellationToken);
             if (ice.IsFailure)
                 return ToActionResult(ice);
             servers = ice.Data!.IceServers;

@@ -18,7 +18,7 @@ public class TurnCredentialProvider(IConfiguration configuration, IHttpClientFac
 
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
 
-    public async Task<Result<TurnCredentialsDto>> GetIceServersAsync(int? customIdentifier = null, CancellationToken cancellationToken = default)
+    public async Task<Result<TurnCredentialsDto>> GetIceServersAsync(CancellationToken cancellationToken = default)
     {
         var keyId = _configuration["Cloudflare:Realtime:TurnKeyId"];
         var apiToken = _configuration["Cloudflare:Realtime:TurnApiToken"];
@@ -34,8 +34,7 @@ public class TurnCredentialProvider(IConfiguration configuration, IHttpClientFac
             {
                 Content = JsonContent.Create(new
                 {
-                    ttl = TtlSeconds,
-                    customIdentifier = customIdentifier?.ToString()
+                    ttl = TtlSeconds
                 })
             };
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
