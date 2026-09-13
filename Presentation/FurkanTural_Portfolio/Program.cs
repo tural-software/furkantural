@@ -1,4 +1,5 @@
 ﻿using FurkanTural_Portfolio;
+using FurkanTural_Portfolio.Middlewares;
 using FurkanTural_Portfolio.Services;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
@@ -25,13 +26,16 @@ builder.Services.AddHttpClient("AppTokenClient", client =>
 builder.Services.AddSingleton<IAppTokenService, AppTokenService>();
 builder.Services.AddSingleton<IAppConfigService, AppConfigService>();
 builder.Services.AddTransient<DefaultTokenHandler>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<ClientForwardingHandler>();
 
 builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7000");
     client.Timeout = TimeSpan.FromSeconds(10);
 }).ConfigurePrimaryHttpMessageHandler(FastFailHandler)
-  .AddHttpMessageHandler<DefaultTokenHandler>();
+  .AddHttpMessageHandler<DefaultTokenHandler>()
+  .AddHttpMessageHandler<ClientForwardingHandler>();
 
 builder.Services.AddScoped<IPortfolioApiService>(sp =>
 {
@@ -49,6 +53,8 @@ builder.Services.AddScoped<IPortfolioContactClient>(sp =>
 });
 
 var app = builder.Build();
+
+app.UseRealClientIp(builder.Configuration);
 
 if (!app.Environment.IsDevelopment())
 {

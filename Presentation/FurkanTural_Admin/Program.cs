@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using FurkanTural_Admin;
+using FurkanTural_Admin.Middlewares;
 using FurkanTural_Admin.Models.Common;
 using FurkanTural_Admin.Services;
 using Yarp.ReverseProxy.Configuration;
@@ -11,7 +12,10 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<ApiFailureLoggingHandler>();
-builder.Services.ConfigureHttpClientDefaults(http => http.AddHttpMessageHandler<ApiFailureLoggingHandler>());
+builder.Services.AddTransient<ClientForwardingHandler>();
+builder.Services.ConfigureHttpClientDefaults(http => http
+    .AddHttpMessageHandler<ApiFailureLoggingHandler>()
+    .AddHttpMessageHandler<ClientForwardingHandler>());
 
 builder.Services.Configure<ApiOptions>(builder.Configuration.GetSection("Api"));
 
@@ -59,6 +63,8 @@ builder.Services.AddReverseProxy()
     {
         transforms.AddRequestTransform(async ctx =>
         {
+            ClientForwarding.Apply(ctx.HttpContext, ctx.ProxyRequest.Headers);
+
             await ctx.HttpContext.Session.LoadAsync();
             var session = ctx.HttpContext.Session;
             var token = session.GetString("token");
@@ -257,6 +263,8 @@ builder.Services.AddSession(options =>
 var app = builder.Build();
 
 app.LogDataProtectionStatus(dataProtection);
+
+app.UseRealClientIp(builder.Configuration);
 
 if (!app.Environment.IsDevelopment())
 {

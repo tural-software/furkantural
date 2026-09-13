@@ -16,11 +16,16 @@ builder.Services.Configure<ApiOptions>(builder.Configuration.GetSection("Api"));
 var apiBaseUrl = builder.Configuration["Api:BaseUrl"]
     ?? throw new InvalidOperationException("Api:BaseUrl yapılandırılmamış.");
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<ClientForwardingHandler>();
+builder.Services.AddTransient<AppTokenFallbackHandler>();
+
 builder.Services.AddHttpClient<IChatAuthApiClient, ChatAuthApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
-});
+}).AddHttpMessageHandler<AppTokenFallbackHandler>()
+  .AddHttpMessageHandler<ClientForwardingHandler>();
 
 // App-token altyapısı — SiteKey'i API'nin app-config ucundan çekmek için
 builder.Services.AddHttpClient("AppTokenClient", client =>
@@ -35,7 +40,8 @@ builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(5);
-}).AddHttpMessageHandler<DefaultTokenHandler>();
+}).AddHttpMessageHandler<DefaultTokenHandler>()
+  .AddHttpMessageHandler<ClientForwardingHandler>();
 
 // Tarayıcı kimlik doğrulamalı tüm çağrıları same-origin '/bff/*' ile yapar; kullanıcı JWT'si
 // burada session'dan okunup Authorization header'ı olarak API'ye eklenir. Token tarayıcıya hiç sızmaz.
@@ -68,6 +74,8 @@ builder.Services.AddReverseProxy()
     {
         transforms.AddRequestTransform(async ctx =>
         {
+            ClientForwarding.Apply(ctx.HttpContext, ctx.ProxyRequest.Headers);
+
             // Session, pipeline'da UseSession ile yüklenmiş olur; garantilemek için LoadAsync.
             await ctx.HttpContext.Session.LoadAsync();
             var session = ctx.HttpContext.Session;

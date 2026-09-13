@@ -1,4 +1,5 @@
 ﻿using FurkanTural_Blog;
+using FurkanTural_Blog.Middlewares;
 using FurkanTural_Blog.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,13 +21,16 @@ builder.Services.AddHttpClient("AppTokenClient", client =>
 builder.Services.AddSingleton<IAppTokenService, AppTokenService>();
 builder.Services.AddSingleton<IAppConfigService, AppConfigService>();
 builder.Services.AddTransient<DefaultTokenHandler>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<ClientForwardingHandler>();
 
 builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7000");
     client.Timeout = TimeSpan.FromSeconds(10);
 }).ConfigurePrimaryHttpMessageHandler(FastFailHandler)
-  .AddHttpMessageHandler<DefaultTokenHandler>();
+  .AddHttpMessageHandler<DefaultTokenHandler>()
+  .AddHttpMessageHandler<ClientForwardingHandler>();
 
 builder.Services.AddScoped<IBlogApiService>(sp =>
 {
@@ -53,6 +57,8 @@ builder.Services.AddScoped<ICommentClient>(sp =>
 });
 
 var app = builder.Build();
+
+app.UseRealClientIp(builder.Configuration);
 
 if (!app.Environment.IsDevelopment())
 {

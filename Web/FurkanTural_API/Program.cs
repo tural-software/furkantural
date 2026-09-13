@@ -279,6 +279,7 @@ app.Use(async (ctx, next) =>
 app.UseStaticFiles();
 app.UseCors("DefaultPolicy");
 app.UseAuthentication();
+app.UseMiddleware<ForwardedClientMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

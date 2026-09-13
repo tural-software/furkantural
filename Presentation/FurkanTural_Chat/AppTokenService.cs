@@ -92,6 +92,22 @@ public class AppTokenService : IAppTokenService
     }
 }
 
+public class AppTokenFallbackHandler(IAppTokenService appTokenService) : DelegatingHandler
+{
+    private readonly IAppTokenService _appTokenService = appTokenService;
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (request.Headers.Authorization is null)
+        {
+            var token = await _appTokenService.GetTokenAsync(cancellationToken);
+            if (!string.IsNullOrWhiteSpace(token))
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
+        return await base.SendAsync(request, cancellationToken);
+    }
+}
+
 public class DefaultTokenHandler(IAppTokenService appTokenService) : DelegatingHandler
 {
     private readonly IAppTokenService _appTokenService = appTokenService;
