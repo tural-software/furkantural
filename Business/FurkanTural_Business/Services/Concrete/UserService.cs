@@ -192,7 +192,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         if (!PasswordPolicy.TryValidate(password, out var parolaHatasi))
             return Result<UserDto>.Fail(parolaHatasi);
 
-        var anyUser = await _unitOfWork.Users.AnyAsync(_ => true, cancellationToken);
+        var anyUser = await _unitOfWork.Users.CountForAdminAsync(cancellationToken: cancellationToken) > 0;
         if (anyUser)
             return Result<UserDto>.Fail("Sistemde zaten kullanıcı mevcut. Seed işlemi yapılamaz.", statusCode: 409);
 
