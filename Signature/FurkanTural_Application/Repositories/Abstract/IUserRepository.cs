@@ -7,4 +7,5 @@ public interface IUserRepository : IRepository<User>
 {
     Task<User?> GetByUsernameForAdminAsync(string username, CancellationToken cancellationToken = default);
     Task<User?> GetByEmailForAdminAsync(string email, CancellationToken cancellationToken = default);
+    Task<bool> TouchLastSeenAsync(int userId, DateTime seenAt, CancellationToken cancellationToken = default);
 }

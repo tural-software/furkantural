@@ -15,4 +15,15 @@ public class UserRepository(FurkanTuralDbContext context) : Repository<User>(con
     public async Task<User?> GetByEmailForAdminAsync(string email, CancellationToken cancellationToken = default)
         => await _dbSet.AsNoTracking().IgnoreQueryFilters()
             .FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+
+    public async Task<bool> TouchLastSeenAsync(int userId, DateTime seenAt, CancellationToken cancellationToken = default)
+    {
+        var affected = await _dbSet
+            .Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(u => u.LastSeenAt, seenAt)
+                .SetProperty(u => u.UpdatedAt, seenAt), cancellationToken);
+
+        return affected > 0;
+    }
 }

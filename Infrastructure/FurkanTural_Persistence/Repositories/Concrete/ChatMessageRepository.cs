@@ -50,4 +50,12 @@ public class ChatMessageRepository(FurkanTuralDbContext context) : Repository<Ch
             };
         }).ToList();
     }
+
+    public Task<int> MarkConversationReadAsync(int senderId, int receiverId, DateTime readAt, CancellationToken cancellationToken = default)
+        => _dbSet
+            .Where(m => m.SenderId == senderId && m.ReceiverId == receiverId && !m.IsRead)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(m => m.IsRead, true)
+                .SetProperty(m => m.ReadAt, readAt)
+                .SetProperty(m => m.UpdatedAt, readAt), cancellationToken);
 }

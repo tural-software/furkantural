@@ -210,23 +210,7 @@ public class ChatMessageService(
 
     public async Task<Result> MarkConversationReadAsync(int currentUserId, int otherUserId, CancellationToken cancellationToken = default)
     {
-        var unread = (await _unitOfWork.ChatMessages.GetAllAsync(
-            x => x.SenderId == otherUserId && x.ReceiverId == currentUserId && !x.IsRead,
-            cancellationToken)).ToList();
-
-        if (unread.Count == 0)
-            return Result.Ok();
-
-        var now = _clock.UtcNow;
-        foreach (var message in unread)
-        {
-            message.IsRead = true;
-            message.ReadAt = now;
-        }
-
-        await _unitOfWork.ChatMessages.UpdateRangeAsync(unread, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
+        await _unitOfWork.ChatMessages.MarkConversationReadAsync(otherUserId, currentUserId, _clock.UtcNow, cancellationToken);
         return Result.Ok();
     }
 

@@ -7,4 +7,5 @@ namespace FurkanTural_Application.Repositories.Abstract;
 public interface IChatMessageRepository : IRepository<ChatMessage>
 {
     Task<List<ConversationAggregateDto>> GetConversationAggregatesAsync(int userId, CancellationToken cancellationToken = default);
+    Task<int> MarkConversationReadAsync(int senderId, int receiverId, DateTime readAt, CancellationToken cancellationToken = default);
 }

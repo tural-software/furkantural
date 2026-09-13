@@ -263,13 +263,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
     public async Task<DateTime> UpdateLastSeenAsync(int userId, CancellationToken cancellationToken = default)
     {
         var now = _clock.UtcNow;
-        var entity = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
-        if (entity is null)
-            return now;
-
-        entity.LastSeenAt = now;
-        await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Users.TouchLastSeenAsync(userId, now, cancellationToken);
         return now;
     }
 
