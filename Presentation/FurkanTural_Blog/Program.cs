@@ -88,13 +88,12 @@ app.Use(async (context, next) =>
         : $"'self' data: {apiBase}";
     headers["Content-Security-Policy"] =
         "default-src 'none'; " +
-        // Cloudflare Web Analytics beacon'ı (static.cloudflareinsights.com) önde enjekte edilir.
-        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com; " +
+        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
         "font-src 'self'; " +
         $"img-src {imgSrc}; " +
-        "connect-src 'self' https://cloudflareinsights.com; " +
+        "connect-src 'self'; " +
         "frame-src https://challenges.cloudflare.com; " +
         "manifest-src 'self'; " +
         "worker-src 'self'; " +

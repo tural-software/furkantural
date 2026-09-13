@@ -285,15 +285,13 @@ app.Use(async (context, next) =>
     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     headers["Content-Security-Policy"] =
         "default-src 'self'; " +
-        // Cloudflare, site önünde Web Analytics beacon'ını (static.cloudflareinsights.com)
-        // otomatik enjekte eder; script-src + connect-src'e izin verilmezse CSP engeller.
-        "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; " +
+        "script-src 'self' 'unsafe-inline'; " +
         "style-src 'self' 'unsafe-inline'; " +
         // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
         "font-src 'self' data:; " +
         $"img-src 'self' data: blob: {apiOrigin}; " +
         $"media-src 'self' blob: {apiOrigin}; " +
-        $"connect-src 'self' {apiOrigin} ws://{context.Request.Host} wss://{context.Request.Host} https://cloudflareinsights.com; " +
+        $"connect-src 'self' {apiOrigin} ws://{context.Request.Host} wss://{context.Request.Host}; " +
         "frame-ancestors 'none'; " +
         "base-uri 'self'; " +
         "form-action 'self';";
