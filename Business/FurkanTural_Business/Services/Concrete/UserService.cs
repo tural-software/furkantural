@@ -300,6 +300,8 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         entity.UpdatedBy = userId;
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
+        var subscriptions = await _unitOfWork.PushSubscriptions.GetAllAsync(s => s.UserId == userId, cancellationToken);
+        await _unitOfWork.PushSubscriptions.DeleteRangeAsync(subscriptions, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kullanıcı kendi hesabını kapattı. Id: {userId}", cancellationToken);
 

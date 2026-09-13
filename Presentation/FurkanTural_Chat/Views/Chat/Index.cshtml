@@ -184,7 +184,8 @@
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', function () {
                     var logoutForm = document.querySelector('.logout-form');
-                    if (logoutForm) logoutForm.submit();
+                    if (logoutForm && logoutForm.requestSubmit) logoutForm.requestSubmit();
+                    else if (logoutForm) logoutForm.submit();
                 });
             }
         })();

@@ -10,12 +10,14 @@ using LibPushSubscription = WebPush.PushSubscription;
 namespace FurkanTural_Business.Services.Concrete;
 
 /// <summary>VAPID ile Web Push. Anahtarlar <c>Push:Vapid</c> altındaki Subject, PublicKey ve PrivateKey'den okunur; değer boşsa ya da yer tutucu deseni taşıyorsa push kapalı sayılır. Gönderim tarayıcının kendi push servisine dışarı HTTPS isteğiyle yapılır, araya ayrı bir servis girmez.<para>Push istemcisi süreç boyunca tek örnektir — abonelik başına yeni istemci soket tüketirdi. 404 veya 410 dönen abonelikler tarayıcı tarafında düşmüş demektir ve aynı tur içinde silinir; diğer hatalar yalnızca günlüğe yazılır.</para></summary>
-public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, ILogger<PushSender> logger) : IPushSender
+public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, IClock clock, ILogger<PushSender> logger) : IPushSender
 {
     private static readonly WebPushClient _client = new();
+    private const int DefaultStaleAfterDays = 30;
 
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IConfiguration _configuration = configuration;
+    private readonly IClock _clock = clock;
     private readonly ILogger<PushSender> _logger = logger;
 
     public async Task SendMessageNotificationAsync(int receiverUserId, string senderName, CancellationToken cancellationToken = default)
@@ -30,6 +32,10 @@ public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, IL
             if (subs.Count == 0)
                 return;
 
+            var cutoff = _clock.UtcNow.AddDays(-StaleAfterDays());
+            var dead = subs.Where(s => (s.UpdatedAt ?? s.CreatedAt) < cutoff).ToList();
+            var fresh = subs.Except(dead).ToList();
+
             var payload = JsonSerializer.Serialize(new
             {
                 title = "Chatural",
@@ -38,8 +44,7 @@ public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, IL
                 url = "/Chat"
             });
 
-            var dead = new List<DomainPushSubscription>();
-            foreach (var s in subs)
+            foreach (var s in fresh)
             {
                 try
                 {
@@ -65,6 +70,12 @@ public class PushSender(IUnitOfWork unitOfWork, IConfiguration configuration, IL
         {
             _logger.LogError(ex, "Push bildirimi akışında beklenmeyen hata. Alıcı: {UserId}", receiverUserId);
         }
+    }
+
+    private int StaleAfterDays()
+    {
+        var days = _configuration.GetValue<int?>("Push:StaleAfterDays") ?? DefaultStaleAfterDays;
+        return days > 0 ? days : DefaultStaleAfterDays;
     }
 
     private VapidDetails? ReadVapid()

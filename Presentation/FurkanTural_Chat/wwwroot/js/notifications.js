@@ -10,6 +10,10 @@
 
     btn.hidden = false;
 
+    var BEAT_KEY = 'ft.push.beat';
+    var BEAT_INTERVAL_MS = 24 * 60 * 60 * 1000;
+    var LOGOUT_WAIT_MS = 2000;
+
     function toast(msg, type) {
         if (window.showToast) window.showToast(type === 'error' ? 'error' : 'info', type === 'error' ? 'Hata' : 'Bildirim', msg);
     }
@@ -36,6 +40,42 @@
     function getReg() { return navigator.serviceWorker.ready; }
     function currentSub() { return getReg().then(function (reg) { return reg.pushManager.getSubscription(); }); }
 
+    function markBeat(at) {
+        try {
+            if (at) localStorage.setItem(BEAT_KEY, String(at));
+            else localStorage.removeItem(BEAT_KEY);
+        } catch (e) {}
+    }
+
+    function beatDue() {
+        var last = 0;
+        try { last = parseInt(localStorage.getItem(BEAT_KEY) || '0', 10) || 0; } catch (e) {}
+        return Date.now() - last >= BEAT_INTERVAL_MS;
+    }
+
+    async function register(sub) {
+        var json = sub.toJSON();
+        try {
+            var r = await fetch('/bff/api/v1/push/subscribe', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ endpoint: sub.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth, userAgent: navigator.userAgent })
+            });
+            if (r.ok) markBeat(Date.now());
+            return r.ok;
+        } catch (e) { return false; }
+    }
+
+    async function forget(sub) {
+        try {
+            await fetch('/bff/api/v1/push/unsubscribe', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+                body: JSON.stringify({ endpoint: sub.endpoint })
+            });
+        } catch (e) {}
+        try { await sub.unsubscribe(); } catch (e) {}
+        markBeat(0);
+    }
+
     async function enable() {
         var perm = await Notification.requestPermission();
         if (perm !== 'granted') { setState(perm === 'denied' ? 'blocked' : 'off'); if (perm === 'denied') toast('Bildirim izni reddedildi.', 'error'); return; }
@@ -54,15 +94,7 @@
             sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8(pub) });
         } catch (e) { toast('Bildirime abone olunamadı.', 'error'); setState('off'); return; }
 
-        var json = sub.toJSON();
-        var ok = false;
-        try {
-            var r = await fetch('/bff/api/v1/push/subscribe', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ endpoint: sub.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth, userAgent: navigator.userAgent })
-            });
-            ok = r.ok;
-        } catch (e) { ok = false; }
+        var ok = await register(sub);
 
         if (ok) { setState('on'); toast('Bildirimler açıldı. Çevrimdışıyken de mesajların ulaşacak.'); }
         else { try { await sub.unsubscribe(); } catch (e) {} setState('off'); toast('Abonelik kaydedilemedi.', 'error'); }
@@ -70,15 +102,7 @@
 
     async function disable() {
         var sub = await currentSub();
-        if (sub) {
-            try {
-                await fetch('/bff/api/v1/push/unsubscribe', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ endpoint: sub.endpoint })
-                });
-            } catch (e) {}
-            try { await sub.unsubscribe(); } catch (e) {}
-        }
+        if (sub) await forget(sub);
         setState('off');
         toast('Bildirimler kapatıldı.');
     }
@@ -89,10 +113,33 @@
         if (sub) await disable(); else await enable();
     });
 
+    var logoutForm = document.querySelector('.logout-form');
+    if (logoutForm) {
+        logoutForm.addEventListener('submit', function (e) {
+            if (logoutForm.dataset.pushCleared === '1') return;
+            e.preventDefault();
+
+            var finished = false;
+            function proceed() {
+                if (finished) return;
+                finished = true;
+                logoutForm.dataset.pushCleared = '1';
+                logoutForm.submit();
+            }
+
+            setTimeout(proceed, LOGOUT_WAIT_MS);
+            currentSub()
+                .then(function (sub) { return sub ? forget(sub) : null; })
+                .catch(function () {})
+                .then(proceed);
+        });
+    }
+
     // Açılışta mevcut durumu yansıt.
     (async function () {
         if (Notification.permission === 'denied') { setState('blocked'); return; }
         var sub = await currentSub();
         setState(sub ? 'on' : 'off');
+        if (sub && Notification.permission === 'granted' && beatDue()) await register(sub);
     })();
 })();

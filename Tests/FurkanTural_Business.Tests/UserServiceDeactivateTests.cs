@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using FluentAssertions;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
@@ -17,8 +18,10 @@ public class UserServiceDeactivateTests
 
     private readonly Mock<IUnitOfWork> _uow = new();
     private readonly Mock<IUserRepository> _users = new();
+    private readonly Mock<IRepository<PushSubscription>> _subscriptions = new();
     private readonly Mock<IPasswordHasher> _hasher = new();
     private readonly UserService _sut;
+    private List<PushSubscription>? _deletedSubscriptions;
 
     public UserServiceDeactivateTests()
     {
@@ -26,7 +29,13 @@ public class UserServiceDeactivateTests
             .Returns((string given, string stored) => given == Password && stored == Hashed);
 
         _uow.SetupGet(u => u.Users).Returns(_users.Object);
+        _uow.SetupGet(u => u.PushSubscriptions).Returns(_subscriptions.Object);
         _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        _subscriptions.Setup(r => r.DeleteRangeAsync(It.IsAny<IEnumerable<PushSubscription>>(), It.IsAny<CancellationToken>()))
+            .Callback<IEnumerable<PushSubscription>, CancellationToken>((items, _) => _deletedSubscriptions = items.ToList())
+            .Returns(Task.CompletedTask);
+        Subscriptions();
 
         var clock = Mock.Of<IClock>(c => c.UtcNow == new DateTime(2026, 8, 25, 9, 0, 0, DateTimeKind.Utc));
 
@@ -48,6 +57,10 @@ public class UserServiceDeactivateTests
     private void NoAccount()
         => _users.Setup(r => r.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync((User?)null);
 
+    private void Subscriptions(params PushSubscription[] items)
+        => _subscriptions.Setup(r => r.GetAllAsync(It.IsAny<Expression<Func<PushSubscription, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(items.AsEnumerable());
+
     [Fact]
     public async Task Dogru_parolayla_hesap_kapanir()
     {
@@ -63,6 +76,26 @@ public class UserServiceDeactivateTests
     }
 
     [Fact]
+    public async Task Hesap_kapaninca_kullanicinin_bildirim_abonelikleri_silinir()
+    {
+        Account();
+        var phone = new PushSubscription { Id = 1, UserId = 7, Endpoint = "https://push.test/telefon" };
+        var laptop = new PushSubscription { Id = 2, UserId = 7, Endpoint = "https://push.test/dizustu" };
+        Subscriptions(phone, laptop);
+
+        await _sut.DeactivateMyAccountAsync(7, Password);
+
+        _deletedSubscriptions.Should().BeEquivalentTo(new[] { phone, laptop },
+            "kapatılan hesabın cihazlarına bildirim gitmemeli");
+        _subscriptions.Verify(r => r.GetAllAsync(
+            It.Is<Expression<Func<PushSubscription, bool>>>(p =>
+                p.Compile()(phone) && !p.Compile()(new PushSubscription { UserId = 8 })),
+            It.IsAny<CancellationToken>()), Times.Once);
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once,
+            "hesabın kapanması ile aboneliklerin silinmesi aynı kayıtta olmalı");
+    }
+
+    [Fact]
     public async Task Yanlis_parola_hesabi_kapatmaz()
     {
         var user = Account();
@@ -73,6 +106,7 @@ public class UserServiceDeactivateTests
         result.StatusCode.Should().Be(401);
         user.IsActive.Should().BeTrue();
         _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _subscriptions.Verify(r => r.DeleteRangeAsync(It.IsAny<IEnumerable<PushSubscription>>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Theory]
