@@ -250,7 +250,7 @@ public class AuthServiceActivationTests
         var result = await Login();
 
         result.StatusCode.Should().Be(403);
-        result.Errors[0].Should().Contain("iletişim formundan");
+        result.Errors[0].Should().Contain("destek@furkantural.com");
         result.InternalMessage.Should().Contain("#7 adressiz.");
     }
 

@@ -470,7 +470,7 @@
         if (!div) return;
         const ok = await askConfirm({
             title: 'Mesajı sil',
-            text: 'Bu mesaj her iki taraftan da kaldırılır. Silmek istiyor musunuz?',
+            text: 'Mesaj iki taraftan da kaldırılır; kaydı yasal saklama süresi boyunca sunucuda tutulur. Silmek istiyor musunuz?',
             okText: 'Sil',
             danger: true
         });

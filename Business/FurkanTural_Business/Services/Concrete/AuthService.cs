@@ -124,7 +124,7 @@ public class AuthService(
                 $"Giriş reddedildi: #{user.Id} hesap pasif.", cancellationToken);
 
             return Result<LoginResultDto>.Fail(
-                "Hesabınız kapalı. Kayıtlı e-posta adresinize hesabı yeniden açma bağlantısı gönderdik. Adresinize ulaşamıyorsanız iletişim formundan bize yazın.",
+                "Hesabınız kapalı. Kayıtlı e-posta adresinize hesabı yeniden açma bağlantısı gönderdik. Adresinize ulaşamıyorsanız destek@furkantural.com adresine yazın.",
                 issued.IsFailure
                     ? $"Giriş reddedildi: #{user.Id} pasif hesap; aktivasyon gönderilemedi: {issued.InternalMessage}"
                     : $"Giriş reddedildi: #{user.Id} pasif hesap; aktivasyon tetiklendi.",
