@@ -99,17 +99,34 @@ public class WriteEndpointPolicyTests
             "yazma ucu bulunamıyorsa bu test hiçbir şeyi doğrulamıyor demektir");
     }
 
+    private static readonly HashSet<string> CounterWrites = ["BlogController.RegisterView"];
+
     [Theory]
-    [InlineData(typeof(BlogController))]
-    [InlineData(typeof(BlogImageController))]
-    public void Blog_yazarligi_yalnizca_yoneticiye_aciktir(Type controller)
+    [InlineData(nameof(BlogController))]
+    [InlineData(nameof(BlogImageController))]
+    [InlineData(nameof(CategoryController))]
+    [InlineData(nameof(TagController))]
+    [InlineData(nameof(ProjectController))]
+    [InlineData(nameof(ProjectImageController))]
+    [InlineData(nameof(MusicController))]
+    [InlineData(nameof(MusicImageController))]
+    [InlineData(nameof(SkillController))]
+    [InlineData(nameof(ExperienceController))]
+    [InlineData(nameof(EducationController))]
+    [InlineData(nameof(MailTemplateController))]
+    [InlineData(nameof(MailTemplateTypeController))]
+    [InlineData(nameof(RoleController))]
+    [InlineData(nameof(StatusController))]
+    [InlineData(nameof(NewsletterIssueController))]
+    [InlineData(nameof(CallController) + ".UpdatePolicy")]
+    public void Yonetici_kayitlarini_yalnizca_yonetici_degistirir(string scope)
     {
         var writes = Writes()
-            .Where(w => w.Key.StartsWith(controller.Name + ".", StringComparison.Ordinal))
-            .Where(w => w.Key != "BlogController.RegisterView")
+            .Where(w => w.Key == scope || w.Key.StartsWith(scope + ".", StringComparison.Ordinal))
+            .Where(w => !CounterWrites.Contains(w.Key))
             .ToList();
 
-        writes.Should().NotBeEmpty("taranacak yazma ucu yoksa bu test hiçbir şeyi doğrulamıyor demektir");
+        writes.Should().NotBeEmpty($"'{scope}' için taranacak yazma ucu yoksa bu test hiçbir şeyi doğrulamıyor demektir");
 
         var acik = writes
             .Where(w => w.Access != AdminOnly)
@@ -117,8 +134,27 @@ public class WriteEndpointPolicyTests
             .ToList();
 
         acik.Should().BeEmpty(
-            "üyelik sistemi gelene kadar yazıyı ve görselini yalnızca yönetici yazar; kayıt olan her Chatural hesabı User rolü alır, " +
-            "bu uçlardan biri o role açık kalırsa blogda yazı açılabilir:" + Environment.NewLine + string.Join(Environment.NewLine, acik));
+            "bu kayıtları yalnızca yönetici ekler, günceller, siler, pasife alır ve geri yükler; kayıt olan her Chatural hesabı User rolü alır, " +
+            "bu uçlardan biri o role açık kalırsa üye yönetici içeriğini değiştirebilir:" + Environment.NewLine + string.Join(Environment.NewLine, acik));
+    }
+
+    [Fact]
+    public void Her_aksiyon_http_metodunu_acikca_bildirir()
+    {
+        var controllers = typeof(BaseApiController).Assembly.GetTypes()
+            .Where(t => t.IsClass && !t.IsAbstract && typeof(ControllerBase).IsAssignableFrom(t));
+
+        var belirsiz = controllers
+            .SelectMany(c => c.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(m => !m.IsSpecialName)
+                .Where(m => !m.GetCustomAttributes<NonActionAttribute>().Any())
+                .Where(m => !m.GetCustomAttributes().OfType<IActionHttpMethodProvider>().Any())
+                .Select(m => $"{c.Name}.{m.Name}"))
+            .ToList();
+
+        belirsiz.Should().BeEmpty(
+            "metot bildirmeyen aksiyon her HTTP metodunu kabul eder; yazma uçlarını tarayan korumalar onu göremez ve POST ile çağrılan bir uç gözden kaçar:" +
+            Environment.NewLine + string.Join(Environment.NewLine, belirsiz));
     }
 
     [Fact]
