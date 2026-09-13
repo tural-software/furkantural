@@ -1,3 +1,4 @@
+using FurkanTural_Application.DTOs.Common;
 using FurkanTural_Application.Services.Abstract;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -11,6 +12,9 @@ public class AdminHub(IAdminPendingWorkService pendingWork) : Hub
 
     public override async Task OnConnectedAsync()
     {
+        if (int.TryParse(Context.UserIdentifier, out var userId))
+            await Clients.Caller.SendAsync(AdminHubEvents.AdminSession, new AdminSessionDto(userId), Context.ConnectionAborted);
+
         await RefreshPendingWork();
         await base.OnConnectedAsync();
     }
@@ -18,6 +22,6 @@ public class AdminHub(IAdminPendingWorkService pendingWork) : Hub
     public async Task RefreshPendingWork()
     {
         var payload = await _pendingWork.GetAsync(string.Empty, Context.ConnectionAborted);
-        await Clients.Caller.SendAsync("PendingWorkChanged", payload, Context.ConnectionAborted);
+        await Clients.Caller.SendAsync(AdminHubEvents.PendingWorkChanged, payload, Context.ConnectionAborted);
     }
 }

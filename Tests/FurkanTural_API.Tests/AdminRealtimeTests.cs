@@ -45,6 +45,30 @@ public class AdminRealtimeTests
     }
 
     [Fact]
+    public async Task Baglanan_yoneticiye_once_kendi_kimligi_sonra_guncel_sayilar_gider()
+    {
+        _pending.Setup(p => p.GetAsync(string.Empty, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AdminPendingWorkDto(string.Empty, 0, 0, 0));
+
+        var caller = new Mock<ISingleClientProxy>();
+        var clients = new Mock<IHubCallerClients>();
+        clients.Setup(c => c.Caller).Returns(caller.Object);
+        var context = new Mock<HubCallerContext>();
+        context.Setup(c => c.UserIdentifier).Returns("7");
+
+        var hub = new AdminHub(_pending.Object) { Clients = clients.Object, Context = context.Object };
+
+        await hub.OnConnectedAsync();
+
+        var sends = caller.Invocations.Where(i => i.Method.Name == nameof(IClientProxy.SendCoreAsync)).ToList();
+        sends.Select(i => (string)i.Arguments[0]).Should().Equal(
+            [AdminHubEvents.AdminSession, AdminHubEvents.PendingWorkChanged],
+            "istemci kendi işlemini ayırt edebilmek için kimliğini ilk olaydan önce bilmeli");
+        ((object?[])sends[0].Arguments[1]!).Single().Should().Be(new AdminSessionDto(7));
+        clients.VerifyGet(c => c.All, Times.Never(), "kimlik yalnızca bağlanan yöneticiye gider");
+    }
+
+    [Fact]
     public async Task Yenileme_isteginde_tur_bos_gider_ve_bildirim_seridi_acilmaz()
     {
         _pending.Setup(p => p.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))

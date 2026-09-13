@@ -75,6 +75,9 @@ builder.Services.AddSignalR().AddJsonProtocol(o =>
 });
 builder.Services.AddScoped<IChatNotifier, ChatNotifier>();
 builder.Services.AddScoped<IAdminNotifier, AdminNotifier>();
+builder.Services.AddSingleton<AdminLiveBroadcaster>();
+builder.Services.AddSingleton<IAdminChangeFeed>(sp => sp.GetRequiredService<AdminLiveBroadcaster>());
+builder.Services.AddHostedService(sp => sp.GetRequiredService<AdminLiveBroadcaster>());
 builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 builder.Services.AddSingleton<IPresenceTracker, PresenceTracker>();
 builder.Services.Configure<AppTokenSettings>(builder.Configuration.GetSection("AppTokens"));
