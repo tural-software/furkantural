@@ -13,6 +13,11 @@
             </button>
         </nav>
         <div class="nav-actions">
+            <a href="/Dashboard" class="nav-badge" id="adminPendingBadge" hidden
+               aria-label="Bekleyen iş">
+                @await Html.PartialAsync("_Icons", "clock")
+                <span class="nav-badge__count" id="adminPendingCount">0</span>
+            </a>
             <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Temayı değiştir">
                 <span data-theme-icon>🌙</span>
                 <span class="toggle-text">Tema</span>

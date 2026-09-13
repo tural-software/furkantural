@@ -628,4 +628,28 @@ public sealed class FlowTests(LiveSiteFixture site)
             "hidden verildiğinde düğme gerçekten kaybolmalı; buton stili tarayıcının gizleme kuralını yenerse öğe ekranda kalır");
         result.shownAgain.Should().BeTrue("gizleme kaldırıldığında düğme geri gelmeli");
     }
+
+    /// <summary>Canlı bağlantının uçtan uca kanıtı, veri yaratmadan. Rozetin başlangıç sayısı sunucuda çizilmez; yalnızca hub bağlantısı kurulunca itilen ilk durumdan gelir. Dolayısıyla rozetin panodaki sunucu değeriyle aynı sayıyı göstermesi, aradaki her halkanın çalıştığını gösterir: aynı kökenden vekil, oturumdan basılan jeton, WebSocket yükseltmesi, yönetici politikası, içerik güvenliği kuralı ve istemci betiği.<para>Yeni bir kaydın itilmesi burada sınanmaz: panelde sert silme olmadığı için her koşuş veri tabanında kalıcı bir satır bırakırdı. O yol, iş servislerinin birim testlerinde bildirimin tam bir kez çağrıldığı sınanarak kapsanır.</para></summary>
+    [SkippableFact]
+    public async Task Admin_rozeti_hub_baglantisiyla_panodaki_sayiyi_gosterir()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Dashboard"), async page =>
+        {
+            var kpi = page.Locator("[data-kpi='open-work'] .kpi__value");
+            Skip.If(await kpi.CountAsync() == 0, "Admin/Dashboard: bekleyen iş göstergesi yok");
+
+            var server = (await kpi.InnerTextAsync()).Trim();
+            Skip.If(server is "—" or "0", "Admin/Dashboard: bekleyen iş yok, rozetin görünmesi beklenmez");
+
+            await page.Locator("#adminPendingBadge:not([hidden])").WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
+            var badge = (await page.Locator("#adminPendingCount").InnerTextAsync()).Trim();
+            var visible = await page.Locator("#adminPendingBadge").IsVisibleAsync();
+
+            return (server, badge, visible);
+        });
+
+        result.visible.Should().BeTrue("bekleyen iş varken rozet ekranda olmalı");
+        result.badge.Should().Be(result.server,
+            "rozet sayısı hub'dan gelir, gösterge sunucuda çizilir; ikisi tutmuyorsa canlı kanal ya kopuk ya da farklı bir şey sayıyor");
+    }
 }
