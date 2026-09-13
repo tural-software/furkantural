@@ -11,9 +11,13 @@ public class AdminHub(IAdminPendingWorkService pendingWork) : Hub
 
     public override async Task OnConnectedAsync()
     {
+        await RefreshPendingWork();
+        await base.OnConnectedAsync();
+    }
+
+    public async Task RefreshPendingWork()
+    {
         var payload = await _pendingWork.GetAsync(string.Empty, Context.ConnectionAborted);
         await Clients.Caller.SendAsync("PendingWorkChanged", payload, Context.ConnectionAborted);
-
-        await base.OnConnectedAsync();
     }
 }

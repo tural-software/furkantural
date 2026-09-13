@@ -14,6 +14,7 @@
     var badgeCount = null;
     var notice = null;
     var pendingSince = 0;
+    var live = null;
 
     function gorunenListe() {
         var section = document.querySelector('[data-list-controller]');
@@ -100,6 +101,11 @@
         seridiGoster(payload.kind, artis > 0 ? artis : 1);
     }
 
+    function esitle() {
+        if (!live || !window.signalR || live.state !== signalR.HubConnectionState.Connected) return;
+        live.invoke('RefreshPendingWork').catch(function () { });
+    }
+
     function baglan() {
         if (!window.signalR) return;
 
@@ -108,6 +114,7 @@
             .withAutomaticReconnect()
             .build();
 
+        live = connection;
         connection.on('PendingWorkChanged', olayGeldi);
 
         connection.onclose(function () {
@@ -132,7 +139,10 @@
         badgeCount = document.getElementById('adminPendingCount');
         if (!badge) return;
 
-        document.addEventListener('ft:table-rendered', seridiKaldir);
+        document.addEventListener('ft:table-rendered', function () {
+            seridiKaldir();
+            esitle();
+        });
         baglan();
     }
 

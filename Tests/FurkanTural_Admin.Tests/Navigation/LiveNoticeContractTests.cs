@@ -91,4 +91,15 @@ public class LiveNoticeContractTests
             "oturum sekiz saat, jeton çok daha kısa; yenilenmezse yönetici saat başı girişe düşer ve canlı bağlantı kopar");
         program.Should().Contain("/api/v1/Auth/refresh");
     }
+
+    [Fact]
+    public void Liste_tazelenince_rozet_hubdan_yeniden_esitlenir()
+    {
+        var client = AdminFile("wwwroot", "js", "admin-live.js");
+
+        client.Should().Contain("ft:table-rendered",
+            "yöneticinin kendi işlemi — onay, silme, toplu işlem — hub olayı üretmez; rozet ancak liste tazelenince yeniden sorulursa doğru kalır");
+        client.Should().Contain("invoke('RefreshPendingWork')",
+            "rozet sayısını sunucu hesaplar; istemci kendi tahminiyle düşürürse başka sekmedeki işlemleri kaçırır");
+    }
 }

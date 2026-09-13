@@ -652,4 +652,33 @@ public sealed class FlowTests(LiveSiteFixture site)
         result.badge.Should().Be(result.server,
             "rozet sayısı hub'dan gelir, gösterge sunucuda çizilir; ikisi tutmuyorsa canlı kanal ya kopuk ya da farklı bir şey sayıyor");
     }
+
+    /// <summary>Yöneticinin kendi işlemi hub olayı üretmez: bir yorumu onaylamak ya da bir kaydı silmek yeni iş getirmez, yalnızca var olanı azaltır. Rozet yalnızca itmeyle güncellenseydi, son bekleyen işi kapatan yönetici başlıkta hâlâ "1" görürdü. Bu yüzden her liste tazelemesinden sonra rozet sunucuya yeniden sorulur.<para>Veri değiştirmeden sınamak için rozet sayfa içinde bilerek bozulur ve liste tazelenir; rozet sunucunun sayısına dönmelidir. Kayıt değiştiren bir işlem de aynı tazeleme yolundan geçtiği için bu, onay ve silme yollarını da kapsar.</para></summary>
+    [SkippableFact]
+    public async Task Admin_rozeti_liste_tazelenince_sunucuyla_yeniden_esitlenir()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Category"), async page =>
+        {
+            var badge = page.Locator("#adminPendingBadge:not([hidden])");
+            try { await badge.WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 }); }
+            catch (TimeoutException) { Skip.If(true, "Admin/Category: bekleyen iş yok, rozet görünmüyor"); }
+
+            var truth = (await page.Locator("#adminPendingCount").InnerTextAsync()).Trim();
+
+            await page.EvaluateAsync("() => { document.getElementById('adminPendingCount').textContent = '999'; }");
+            var tampered = (await page.Locator("#adminPendingCount").InnerTextAsync()).Trim();
+
+            await page.EvaluateAsync("() => FtList.reload()");
+            await page.WaitForFunctionAsync(
+                "beklenen => (document.getElementById('adminPendingCount').textContent || '').trim() === beklenen",
+                truth, new PageWaitForFunctionOptions { Timeout = 10000 });
+
+            var restored = (await page.Locator("#adminPendingCount").InnerTextAsync()).Trim();
+            return (truth, tampered, restored);
+        });
+
+        result.tampered.Should().Be("999", "bozma adımı gerçekten uygulanmalı, yoksa test hiçbir şey kanıtlamaz");
+        result.restored.Should().Be(result.truth,
+            "liste tazelendikten sonra rozet sunucunun sayısına dönmeli; dönmüyorsa yöneticinin kendi işlemi rozeti bayat bırakır");
+    }
 }
