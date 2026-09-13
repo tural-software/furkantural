@@ -99,6 +99,10 @@
 
         var artis = total - onceki;
         seridiGoster(payload.kind, artis > 0 ? artis : 1);
+
+        if (tanim.controller === gorunenListe() && window.FtList && typeof FtList.refreshStats === 'function') {
+            FtList.refreshStats();
+        }
     }
 
     function esitle() {

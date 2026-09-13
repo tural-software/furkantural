@@ -102,4 +102,23 @@ public class LiveNoticeContractTests
         client.Should().Contain("invoke('RefreshPendingWork')",
             "rozet sayısını sunucu hesaplar; istemci kendi tahminiyle düşürürse başka sekmedeki işlemleri kaçırır");
     }
+
+    [Fact]
+    public void Gorunen_listenin_turunde_olay_gelince_sayaclar_satirlara_dokunmadan_tazelenir()
+    {
+        var client = AdminFile("wwwroot", "js", "admin-live.js");
+        var nav = AdminFile("wwwroot", "js", "list-nav.js");
+
+        client.Should().Contain("FtList.refreshStats()",
+            "rozet artarken sayfadaki bekleyen sayacı eski değerde kalırsa aynı ekranda iki farklı sayı görünür");
+
+        var body = Regex.Match(nav, @"function refreshStats\(\)\s*\{.*?\n    \}", RegexOptions.Singleline);
+        body.Success.Should().BeTrue("sayaç tazeleme ortak liste betiğinde tanımlı olmalı");
+        body.Value.Should().NotContain("section.innerHTML",
+            "yeni kayıt geldiğinde satırlar kaymamalı; yalnızca sayaçlar değişir, tabloyu yönetici tazeler");
+        body.Value.Should().NotContain("ft:table-rendered",
+            "sayaç tazelemesi liste tazelemesi sayılmaz; olayı yayarsa bildirim şeridi hemen kapanır");
+
+        nav.Should().Contain("refreshStats: refreshStats", "istemci betiği yalnızca yayımlanan yüzeyi görür");
+    }
 }

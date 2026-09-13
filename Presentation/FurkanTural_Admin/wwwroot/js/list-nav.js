@@ -9,6 +9,8 @@
     var seq = 0;
     var inflight = null;
     var live = null;
+    var statsStamp = 0;
+    var appliedStamp = 0;
 
     function normalizePath(value) {
         var path = (value || '').replace(/\/+$/, '');
@@ -70,12 +72,16 @@
         });
     }
 
-    function syncStats() {
-        var holder = section.querySelector('#__list-stats-json');
-        if (!holder) return;
+    function readStats(root) {
+        var holder = root.querySelector('#__list-stats-json');
+        if (!holder) return null;
 
-        var stats;
-        try { stats = JSON.parse(holder.textContent || '{}'); } catch (e) { return; }
+        try { return JSON.parse(holder.textContent || '{}'); } catch (e) { return null; }
+    }
+
+    function applyStats(stats, stamp) {
+        if (!stats || stamp < appliedStamp) return;
+        appliedStamp = stamp;
 
         Object.keys(stats).forEach(function (key) {
             document.querySelectorAll('[data-stat="' + key + '"]').forEach(function (node) {
@@ -106,6 +112,7 @@
         if (!section) return;
 
         var mine = ++seq;
+        var stamp = ++statsStamp;
         if (inflight) inflight.abort();
         inflight = ('AbortController' in window) ? new AbortController() : null;
 
@@ -128,7 +135,7 @@
                 if (html === null || mine !== seq) return;
                 section.innerHTML = html;
                 syncMeta();
-                syncStats();
+                applyStats(readStats(section), stamp);
                 settle(announce);
             })
             .catch(function (error) {
@@ -143,6 +150,28 @@
                 section.removeAttribute('aria-busy');
                 section.classList.remove('tbl-loading');
             });
+    }
+
+    function refreshStats() {
+        if (!section) return;
+
+        var stamp = ++statsStamp;
+
+        fetch('/' + controller + '/TablePartial?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (response) {
+                if (response.status === 401) {
+                    window.location.href = '/Auth/Login';
+                    return null;
+                }
+                return response.ok ? response.text() : null;
+            })
+            .then(function (html) {
+                if (html === null) return;
+                var parsed = document.createElement('template');
+                parsed.innerHTML = html;
+                applyStats(readStats(parsed.content), stamp);
+            })
+            .catch(function () { });
     }
 
     function go(next) {
@@ -206,6 +235,7 @@
 
     window.FtList = {
         reload: function () { load(false); },
+        refreshStats: refreshStats,
         go: function (next) {
             if (!section) return;
             go(next instanceof URLSearchParams ? next : new URLSearchParams(next || ''));

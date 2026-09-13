@@ -681,4 +681,63 @@ public sealed class FlowTests(LiveSiteFixture site)
         result.restored.Should().Be(result.truth,
             "liste tazelendikten sonra rozet sunucunun sayısına dönmeli; dönmüyorsa yöneticinin kendi işlemi rozeti bayat bırakır");
     }
+
+    [SkippableFact]
+    public async Task Admin_yorumlarda_canli_olay_sayaclari_satirlara_dokunmadan_tazeler()
+    {
+        var result = await site.WithPageAsync(SweepData.Page("Admin/Comment"), async page =>
+        {
+            IWebSocketRoute? pageSide = null;
+            var snapshot = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await page.RouteWebSocketAsync(new System.Text.RegularExpressions.Regex("/bff/hubs/admin"), ws =>
+            {
+                pageSide = ws;
+                var server = ws.ConnectToServer();
+                server.OnMessage(frame =>
+                {
+                    if (frame.Text is null) return;
+                    ws.Send(frame.Text);
+                    if (frame.Text.Contains("PendingWorkChanged")) snapshot.TrySetResult();
+                });
+            });
+
+            await page.ReloadAsync(new PageReloadOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
+
+            try { await snapshot.Task.WaitAsync(TimeSpan.FromSeconds(10)); }
+            catch (TimeoutException) { Skip.If(true, "Admin/Comment: hub WebSocket üzerinden bağlanmadı"); }
+
+            var truth = await page.EvaluateAsync<string[]>(
+                "() => { var s = JSON.parse(document.querySelector('#__list-stats-json').textContent || '{}'); return [s.pendingCount, s.totalCount]; }");
+
+            var marked = await page.EvaluateAsync<bool>(
+                "() => { var row = document.querySelector('[data-list-controller] tbody tr'); if (!row) return false; row.setAttribute('data-canary', '1'); return true; }");
+            Skip.If(!marked, "Admin/Comment: listede satır yok");
+
+            await page.EvaluateAsync(
+                "() => document.querySelectorAll(\"[data-stat='pendingCount'], [data-stat='totalCount']\").forEach(n => { n.textContent = '999'; })");
+
+            var badge = (await page.Locator("#adminPendingCount").InnerTextAsync()).Trim();
+            var nextTotal = (int.TryParse(badge.Replace(".", ""), out var current) ? current : 0) + 1;
+            pageSide!.Send("{\"type\":1,\"target\":\"PendingWorkChanged\",\"arguments\":[{\"kind\":\"comment\",\"comments\":"
+                + nextTotal + ",\"contacts\":0,\"reports\":0,\"total\":" + nextTotal + "}]}");
+
+            await page.WaitForFunctionAsync(
+                "beklenen => (document.querySelector(\"[data-stat='pendingCount']\").textContent || '').trim() === beklenen[0]"
+                + " && (document.querySelector(\"[data-stat='totalCount']\").textContent || '').trim() === beklenen[1]",
+                truth, new PageWaitForFunctionOptions { Timeout = 10000 });
+
+            var buttonCount = (await page.Locator("[data-stat-when='pendingCount'] [data-stat='pendingCount']").InnerTextAsync()).Trim();
+            var rowKept = await page.EvaluateAsync<bool>("() => document.querySelector('[data-canary]') !== null");
+            var notice = await page.Locator(".live-notice").IsVisibleAsync();
+
+            return (truth, buttonCount, rowKept, notice);
+        });
+
+        result.buttonCount.Should().Be(result.truth[0],
+            "başlıktaki düğme de aynı sayıyı göstermeli; biri tazelenip öteki kalırsa ekran kendisiyle çelişir");
+        result.rowKept.Should().BeTrue(
+            "canlı olay satırları yeniden çizmemeli; yönetici tıklamak üzereyken tablo kaymamalı");
+        result.notice.Should().BeTrue("yeni kayıt tabloya kendiliğinden girmediği için şerit yöneticiye haber vermeli");
+    }
 }
