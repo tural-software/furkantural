@@ -68,7 +68,7 @@ public class ContactService(
         var ownerResult = await _mailSender.SendAsync(
             MailTemplateDefinitions.ContactOwner,
             AppSourceDefinitions.Portfolio,
-            _configuration["Contact:OwnerEmail"] ?? "furkanturalofficial@outlook.com",
+            _configuration["Contact:OwnerEmail"] ?? "listener@furkantural.com",
             new ContactOwnerMailDto
             {
                 FullName = dto.Name,
