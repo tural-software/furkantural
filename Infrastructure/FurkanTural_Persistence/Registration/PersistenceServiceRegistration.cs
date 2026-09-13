@@ -17,9 +17,12 @@ public static class PersistenceServiceRegistration
             ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection yapılandırılmamış.");
 
         services.AddSingleton<AuditSaveChangesInterceptor>();
+        services.AddSingleton<AdminChangeInterceptor>();
         services.AddDbContext<FurkanTuralDbContext>((sp, options) =>
             options.UseSqlServer(connectionString)
-                   .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>()));
+                   .AddInterceptors(
+                       sp.GetRequiredService<AuditSaveChangesInterceptor>(),
+                       sp.GetRequiredService<AdminChangeInterceptor>()));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ISchemaMetadataReader, SchemaMetadataReader>();
