@@ -334,7 +334,6 @@
 
         var devModal = null;
         var deviceCache = null;     // {mics,cams,speakers} — oturum boyunca bellekte (sayfa yenilenince/çıkışta sıfırlanır)
-        var scanAttempted = false;  // ilk tarama denendi mi? (izin reddedilse bile bir daha otomatik sorma)
 
         // Cihazları tara: etiketler için bir kez izin + enumerateDevices. force=false ve önbellek varsa onu döndürür.
         async function scanDevices(force) {
@@ -344,7 +343,6 @@
                 try { var s = await navigator.mediaDevices.getUserMedia({ audio: true, video: true }); s.getTracks().forEach(function (t) { t.stop(); }); }
                 catch (e) { try { var s2 = await navigator.mediaDevices.getUserMedia({ audio: true }); s2.getTracks().forEach(function (t) { t.stop(); }); } catch (e2) {} }
             }
-            scanAttempted = true;
             deviceCache = await listDevices();
             return deviceCache;
         }
@@ -481,15 +479,13 @@
         }
         async function openDeviceSettings() {
             if (!devModal) devModal = buildDevModal();
-            // Önbellek varsa yeniden TARAMA YOK; yoksa yalnızca ilk kez tara (her ayarlar açılışında tekrar taranmaz).
-            var d = deviceCache || (!scanAttempted ? await scanDevices(false) : { mics: [], cams: [], speakers: [] });
-            refillDevModal(d);
+            refillDevModal(deviceCache || await listDevices());
             devModal.hidden = false;
         }
         if (navigator.mediaDevices) {
             navigator.mediaDevices.addEventListener('devicechange', async function () {
                 deviceCache = null; // donanım takıldı/çıkarıldı → önbelleği geçersiz kıl
-                if (devModal && !devModal.hidden) refillDevModal(await scanDevices(true));
+                if (devModal && !devModal.hidden) refillDevModal(await listDevices());
             });
         }
 
@@ -778,10 +774,6 @@
         // Sidebar'daki çağrı-öncesi ses/cihaz ayarları butonu.
         var btnAudioSettings = document.getElementById('audioSettingsBtn');
         if (btnAudioSettings) btnAudioSettings.addEventListener('click', function () { openDeviceSettings(); });
-
-        // İlk girişte cihazları yalnızca BİR kez tara; sonraki ayarlar açılışları önbellekten gelir.
-        // Reddedilse bile tekrar otomatik sorulmaz (manuel "Cihazlarımı Algıla" ile yenilenebilir).
-        setTimeout(function () { if (!scanAttempted) scanDevices(false); }, 1500);
 
         var btnAudio = document.getElementById('callAudioBtn');
         var btnVideo = document.getElementById('callVideoBtn');
