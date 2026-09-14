@@ -47,6 +47,6 @@ div.shell > main#main > section.features > div.feature  908,499,320,43
 main#main > section.features > div.feature > h2.feature-title  908,499,320,17
 main#main > section.features > div.feature > p.feature-text  908,522,320,20
 div.shell > footer.sitefoot  0,835,1400,65
-div.shell > footer.sitefoot > span.sitefoot-brand  22,861,554,15
-div.shell > footer.sitefoot > nav.sitefoot-links  592,856,217,24
+div.shell > footer.sitefoot > span.sitefoot-brand  22,861,467,15
+div.shell > footer.sitefoot > nav.sitefoot-links  505,856,390,24
 div.shell > footer.sitefoot > a.sitefoot-mail  1233,861,145,15

@@ -7,26 +7,36 @@ header.topbar > nav.topbar-nav  1103,22,125,17
 header.topbar > button.theme-toggle-btn.topbar-theme  1240,12,36,36
 header.topbar > a.btn-primary.topbar-cta  1288,12,92,36
 div.shell  0,61,1400,839
-div.shell > main#main  0,61,1400,1289
-div.shell > main#main > div.legal-wrap  0,61,1400,1289
-div.shell > main#main > div.legal-wrap > nav.legal-index  85,109,210,226
+div.shell > main#main  0,61,1400,3549
+div.shell > main#main > div.legal-wrap  0,61,1400,3549
+div.shell > main#main > div.legal-wrap > nav.legal-index  85,109,210,568
 main#main > div.legal-wrap > nav.legal-index > p.legal-index-title  85,109,210,14
-main#main > div.legal-wrap > nav.legal-index > ol.legal-index-list  85,133,210,202
-div.shell > main#main > div.legal-wrap > article.legal-card  347,109,969,1193
+main#main > div.legal-wrap > nav.legal-index > ol.legal-index-list  85,133,210,544
+div.shell > main#main > div.legal-wrap > article.legal-card  347,109,969,3453
 main#main > div.legal-wrap > article.legal-card > a.legal-back  388,149,70,16
 main#main > div.legal-wrap > article.legal-card > p.legal-meta  388,224,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-1-bilgilerin-toplanmasi-ve-saklanmasi  388,378,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-2-mesajlarin-ve-ses-kayitlarinin-saklanmasi  388,490,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-3-yetkili-mercilere-i-letim  388,628,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-4-cerezler  388,766,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-5-uyenin-sorumluluklari  388,878,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-6-degisiklikler  388,1016,887,21
-main#main > div.legal-wrap > article.legal-card > div.legal-contact  388,1127,887,90
-div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-title  409,1146,845,25
-div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-text  409,1177,845,22
-main#main > div.legal-wrap > article.legal-card > div.legal-actions  388,1245,887,20
-div.legal-wrap > article.legal-card > div.legal-actions > a.btn-outline  388,1234,165,43
-div.shell > footer.sitefoot  0,1350,1400,65
-div.shell > footer.sitefoot > span.sitefoot-brand  22,1376,554,15
-div.shell > footer.sitefoot > nav.sitefoot-links  592,1371,217,24
-div.shell > footer.sitefoot > a.sitefoot-mail  1233,1376,145,15
+main#main > div.legal-wrap > article.legal-card > h2#bolum-1-taraflar  388,378,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-2-tanimlar  388,516,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-3-hizmetin-konusu  388,751,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-4-uyelik-sartlari  388,916,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-5-hesap-guvenligi  388,1236,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-6-kullanim-kurallari  388,1374,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-7-i-cerikler-ve-sorumluluk  388,1687,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-8-mesajlarin-saklanmasi-ve-erisim  388,1852,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-9-sikayet-i-nceleme-ve-yaptirimlar  388,2123,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-10-hesabin-kapatilmasi-ve-verilerin-silinmesi  388,2354,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-11-hizmetin-degistirilmesi-ve-sona-ermesi  388,2559,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-12-sorumlulugun-siniri  388,2723,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-13-sozlesmenin-degistirilmesi  388,2861,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-14-bildirimler  388,3026,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-15-uygulanacak-hukuk-ve-uyusmazliklar  388,3137,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-16-yururluk  388,3275,887,21
+main#main > div.legal-wrap > article.legal-card > div.legal-contact  388,3387,887,90
+div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-title  409,3406,845,25
+div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-text  409,3437,845,22
+main#main > div.legal-wrap > article.legal-card > div.legal-actions  388,3505,887,20
+div.legal-wrap > article.legal-card > div.legal-actions > a.btn-outline  388,3494,165,43
+div.shell > footer.sitefoot  0,3610,1400,65
+div.shell > footer.sitefoot > span.sitefoot-brand  22,3636,467,15
+div.shell > footer.sitefoot > nav.sitefoot-links  505,3631,390,24
+div.shell > footer.sitefoot > a.sitefoot-mail  1233,3636,145,15

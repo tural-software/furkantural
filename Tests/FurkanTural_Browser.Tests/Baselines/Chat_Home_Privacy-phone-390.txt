@@ -6,28 +6,33 @@ header.topbar > a.topbar-brand > span.topbar-name  51,20,67,20
 header.topbar > button.theme-toggle-btn.topbar-theme  236,10,36,40
 header.topbar > a.btn-primary.topbar-cta  284,12,92,36
 div.shell  0,61,390,783
-div.shell > main#main  0,61,390,3834
-div.shell > main#main > div.legal-wrap  0,61,390,3834
-div.shell > main#main > div.legal-wrap > article.legal-card  20,109,350,3738
+div.shell > main#main  0,61,390,11258
+div.shell > main#main > div.legal-wrap  0,61,390,11258
+div.shell > main#main > div.legal-wrap > article.legal-card  20,109,350,11162
 main#main > div.legal-wrap > article.legal-card > a.legal-back  41,137,70,16
-main#main > div.legal-wrap > article.legal-card > p.legal-meta  41,204,308,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-1-veri-sorumlusu  41,525,308,20
-main#main > div.legal-wrap > article.legal-card > h2#bolum-2-toplanan-kisisel-veriler  41,756,308,20
-main#main > div.legal-wrap > article.legal-card > h2#bolum-3-kisisel-verilerin-i-slenme-amaclari  41,1152,308,20
-main#main > div.legal-wrap > article.legal-card > h2#bolum-4-i-slemenin-hukuki-sebepleri  41,1407,308,20
-main#main > div.legal-wrap > article.legal-card > h2#bolum-5-verilerin-saklanmasi-ve-saklama-suresi  41,1662,308,40
-main#main > div.legal-wrap > article.legal-card > h2#bolum-6-verilerin-aktarimi-ve-yetkili-mercilere-i-letim  41,1962,308,40
-main#main > div.legal-wrap > article.legal-card > h2#bolum-7-cerezler  41,2399,308,20
-main#main > div.legal-wrap > article.legal-card > h2#bolum-8-veri-guvenligi  41,2604,308,20
-main#main > div.legal-wrap > article.legal-card > h2#bolum-9-i-lgili-kisi-olarak-haklariniz-kvkk-madde-11  41,2860,308,40
-main#main > div.legal-wrap > article.legal-card > h2#bolum-10-degisiklikler  41,3233,308,20
-main#main > div.legal-wrap > article.legal-card > h2#bolum-11-i-letisim  41,3414,308,20
-main#main > div.legal-wrap > article.legal-card > div.legal-contact  41,3596,308,155
-div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-title  62,3615,266,25
-div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-text  62,3645,266,86
-main#main > div.legal-wrap > article.legal-card > div.legal-actions  41,3779,308,43
-div.legal-wrap > article.legal-card > div.legal-actions > button.btn-outline  41,3779,91,43
-div.shell > footer.sitefoot  0,3895,390,149
-div.shell > footer.sitefoot > span.sitefoot-brand  145,3916,99,15
-div.shell > footer.sitefoot > nav.sitefoot-links  142,3941,105,58
-div.shell > footer.sitefoot > a.sitefoot-mail  122,4009,145,15
+main#main > div.legal-wrap > article.legal-card > p.legal-meta  41,233,308,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-1-veri-sorumlusu  41,530,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-2-i-slenen-kisisel-veriler  41,785,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-3-verilerin-toplanma-yontemi  41,2475,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-4-i-sleme-amaclari  41,2706,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-5-hukuki-sebepler  41,3400,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-6-mesajlariniza-kimler-erisebilir  41,4152,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-7-diger-uyelerin-gorebildikleri  41,4901,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-8-yurt-i-cinde-aktarim  41,5230,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-9-yurt-disina-aktarim  41,5800,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-10-saklama-sureleri  41,6663,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-11-cerezler-ve-tarayicida-saklanan-bilgiler  41,7628,308,40
+main#main > div.legal-wrap > article.legal-card > h2#bolum-12-kamera-mikrofon-ve-bildirim-i-zinleri  41,8732,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-13-veri-guvenligi  41,9061,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-14-haklariniz  41,9414,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-15-basvuru-yontemi  41,10348,308,20
+main#main > div.legal-wrap > article.legal-card > h2#bolum-16-degisiklikler  41,10839,308,20
+main#main > div.legal-wrap > article.legal-card > div.legal-contact  41,11020,308,155
+div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-title  62,11039,266,25
+div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-text  62,11070,266,86
+main#main > div.legal-wrap > article.legal-card > div.legal-actions  41,11203,308,43
+div.legal-wrap > article.legal-card > div.legal-actions > button.btn-outline  41,11203,91,43
+div.shell > footer.sitefoot  0,11319,390,217
+div.shell > footer.sitefoot > span.sitefoot-brand  145,11340,99,15
+div.shell > footer.sitefoot > nav.sitefoot-links  142,11365,105,126
+div.shell > footer.sitefoot > a.sitefoot-mail  122,11501,145,15

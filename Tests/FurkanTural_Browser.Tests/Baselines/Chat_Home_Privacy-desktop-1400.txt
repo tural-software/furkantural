@@ -7,31 +7,36 @@ header.topbar > nav.topbar-nav  1103,22,125,17
 header.topbar > button.theme-toggle-btn.topbar-theme  1240,12,36,36
 header.topbar > a.btn-primary.topbar-cta  1288,12,92,36
 div.shell  0,61,1400,839
-div.shell > main#main  0,61,1400,2269
-div.shell > main#main > div.legal-wrap  0,61,1400,2269
-div.shell > main#main > div.legal-wrap > nav.legal-index  85,109,210,407
+div.shell > main#main  0,61,1400,5684
+div.shell > main#main > div.legal-wrap  0,61,1400,5684
+div.shell > main#main > div.legal-wrap > nav.legal-index  85,109,210,507
 main#main > div.legal-wrap > nav.legal-index > p.legal-index-title  85,109,210,14
-main#main > div.legal-wrap > nav.legal-index > ol.legal-index-list  85,133,210,383
-div.shell > main#main > div.legal-wrap > article.legal-card  347,109,969,2173
+main#main > div.legal-wrap > nav.legal-index > ol.legal-index-list  85,133,210,483
+div.shell > main#main > div.legal-wrap > article.legal-card  347,109,969,5588
 main#main > div.legal-wrap > article.legal-card > a.legal-back  388,149,70,16
 main#main > div.legal-wrap > article.legal-card > p.legal-meta  388,224,887,21
 main#main > div.legal-wrap > article.legal-card > h2#bolum-1-veri-sorumlusu  388,404,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-2-toplanan-kisisel-veriler  388,516,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-3-kisisel-verilerin-i-slenme-amaclari  388,775,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-4-i-slemenin-hukuki-sebepleri  388,913,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-5-verilerin-saklanmasi-ve-saklama-suresi  388,1051,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-6-verilerin-aktarimi-ve-yetkili-mercilere-i-letim  388,1189,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-7-cerezler  388,1420,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-8-veri-guvenligi  388,1558,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-9-i-lgili-kisi-olarak-haklariniz-kvkk-madde-11  388,1696,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-10-degisiklikler  388,1861,887,21
-main#main > div.legal-wrap > article.legal-card > h2#bolum-11-i-letisim  388,1972,887,21
-main#main > div.legal-wrap > article.legal-card > div.legal-contact  388,2084,887,90
-div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-title  409,2103,845,25
-div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-text  409,2134,845,22
-main#main > div.legal-wrap > article.legal-card > div.legal-actions  388,2202,887,43
-div.legal-wrap > article.legal-card > div.legal-actions > button.btn-outline  388,2202,91,43
-div.shell > footer.sitefoot  0,2330,1400,65
-div.shell > footer.sitefoot > span.sitefoot-brand  22,2356,554,15
-div.shell > footer.sitefoot > nav.sitefoot-links  592,2351,217,24
-div.shell > footer.sitefoot > a.sitefoot-mail  1233,2356,145,15
+main#main > div.legal-wrap > article.legal-card > h2#bolum-2-i-slenen-kisisel-veriler  388,542,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-3-verilerin-toplanma-yontemi  388,1269,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-4-i-sleme-amaclari  388,1407,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-5-hukuki-sebepler  388,1792,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-6-mesajlariniza-kimler-erisebilir  388,2187,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-7-diger-uyelerin-gorebildikleri  388,2561,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-8-yurt-i-cinde-aktarim  388,2725,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-9-yurt-disina-aktarim  388,2981,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-10-saklama-sureleri  388,3323,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-11-cerezler-ve-tarayicida-saklanan-bilgiler  388,3756,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-12-kamera-mikrofon-ve-bildirim-i-zinleri  388,4297,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-13-veri-guvenligi  388,4461,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-14-haklariniz  388,4652,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-15-basvuru-yontemi  388,5129,887,21
+main#main > div.legal-wrap > article.legal-card > h2#bolum-16-degisiklikler  388,5387,887,21
+main#main > div.legal-wrap > article.legal-card > div.legal-contact  388,5499,887,90
+div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-title  409,5518,845,25
+div.legal-wrap > article.legal-card > div.legal-contact > p.legal-contact-text  409,5548,845,22
+main#main > div.legal-wrap > article.legal-card > div.legal-actions  388,5617,887,43
+div.legal-wrap > article.legal-card > div.legal-actions > button.btn-outline  388,5617,91,43
+div.shell > footer.sitefoot  0,5745,1400,65
+div.shell > footer.sitefoot > span.sitefoot-brand  22,5770,467,15
+div.shell > footer.sitefoot > nav.sitefoot-links  505,5766,390,24
+div.shell > footer.sitefoot > a.sitefoot-mail  1233,5770,145,15
