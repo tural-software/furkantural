@@ -288,6 +288,7 @@ main:focus { outline: none; }
 .content-page .section-title { text-align: center; }
 .content-page .section-desc { max-width: none; }
 .content-page p { text-align: justify; text-align-last: left; -webkit-hyphens: auto; hyphens: auto; }
+.content-page .content-page__meta { margin: 0.5rem 0 2.5rem; text-align: center; text-align-last: center; font-size: var(--fs-sm); color: var(--color-text-muted); }
 .section-header { text-align: center; margin-bottom: 3rem; }
 .section-eyebrow {
     display: inline-block;
