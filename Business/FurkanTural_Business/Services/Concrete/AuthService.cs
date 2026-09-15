@@ -16,7 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.<para>Yalnızca <see cref="IPasswordHasher"/> biçimindeki özet kabul edilir. Eskiden geri çözülebilir biçimde saklanan parolalar giriş anında özete taşınıyordu; o dal kaldırıldı, çünkü kabul edildiği sürece veri tabanını ele geçiren biri config anahtarıyla parolaların düz metnine ulaşabiliyordu. O biçimde kalmış bir satır artık hatalı parola gibi reddedilir ve hesabın parolası sıfırlanmalıdır.</para><para>Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her çağrıda doğrulama uygular.</para><para>Her iki uç da kullanıcıyı global süzgeci atlayarak okur (bkz. <see cref="IUserRepository"/>); silinmiş ve pasif satırları da görürler, çünkü pasif hesabın açılması ancak onu görebilmekle mümkün ve tekil indeksler o kullanıcı adlarını hâlâ tutuyor.</para><para>LoginAsync'te silinmiş hesap, var olmayan kullanıcı adıyla aynı dala düşer: aynı metin, aynı 401 ve aynı kukla özet hesabı. Pasif hesap ise yalnızca parola doğrulandıktan sonra ayrışır ve doğrulama postasını orada tetikler. Sıralama savunmanın kendisidir — parolayı bilmeden tetiklenebilseydi uç, herhangi birinin istediği adrese posta yollatabildiği bir mekanizmaya dönerdi. Doğru parolayı verene hesabın kapalı olduğunu söylemek bir şey ele vermez; zaten kimlik bilgisi elinde olan biri bunu başka yollarla da öğrenir, söylememek ise onu yalnızca çıkışsız bırakırdı.</para><para>RegisterAsync'te üç durumun üçü de dışarıya aynı metni döndürür, hangisinin tetiklendiği yalnızca istemciye çıkmayan InternalMessage'da durur — bu ayrımı yanıta taşımak hesabın silinmiş mi pasif mi olduğunu ele verirdi. Pasif dal yeni satır açmaz, doğrulama postası gönderir; kullanıcı kendi hesabını yeniden kayıt olarak geri istiyorsa alacağı şey eski hesabıdır. Girilen parola bilerek yok sayılır, aksi hâlde adresin sahibi olmayan biri parola değiştirmeyi tetikleyebilirdi.</para></summary>
+/// <summary>Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.<para>Yalnızca <see cref="IPasswordHasher"/> biçimindeki özet kabul edilir. Eskiden geri çözülebilir biçimde saklanan parolalar giriş anında özete taşınıyordu; o dal kaldırıldı, çünkü kabul edildiği sürece veri tabanını ele geçiren biri config anahtarıyla parolaların düz metnine ulaşabiliyordu. O biçimde kalmış bir satır artık hatalı parola gibi reddedilir ve hesabın parolası sıfırlanmalıdır.</para><para>Turnstile zorunluluğu yalnızca LoginAsync için geçerlidir ve istemcinin bildirdiği AppSource'a değil, çağıranın uygulama jetonundan okunan kaynağa bakar: kaynak <c>Turnstile:RequiredApps</c> listesindeyse doğrulama istenir. Kendini jetonla tanıtmayan çağıran için kural terstir — giriş yapabilen ön-yüzlerin hepsi <c>AppTokens:Apps</c> altında kayıtlı hâle geldiğinde tanınmayan çağırandan doğrulama istenir, o güne kadar istenmez. Kural böyle kurulmuştur çünkü bugün panelin jetonu yoktur ve tanınmayan her çağırandan doğrulama istemek yöneticiyi kendi panelinden ederdi. RegisterAsync ise listeye hiç bakmadan her çağrıda doğrulama uygular.</para><para>Her iki uç da kullanıcıyı global süzgeci atlayarak okur (bkz. <see cref="IUserRepository"/>); silinmiş ve pasif satırları da görürler, çünkü pasif hesabın açılması ancak onu görebilmekle mümkün ve tekil indeksler o kullanıcı adlarını hâlâ tutuyor.</para><para>LoginAsync'te silinmiş hesap, var olmayan kullanıcı adıyla aynı dala düşer: aynı metin, aynı 401 ve aynı kukla özet hesabı. Pasif hesap ise yalnızca parola doğrulandıktan sonra ayrışır ve doğrulama postasını orada tetikler. Sıralama savunmanın kendisidir — parolayı bilmeden tetiklenebilseydi uç, herhangi birinin istediği adrese posta yollatabildiği bir mekanizmaya dönerdi. Doğru parolayı verene hesabın kapalı olduğunu söylemek bir şey ele vermez; zaten kimlik bilgisi elinde olan biri bunu başka yollarla da öğrenir, söylememek ise onu yalnızca çıkışsız bırakırdı.</para><para>RegisterAsync'te üç durumun üçü de dışarıya aynı metni döndürür, hangisinin tetiklendiği yalnızca istemciye çıkmayan InternalMessage'da durur — bu ayrımı yanıta taşımak hesabın silinmiş mi pasif mi olduğunu ele verirdi. Pasif dal yeni satır açmaz, doğrulama postası gönderir; kullanıcı kendi hesabını yeniden kayıt olarak geri istiyorsa alacağı şey eski hesabıdır. Girilen parola bilerek yok sayılır, aksi hâlde adresin sahibi olmayan biri parola değiştirmeyi tetikleyebilirdi.</para></summary>
 public class AuthService(
     IUnitOfWork unitOfWork,
     IPasswordHasher passwordHasher,
@@ -42,9 +42,9 @@ public class AuthService(
         new PasswordHasher().Hash("login-timing-defense-placeholder"),
         LazyThreadSafetyMode.ExecutionAndPublication);
 
-    public async Task<Result<LoginResultDto>> LoginAsync(LoginDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
+    public async Task<Result<LoginResultDto>> LoginAsync(LoginDto dto, string? ipAddress, string? userAgent, string? trustedAppSource = null, CancellationToken cancellationToken = default)
     {
-        if (IsTurnstileRequired(dto.AppSource) &&
+        if (IsTurnstileRequired(trustedAppSource) &&
             !await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, null, cancellationToken))
         {
             await _activityLogger.LogWarningAsync(
@@ -211,12 +211,18 @@ public class AuthService(
 
     private static string Ad(string? deger) => string.IsNullOrWhiteSpace(deger) ? "(boş)" : deger.Trim();
 
-    private bool IsTurnstileRequired(string? appSource)
+    private static readonly string[] LoginCapableApps =
+        [AppSourceDefinitions.Chat, AppSourceDefinitions.Admin];
+
+    private bool IsTurnstileRequired(string? trustedAppSource)
     {
-        if (string.IsNullOrWhiteSpace(appSource)) return false;
+        if (string.IsNullOrWhiteSpace(trustedAppSource))
+            return LoginCapableApps.All(app =>
+                _appTokenSettings.Apps.Any(kayitli => string.Equals(kayitli.AppName, app, StringComparison.Ordinal)));
+
         return _configuration.GetSection("Turnstile:RequiredApps")
             .GetChildren()
-            .Any(c => string.Equals(c.Value, appSource, StringComparison.OrdinalIgnoreCase));
+            .Any(c => string.Equals(c.Value, trustedAppSource, StringComparison.OrdinalIgnoreCase));
     }
 
     private LoginResultDto BuildLoginResult(User user, string roleName, string? appSource = null)

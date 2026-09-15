@@ -22,11 +22,14 @@ builder.Services.Configure<ApiOptions>(builder.Configuration.GetSection("Api"));
 var apiBaseUrl = builder.Configuration["Api:BaseUrl"]
     ?? throw new InvalidOperationException("Api:BaseUrl yapılandırılmamış.");
 
+builder.Services.AddSingleton<IAppTokenService, AppTokenService>();
+builder.Services.AddTransient<AppTokenFallbackHandler>();
+
 builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
-});
+}).AddHttpMessageHandler<AppTokenFallbackHandler>();
 
 builder.Services.AddHttpClient("AppTokenClient", client =>
 {
