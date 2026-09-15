@@ -7,18 +7,18 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>AES-CBC; anahtar ve IV yapılandırmadan okunur, iki ayrı bölüm adı (<c>EncryptionSettings</c> ve eski <c>EncryptionConfiguration</c>) sırayla denenir. İkisi de yoksa koda gömülü değerlere düşülür — yani eksik yapılandırma hata vermez, depoda açıkça duran bir anahtarla şifreleme yapılır.<para>IV sabit olduğundan aynı düz metin her zaman aynı şifreli metni üretir; eşit değerler şifreli hâllerine bakılarak eşleştirilebilir. Bu, mesaj içeriği için ayrı bir servisin (<see cref="IMessageProtector"/>) bulunma sebebidir.</para></summary>
+/// <summary>AES-CBC; anahtar ve IV yapılandırmadan okunur, iki ayrı bölüm adı (<c>EncryptionSettings</c> ve eski <c>EncryptionConfiguration</c>) sırayla denenir. İkisi de yoksa kurucu hata fırlatır: eskiden koda gömülü bir yedeğe düşülüyordu, o değerler depo herkese açık olduğu için yanmıştı ve eksik yapılandırmayı sessizce gizliyordu.<para>IV sabit olduğundan aynı düz metin her zaman aynı şifreli metni üretir; eşit değerler şifreli hâllerine bakılarak eşleştirilebilir. Bu, mesaj içeriği için ayrı bir servisin (<see cref="IMessageProtector"/>) bulunma sebebidir.</para></summary>
 public partial class EncryptionService(IConfiguration configuration) : IEncryptionService
 {
     private readonly byte[] _key = Encoding.UTF8.GetBytes(
         configuration["EncryptionSettings:Key"]
         ?? configuration["EncryptionConfiguration:Key"]
-        ?? "IJ%p*85DZ853*96@#@o32ivpR*2o#$@%");
+        ?? throw new InvalidOperationException("EncryptionSettings:Key yapılandırılmamış."));
 
     private readonly byte[] _iv = Encoding.UTF8.GetBytes(
         configuration["EncryptionSettings:IV"]
         ?? configuration["EncryptionConfiguration:IV"]
-        ?? "31eH*208Z%#W2**E");
+        ?? throw new InvalidOperationException("EncryptionSettings:IV yapılandırılmamış."));
 
     public Result<string> Encrypt(string value)
     {
