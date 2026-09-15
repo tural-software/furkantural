@@ -16,10 +16,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.<para>Başarılı giriş kayda yazabilir: parola eski geri çözülebilir biçimde saklanıyorsa doğrulandığı anda özet biçimine taşınır (bkz. <see cref="IPasswordHasher"/>). Böylece havuz ayrı bir taşıma işi olmadan zamanla dönüşür, ama okuma gibi görünen bir uç yazma yapar.</para><para>Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her çağrıda doğrulama uygular.</para><para>Her iki uç da kullanıcıyı global süzgeci atlayarak okur (bkz. <see cref="IUserRepository"/>); silinmiş ve pasif satırları da görürler, çünkü pasif hesabın açılması ancak onu görebilmekle mümkün ve tekil indeksler o kullanıcı adlarını hâlâ tutuyor.</para><para>LoginAsync'te silinmiş hesap, var olmayan kullanıcı adıyla aynı dala düşer: aynı metin, aynı 401 ve aynı kukla özet hesabı. Pasif hesap ise yalnızca parola doğrulandıktan sonra ayrışır ve doğrulama postasını orada tetikler. Sıralama savunmanın kendisidir — parolayı bilmeden tetiklenebilseydi uç, herhangi birinin istediği adrese posta yollatabildiği bir mekanizmaya dönerdi. Doğru parolayı verene hesabın kapalı olduğunu söylemek bir şey ele vermez; zaten kimlik bilgisi elinde olan biri bunu başka yollarla da öğrenir, söylememek ise onu yalnızca çıkışsız bırakırdı.</para><para>RegisterAsync'te üç durumun üçü de dışarıya aynı metni döndürür, hangisinin tetiklendiği yalnızca istemciye çıkmayan InternalMessage'da durur — bu ayrımı yanıta taşımak hesabın silinmiş mi pasif mi olduğunu ele verirdi. Pasif dal yeni satır açmaz, doğrulama postası gönderir; kullanıcı kendi hesabını yeniden kayıt olarak geri istiyorsa alacağı şey eski hesabıdır. Girilen parola bilerek yok sayılır, aksi hâlde adresin sahibi olmayan biri parola değiştirmeyi tetikleyebilirdi.</para></summary>
+/// <summary>Var olmayan kullanıcı adında da parola doğrulaması çalıştırılır: sabit bir kukla özet üzerinde gerçek bir PBKDF2 hesabı yapılır. Amaç yanıt süresini eşitlemektir — hemen dönülseydi süre farkı hangi kullanıcı adlarının kayıtlı olduğunu sayılabilir hâle getirirdi. Kukla özet süreç başına bir kez üretilir, çünkü her istekte üretmek savunmanın kendisini yük hâline getirirdi.<para>Yalnızca <see cref="IPasswordHasher"/> biçimindeki özet kabul edilir. Eskiden geri çözülebilir biçimde saklanan parolalar giriş anında özete taşınıyordu; o dal kaldırıldı, çünkü kabul edildiği sürece veri tabanını ele geçiren biri config anahtarıyla parolaların düz metnine ulaşabiliyordu. O biçimde kalmış bir satır artık hatalı parola gibi reddedilir ve hesabın parolası sıfırlanmalıdır.</para><para>Turnstile zorunluluğu <c>Turnstile:RequiredApps</c> listesine bakar ve yalnızca LoginAsync için geçerlidir; AppSource boş gelirse doğrulama hiç istenmez. RegisterAsync ise listeye bakmadan her çağrıda doğrulama uygular.</para><para>Her iki uç da kullanıcıyı global süzgeci atlayarak okur (bkz. <see cref="IUserRepository"/>); silinmiş ve pasif satırları da görürler, çünkü pasif hesabın açılması ancak onu görebilmekle mümkün ve tekil indeksler o kullanıcı adlarını hâlâ tutuyor.</para><para>LoginAsync'te silinmiş hesap, var olmayan kullanıcı adıyla aynı dala düşer: aynı metin, aynı 401 ve aynı kukla özet hesabı. Pasif hesap ise yalnızca parola doğrulandıktan sonra ayrışır ve doğrulama postasını orada tetikler. Sıralama savunmanın kendisidir — parolayı bilmeden tetiklenebilseydi uç, herhangi birinin istediği adrese posta yollatabildiği bir mekanizmaya dönerdi. Doğru parolayı verene hesabın kapalı olduğunu söylemek bir şey ele vermez; zaten kimlik bilgisi elinde olan biri bunu başka yollarla da öğrenir, söylememek ise onu yalnızca çıkışsız bırakırdı.</para><para>RegisterAsync'te üç durumun üçü de dışarıya aynı metni döndürür, hangisinin tetiklendiği yalnızca istemciye çıkmayan InternalMessage'da durur — bu ayrımı yanıta taşımak hesabın silinmiş mi pasif mi olduğunu ele verirdi. Pasif dal yeni satır açmaz, doğrulama postası gönderir; kullanıcı kendi hesabını yeniden kayıt olarak geri istiyorsa alacağı şey eski hesabıdır. Girilen parola bilerek yok sayılır, aksi hâlde adresin sahibi olmayan biri parola değiştirmeyi tetikleyebilirdi.</para></summary>
 public class AuthService(
     IUnitOfWork unitOfWork,
-    IEncryptionService encryptionService,
     IPasswordHasher passwordHasher,
     IConfiguration configuration,
     IOptions<AppTokenSettings> appTokenSettings,
@@ -31,7 +30,6 @@ public class AuthService(
 {
     private readonly IAccountActivationService _accountActivationService = accountActivationService;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly IEncryptionService _encryptionService = encryptionService;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly IConfiguration _configuration = configuration;
     private readonly AppTokenSettings _appTokenSettings = appTokenSettings.Value;
@@ -88,23 +86,8 @@ public class AuthService(
             return Result<LoginResultDto>.Fail("Kullanıcı adı veya şifre hatalı.", statusCode: 401);
         }
 
-        bool passwordValid;
-        if (_passwordHasher.IsHashed(user.Password))
-        {
-            passwordValid = _passwordHasher.Verify(dto.Password, user.Password);
-        }
-        else
-        {
-            var decryptResult = _encryptionService.Decrypt(user.Password);
-            passwordValid = !decryptResult.IsFailure && decryptResult.Data == dto.Password;
-
-            if (passwordValid)
-            {
-                user.Password = _passwordHasher.Hash(dto.Password);
-                await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-            }
-        }
+        var passwordValid = _passwordHasher.IsHashed(user.Password)
+            && _passwordHasher.Verify(dto.Password, user.Password);
 
         if (!passwordValid)
         {

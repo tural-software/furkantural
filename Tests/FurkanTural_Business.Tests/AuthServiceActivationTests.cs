@@ -75,7 +75,6 @@ public class AuthServiceActivationTests
 
         _sut = new AuthService(
             _uow.Object,
-            Mock.Of<IEncryptionService>(),
             _hasher.Object,
             configuration,
             Options.Create(new AppTokenSettings()),
@@ -118,6 +117,22 @@ public class AuthServiceActivationTests
 
     private void VerifyNoActivation()
         => _activation.Verify(a => a.IssueAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+
+    [Fact]
+    public async Task Eski_bicimde_saklanan_parolayla_giris_reddedilir()
+    {
+        _hasher.Setup(h => h.IsHashed(It.IsAny<string?>())).Returns(false);
+        ByUsername(Account(isActive: true, isDeleted: false));
+
+        var result = await Login();
+
+        result.IsFailure.Should().BeTrue();
+        result.StatusCode.Should().Be(401);
+        result.Errors[0].Should().Be("Kullanıcı adı veya şifre hatalı.");
+        _hasher.Verify(h => h.Verify(It.IsAny<string>(), It.IsAny<string>()), Times.Never,
+            "geri çözülebilir biçim artık hiç karşılaştırılmaz; kabul edildiği sürece veri tabanını ele " +
+            "geçiren biri config anahtarıyla parolaların düz metnine ulaşabiliyordu");
+    }
 
     [Fact]
     public async Task Silinmis_hesabin_bilgileriyle_giris_reddedilir()
