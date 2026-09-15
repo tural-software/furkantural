@@ -132,6 +132,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
                     context.Token = accessToken;
                 return Task.CompletedTask;
+            },
+
+            OnTokenValidated = async context =>
+            {
+                var stamp = context.Principal?.FindFirst(FurkanTural_Domain.Constants.ClaimDefinitions.SecurityStamp)?.Value;
+                if (string.IsNullOrEmpty(stamp))
+                    return;
+
+                var sub = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                       ?? context.Principal?.FindFirst("sub")?.Value;
+
+                if (!int.TryParse(sub, out var userId))
+                {
+                    context.Fail("Kimlik doğrulanamadı.");
+                    return;
+                }
+
+                var unitOfWork = context.HttpContext.RequestServices
+                    .GetRequiredService<FurkanTural_Application.Repositories.Abstract.IUnitOfWork>();
+                var user = await unitOfWork.Users.GetByIdAsync(userId, context.HttpContext.RequestAborted);
+
+                if (user is null || !string.Equals(user.SecurityStamp, stamp, StringComparison.Ordinal))
+                    context.Fail("Kimlik doğrulanamadı.");
             }
         };
     });

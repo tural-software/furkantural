@@ -67,6 +67,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
 
         var entity = dto.ToEntity();
         entity.Password = _passwordHasher.Hash(dto.Password);
+        entity.SecurityStamp = SecurityStamps.New();
 
         await _unitOfWork.Users.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -97,6 +98,8 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             yeniParolaOzeti = _passwordHasher.Hash(dto.Password);
         }
 
+        var rolDegisti = entity.RoleId != dto.RoleId;
+
         entity.Username = dto.Username;
         entity.RoleId = dto.RoleId;
         entity.Email = dto.Email;
@@ -106,6 +109,9 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
 
         if (yeniParolaOzeti is not null)
             entity.Password = yeniParolaOzeti;
+
+        if (rolDegisti || yeniParolaOzeti is not null)
+            entity.SecurityStamp = SecurityStamps.New();
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -120,6 +126,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         if (entity is null)
             return Result.Fail("Kullanıcı bulunamadı.", statusCode: 404);
 
+        entity.SecurityStamp = SecurityStamps.New();
         await _unitOfWork.Users.SoftDeleteAsync(entity, deletedBy, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kullanıcı silindi. Id: {id}", cancellationToken);
@@ -152,6 +159,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             return Result<AdminUserDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
 
         entity.IsActive = !entity.IsActive;
+        entity.SecurityStamp = SecurityStamps.New();
         entity.UpdatedBy = updatedBy;
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
@@ -171,6 +179,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             return Result<AdminUserDto>.Fail("Bu kayıt silinmemiş, geri yükleme yapılamaz.", statusCode: 400);
 
         entity.UpdatedBy = updatedBy;
+        entity.SecurityStamp = SecurityStamps.New();
         await _unitOfWork.Users.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kullanıcı geri yüklendi. Id: {id}", cancellationToken);
@@ -199,6 +208,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         var dto = new CreateUserDto { Username = username, Password = password, RoleId = 1 };
         var entity = dto.ToEntity();
         entity.Password = _passwordHasher.Hash(password);
+        entity.SecurityStamp = SecurityStamps.New();
 
         await _unitOfWork.Users.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -297,6 +307,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             return Result.Fail("Parola hatalı.", $"Hesap kapatma reddedildi: #{userId} parola doğrulanamadı.", 401);
 
         entity.IsActive = false;
+        entity.SecurityStamp = SecurityStamps.New();
         entity.UpdatedBy = userId;
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);

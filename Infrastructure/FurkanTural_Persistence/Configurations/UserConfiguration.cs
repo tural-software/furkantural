@@ -13,6 +13,7 @@ public class UserConfiguration : BaseEntityConfiguration<User>
         builder.ToTable("Users");
         builder.Property(e => e.Username).HasMaxLength(100).IsRequired();
         builder.Property(e => e.Password).HasMaxLength(500).IsRequired();
+        builder.Property(e => e.SecurityStamp).HasMaxLength(64);
         builder.HasIndex(e => e.Username).IsUnique();
 
         builder.Property(e => e.Email).HasMaxLength(256);

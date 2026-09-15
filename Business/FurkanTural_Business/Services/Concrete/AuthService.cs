@@ -163,6 +163,7 @@ public class AuthService(
             DisplayName = string.IsNullOrWhiteSpace(dto.DisplayName) ? dto.Username : dto.DisplayName,
             Password = _passwordHasher.Hash(dto.Password),
             RoleId = role.Id,
+            SecurityStamp = SecurityStamps.New(),
             MembershipAgreementAcceptedAt = _clock.UtcNow,
             MembershipAgreementVersion = AgreementDefinitions.CurrentVersion
         };
@@ -228,6 +229,9 @@ public class AuthService(
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.Role, roleName)
         };
+
+        if (!string.IsNullOrEmpty(user.SecurityStamp))
+            claims.Add(new Claim(ClaimDefinitions.SecurityStamp, user.SecurityStamp));
 
         if (!string.IsNullOrWhiteSpace(appSource)
             && _appTokenSettings.Apps.Any(a => string.Equals(a.AppName, appSource, StringComparison.Ordinal)))
