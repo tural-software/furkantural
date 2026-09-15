@@ -8,4 +8,5 @@ public class RegisterRequest
     public string? DisplayName { get; set; }
     public string? TurnstileToken { get; set; }
     public bool AcceptAgreement { get; set; }
+    public bool ConfirmAdult { get; set; }
 }

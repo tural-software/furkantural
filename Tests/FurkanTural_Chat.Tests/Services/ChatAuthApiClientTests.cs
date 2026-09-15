@@ -196,6 +196,41 @@ public class ChatAuthApiClientTests
         capturedBody.Should().Contain("Chat");
     }
 
+    // ---- RegisterAsync: request body'de yas beyani kontrol ----
+
+    [Fact]
+    public async Task RegisterAsync_Always_SendsConfirmAdultInRequestBody()
+    {
+        // Arrange
+        string? capturedBody = null;
+        var handler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        handler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Returns(async (HttpRequestMessage r, CancellationToken _) =>
+            {
+                capturedBody = await r.Content!.ReadAsStringAsync();
+                var ok = new ApiResult<AuthResultModel> { Success = true, Data = new AuthResultModel { Token = "t" } };
+                return OkJson(ok);
+            });
+
+        var http = new HttpClient(handler.Object) { BaseAddress = new Uri("https://api.test.local") };
+        var sut = new ChatAuthApiClient(http, NullLogger<ChatAuthApiClient>.Instance);
+
+        // Act
+        await sut.RegisterAsync(new RegisterRequestModel
+        {
+            Username = "newuser", Email = "new@ex.com", Password = "P@ss1",
+            AcceptAgreement = true, ConfirmAdult = true
+        });
+
+        // Assert
+        capturedBody.Should().Contain("confirmAdult",
+            "yaş beyanı API'ye iletilmezse sunucu her kaydı beyansız sayıp reddeder");
+        capturedBody.Should().Contain("acceptAgreement");
+    }
+
     // ---- RegisterAsync: basarili senaryo ----
 
     [Fact]

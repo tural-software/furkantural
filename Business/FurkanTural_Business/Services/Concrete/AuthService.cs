@@ -144,6 +144,9 @@ public class AuthService(
         if (!dto.AcceptAgreement)
             return Result<LoginResultDto>.Fail("Üyelik sözleşmesini onaylamadan kayıt olamazsınız.");
 
+        if (!dto.ConfirmAdult)
+            return Result<LoginResultDto>.Fail("Üye olmak için 18 yaşını doldurmuş olmalısınız.");
+
         var usernameOwner = await _unitOfWork.Users.GetByUsernameForAdminAsync(username, cancellationToken);
         if (usernameOwner is not null)
             return await RegistrationRefusedAsync(usernameOwner, "Bu kullanıcı adı zaten kullanılıyor.", ipAddress, userAgent, cancellationToken);
@@ -165,7 +168,8 @@ public class AuthService(
             RoleId = role.Id,
             SecurityStamp = SecurityStamps.New(),
             MembershipAgreementAcceptedAt = _clock.UtcNow,
-            MembershipAgreementVersion = AgreementDefinitions.CurrentVersion
+            MembershipAgreementVersion = AgreementDefinitions.CurrentVersion,
+            AdultConfirmedAt = _clock.UtcNow
         };
 
         await _unitOfWork.Users.AddAsync(user, cancellationToken);

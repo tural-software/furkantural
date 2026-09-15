@@ -112,7 +112,8 @@ public class AuthServiceActivationTests
             Username = "deneme",
             Email = "deneme@ornek.test",
             Password = "Yeni-Parola7",
-            AcceptAgreement = true
+            AcceptAgreement = true,
+            ConfirmAdult = true
         }, "203.0.113.9", "Firefox");
 
     private void VerifyNoActivation()
@@ -348,7 +349,8 @@ public class AuthServiceActivationTests
             Username = "deneme",
             Email = "deneme@ornek.test",
             Password = parola,
-            AcceptAgreement = true
+            AcceptAgreement = true,
+            ConfirmAdult = true
         }, "203.0.113.9", "Firefox");
 
         result.IsFailure.Should().BeTrue("parola kuralı sunucuda çalışmazsa istemci doğrulaması atlanabilir");
@@ -361,7 +363,8 @@ public class AuthServiceActivationTests
             Username = username,
             Email = email,
             Password = "Yeni-Parola7",
-            AcceptAgreement = true
+            AcceptAgreement = true,
+            ConfirmAdult = true
         }, "203.0.113.9", "Firefox");
 
     [Fact]
@@ -407,5 +410,59 @@ public class AuthServiceActivationTests
 
         result.IsFailure.Should().BeTrue();
         _created.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Yas_beyani_olmadan_kayit_reddedilir()
+    {
+        ByUsername(null);
+        ByEmail(null);
+
+        var result = await _sut.RegisterAsync(new RegisterDto
+        {
+            Username = "yenikullanici",
+            Email = "yeni@ornek.test",
+            Password = "Yeni-Parola7",
+            AcceptAgreement = true,
+            ConfirmAdult = false
+        }, "203.0.113.9", "Firefox");
+
+        result.IsFailure.Should().BeTrue();
+        result.Errors[0].Should().Contain("18 yaşını");
+        _created.Should().BeEmpty(
+            "yaş kapısı yalnızca istemci formunda dururken doğrudan API'ye giden kayıt onu hiç görmüyordu");
+    }
+
+    [Fact]
+    public async Task Sozlesme_onayi_yas_beyaninin_yerine_gecmez()
+    {
+        ByUsername(null);
+        ByEmail(null);
+
+        var result = await _sut.RegisterAsync(new RegisterDto
+        {
+            Username = "yenikullanici",
+            Email = "yeni@ornek.test",
+            Password = "Yeni-Parola7",
+            AcceptAgreement = false,
+            ConfirmAdult = true
+        }, "203.0.113.9", "Firefox");
+
+        result.IsFailure.Should().BeTrue("iki onay ayrı iradedir, biri diğerini kapsamaz");
+        _created.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Yas_beyani_kullanici_satirina_damgalanir()
+    {
+        ByUsername(null);
+        ByEmail(null);
+
+        var result = await Register();
+
+        result.Success.Should().BeTrue();
+        _created.Should().ContainSingle();
+        _created[0].AdultConfirmedAt.Should().Be(new DateTime(2026, 8, 24, 12, 0, 0, DateTimeKind.Utc),
+            "yaş sınırı ileride değişirse kimin ne zaman beyan ettiği ancak bu damgadan okunabilir");
     }
 }

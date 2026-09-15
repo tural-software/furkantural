@@ -30,7 +30,8 @@ public class ChatAuthApiClient(HttpClient httpClient, ILogger<ChatAuthApiClient>
             password = request.Password,
             displayName = request.DisplayName,
             turnstileToken = request.TurnstileToken,
-            acceptAgreement = request.AcceptAgreement
+            acceptAgreement = request.AcceptAgreement,
+            confirmAdult = request.ConfirmAdult
         }, ApiResult<AuthResultModel>.Fail, cancellationToken);
 
     public Task<ApiResult> ActivateAsync(string? token, CancellationToken cancellationToken = default)

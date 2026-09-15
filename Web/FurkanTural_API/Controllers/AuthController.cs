@@ -64,7 +64,8 @@ public class AuthController(IAuthService authService, IAccountActivationService 
             Password = request.Password,
             DisplayName = request.DisplayName,
             TurnstileToken = request.TurnstileToken,
-            AcceptAgreement = request.AcceptAgreement
+            AcceptAgreement = request.AcceptAgreement,
+            ConfirmAdult = request.ConfirmAdult
         }, ClientIp(), ClientAgent(), cancellationToken));
 
     /// <summary>Doğrulama bağlantısındaki jeton ile pasif hesabı yeniden etkinleştir</summary>
