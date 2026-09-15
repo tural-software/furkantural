@@ -17,6 +17,9 @@ public class PushSubscriptionService(IUnitOfWork unitOfWork, IConfiguration conf
         if (string.IsNullOrWhiteSpace(dto.Endpoint) || string.IsNullOrWhiteSpace(dto.P256dh) || string.IsNullOrWhiteSpace(dto.Auth))
             return Result.Fail("Geçersiz abonelik bilgisi.", statusCode: 400);
 
+        if (!IsPushServiceEndpoint(dto.Endpoint!))
+            return Result.Fail("Geçersiz abonelik bilgisi.", "Abonelik adresi push servisi adresi değil.", 400);
+
         var existing = await _unitOfWork.PushSubscriptions.GetAsync(s => s.Endpoint == dto.Endpoint, cancellationToken);
         if (existing is not null)
         {
@@ -63,5 +66,42 @@ public class PushSubscriptionService(IUnitOfWork unitOfWork, IConfiguration conf
         if (string.IsNullOrWhiteSpace(key) || key.Contains("####") || key.StartsWith("CHANGE_ME", StringComparison.OrdinalIgnoreCase))
             return null;
         return key;
+    }
+
+    private static bool IsPushServiceEndpoint(string endpoint)
+    {
+        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var uri))
+            return false;
+
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal))
+            return false;
+
+        if (string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        if (System.Net.IPAddress.TryParse(uri.Host, out var address))
+            return !IsInternal(address);
+
+        return true;
+    }
+
+    private static bool IsInternal(System.Net.IPAddress address)
+    {
+        if (System.Net.IPAddress.IsLoopback(address) || address.IsIPv6LinkLocal || address.IsIPv6UniqueLocal)
+            return true;
+
+        if (address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
+            return address.IsIPv4MappedToIPv6 && IsInternal(address.MapToIPv4());
+
+        var bytes = address.GetAddressBytes();
+        return bytes[0] switch
+        {
+            10 => true,
+            127 => true,
+            169 when bytes[1] == 254 => true,
+            172 when bytes[1] >= 16 && bytes[1] <= 31 => true,
+            192 when bytes[1] == 168 => true,
+            _ => false
+        };
     }
 }
