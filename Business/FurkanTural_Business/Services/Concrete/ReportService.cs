@@ -11,15 +11,20 @@ using FurkanTural_Domain.Entities;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class ReportService(IUnitOfWork unitOfWork, ActivityLogger activityLogger) : IReportService
+public class ReportService(IUnitOfWork unitOfWork, IAbuseThrottle abuseThrottle, ActivityLogger activityLogger) : IReportService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IAbuseThrottle _abuseThrottle = abuseThrottle;
     private readonly ActivityLogger _activityLogger = activityLogger;
 
     public async Task<Result> CreateAsync(int reporterId, CreateReportDto dto, CancellationToken cancellationToken = default)
     {
         if (!ReportDefinitions.IsValidTargetType(dto.TargetType))
             return Result.Fail("Geçersiz şikayet türü.");
+
+        if (!_abuseThrottle.TryRegister(AbuseBuckets.Report, reporterId.ToString()))
+            return Result.Fail("Çok fazla şikayet gönderdiniz. Lütfen bir süre sonra tekrar deneyin.",
+                $"Şikayet hız sınırı aşıldı: {reporterId}", 429);
 
         if (dto.ReportedUserId is { } reportedId)
         {

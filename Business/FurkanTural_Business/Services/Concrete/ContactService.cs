@@ -20,6 +20,7 @@ public class ContactService(
     IConfiguration configuration,
     ActivityLogger activityLogger,
     ITurnstileVerifier turnstileVerifier,
+    IAbuseThrottle abuseThrottle,
     IClock clock) : IContactService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -27,10 +28,15 @@ public class ContactService(
     private readonly IConfiguration _configuration = configuration;
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
+    private readonly IAbuseThrottle _abuseThrottle = abuseThrottle;
     private readonly IClock _clock = clock;
 
     public async Task<Result> SubmitAsync(SubmitContactDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
+        if (!_abuseThrottle.TryRegister(AbuseBuckets.Contact, ipAddress))
+            return Result.Fail("Çok fazla mesaj gönderdiniz. Lütfen bir süre sonra tekrar deneyin.",
+                $"İletişim formu hız sınırı aşıldı: {ipAddress}", 429);
+
         if (!await _turnstileVerifier.VerifyAsync(dto.TurnstileToken, ipAddress, cancellationToken))
             return Result.Fail("Robot doğrulaması başarısız oldu. Lütfen tekrar deneyin.");
 

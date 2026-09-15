@@ -18,9 +18,11 @@ public class UserFriendService(
     IChatNotifier chatNotifier,
     IPresenceTracker presenceTracker,
     ActivityLogger activityLogger,
+    IAbuseThrottle abuseThrottle,
     IClock clock) : IUserFriendService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IAbuseThrottle _abuseThrottle = abuseThrottle;
     private readonly IStatusService _statusService = statusService;
     private readonly IChatNotifier _chatNotifier = chatNotifier;
     private readonly IPresenceTracker _presenceTracker = presenceTracker;
@@ -34,6 +36,10 @@ public class UserFriendService(
     {
         if (requesterId == addresseeId)
             return Result.Fail("Kendinizi arkadaş olarak ekleyemezsiniz.");
+
+        if (!_abuseThrottle.TryRegister(AbuseBuckets.FriendRequest, requesterId.ToString()))
+            return Result.Fail("Çok fazla arkadaşlık isteği gönderdiniz. Lütfen bir süre sonra tekrar deneyin.",
+                $"Arkadaşlık isteği hız sınırı aşıldı: {requesterId}", 429);
 
         var target = await _unitOfWork.Users.GetByIdAsync(addresseeId, cancellationToken);
         if (target is null)
