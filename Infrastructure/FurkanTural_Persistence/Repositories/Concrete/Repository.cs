@@ -106,6 +106,9 @@ public class Repository<T>(FurkanTuralDbContext context) : IRepository<T> where 
 
     public async Task<IEnumerable<T>> GetAllPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? predicate = null, bool descending = false, CancellationToken cancellationToken = default)
     {
+        pageNumber = pageNumber < 1 ? 1 : pageNumber;
+        pageSize = Math.Clamp(pageSize, 1, 200);
+
         if (predicate != null)
         {
             var query = _dbSet.AsNoTracking().Where(predicate);

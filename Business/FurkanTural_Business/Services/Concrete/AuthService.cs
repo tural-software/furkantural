@@ -268,7 +268,10 @@ public class AuthService(
             return Task.FromResult(Result<LoginResultDto>.Fail("AppName boş olamaz.", statusCode: 400));
 
         var registered = _appTokenSettings.Apps
-            .FirstOrDefault(a => a.AppKey == dto.AppKey && a.AppName == dto.AppName);
+            .FirstOrDefault(a => string.Equals(a.AppName, dto.AppName, StringComparison.Ordinal)
+                && System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+                    Encoding.UTF8.GetBytes(a.AppKey ?? string.Empty),
+                    Encoding.UTF8.GetBytes(dto.AppKey ?? string.Empty)));
 
         if (registered is null)
             return Task.FromResult(Result<LoginResultDto>.Fail("Geçersiz uygulama kimlik bilgileri.", statusCode: 401));

@@ -226,7 +226,6 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         var matches = await _unitOfWork.Users.GetAllPagedAsync(1, 40,
             x => x.Id != currentUserId &&
                 ((x.Username != null && x.Username.Contains(q)) ||
-                 x.Email == q ||
                  (x.DisplayName != null && x.DisplayName.Contains(q))),
             cancellationToken: cancellationToken);
 
