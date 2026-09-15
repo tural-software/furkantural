@@ -73,7 +73,10 @@ public class LiveNoticeContractTests
         var program = AdminFile("Program.cs");
         var client = AdminFile("wwwroot", "js", "admin-live.js");
 
-        program.Should().Contain("\"/bff/{**catch-all}\"");
+        program.Should().Contain("\"/bff/hubs/{**remainder}\"",
+            "vekil yalnız hub yolunu taşır; catch-all olsaydı yönetici oturumuyla tüm API yüzeyi aynı kökenden çağrılabilirdi");
+        program.Should().Contain("Sec-Fetch-Site",
+            "kardeş alt alan adları aynı site sayıldığından çerez yine gönderilir; köken denetimi olmadan vekil CSRF'e açık kalır");
         program.Should().Contain("session.GetString(\"token\")", "jeton vekilde oturumdan okunur");
         program.Should().Contain("app.MapReverseProxy();");
 

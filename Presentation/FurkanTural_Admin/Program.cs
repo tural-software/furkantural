@@ -40,7 +40,7 @@ var bffRoutes = new[]
     {
         RouteId = "bff",
         ClusterId = "api",
-        Match = new RouteMatch { Path = "/bff/{**catch-all}" }
+        Match = new RouteMatch { Path = "/bff/hubs/{**remainder}" }
     }
     .WithTransformPathRemovePrefix("/bff")
 };
@@ -63,6 +63,7 @@ builder.Services.AddReverseProxy()
     {
         transforms.AddRequestTransform(async ctx =>
         {
+            ctx.ProxyRequest.Headers.Authorization = null;
             ClientForwarding.Apply(ctx.HttpContext, ctx.ProxyRequest.Headers);
 
             await ctx.HttpContext.Session.LoadAsync();
@@ -302,6 +303,30 @@ app.UseRouting();
 
 app.UseSession();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/bff"))
+    {
+        var fetchSite = context.Request.Headers["Sec-Fetch-Site"].ToString();
+        if (fetchSite.Length > 0 && !string.Equals(fetchSite, "same-origin", StringComparison.Ordinal))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return;
+        }
+
+        var origin = context.Request.Headers["Origin"].ToString();
+        if (origin.Length > 0
+            && (!Uri.TryCreate(origin, UriKind.Absolute, out var originUri)
+                || !string.Equals(originUri.Host, context.Request.Host.Host, StringComparison.OrdinalIgnoreCase)))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return;
+        }
+    }
+
+    await next();
+});
 
 app.MapReverseProxy();
 
