@@ -71,7 +71,7 @@ public class ChatMessageService(
         {
             SenderId = senderId,
             ReceiverId = receiverId,
-            Content = _messageProtector.Protect(plaintext),
+            Content = _messageProtector.Protect(plaintext, senderId, receiverId),
             MessageType = "Text",
             IsRead = false
         };
@@ -178,14 +178,14 @@ public class ChatMessageService(
     private ChatMessageDto ToDecryptedDto(ChatMessage entity)
     {
         var dto = entity.ToDto();
-        dto.Content = _messageProtector.Unprotect(dto.Content);
+        dto.Content = _messageProtector.Unprotect(dto.Content, entity.SenderId, entity.ReceiverId);
         return dto;
     }
 
     private AdminChatMessageDto ToDecryptedAdminDto(ChatMessage entity, IReadOnlyDictionary<int, string?> usernames)
     {
         var dto = entity.ToAdminDto();
-        dto.Content = _messageProtector.Unprotect(dto.Content);
+        dto.Content = _messageProtector.Unprotect(dto.Content, entity.SenderId, entity.ReceiverId);
         dto.SenderUsername = usernames.GetValueOrDefault(entity.SenderId);
         dto.ReceiverUsername = usernames.GetValueOrDefault(entity.ReceiverId);
         return dto;
@@ -231,7 +231,7 @@ public class ChatMessageService(
                 Username = friend.Username,
                 DisplayName = friend.DisplayName,
                 AvatarUrl = friend.AvatarUrl,
-                LastMessage = _messageProtector.Unprotect(agg?.LastMessage),
+                LastMessage = _messageProtector.Unprotect(agg?.LastMessage, currentUserId, friend.FriendUserId),
                 LastMessageType = agg?.LastMessageType,
                 LastMessageAt = agg?.LastMessageAt,
                 UnreadCount = agg?.UnreadCount ?? 0
@@ -294,7 +294,7 @@ public class ChatMessageService(
         if (_clock.UtcNow - entity.CreatedAt > EditWindow)
             return Result<ChatMessageDto>.Fail($"Mesaj yalnızca gönderildikten sonraki {(int)EditWindow.TotalMinutes} dakika içinde düzenlenebilir.");
 
-        entity.Content = _messageProtector.Protect(trimmed);
+        entity.Content = _messageProtector.Protect(trimmed, entity.SenderId, entity.ReceiverId);
         entity.EditedAt = _clock.UtcNow;
         await _unitOfWork.ChatMessages.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -373,7 +373,7 @@ public class ChatMessageService(
         foreach (var batch in pending.Chunk(500))
         {
             foreach (var entity in batch)
-                entity.Content = _messageProtector.Protect(entity.Content);
+                entity.Content = _messageProtector.Protect(entity.Content, entity.SenderId, entity.ReceiverId);
 
             await _unitOfWork.ChatMessages.UpdateRangeAsync(batch, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
