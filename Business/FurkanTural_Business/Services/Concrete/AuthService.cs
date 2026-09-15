@@ -246,7 +246,8 @@ public class AuthService(
             new(ClaimTypes.Role, roleName)
         };
 
-        if (!string.IsNullOrWhiteSpace(appSource))
+        if (!string.IsNullOrWhiteSpace(appSource)
+            && _appTokenSettings.Apps.Any(a => string.Equals(a.AppName, appSource, StringComparison.Ordinal)))
             claims.Add(new Claim("app_source", appSource));
 
         var token = new JwtSecurityToken(

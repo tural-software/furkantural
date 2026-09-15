@@ -44,23 +44,26 @@ public class ForwardedClientMiddlewareTests
     [InlineData("Admin")]
     public async Task Sitelerimizin_jetonuyla_gelen_ziyaretci_bilgisi_kullanilir(string app)
     {
-        var context = Request(Token(appSource: app));
+        var context = Request(Token(appSource: app, role: "Visitor"));
 
         await Run(context);
 
-        context.Connection.RemoteIpAddress.Should().Be(IPAddress.Parse(VisitorIp));
+        context.Connection.RemoteIpAddress.Should().Be(IPAddress.Parse(VisitorIp),
+            "app-token her zaman Visitor rolüyle üretilir; ziyaretçi bilgisini yalnızca sunucudan sunucuya " +
+            "konuşan bu jeton taşıyabilir");
         context.Request.Headers.UserAgent.ToString().Should().Be(VisitorAgent);
     }
 
     [Fact]
-    public async Task Panel_yoneticisinin_jetonu_uygulama_adi_tasimasa_da_guvenilir()
+    public async Task Yonetici_rolu_tek_basina_ziyaretci_bilgisi_yazdirmaz()
     {
         var context = Request(Token(role: "Admin"));
 
         await Run(context);
 
-        context.Connection.RemoteIpAddress.Should().Be(IPAddress.Parse(VisitorIp),
-            "panel girişi uygulama adı göndermez; yönetici jetonu yalnızca panelin oturumunda durur");
+        context.Connection.RemoteIpAddress.Should().Be(ServerIp,
+            "yönetici jetonunun yalnızca panelde durduğu varsayımı yanlıştı: jeton API'ye doğrudan da " +
+            "sunulabilir, o yüzden rol tek başına başlık yazma yetkisi vermemeli");
     }
 
     [Fact]
@@ -79,6 +82,9 @@ public class ForwardedClientMiddlewareTests
     [InlineData("Mobile", null)]
     [InlineData(null, "User")]
     [InlineData(null, "Visitor")]
+    [InlineData("Chat", "User")]
+    [InlineData("Chat", "Admin")]
+    [InlineData("Admin", "User")]
     public async Task Taninmayan_uygulamanin_ya_da_rolun_basliklari_yok_sayilir(string? app, string? role)
     {
         var context = Request(Token(appSource: app, role: role));
@@ -86,7 +92,8 @@ public class ForwardedClientMiddlewareTests
         await Run(context);
 
         context.Connection.RemoteIpAddress.Should().Be(ServerIp,
-            "jetonunu cihazda tutan bir istemci güven listesine girmemeli");
+            "app_source girişte istemcinin gönderdiği gövdeden üretilir; kullanıcı jetonu da onu taşıyabildiği " +
+            "için tek başına yetmez, yoksa üye kendi IP'sini uydurup giriş kilidini boşa düşürür");
     }
 
     [Theory]
@@ -96,7 +103,7 @@ public class ForwardedClientMiddlewareTests
     [InlineData("   ")]
     public async Task Gecersiz_ip_baglanti_adresini_degistirmez(string ip)
     {
-        var context = Request(Token(appSource: "Blog"), ip: ip);
+        var context = Request(Token(appSource: "Blog", role: "Visitor"), ip: ip);
 
         await Run(context);
 
@@ -106,7 +113,7 @@ public class ForwardedClientMiddlewareTests
     [Fact]
     public async Task IPv6_adresi_kabul_edilir()
     {
-        var context = Request(Token(appSource: "Chat"), ip: "2001:db8::7");
+        var context = Request(Token(appSource: "Chat", role: "Visitor"), ip: "2001:db8::7");
 
         await Run(context);
 
@@ -116,7 +123,7 @@ public class ForwardedClientMiddlewareTests
     [Fact]
     public async Task Tarayici_bilgisi_olmadan_mevcut_deger_korunur()
     {
-        var context = Request(Token(appSource: "Portfolio"), userAgent: null);
+        var context = Request(Token(appSource: "Portfolio", role: "Visitor"), userAgent: null);
         context.Request.Headers.UserAgent = "sunucu-istemcisi";
 
         await Run(context);
@@ -127,7 +134,7 @@ public class ForwardedClientMiddlewareTests
     [Fact]
     public async Task Uzun_tarayici_bilgisi_kirpilir()
     {
-        var context = Request(Token(appSource: "Blog"), userAgent: new string('a', 2000));
+        var context = Request(Token(appSource: "Blog", role: "Visitor"), userAgent: new string('a', 2000));
 
         await Run(context);
 
