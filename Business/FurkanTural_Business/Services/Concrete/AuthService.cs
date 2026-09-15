@@ -132,11 +132,11 @@ public class AuthService(
             return Result<LoginResultDto>.Fail("Robot doğrulaması başarısız oldu. Lütfen tekrar deneyin.", statusCode: 400);
         }
 
-        if (string.IsNullOrWhiteSpace(dto.Username))
-            return Result<LoginResultDto>.Fail("Kullanıcı adı boş olamaz.");
+        if (!AccountNames.TryNormalizeUsername(dto.Username, out var username, out var kullaniciAdiHatasi))
+            return Result<LoginResultDto>.Fail(kullaniciAdiHatasi);
 
-        if (string.IsNullOrWhiteSpace(dto.Email))
-            return Result<LoginResultDto>.Fail("E-posta boş olamaz.");
+        if (!AccountNames.TryNormalizeEmail(dto.Email, out var email, out var adresHatasi))
+            return Result<LoginResultDto>.Fail(adresHatasi);
 
         if (!PasswordPolicy.TryValidate(dto.Password, out var parolaHatasi))
             return Result<LoginResultDto>.Fail(parolaHatasi);
@@ -144,11 +144,11 @@ public class AuthService(
         if (!dto.AcceptAgreement)
             return Result<LoginResultDto>.Fail("Üyelik sözleşmesini onaylamadan kayıt olamazsınız.");
 
-        var usernameOwner = await _unitOfWork.Users.GetByUsernameForAdminAsync(dto.Username, cancellationToken);
+        var usernameOwner = await _unitOfWork.Users.GetByUsernameForAdminAsync(username, cancellationToken);
         if (usernameOwner is not null)
             return await RegistrationRefusedAsync(usernameOwner, "Bu kullanıcı adı zaten kullanılıyor.", ipAddress, userAgent, cancellationToken);
 
-        var emailOwner = await _unitOfWork.Users.GetByEmailForAdminAsync(dto.Email, cancellationToken);
+        var emailOwner = await _unitOfWork.Users.GetByEmailForAdminAsync(email, cancellationToken);
         if (emailOwner is not null)
             return await RegistrationRefusedAsync(emailOwner, "Bu e-posta adresi zaten kullanılıyor.", ipAddress, userAgent, cancellationToken);
 
@@ -158,9 +158,9 @@ public class AuthService(
 
         var user = new User
         {
-            Username = dto.Username,
-            Email = dto.Email,
-            DisplayName = string.IsNullOrWhiteSpace(dto.DisplayName) ? dto.Username : dto.DisplayName,
+            Username = username,
+            Email = email,
+            DisplayName = string.IsNullOrWhiteSpace(dto.DisplayName) ? username : dto.DisplayName.Trim(),
             Password = _passwordHasher.Hash(dto.Password),
             RoleId = role.Id,
             SecurityStamp = SecurityStamps.New(),

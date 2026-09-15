@@ -354,4 +354,58 @@ public class AuthServiceActivationTests
         result.IsFailure.Should().BeTrue("parola kuralı sunucuda çalışmazsa istemci doğrulaması atlanabilir");
         _created.Should().BeEmpty();
     }
+
+    private Task<Result<LoginResultDto>> RegisterAs(string? username, string? email = "deneme@ornek.test")
+        => _sut.RegisterAsync(new RegisterDto
+        {
+            Username = username,
+            Email = email,
+            Password = "Yeni-Parola7",
+            AcceptAgreement = true
+        }, "203.0.113.9", "Firefox");
+
+    [Fact]
+    public async Task Kullanici_adi_ve_adres_kanonik_yazimiyla_kaydedilir()
+    {
+        ByUsername(null);
+        ByEmail(null);
+
+        var result = await RegisterAs("  Deneme  ", "  Deneme@Ornek.TEST ");
+
+        result.Success.Should().BeTrue();
+        _created.Should().ContainSingle();
+        _created[0].Username.Should().Be("Deneme");
+        _created[0].Email.Should().Be("deneme@ornek.test",
+            "adres tekilliği bu değere dayanıyor; iki farklı yazım iki satır açmamalı");
+    }
+
+    [Theory]
+    [InlineData("admin")]
+    [InlineData("a.d.m.i.n")]
+    [InlineData("аdmin")]
+    [InlineData("ali veli")]
+    public async Task Ayrilmis_veya_taklit_kullanici_adiyla_kayit_reddedilir(string username)
+    {
+        ByUsername(null);
+        ByEmail(null);
+
+        var result = await RegisterAs(username);
+
+        result.IsFailure.Should().BeTrue();
+        _created.Should().BeEmpty("ad denetimi yalnızca istemcide kalırsa doğrudan API'ye giden kayıt onu atlar");
+    }
+
+    [Theory]
+    [InlineData("abc")]
+    [InlineData("Deneme <deneme@ornek.test>")]
+    public async Task Gecersiz_adresle_kayit_reddedilir(string email)
+    {
+        ByUsername(null);
+        ByEmail(null);
+
+        var result = await RegisterAs("yenikullanici", email);
+
+        result.IsFailure.Should().BeTrue();
+        _created.Should().BeEmpty();
+    }
 }
