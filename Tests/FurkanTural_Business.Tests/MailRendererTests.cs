@@ -89,4 +89,37 @@ public class MailRendererTests
         user.Should().BeEquivalentTo(
             ["FullName", "Email", "Message", "CreatedAt", "CurrentYear", "ContactEmail", "LinkedInUrl", "GitHubUrl", "InstagramUrl"]);
     }
+
+    [Fact]
+    public void Govdede_ziyaretcinin_yazdigi_deger_kacislanir()
+    {
+        var result = _sut.Render("<p>{{FullName}}</p>",
+            new ContactOwnerMailDto { FullName = "<a href=\"https://kotu.test\">Parolani yenile</a>" },
+            encodeHtml: true);
+
+        result.Should().NotContain("<a href",
+            "iletişim formunu dolduran kişi postaya bağlantı sokabilirse, ileti kendi alan adımızdan " +
+            "gönderilen bir oltalama iletisine döner");
+        result.Should().Contain("&lt;a href");
+    }
+
+    [Fact]
+    public void Konu_yolunda_kacis_uygulanmaz()
+    {
+        var result = _sut.Render("Yeni mesaj - {{FullName}}", new ContactOwnerMailDto { FullName = "Ada & Co" });
+
+        result.Should().Be("Yeni mesaj - Ada & Co",
+            "konu satırı HTML değildir; kaçışlanırsa alıcı ampersand yerine '&amp;' görür");
+    }
+
+    [Fact]
+    public void Yoneticinin_yazdigi_bulten_govdesi_ham_kalir()
+    {
+        var result = _sut.Render("<div>{{Body}}</div>",
+            new NewsletterIssueMailDto { Body = "<h1>Merhaba</h1>" },
+            encodeHtml: true);
+
+        result.Should().Be("<div><h1>Merhaba</h1></div>",
+            "bülten gövdesini panelde yönetici HTML olarak yazar; kaçışlanırsa abone metni etiketleriyle görür");
+    }
 }

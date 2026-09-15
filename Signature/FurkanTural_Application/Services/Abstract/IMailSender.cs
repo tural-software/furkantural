@@ -11,5 +11,6 @@ public interface IMailSender
 /// <summary>Şablon metnindeki <c>{{Ad}}</c> ifadelerini gövde DTO'sunun aynı adlı özellikleriyle değiştirir; eşleşme büyük/küçük harfe duyarlıdır.<para>Karşılığı olmayan yer tutucu boşa indirilir ve uyarı olarak kaydedilir. Olduğu gibi bırakmak <c>{{Foo}}</c> ifadesinin müşteriye giden postada görünmesi demek olurdu; sessizce silmek ise yazım hatasını gizlerdi.</para></summary>
 public interface IMailRenderer
 {
-    string Render(string? template, object payload);
+    /// <summary><paramref name="encodeHtml"/> yalnızca HTML gövde için verilir: yerleştirilen değerler kaçışlanır, yoksa ziyaretçinin yazdığı ad veya mesaj postaya etiket olarak girer. Konu satırında kapalı kalmalıdır, orada kaçış <c>&amp;amp;</c> gibi görünür bozulmalar üretir. Yöneticinin panelde yazdığı bülten gövdesi gibi bilerek ham bırakılan alanlar kaçıştan muaf tutulur.</summary>
+    string Render(string? template, object payload, bool encodeHtml = false);
 }

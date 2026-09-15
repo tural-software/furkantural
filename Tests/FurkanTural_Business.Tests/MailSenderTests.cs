@@ -76,6 +76,30 @@ public class MailSenderTests
             new AccountActivationMailDto { DisplayName = "Ada", ActivationUrl = "https://ornek.test/x" });
 
     [Fact]
+    public async Task Govde_kacisli_konu_ham_gonderilir()
+    {
+        _templateRows.Add(new MailTemplate
+        {
+            Id = 1,
+            MailTemplateTypeId = ActivationTypeId,
+            AppSourceId = ChatId,
+            Subject = "Hos geldin {{DisplayName}}",
+            HtmlContent = "<p>{{DisplayName}}</p>"
+        });
+
+        await _sut.SendAsync(MailTemplateDefinitions.AccountActivation, AppSourceDefinitions.Chat, "deneme@ornek.test",
+            new AccountActivationMailDto { DisplayName = "<b>Ada</b>", ActivationUrl = "https://ornek.test/x" });
+
+        _delivered.Should().ContainSingle();
+        _delivered[0].Body.Should().NotContain("<b>",
+            "gövdeye giden değerin kaçışlanmasını sağlayan bayrak burada verilir; düşerse ziyaretçinin " +
+            "yazdığı metin postada etiket olarak çalışır");
+        _delivered[0].Body.Should().Contain("&lt;b&gt;");
+        _delivered[0].Subject.Should().Be("Hos geldin <b>Ada</b>",
+            "konu satırı HTML değildir; oraya kaçış uygulanırsa alıcı bozuk metin görür");
+    }
+
+    [Fact]
     public async Task Projenin_kendi_sablonu_varsa_o_kullanilir()
     {
         TemplateFor(null, "GENEL");

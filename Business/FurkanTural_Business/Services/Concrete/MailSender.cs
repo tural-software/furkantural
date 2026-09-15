@@ -25,7 +25,7 @@ public class MailSender(IUnitOfWork unitOfWork, IMailRenderer renderer, IEmailSe
             return Result.Fail("Posta gönderilemedi.", $"{typeCode} türü için etkin şablon yok ({appSourceCode ?? "genel"}).", 500);
 
         var subject = _renderer.Render(template.Subject, payload);
-        var body = _renderer.Render(template.HtmlContent, payload);
+        var body = _renderer.Render(template.HtmlContent, payload, encodeHtml: true);
 
         try
         {
