@@ -94,8 +94,11 @@ public class NewsletterService(
         if (subscriber is null)
             return Result.Fail("Bu bağlantı artık geçerli değil.", $"Abonelik onayı reddedildi: #{verification.SubscriberId} yok.");
 
+        if (!await _unitOfWork.TryConsumeTokenAsync<SubscriberVerification>(verification.Id, _clock.UtcNow, cancellationToken))
+            return Result.Fail("Bu bağlantı daha önce kullanılmış.",
+                $"Abonelik onayı reddedildi: #{verification.Id} jetonu bu istek okurken başka bir istek tarafından harcanmış.", 410);
+
         verification.ConsumedAt = _clock.UtcNow;
-        await _unitOfWork.SubscriberVerifications.UpdateAsync(verification, cancellationToken);
 
         if (subscriber.IsDeleted || !subscriber.IsActive)
             await _unitOfWork.Subscribers.RestoreAsync(subscriber, cancellationToken);
@@ -140,8 +143,11 @@ public class NewsletterService(
         if (subscriber is null)
             return Result.Fail("Bu bağlantı artık geçerli değil.", $"Çıkış reddedildi: #{verification.SubscriberId} yok.");
 
+        if (!await _unitOfWork.TryConsumeTokenAsync<SubscriberVerification>(verification.Id, _clock.UtcNow, cancellationToken))
+            return Result.Fail("Bu bağlantı daha önce kullanılmış.",
+                $"Çıkış reddedildi: #{verification.Id} jetonu bu istek okurken başka bir istek tarafından harcanmış.", 410);
+
         verification.ConsumedAt = _clock.UtcNow;
-        await _unitOfWork.SubscriberVerifications.UpdateAsync(verification, cancellationToken);
 
         if (!subscriber.IsDeleted)
             await _unitOfWork.Subscribers.SoftDeleteAsync(subscriber, null, cancellationToken);

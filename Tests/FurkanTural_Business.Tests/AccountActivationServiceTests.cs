@@ -50,6 +50,8 @@ public class AccountActivationServiceTests
         _uow.SetupGet(u => u.Users).Returns(_users.Object);
         _uow.SetupGet(u => u.AccountActivations).Returns(_activations.Object);
         _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        _uow.Setup(u => u.TryConsumeTokenAsync<AccountActivation>(It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         _sut = Build();
     }
@@ -370,5 +372,25 @@ public class AccountActivationServiceTests
         result.Success.Should().BeTrue();
         activation.ConsumedAt.Should().Be(Now);
         _users.Verify(r => r.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Ayni_anda_harcanan_jeton_ikinci_istekte_hesabi_acmaz()
+    {
+        var activation = Valid("jeton");
+        var user = Passive();
+        ActivationIs(activation);
+        UserIs(user);
+        _uow.Setup(u => u.TryConsumeTokenAsync<AccountActivation>(It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var result = await _sut.ConsumeAsync("jeton");
+
+        result.IsFailure.Should().BeTrue();
+        result.StatusCode.Should().Be(410);
+        user.IsActive.Should().BeFalse("jetonu harcayan istek bu değilse hesabı açan da o değildir");
+        _users.Verify(r => r.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never,
+            "harcanmışlık koşulu veri tabanında sınanmasaydı iki eş zamanlı tıklama da bu satıra kadar gelirdi");
     }
 }

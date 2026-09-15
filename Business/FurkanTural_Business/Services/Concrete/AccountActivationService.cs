@@ -106,16 +106,18 @@ public class AccountActivationService(
         if (user is null || user.IsDeleted)
             return Result.Fail("Bu hesap açılamaz.", $"Aktivasyon reddedildi: #{activation.UserId} yok ya da silinmiş.");
 
+        if (!await _unitOfWork.TryConsumeTokenAsync<AccountActivation>(activation.Id, _clock.UtcNow, cancellationToken))
+            return Result.Fail("Bu doğrulama bağlantısı daha önce kullanılmış.",
+                $"Aktivasyon reddedildi: #{activation.Id} jetonu bu istek okurken başka bir istek tarafından harcanmış.", 410);
+
         activation.ConsumedAt = _clock.UtcNow;
-        await _unitOfWork.AccountActivations.UpdateAsync(activation, cancellationToken);
 
         if (!user.IsActive)
         {
             user.IsActive = true;
             await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Ok("Hesabınız yeniden etkinleştirildi. Artık giriş yapabilirsiniz.");
     }

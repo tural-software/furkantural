@@ -81,6 +81,8 @@ public class NewsletterServiceTests
         _uow.SetupGet(u => u.Subscribers).Returns(_subscribers.Object);
         _uow.SetupGet(u => u.SubscriberVerifications).Returns(_verifications.Object);
         _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        _uow.Setup(u => u.TryConsumeTokenAsync<SubscriberVerification>(It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -393,5 +395,21 @@ public class NewsletterServiceTests
         var result = await _sut.RequestUnsubscribeAsync(Email, null, null);
 
         result.Success.Should().BeTrue("çıkışı zorlaştırmak, izinli listeyi kirletmenin yolu olurdu");
+    }
+
+    [Fact]
+    public async Task Ayni_anda_harcanan_jeton_ikinci_istekte_aboneligi_baslatmaz()
+    {
+        RowIs(null);
+        await _sut.SubscribeAsync(Email, "jeton", null, null);
+        var token = TokenFromMail();
+        _uow.Setup(u => u.TryConsumeTokenAsync<SubscriberVerification>(It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var result = await _sut.ConfirmAsync(token);
+
+        result.IsFailure.Should().BeTrue();
+        result.StatusCode.Should().Be(410);
+        _byId!.ConfirmedAt.Should().BeNull("jetonu harcayan istek bu değilse aboneliği başlatan da o değildir");
     }
 }

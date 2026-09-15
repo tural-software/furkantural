@@ -40,4 +40,8 @@ public interface IUnitOfWork
     IRepository<CommentNotification> CommentNotifications { get; }
     ILogRepository Logs { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Tek kullanımlık jetonu yalnızca henüz harcanmamışken harcanmış olarak işaretler ve işaretlemeyi gerçekten kendisinin yaptığını döndürür. Koşul veri tabanında sınandığı için okuma ile yazma arasına başka bir istek giremez; aynı bağlantıya iki kez tıklayan kullanıcıda ikinci çağrı false alır.<para>Yazma kaydetme yolundan geçmez: <see cref="SaveChangesAsync"/> beklemez, değişiklik izleyicisine uğramaz ve bu yüzden canlı bildirim kancasına da görünmez. Jetonun kendisi panelde izlenen bir kayıt olmadığı için bu bilinçli bir seçimdir.</para></summary>
+    Task<bool> TryConsumeTokenAsync<T>(int id, DateTime consumedAt, CancellationToken cancellationToken = default)
+        where T : BaseEntity, ISingleUseToken;
 }
