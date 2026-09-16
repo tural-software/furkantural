@@ -52,6 +52,7 @@ public class TurnCredentialProviderTests
         handler.Body.Should().NotBeNull();
         handler.Body.Should().NotContain("customIdentifier",
             "Cloudflare'e kullanıcı kimliği gönderilmez; alan boş bile olsa gövdede yer almamalı");
-        handler.Body.Should().Contain("\"ttl\":86400");
+        handler.Body.Should().Contain("\"ttl\":14400",
+            "sızan bir TURN kimliği bir gün boyunca aktarım sunucusunu kullandırabiliyordu; kimlik her arama başında yeniden alınıyor");
     }
 }

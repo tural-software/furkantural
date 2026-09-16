@@ -17,8 +17,10 @@ public class CallController(
     ITurnCredentialProvider turnCredentialProvider,
     ICallLogService callLogService,
     ICallPolicyService callPolicyService,
-    IConfiguration configuration) : JwtBaseController
+    IConfiguration configuration,
+    IAbuseThrottle abuseThrottle) : JwtBaseController
 {
+    private readonly IAbuseThrottle _abuseThrottle = abuseThrottle;
     private readonly ITurnCredentialProvider _turnCredentialProvider = turnCredentialProvider;
     private readonly ICallLogService _callLogService = callLogService;
     private readonly ICallPolicyService _callPolicyService = callPolicyService;
@@ -30,6 +32,9 @@ public class CallController(
     {
         var userId = SortUserId();
         if (userId is null) return Unauthorized();
+
+        if (!_abuseThrottle.TryRegister(AbuseBuckets.CallConfig, userId.Value.ToString()))
+            return ToActionResult(Result.Fail("Çok sık arama yapılandırması istendi. Lütfen biraz sonra tekrar deneyin.", statusCode: 429));
 
         var mode = _configuration["Calls:Ice:Mode"] ?? "Cloudflare";
         var relayOnly = _configuration.GetValue<bool?>("Calls:Ice:RelayOnly") ?? true;

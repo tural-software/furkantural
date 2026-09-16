@@ -65,4 +65,47 @@ public class PushSubscriptionEndpointTests
             "tarayıcıların verdiği gerçek adresler de engellenirse bildirim özelliği tümden çalışmaz");
         _subscriptions.Verify(r => r.AddAsync(It.IsAny<PushSubscription>(), It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    private PushSubscription Existing(int ownerId = 9)
+    {
+        var existing = new PushSubscription
+        {
+            Id = 1, UserId = ownerId, Endpoint = "https://fcm.googleapis.com/fcm/send/abc", P256dh = "cihaz-anahtari", Auth = "cihaz-sirri"
+        };
+        _subscriptions
+            .Setup(r => r.GetAsync(It.IsAny<Expression<Func<PushSubscription, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+        return existing;
+    }
+
+    [Fact]
+    public async Task Cihaz_anahtarlarini_bilmeyen_baskasinin_aboneligini_devralamaz()
+    {
+        var existing = Existing(ownerId: 9);
+
+        var sonuc = await Sut().SubscribeAsync(7, new PushSubscriptionDto
+        {
+            Endpoint = existing.Endpoint, P256dh = "uydurma", Auth = "uydurma"
+        });
+
+        sonuc.IsFailure.Should().BeTrue(
+            "yalnızca adresi bilen biri aboneliği kendine bağlayıp kurbanın bildirimlerini kesebiliyordu");
+        existing.UserId.Should().Be(9);
+        _subscriptions.Verify(r => r.UpdateAsync(It.IsAny<PushSubscription>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Ayni_cihazda_hesap_degisince_abonelik_yeni_hesaba_gecer()
+    {
+        var existing = Existing(ownerId: 9);
+
+        var sonuc = await Sut().SubscribeAsync(7, new PushSubscriptionDto
+        {
+            Endpoint = existing.Endpoint, P256dh = "cihaz-anahtari", Auth = "cihaz-sirri"
+        });
+
+        sonuc.Success.Should().BeTrue(
+            "ortak cihazda A çıkıp B girdiğinde devir engellenirse A'nın bildirimleri B'nin önüne düşmeye devam ederdi");
+        existing.UserId.Should().Be(7);
+    }
 }

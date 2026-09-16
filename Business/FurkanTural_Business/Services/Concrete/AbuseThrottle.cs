@@ -10,7 +10,8 @@ public sealed class AbuseThrottle : IAbuseThrottle
     {
         [AbuseBuckets.Contact] = (3, 600),
         [AbuseBuckets.Report] = (10, 3600),
-        [AbuseBuckets.FriendRequest] = (20, 3600)
+        [AbuseBuckets.FriendRequest] = (20, 3600),
+        [AbuseBuckets.CallConfig] = (30, 3600)
     };
 
     private static readonly TimeSpan SweepInterval = TimeSpan.FromMinutes(5);

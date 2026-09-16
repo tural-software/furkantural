@@ -23,6 +23,12 @@ public class PushSubscriptionService(IUnitOfWork unitOfWork, IConfiguration conf
         var existing = await _unitOfWork.PushSubscriptions.GetAsync(s => s.Endpoint == dto.Endpoint, cancellationToken);
         if (existing is not null)
         {
+            if (existing.UserId != userId
+                && !(string.Equals(existing.P256dh, dto.P256dh, StringComparison.Ordinal)
+                     && string.Equals(existing.Auth, dto.Auth, StringComparison.Ordinal)))
+                return Result.Fail("Geçersiz abonelik bilgisi.",
+                    $"Abonelik devri reddedildi: #{userId} başka bir hesabın aboneliğini cihaz anahtarları olmadan istedi.", 400);
+
             existing.UserId = userId;
             existing.P256dh = dto.P256dh!;
             existing.Auth = dto.Auth!;

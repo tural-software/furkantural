@@ -8,13 +8,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-/// <summary>Sağlayıcı Cloudflare Realtime'dır; <c>Cloudflare:Realtime:TurnKeyId</c> ve <c>Cloudflare:Realtime:TurnApiToken</c> ile çağrılır. Cloudflare <c>iceServers</c> alanını kimi zaman dizi kimi zaman tek nesne olarak döndürür, ikisi de aynı listeye normalize edilir.<para>İstenen ömür 24 saattir. Dış çağrının her hatası — ağ, yetki, çözümleme — kullanıcıya tek bir "ulaşılamadı" yanıtına iner; ayrımı yalnızca durum kodu taşır.</para></summary>
+/// <summary>Sağlayıcı Cloudflare Realtime'dır; <c>Cloudflare:Realtime:TurnKeyId</c> ve <c>Cloudflare:Realtime:TurnApiToken</c> ile çağrılır. Cloudflare <c>iceServers</c> alanını kimi zaman dizi kimi zaman tek nesne olarak döndürür, ikisi de aynı listeye normalize edilir.<para>İstenen ömür 4 saattir; kimlik bilgisi her arama başında yeniden alındığı için bundan uzun bir ömür yalnızca sızan bir kimliğin daha uzun kötüye kullanılabilmesi demekti. Dış çağrının her hatası — ağ, yetki, çözümleme — kullanıcıya tek bir "ulaşılamadı" yanıtına iner; ayrımı yalnızca durum kodu taşır.</para></summary>
 public class TurnCredentialProvider(IConfiguration configuration, IHttpClientFactory httpClientFactory) : ITurnCredentialProvider
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
-    private const int TtlSeconds = 86400;
+    public const int TtlSeconds = 4 * 3600;
 
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
 
