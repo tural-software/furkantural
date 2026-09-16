@@ -113,6 +113,21 @@ public class AuthServiceTurnstileTests
         VerifyTurnstileAsked(Times.Never());
     }
 
+    [Theory]
+    [InlineData(AppSourceDefinitions.Blog)]
+    [InlineData(AppSourceDefinitions.Portfolio)]
+    public async Task Giris_yapmayan_sitenin_jetonuyla_gelen_giriste_dogrulama_istenir(string app)
+    {
+        var sut = Build(AppSourceDefinitions.Chat, app);
+
+        var result = await Login(sut, trustedAppSource: app);
+
+        result.IsFailure.Should().BeTrue(
+            "bu siteler kullanıcı girişi yapmaz; muaf tutulsaydı sızmış tek bir site jetonu doğrulamasız parola denemesine yeterdi");
+        result.StatusCode.Should().Be(400);
+        VerifyTurnstileAsked(Times.Once());
+    }
+
     [Fact]
     public async Task Panelin_jetonu_yokken_taninmayan_cagirandan_dogrulama_istenmez()
     {
