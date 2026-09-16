@@ -7,9 +7,16 @@ using System.Globalization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddLocalization(opts => opts.ResourcesPath = "Resources");
-builder.Services.AddControllersWithViews()
+builder.Services.AddControllersWithViews(options => options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()))
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
 
 static SocketsHttpHandler FastFailHandler() => new()
 {
@@ -52,7 +59,12 @@ builder.Services.AddScoped<IPortfolioContactClient>(sp =>
     return new PortfolioContactClient(client, logger);
 });
 
+var dataProtection = builder.Services.AddPersistentDataProtection(
+    builder.Configuration, builder.Environment, "FurkanTural.Portfolio");
+
 var app = builder.Build();
+
+app.LogDataProtectionStatus(dataProtection);
 
 app.UseRealClientIp(builder.Configuration);
 

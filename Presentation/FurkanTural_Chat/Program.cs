@@ -9,7 +9,14 @@ using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options => options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()));
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
 
 builder.Services.Configure<ApiOptions>(builder.Configuration.GetSection("Api"));
 
@@ -214,10 +221,24 @@ app.Use(async (context, next) =>
             return;
         }
 
+        var method = context.Request.Method;
+        var upgrade = HttpMethods.IsConnect(method)
+            || string.Equals(context.Request.Headers.Upgrade.ToString(), "websocket", StringComparison.OrdinalIgnoreCase);
+        var changesState = !upgrade
+            && !(HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method) || HttpMethods.IsTrace(method));
+
         var origin = context.Request.Headers["Origin"].ToString();
-        if (origin.Length > 0
-            && (!Uri.TryCreate(origin, UriKind.Absolute, out var originUri)
-                || !string.Equals(originUri.Host, context.Request.Host.Host, StringComparison.OrdinalIgnoreCase)))
+        if ((origin.Length == 0 && (changesState || upgrade))
+            || (origin.Length > 0
+                && (!Uri.TryCreate(origin, UriKind.Absolute, out var originUri)
+                    || !string.Equals(originUri.Host, context.Request.Host.Host, StringComparison.OrdinalIgnoreCase))))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return;
+        }
+
+        if (changesState
+            && !await context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Antiforgery.IAntiforgery>().IsRequestValidAsync(context))
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return;

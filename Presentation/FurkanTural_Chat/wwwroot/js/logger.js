@@ -16,6 +16,11 @@
     var windowCount = 0;
     var sending = false;           // loglama sırasında oluşan hatayı tekrar loglamayı önle
 
+    function csrfToken() {
+        var meta = document.querySelector('meta[name="ft-antiforgery"]');
+        return meta ? meta.content : '';
+    }
+
     function clip(s, n) { s = (s == null ? '' : String(s)); return s.length > n ? s.slice(0, n) : s; }
 
     function allow(signature) {
@@ -58,13 +63,12 @@
             // keepalive: sayfa kapanırken bile gönderim tamamlanır.
             fetch(ENDPOINT, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': csrfToken() },
                 body: payload,
                 keepalive: true,
                 credentials: 'same-origin'
             }).catch(function () {});
         } catch (e) {
-            try { if (navigator.sendBeacon) navigator.sendBeacon(ENDPOINT, new Blob([payload], { type: 'application/json' })); } catch (e2) {}
         } finally {
             sending = false;
         }

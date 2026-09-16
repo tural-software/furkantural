@@ -181,11 +181,16 @@
         live.invoke('RefreshPendingWork').catch(function () { });
     }
 
+    function csrfToken() {
+        var meta = document.querySelector('meta[name="ft-antiforgery"]');
+        return meta ? meta.content : '';
+    }
+
     function baglan() {
         if (!window.signalR) return;
 
         var connection = new signalR.HubConnectionBuilder()
-            .withUrl(HUB)
+            .withUrl(HUB, { headers: { 'RequestVerificationToken': csrfToken() } })
             .withAutomaticReconnect()
             .build();
 

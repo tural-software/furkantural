@@ -4,7 +4,14 @@ using FurkanTural_Blog.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options => options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()));
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
 
 static SocketsHttpHandler FastFailHandler() => new()
 {
@@ -56,7 +63,12 @@ builder.Services.AddScoped<ICommentClient>(sp =>
     return new CommentClient(client, logger);
 });
 
+var dataProtection = builder.Services.AddPersistentDataProtection(
+    builder.Configuration, builder.Environment, "FurkanTural.Blog");
+
 var app = builder.Build();
+
+app.LogDataProtectionStatus(dataProtection);
 
 app.UseRealClientIp(builder.Configuration);
 

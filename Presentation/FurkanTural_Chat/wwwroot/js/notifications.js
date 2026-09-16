@@ -37,6 +37,11 @@
                   : 'Bildirimleri aç';
     }
 
+    function csrfToken() {
+        var meta = document.querySelector('meta[name="ft-antiforgery"]');
+        return meta ? meta.content : '';
+    }
+
     function getReg() { return navigator.serviceWorker.ready; }
     function currentSub() { return getReg().then(function (reg) { return reg.pushManager.getSubscription(); }); }
 
@@ -57,7 +62,7 @@
         var json = sub.toJSON();
         try {
             var r = await fetch('/bff/api/v1/push/subscribe', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': csrfToken() },
                 body: JSON.stringify({ endpoint: sub.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth, userAgent: navigator.userAgent })
             });
             if (r.ok) markBeat(Date.now());
@@ -68,7 +73,7 @@
     async function forget(sub) {
         try {
             await fetch('/bff/api/v1/push/unsubscribe', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': csrfToken() }, keepalive: true,
                 body: JSON.stringify({ endpoint: sub.endpoint })
             });
         } catch (e) {}

@@ -110,9 +110,15 @@
 
     // BFF: same-origin '/bff/*' proxy'sine gider; JWT'yi sunucu (YARP) ekler, tarayıcı sadece
     // HttpOnly session cookie'siyle kimliklenir (Authorization header'ı burada YOK).
+    function csrfToken() {
+        var meta = document.querySelector('meta[name="ft-antiforgery"]');
+        return meta ? meta.content : '';
+    }
+
     async function api(path, opts) {
         opts = opts || {};
         opts.headers = opts.headers || {};
+        opts.headers['RequestVerificationToken'] = csrfToken();
         if (opts.body && typeof opts.body !== 'string') {
             opts.headers['Content-Type'] = 'application/json';
             opts.body = JSON.stringify(opts.body);
@@ -760,7 +766,7 @@
 
     // ───────── SignalR ─────────
     const connection = new signalR.HubConnectionBuilder()
-        .withUrl('/bff/hubs/chat')   // BFF proxy; JWT'yi YARP ekler, WS URL'inde token yok
+        .withUrl('/bff/hubs/chat', { headers: { 'RequestVerificationToken': csrfToken() } })   // BFF proxy; JWT'yi YARP ekler, WS URL'inde token yok
         .withAutomaticReconnect()
         .build();
 

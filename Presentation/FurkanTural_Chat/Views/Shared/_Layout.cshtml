@@ -1,3 +1,4 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @{
     var canonical = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
     var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
@@ -21,6 +22,7 @@
     <title>@pageTitle</title>
     <meta name="description" content="@metaDescription" />
     <meta name="robots" content="@robots" />
+    <meta name="ft-antiforgery" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
     <link rel="canonical" href="@canonical" />
 
     <meta property="og:site_name" content="Chatural" />

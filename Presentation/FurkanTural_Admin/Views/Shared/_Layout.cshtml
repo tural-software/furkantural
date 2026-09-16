@@ -1,3 +1,4 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @{
     var hideChrome = ViewData["HideChrome"] as bool? ?? false;
     var username = Context.Session.GetString("username");
@@ -11,6 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     @* Yönetim paneli — arama motorlarınca indekslenmemeli. *@
     <meta name="robots" content="noindex, nofollow" />
+    <meta name="ft-antiforgery" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
     <title>@pageTitle - FurkanTural Admin</title>
 
     <link rel="icon" href="~/favicon.ico" sizes="any" />
