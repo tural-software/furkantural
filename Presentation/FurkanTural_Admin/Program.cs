@@ -252,6 +252,12 @@ builder.Services.AddHttpClient<IReportApiClient, ReportApiClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+builder.Services.AddHttpClient<IDataRetentionApiClient, DataRetentionApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(120);
+});
+
 builder.Services.AddHttpClient<ICallPolicyApiClient, CallPolicyApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);

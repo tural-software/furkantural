@@ -10,6 +10,10 @@
         </p>
     </div>
     <div class="pg-header__actions">
+        <a href="@Url.Action("Index", "DataRetention")" class="btn-outline">
+            @await Html.PartialAsync("_Icons", "shield")
+            Veri saklama
+        </a>
         <a href="@Url.Action("Index")" class="btn-outline">
             @await Html.PartialAsync("_Icons", "refresh")
             Yenile

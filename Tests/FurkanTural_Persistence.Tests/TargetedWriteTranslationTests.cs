@@ -111,6 +111,48 @@ public class TargetedWriteTranslationTests
         db.ChangeTracker.Entries().Should().BeEmpty("hedefli yazma kaydetme yoluna uğramaz");
     }
 
+    [Theory]
+    [InlineData("logs")]
+    [InlineData("contacts")]
+    [InlineData("activations")]
+    [InlineData("calls")]
+    [InlineData("messages")]
+    [InlineData("reports")]
+    [InlineData("friendships")]
+    [InlineData("subscribers")]
+    [InlineData("subscriberVerifications")]
+    [InlineData("newsletterDeliveries")]
+    [InlineData("commentNotifications")]
+    [InlineData("push")]
+    [InlineData("users")]
+    public async Task Saklama_temizliginin_silme_sorgusu_tek_DELETE_olarak_uretilir(string name)
+    {
+        var capture = new CommandCapture();
+        await using var db = Context(capture);
+        var cutoff = new DateTime(2024, 10, 16, 0, 0, 0, DateTimeKind.Utc);
+
+        _ = name switch
+        {
+            "logs" => await RetentionQueries.Logs(db, cutoff).ExecuteDeleteAsync(),
+            "contacts" => await RetentionQueries.Contacts(db, cutoff).ExecuteDeleteAsync(),
+            "activations" => await RetentionQueries.AccountActivations(db, cutoff).ExecuteDeleteAsync(),
+            "calls" => await RetentionQueries.CallLogs(db, cutoff).ExecuteDeleteAsync(),
+            "messages" => await RetentionQueries.ChatMessages(db, cutoff).ExecuteDeleteAsync(),
+            "reports" => await RetentionQueries.Reports(db, cutoff).ExecuteDeleteAsync(),
+            "friendships" => await RetentionQueries.UserFriends(db, cutoff).ExecuteDeleteAsync(),
+            "subscribers" => await RetentionQueries.Subscribers(db, cutoff).ExecuteDeleteAsync(),
+            "subscriberVerifications" => await RetentionQueries.SubscriberVerifications(db, cutoff).ExecuteDeleteAsync(),
+            "newsletterDeliveries" => await RetentionQueries.NewsletterDeliveries(db, cutoff).ExecuteDeleteAsync(),
+            "commentNotifications" => await RetentionQueries.CommentNotifications(db, cutoff, [1, 2]).ExecuteDeleteAsync(),
+            "push" => await RetentionQueries.StalePushSubscriptions(db, cutoff).ExecuteDeleteAsync(),
+            "users" => await RetentionQueries.ClosedUsers(db, cutoff).ExecuteDeleteAsync(),
+            _ => throw new ArgumentOutOfRangeException(nameof(name))
+        };
+
+        capture.Statements.Should().ContainSingle().Which.Should().StartWith("DELETE",
+            "silme satırları belleğe çekmeden tek komutta yapılmalı; aksi hâlde yıllık log tablosu belleği doldururdu");
+    }
+
     [Fact]
     public async Task Abonenin_bekleyen_baglantilari_tek_yazmayla_harcanir()
     {

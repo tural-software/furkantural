@@ -69,6 +69,7 @@ public static class BusinessServiceRegistration
         services.AddSingleton<IMessageProtector, MessageProtector>();
         services.AddScoped<IPushSubscriptionService, PushSubscriptionService>();
         services.AddScoped<IPushSender, PushSender>();
+        services.AddScoped<IDataRetentionService, DataRetentionService>();
 
         return services;
     }

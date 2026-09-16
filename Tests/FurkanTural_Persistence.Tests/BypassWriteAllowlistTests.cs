@@ -13,7 +13,8 @@ public class BypassWriteAllowlistTests
         "TouchLastSeenAsync",
         "MarkConversationReadAsync",
         "TryConsumeTokenAsync",
-        "ConsumePendingSubscriberVerificationsAsync"
+        "ConsumePendingSubscriberVerificationsAsync",
+        "PurgeAsync"
     ];
 
     private static readonly Regex BypassWrite = new(

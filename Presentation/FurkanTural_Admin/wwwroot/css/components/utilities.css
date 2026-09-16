@@ -17,3 +17,5 @@
 
 .dm-image-preview.dm-image-preview--avatar { border: none; background: transparent; max-height: none; padding: .25rem 0; }
 .dm-avatar-lg { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }
+
+.retention-confirm { display: flex; align-items: flex-start; gap: .625rem; margin-bottom: 1rem; cursor: pointer; }

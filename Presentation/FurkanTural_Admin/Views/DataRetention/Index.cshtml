@@ -1,0 +1,91 @@
+@using FurkanTural_Admin.Models.DataRetention
+@model DataRetentionViewModel
+@{
+    ViewData["Title"] = "Veri Saklama";
+}
+
+<div class="container">
+
+    @await Html.PartialAsync("_Breadcrumb", "Veri Saklama")
+
+    <div class="pg-header">
+        <div>
+            <h1 class="section-title">Veri Saklama</h1>
+            <p class="section-desc">
+                Aydınlatma metinlerindeki 2 yıllık saklama süresi için ayda bir çalıştırın.
+                Süresi 23 ayı geçmiş kişisel veriler ve dosyaları kalıcı olarak silinir.
+            </p>
+        </div>
+        <div class="pg-header__actions">
+            <a href="@Url.Action("Index")" class="btn-outline">
+                @await Html.PartialAsync("_Icons", "refresh")
+                Yenile
+            </a>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="card u-card-filter" role="alert">
+            <p class="section-desc">@Model.Error</p>
+        </div>
+    }
+
+    @if (Model.Purged is not null)
+    {
+        <div class="card u-card-filter" role="status">
+            <p class="section-desc">
+                @Model.Purged.Total.ToString("N0") kayıt ve @Model.Purged.FilesDeleted.ToString("N0") dosya silindi.
+                @if (Model.Purged.FilesFailed > 0)
+                {
+                    <span>@Model.Purged.FilesFailed.ToString("N0") dosya silinemedi; ayrıntı işlem kayıtlarında.</span>
+                }
+            </p>
+        </div>
+    }
+
+    @if (Model.Preview is not null)
+    {
+        <div class="card u-card-flush">
+            <div class="data-table-wrap">
+                <table class="data-table">
+                    <caption class="section-desc">
+                        @Model.Preview.Cutoff.ToString("dd.MM.yyyy") (UTC) tarihinden eski olup silinecek kayıtlar
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Veri</th>
+                            <th scope="col">Silinecek kayıt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in Model.Preview.Categories)
+                        {
+                            <tr>
+                                <td>@category.Label</td>
+                                <td>@category.Count.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th scope="row">Toplam</th>
+                            <td>@Model.Preview.Total.ToString("N0")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <form method="post" asp-action="Purge" class="card u-card-filter">
+            <label class="retention-confirm">
+                <input type="checkbox" name="confirm" value="true" required />
+                <span>Bu kayıtların ve dosyalarının kalıcı olarak silineceğini, işlemin geri alınamayacağını anlıyorum.</span>
+            </label>
+            <button type="submit" class="btn-primary" disabled="@(Model.Preview.Total == 0)">
+                @await Html.PartialAsync("_Icons", "trash")
+                Süresi dolan verileri sil
+            </button>
+        </form>
+    }
+</div>

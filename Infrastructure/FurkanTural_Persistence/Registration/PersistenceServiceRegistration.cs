@@ -26,6 +26,7 @@ public static class PersistenceServiceRegistration
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ISchemaMetadataReader, SchemaMetadataReader>();
+        services.AddScoped<IDataRetentionStore, DataRetentionStore>();
 
         return services;
     }
