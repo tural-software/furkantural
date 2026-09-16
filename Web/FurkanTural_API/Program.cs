@@ -68,7 +68,7 @@ builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddBusinessServices();
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddSignalR().AddJsonProtocol(o =>
+builder.Services.AddSignalR(o => o.AddFilter<SecurityStampHubFilter>()).AddJsonProtocol(o =>
 {
     o.PayloadSerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
     o.PayloadSerializerOptions.Converters.Add(new NullableUtcDateTimeJsonConverter());
@@ -122,18 +122,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
 
-        // SignalR tarayıcı istemcisi token'ı query string ile gönderir (WebSocket).
         options.Events = new JwtBearerEvents
         {
-            OnMessageReceived = context =>
-            {
-                var accessToken = context.Request.Query["access_token"];
-                var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
-                    context.Token = accessToken;
-                return Task.CompletedTask;
-            },
-
             OnTokenValidated = async context =>
             {
                 var sub = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
@@ -318,8 +308,8 @@ app.UseMiddleware<ForwardedClientMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<ChatHub>("/hubs/chat");
-app.MapHub<AdminHub>("/hubs/admin");
+app.MapHub<ChatHub>("/hubs/chat", o => o.CloseOnAuthenticationExpiration = true);
+app.MapHub<AdminHub>("/hubs/admin", o => o.CloseOnAuthenticationExpiration = true);
 
 app.Run();
 
