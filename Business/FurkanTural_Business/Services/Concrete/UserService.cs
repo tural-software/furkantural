@@ -129,6 +129,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
 
         entity.SecurityStamp = SecurityStamps.New();
         await _unitOfWork.Users.SoftDeleteAsync(entity, deletedBy, cancellationToken);
+        await RemovePushSubscriptionsAsync([id], cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kullanıcı silindi. Id: {id}", cancellationToken);
 
@@ -159,11 +160,17 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         if (entity.IsDeleted)
             return Result<AdminUserDto>.Fail("Silinmiş kayıtların aktifliği değiştirilemez.", statusCode: 400);
 
-        entity.IsActive = !entity.IsActive;
+        if (entity.IsActive)
+            AccountClosure.Close(entity, _clock.UtcNow, byAdmin: true);
+        else
+            AccountClosure.Reopen(entity);
+
         entity.SecurityStamp = SecurityStamps.New();
         entity.UpdatedBy = updatedBy;
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
+        if (!entity.IsActive)
+            await RemovePushSubscriptionsAsync([id], cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kullanıcı aktiflik durumu değiştirildi. Id: {id}, Yeni durum: {entity.IsActive}", cancellationToken);
 
@@ -181,6 +188,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
 
         entity.UpdatedBy = updatedBy;
         entity.SecurityStamp = SecurityStamps.New();
+        AccountClosure.Reopen(entity);
         await _unitOfWork.Users.RestoreAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kullanıcı geri yüklendi. Id: {id}", cancellationToken);
@@ -317,13 +325,12 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
 
         _loginThrottle?.Reset(throttleKey);
 
-        entity.IsActive = false;
+        AccountClosure.Close(entity, _clock.UtcNow, byAdmin: false);
         entity.SecurityStamp = SecurityStamps.New();
         entity.UpdatedBy = userId;
 
         await _unitOfWork.Users.UpdateAsync(entity, cancellationToken);
-        var subscriptions = await _unitOfWork.PushSubscriptions.GetAllAsync(s => s.UserId == userId, cancellationToken);
-        await _unitOfWork.PushSubscriptions.DeleteRangeAsync(subscriptions, cancellationToken);
+        await RemovePushSubscriptionsAsync([userId], cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _activityLogger.LogAsync($"Kullanıcı kendi hesabını kapattı. Id: {userId}", cancellationToken);
 
@@ -359,7 +366,43 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
     public async Task<Result<AdminStatusCountsDto>> GetAdminStatusCountsAsync(AdminListQuery query, int? roleId, DateTime? seenSince, CancellationToken cancellationToken = default)
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Users.GetAdminStatusCountsAsync(AdminPredicate(query, roleId, seenSince), cancellationToken));
 
-    public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
-        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Users, action, ids, userId, "kullanıcı", _activityLogger, cancellationToken,
-            onAffected: user => user.SecurityStamp = SecurityStamps.New());
+    public async Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
+    {
+        var now = _clock.UtcNow;
+        var closed = new List<int>();
+
+        var result = await BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Users, action, ids, userId, "kullanıcı", _activityLogger, cancellationToken,
+            onAffected: user =>
+            {
+                user.SecurityStamp = SecurityStamps.New();
+
+                if (action == BulkAction.Deactivate)
+                {
+                    AccountClosure.Close(user, now, byAdmin: true);
+                    closed.Add(user.Id);
+                }
+                else if (action is BulkAction.Activate or BulkAction.Restore)
+                {
+                    AccountClosure.Reopen(user);
+                }
+                else if (action == BulkAction.Delete)
+                {
+                    closed.Add(user.Id);
+                }
+            });
+
+        if (closed.Count > 0)
+        {
+            await RemovePushSubscriptionsAsync(closed, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        return result;
+    }
+
+    private async Task RemovePushSubscriptionsAsync(IReadOnlyCollection<int> userIds, CancellationToken cancellationToken)
+    {
+        var subscriptions = await _unitOfWork.PushSubscriptions.GetAllAsync(s => userIds.Contains(s.UserId), cancellationToken);
+        await _unitOfWork.PushSubscriptions.DeleteRangeAsync(subscriptions, cancellationToken);
+    }
 }

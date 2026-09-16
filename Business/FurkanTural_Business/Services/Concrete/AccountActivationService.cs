@@ -4,6 +4,7 @@ using FurkanTural_Application.DTOs.Mail;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +34,9 @@ public class AccountActivationService(
         var user = await _unitOfWork.Users.GetByIdForAdminAsync(userId, cancellationToken);
         if (user is null || user.IsDeleted)
             return Result.Fail("Hesap bulunamadı.", $"Aktivasyon üretilemedi: #{userId} yok ya da silinmiş.", 404);
+
+        if (user.DeactivatedByAdmin)
+            return Result.Fail("Bu hesap yönetici tarafından kapatıldı.", $"Aktivasyon üretilemedi: #{userId} yönetici yasağında.", 403);
 
         if (string.IsNullOrWhiteSpace(user.Email))
             return Result.Fail("Hesaba bağlı bir e-posta adresi yok.", $"Aktivasyon üretilemedi: #{userId} adressiz.");
@@ -106,6 +110,10 @@ public class AccountActivationService(
         if (user is null || user.IsDeleted)
             return Result.Fail("Bu hesap açılamaz.", $"Aktivasyon reddedildi: #{activation.UserId} yok ya da silinmiş.");
 
+        if (user.DeactivatedByAdmin)
+            return Result.Fail("Bu hesap yönetici tarafından kapatıldı. Bilgi için destek@furkantural.com adresine yazın.",
+                $"Aktivasyon reddedildi: #{activation.UserId} yönetici yasağında.", 403);
+
         if (!await _unitOfWork.TryConsumeTokenAsync<AccountActivation>(activation.Id, _clock.UtcNow, cancellationToken))
             return Result.Fail("Bu doğrulama bağlantısı daha önce kullanılmış.",
                 $"Aktivasyon reddedildi: #{activation.Id} jetonu bu istek okurken başka bir istek tarafından harcanmış.", 410);
@@ -114,7 +122,7 @@ public class AccountActivationService(
 
         if (!user.IsActive)
         {
-            user.IsActive = true;
+            AccountClosure.Reopen(user);
             await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }

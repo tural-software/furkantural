@@ -19,4 +19,7 @@ public class User : BaseEntity
     public DateTime? MembershipAgreementAcceptedAt { get; set; }
     public string? MembershipAgreementVersion { get; set; }
     public DateTime? AdultConfirmedAt { get; set; }
+
+    public DateTime? DeactivatedAt { get; set; }
+    public bool DeactivatedByAdmin { get; set; }
 }

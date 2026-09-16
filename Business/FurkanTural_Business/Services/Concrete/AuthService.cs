@@ -99,6 +99,17 @@ public class AuthService(
 
         _loginThrottle.Reset(dto.Username);
 
+        if (!user.IsActive && user.DeactivatedByAdmin)
+        {
+            await _activityLogger.LogWarningAsync(
+                $"Giriş reddedildi: #{user.Id} hesap yönetici tarafından kapatılmış.", cancellationToken);
+
+            return Result<LoginResultDto>.Fail(
+                "Hesabınız yönetici tarafından kapatıldı. Bilgi için destek@furkantural.com adresine yazın.",
+                $"Giriş reddedildi: #{user.Id} yönetici yasağında; aktivasyon gönderilmedi.",
+                403);
+        }
+
         if (!user.IsActive)
         {
             var issued = await _accountActivationService.IssueAsync(user.Id, "Login", ipAddress, userAgent, cancellationToken);
