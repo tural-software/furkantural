@@ -3,6 +3,8 @@ namespace FurkanTural_Portfolio;
 public interface IAppTokenService
 {
     Task<string> GetTokenAsync(CancellationToken cancellationToken = default);
+
+    void Invalidate(string token);
 }
 
 /// <summary>Uygulama jetonunu API'den alır ve süresi dolana dek elde tutar. Başarısızlık da kısa süre hatırlanır: uç ulaşılamaz durumdayken her sayfa isteğinin yeniden denemesi, zaten düşmüş bir servise yük bindirmekten başka işe yaramaz ve her ziyaretçiyi zaman aşımı kadar bekletirdi.<para>Bekleme süresince istisna fırlatılmaz; elde eski bir jeton varsa o, yoksa boş dize döner. Böylece jeton alınamadığında sayfa açılmaya devam eder ve yalnızca API'den beslenen bölümler boş kalır.</para></summary>
@@ -79,6 +81,15 @@ public class AppTokenService : IAppTokenService
         }
     }
 
+    public void Invalidate(string token)
+    {
+        if (!string.Equals(_cachedToken, token, StringComparison.Ordinal))
+            return;
+
+        _cachedToken = null;
+        _tokenExpiry = DateTime.MinValue;
+    }
+
     private class AppTokenResponse
     {
         public TokenData? Data { get; set; }
@@ -100,6 +111,11 @@ public class DefaultTokenHandler(IAppTokenService appTokenService) : DelegatingH
         var token = await _appTokenService.GetTokenAsync(cancellationToken);
         if (!string.IsNullOrWhiteSpace(token))
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        return await base.SendAsync(request, cancellationToken);
+
+        var response = await base.SendAsync(request, cancellationToken);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && response.Headers.WwwAuthenticate.Count > 0 &&!string.IsNullOrWhiteSpace(token))
+            _appTokenService.Invalidate(token);
+
+        return response;
     }
 }

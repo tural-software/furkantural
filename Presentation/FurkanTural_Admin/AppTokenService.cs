@@ -3,6 +3,8 @@ namespace FurkanTural_Admin;
 public interface IAppTokenService
 {
     Task<string> GetTokenAsync(CancellationToken cancellationToken = default);
+
+    void Invalidate(string token);
 }
 
 /// <summary>Panelin kendi kimliğini API'ye kanıtlayan uygulama jetonu. Panel kullanıcı adına değil, uygulama adına konuşurken bu jetonu taşır; API tarafında giriş ucu, isteğin bir ön-yüzden mi yoksa doğrudan mı geldiğini yalnızca buradan ayırt edebilir.<para>Anahtar yapılandırılmamışsa veya hâlâ yer tutucuysa API'ye hiç gidilmez ve boş dize döner: jeton alınamadığında panel eskisi gibi çalışmaya devam eder, yalnızca kendini tanıtamaz.</para><para>Jeton süresinden bir saat önce yenilenir, başarısız denemeden sonra kısa bir süre yeniden denenmez. Aksi hâlde API kapalıyken her giriş denemesi ek bir çağrı daha üretirdi.</para></summary>
@@ -82,6 +84,15 @@ public class AppTokenService(IHttpClientFactory httpClientFactory, IConfiguratio
         && !value.StartsWith("CHANGE_ME", StringComparison.OrdinalIgnoreCase)
         && !value.Contains("####");
 
+    public void Invalidate(string token)
+    {
+        if (!string.Equals(_cachedToken, token, StringComparison.Ordinal))
+            return;
+
+        _cachedToken = null;
+        _tokenExpiry = DateTime.MinValue;
+    }
+
     private class AppTokenResponse
     {
         public TokenData? Data { get; set; }
@@ -101,13 +112,21 @@ public class AppTokenFallbackHandler(IAppTokenService appTokenService) : Delegat
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        string? attached = null;
         if (request.Headers.Authorization is null)
         {
             var token = await _appTokenService.GetTokenAsync(cancellationToken);
             if (!string.IsNullOrWhiteSpace(token))
+            {
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                attached = token;
+            }
         }
 
-        return await base.SendAsync(request, cancellationToken);
+        var response = await base.SendAsync(request, cancellationToken);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && response.Headers.WwwAuthenticate.Count > 0 &&attached is not null)
+            _appTokenService.Invalidate(attached);
+
+        return response;
     }
 }

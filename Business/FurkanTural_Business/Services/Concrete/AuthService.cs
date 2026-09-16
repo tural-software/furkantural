@@ -314,13 +314,14 @@ public class AuthService(
         var (secret, issuer, audience, _) = GetJwtConfig();
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiresAt = _clock.UtcNow.AddDays(_appTokenSettings.ExpiryDays);
+        var expiresAt = _clock.UtcNow.Add(_appTokenSettings.Lifetime);
 
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.Role, "Visitor"),
-            new Claim("app_source", registered.AppName)
+            new Claim(ClaimDefinitions.AppSource, registered.AppName),
+            new Claim(ClaimDefinitions.AppKeyId, AppKeyIds.For(secret, registered.AppName, registered.AppKey))
         };
 
         var token = new JwtSecurityToken(

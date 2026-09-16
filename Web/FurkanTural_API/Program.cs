@@ -140,7 +140,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                        ?? context.Principal?.FindFirst("sub")?.Value;
 
                 if (sub is null)
+                {
+                    var app = context.Principal?.FindFirst(FurkanTural_Domain.Constants.ClaimDefinitions.AppSource)?.Value;
+                    var keyId = context.Principal?.FindFirst(FurkanTural_Domain.Constants.ClaimDefinitions.AppKeyId)?.Value;
+                    var appTokens = context.HttpContext.RequestServices
+                        .GetRequiredService<IOptions<FurkanTural_Application.Settings.AppTokenSettings>>().Value;
+
+                    if (context.Principal?.IsInRole("Visitor") != true
+                        || string.IsNullOrEmpty(app)
+                        || string.IsNullOrEmpty(keyId)
+                        || !FurkanTural_Business.Helpers.AppKeyIds.Matches(jwtSecret, appTokens, app, keyId))
+                        context.Fail("Kimlik doğrulanamadı.");
+
                     return;
+                }
 
                 var stamp = context.Principal?.FindFirst(FurkanTural_Domain.Constants.ClaimDefinitions.SecurityStamp)?.Value;
                 if (string.IsNullOrEmpty(stamp) || !int.TryParse(sub, out var userId))
@@ -164,8 +177,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly",      policy => policy.RequireRole("Admin"));
     options.AddPolicy("UserOrAdmin",    policy => policy.RequireRole("Admin", "User"));
     options.AddPolicy("VisitorOrAbove", policy => policy.RequireRole("Admin", "User", "Subscriber", "Visitor"));
-    // Yalnızca app-token sahibi (kayıtlı ön-yüz) erişebilir — app-token her zaman app_source claim'i taşır.
-    options.AddPolicy("AppClient",      policy => policy.RequireClaim("app_source"));
+    options.AddPolicy("AppClient",      policy => policy.RequireRole("Visitor").RequireClaim("app_source"));
 });
 
 var swaggerEnabled = builder.Configuration.GetValue<bool>("Swagger:Enabled");

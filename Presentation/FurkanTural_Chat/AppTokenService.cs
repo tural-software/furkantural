@@ -3,6 +3,8 @@ namespace FurkanTural_Chat;
 public interface IAppTokenService
 {
     Task<string> GetTokenAsync(CancellationToken cancellationToken = default);
+
+    void Invalidate(string token);
 }
 
 public class AppTokenService : IAppTokenService
@@ -80,6 +82,15 @@ public class AppTokenService : IAppTokenService
         }
     }
 
+    public void Invalidate(string token)
+    {
+        if (!string.Equals(_cachedToken, token, StringComparison.Ordinal))
+            return;
+
+        _cachedToken = null;
+        _tokenExpiry = DateTime.MinValue;
+    }
+
     private class AppTokenResponse
     {
         public TokenData? Data { get; set; }
@@ -98,13 +109,22 @@ public class AppTokenFallbackHandler(IAppTokenService appTokenService) : Delegat
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        string? attached = null;
         if (request.Headers.Authorization is null)
         {
             var token = await _appTokenService.GetTokenAsync(cancellationToken);
             if (!string.IsNullOrWhiteSpace(token))
+            {
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                attached = token;
+            }
         }
-        return await base.SendAsync(request, cancellationToken);
+
+        var response = await base.SendAsync(request, cancellationToken);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && response.Headers.WwwAuthenticate.Count > 0 &&attached is not null)
+            _appTokenService.Invalidate(attached);
+
+        return response;
     }
 }
 
@@ -117,6 +137,11 @@ public class DefaultTokenHandler(IAppTokenService appTokenService) : DelegatingH
         var token = await _appTokenService.GetTokenAsync(cancellationToken);
         if (!string.IsNullOrWhiteSpace(token))
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        return await base.SendAsync(request, cancellationToken);
+
+        var response = await base.SendAsync(request, cancellationToken);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && response.Headers.WwwAuthenticate.Count > 0 &&!string.IsNullOrWhiteSpace(token))
+            _appTokenService.Invalidate(token);
+
+        return response;
     }
 }
