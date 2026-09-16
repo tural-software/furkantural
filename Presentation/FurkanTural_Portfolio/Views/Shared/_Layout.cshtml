@@ -1,6 +1,6 @@
 ﻿@{
-    var canonical = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
-    var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var canonical = SiteUrl.Base(Context.Request.Scheme, Context.Request.Host.Host, Context.Request.Host.Port) + Context.Request.Path;
+    var siteUrl = SiteUrl.Base(Context.Request.Scheme, Context.Request.Host.Host, Context.Request.Host.Port);
     var seoTitle = (ViewData["Title"] as string) ?? "Furkan Tural";
     var seoDescription = (ViewData["MetaDescription"] as string) ?? SharedLocalizer["Seo_Description"].Value;
     var ogImage = (ViewData["OgImage"] as string) ?? (siteUrl + "/img/og-image.png");
@@ -25,7 +25,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <script>document.documentElement.classList.add('js');</script>
+    <script nonce="@Context.Items["csp-nonce"]">document.documentElement.classList.add('js');</script>
     <script src="~/js/theme.js" asp-append-version="true"></script>
     
     <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | Furkan Tural" : "Furkan Tural")</title>

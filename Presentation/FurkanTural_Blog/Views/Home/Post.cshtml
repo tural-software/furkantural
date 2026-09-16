@@ -12,7 +12,7 @@
         ViewData["OgImage"] = Model.CoverImageUrl;
     }
 
-    var canonical = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    var canonical = SiteUrl.Base(Context.Request.Scheme, Context.Request.Host.Host, Context.Request.Host.Port) + Context.Request.Path;
     var articleData = new Dictionary<string, object?>
     {
         ["@context"] = "https://schema.org",
@@ -42,7 +42,7 @@
     }
     var articleJsonLd = System.Text.Json.JsonSerializer.Serialize(articleData);
 
-    var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var siteUrl = SiteUrl.Base(Context.Request.Scheme, Context.Request.Host.Host, Context.Request.Host.Port);
     var breadcrumbJsonLd = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
     {
         ["@context"] = "https://schema.org",

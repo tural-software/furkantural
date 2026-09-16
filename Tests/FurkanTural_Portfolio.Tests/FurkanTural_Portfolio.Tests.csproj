@@ -34,6 +34,7 @@
     <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Services\IPortfolioContactClient.cs" />
     <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Helpers\MarkdownRenderer.cs" />
     <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Helpers\TimeHelper.cs" />
+    <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Helpers\SiteUrl.cs" />
     <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Models\ContactFormModel.cs" />
     <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Models\IndexViewModel.cs" />
     <Compile Include="..\..\Presentation\FurkanTural_Portfolio\Models\DetailViewModels.cs" />

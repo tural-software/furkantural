@@ -6,7 +6,7 @@
 
     if (pageNo > 1)
     {
-        var basePath = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+        var basePath = SiteUrl.Base(Context.Request.Scheme, Context.Request.Host.Host, Context.Request.Host.Port) + Context.Request.Path;
         ViewData["Canonical"] = $"{basePath}?page={pageNo}";
     }
 }

@@ -15,7 +15,7 @@ public class SeoController(IBlogApiService blogApi) : Controller
     [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
     public IActionResult Robots()
     {
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var baseUrl = SiteUrl.Base(Request.Scheme, Request.Host.Host, Request.Host.Port);
         var sb = new StringBuilder();
         sb.AppendLine("User-agent: *");
         sb.AppendLine("Allow: /");
@@ -31,7 +31,7 @@ public class SeoController(IBlogApiService blogApi) : Controller
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
     {
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var baseUrl = SiteUrl.Base(Request.Scheme, Request.Host.Host, Request.Host.Port);
 
         static string Iso(DateTime d) => DateTime.SpecifyKind(d, DateTimeKind.Utc).ToString("yyyy-MM-dd");
 
@@ -84,7 +84,7 @@ public class SeoController(IBlogApiService blogApi) : Controller
     public async Task<IActionResult> Feed(CancellationToken cancellationToken)
     {
         const string atomNs = "http://www.w3.org/2005/Atom";
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var baseUrl = SiteUrl.Base(Request.Scheme, Request.Host.Host, Request.Host.Port);
         var nowR = DateTime.UtcNow.ToString("r");
 
         var posts = (await _blogApi.GetPostsPagedAsync(1, 20, null, null, null, cancellationToken)).Items

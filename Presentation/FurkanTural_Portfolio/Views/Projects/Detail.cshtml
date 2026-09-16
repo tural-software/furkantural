@@ -82,7 +82,7 @@
 
 @section Scripts {
     @{
-        var siteUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+        var siteUrl = SiteUrl.Base(Context.Request.Scheme, Context.Request.Host.Host, Context.Request.Host.Port);
         var pageUrl = $"{siteUrl}{Context.Request.Path}";
         var coverUrl = cover is not null ? Src(cover) : null;
 

@@ -5,7 +5,7 @@
     ViewData["Title"] = pageNo > 1 ? $"{tag?.Name} — Sayfa {pageNo}" : tag?.Name;
     ViewData["MetaDescription"] = $"{tag?.Name} etiketini taşıyan blog yazıları.";
 
-    var basePath = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    var basePath = SiteUrl.Base(Context.Request.Scheme, Context.Request.Host.Host, Context.Request.Host.Port) + Context.Request.Path;
     ViewData["Canonical"] = pageNo > 1 ? $"{basePath}?page={pageNo}" : basePath;
 }
 

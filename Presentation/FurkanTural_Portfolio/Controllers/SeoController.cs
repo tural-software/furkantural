@@ -1,6 +1,7 @@
 using System.Text;
 using System.Xml;
 using Microsoft.AspNetCore.Mvc;
+using FurkanTural_Portfolio.Helpers;
 using FurkanTural_Portfolio.Services;
 
 namespace FurkanTural_Portfolio.Controllers;
@@ -14,7 +15,7 @@ public class SeoController(IPortfolioApiService apiService) : Controller
     [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
     public IActionResult Robots()
     {
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var baseUrl = SiteUrl.Base(Request.Scheme, Request.Host.Host, Request.Host.Port);
         var sb = new StringBuilder();
         sb.AppendLine("User-agent: *");
         sb.AppendLine("Allow: /");
@@ -28,7 +29,7 @@ public class SeoController(IPortfolioApiService apiService) : Controller
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
     {
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var baseUrl = SiteUrl.Base(Request.Scheme, Request.Host.Host, Request.Host.Port);
         var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
         var urls = new List<(string Loc, string Priority, string ChangeFreq)>
