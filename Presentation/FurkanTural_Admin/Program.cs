@@ -287,6 +287,12 @@ app.Use(async (context, next) =>
     headers["X-Content-Type-Options"] = "nosniff";
     headers["X-Frame-Options"] = "DENY";
     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    context.Response.OnStarting(() =>
+    {
+        if (!context.Response.Headers.ContainsKey("Cache-Control"))
+            context.Response.Headers.CacheControl = "no-store";
+        return Task.CompletedTask;
+    });
     headers["Content-Security-Policy"] =
         "default-src 'self'; " +
         "script-src 'self' 'unsafe-inline'; " +
