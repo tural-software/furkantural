@@ -19,7 +19,7 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
 
         var filterSb = new StringBuilder();
         if (!string.IsNullOrWhiteSpace(search))
-            filterSb.Append(" AND b.Title LIKE @Search");
+            filterSb.Append(" AND b.Title LIKE @Search" + LikePattern.EscapeClause);
         if (categoryId.HasValue)
             filterSb.Append(" AND EXISTS (SELECT 1 FROM [BlogCategories] bc WHERE bc.BlogId = b.Id AND bc.CategoryId = @CategoryId)");
         if (tagId.HasValue)
@@ -33,7 +33,7 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
 
         var parameters = new
         {
-            Search     = !string.IsNullOrWhiteSpace(search) ? $"%{search.Trim()}%" : (string?)null,
+            Search     = !string.IsNullOrWhiteSpace(search) ? LikePattern.Contains(search.Trim()) : (string?)null,
             CategoryId = categoryId,
             TagId      = tagId,
             Offset     = (pageNumber - 1) * pageSize,

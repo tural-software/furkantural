@@ -127,14 +127,14 @@ public class LogRepository(FurkanTuralDbContext context) : ILogRepository
 
         if (!string.IsNullOrWhiteSpace(source))
         {
-            sql.Append(" AND Source LIKE @Source");
-            parameters.Add("Source", $"%{source}%");
+            sql.Append(" AND Source LIKE @Source" + LikePattern.EscapeClause);
+            parameters.Add("Source", LikePattern.Contains(source));
         }
 
         if (!string.IsNullOrWhiteSpace(message))
         {
-            sql.Append(" AND Message LIKE @Message");
-            parameters.Add("Message", $"%{message}%");
+            sql.Append(" AND Message LIKE @Message" + LikePattern.EscapeClause);
+            parameters.Add("Message", LikePattern.Contains(message));
         }
 
         if (dateFrom.HasValue)
