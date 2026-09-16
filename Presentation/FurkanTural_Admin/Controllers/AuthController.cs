@@ -43,6 +43,7 @@ public class AuthController(IAuthApiClient authApiClient) : Controller
         if (result.Data.RoleName != "Admin")
             return Json(new { ok = false, errors = new List<string> { "Bu panele erişim yalnızca yöneticilere açıktır." } });
 
+        HttpContext.Session.Clear();
         HttpContext.Session.SetString("token", result.Data.Token);
         HttpContext.Session.SetString("username", result.Data.Username ?? model.Username);
         HttpContext.Session.SetString("role", result.Data.RoleName ?? string.Empty);

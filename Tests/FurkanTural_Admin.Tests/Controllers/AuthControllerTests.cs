@@ -103,6 +103,31 @@ public class AuthControllerTests
     }
 
     [Fact]
+    public async Task Login_Post_ValidAdmin_ClearsPreviousSessionValuesBeforeWritingNewOnes()
+    {
+        _sut.ControllerContext = ControllerTestHelper.BuildControllerContext(new Dictionary<string, string>
+        {
+            ["onceki-anahtar"] = "girisden-once-yazildi"
+        });
+
+        var urlHelperMock = new Mock<IUrlHelper>();
+        urlHelperMock.Setup(u => u.Action(It.IsAny<UrlActionContext>())).Returns("/Dashboard/Index");
+        _sut.Url = urlHelperMock.Object;
+
+        var model = new LoginRequestModel { Username = "furkan", Password = "Passw0rd!" };
+        _authApiClientMock
+            .Setup(c => c.LoginAsync(model, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessResult());
+
+        await _sut.Login(model, CancellationToken.None);
+
+        var session = _sut.HttpContext.Session;
+        session.Keys.Should().NotContain("onceki-anahtar",
+            "girişten önce oturuma yazılmış hiçbir değer doğrulanmış yöneticinin oturumuna taşınmamalı");
+        session.GetString("token").Should().Be("jwt-token");
+    }
+
+    [Fact]
     public async Task Login_Post_WrongPassword_ReturnsJsonOkFalse()
     {
         // Arrange
