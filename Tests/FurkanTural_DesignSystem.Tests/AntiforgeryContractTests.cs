@@ -81,6 +81,18 @@ public class AntiforgeryContractTests
         logger.Should().NotContain("sendBeacon", "sendBeacon başlık gönderemez; jetonsuz istek artık reddedilir");
     }
 
+    [Theory]
+    [InlineData("FurkanTural_Blog")]
+    [InlineData("FurkanTural_Portfolio")]
+    public void Service_worker_sayfalari_onbellege_yazmaz(string project)
+    {
+        var worker = Read("Presentation", project, "wwwroot", "sw.js");
+
+        worker.Should().Contain("event.respondWith(fetch(req).catch(() => caches.match(OFFLINE)));",
+            "önbelleğe yazılan sayfa bayat bir sahtecilik jetonu ve e-posta bağlantısındaki gizli jetonu tarayıcıda saklardı");
+        File.Exists(Path.Combine(Root(), "Presentation", project, "wwwroot", "offline.html")).Should().BeTrue();
+    }
+
     [Fact]
     public void Panelin_canli_bildirim_baglantisi_jetonu_gonderir()
         => Read("Presentation", "FurkanTural_Admin", "wwwroot", "js", "admin-live.js")

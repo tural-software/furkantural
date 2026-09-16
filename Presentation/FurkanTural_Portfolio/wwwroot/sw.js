@@ -1,6 +1,7 @@
 // Kurulabilirlik ve çevrimdışı kabuk için service worker.
-const CACHE = 'ft-portfolio-v1';
-const PRECACHE = ['/css/site.css', '/js/site.js', '/icons/icon-192.png'];
+const CACHE = 'ft-portfolio-v2';
+const OFFLINE = '/offline.html';
+const PRECACHE = [OFFLINE, '/css/site.css', '/js/site.js', '/icons/icon-192.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -20,17 +21,8 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
 
-  // Gezinme (sayfa) istekleri: önce ağ (taze içerik), çevrimdışıysa önbellek.
   if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match('/')))
-    );
+    event.respondWith(fetch(req).catch(() => caches.match(OFFLINE)));
     return;
   }
 
