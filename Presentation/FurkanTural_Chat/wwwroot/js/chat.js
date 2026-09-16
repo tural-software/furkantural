@@ -59,7 +59,7 @@
         cls = cls || 'avatar sm';
         if (avatarUrl) {
             var url = mediaUrl(avatarUrl);
-            return '<div class="' + cls + '" style="background-image:url(\'' + url + '\');background-size:cover;background-position:center;"></div>';
+            return '<div class="' + cls + ' u-cover" data-bg-image="' + String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;') + '"></div>';
         }
         return '<div class="' + cls + '">' + esc(initial(name)) + '</div>';
     }

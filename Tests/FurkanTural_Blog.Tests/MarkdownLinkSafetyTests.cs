@@ -35,6 +35,15 @@ public class MarkdownLinkSafetyTests
         => Render(markdown).Should().Contain($"href=\"{expectedHref}\"");
 
     [Fact]
+    public void Hizali_tablo_satir_ici_stil_yerine_sinif_uretir()
+    {
+        var html = Render("| a | b | c |\n|:--|:-:|--:|\n| 1 | 2 | 3 |");
+
+        html.Should().NotContain("style=", "sitenin içerik güvenliği kuralı satır içi stili engeller; hizalama sessizce kaybolurdu");
+        html.Should().Contain("class=\"md-align-left\"").And.Contain("class=\"md-align-center\"").And.Contain("class=\"md-align-right\"");
+    }
+
+    [Fact]
     public void Otomatik_baglanti_da_denetlenir()
         => Render("<javascript:alert(1)>").ToLowerInvariant().Should().NotContain("href=\"javascript:");
 

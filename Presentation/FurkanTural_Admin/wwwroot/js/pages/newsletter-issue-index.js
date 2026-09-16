@@ -290,7 +290,7 @@
 
     function openPreview(record) {
         DetailModal.close();
-        HtmlPreviewModal.open(record.subject || 'Bülten Önizlemesi', record.body || '');
+        HtmlPreviewModal.open(record.subject || 'Bülten Önizlemesi', record.body || '', '/Preview/NewsletterIssue/' + encodeURIComponent(record.id));
     }
 
     function openCreateModal() {

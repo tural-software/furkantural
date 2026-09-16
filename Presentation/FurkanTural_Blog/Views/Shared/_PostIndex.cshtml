@@ -57,13 +57,13 @@
                         <li>
                             @if (active)
                             {
-                                <a class="rail-chip is-active" style="--chip-color:@cat.DisplayColor" href="@href" aria-current="page">
+                                <a class="rail-chip is-active" data-css-var="--chip-color" data-css-value="@cat.DisplayColor" href="@href" aria-current="page">
                                     <span class="filter-chip__dot" aria-hidden="true"></span>@cat.Name
                                 </a>
                             }
                             else
                             {
-                                <a class="rail-chip" style="--chip-color:@cat.DisplayColor" href="@href">
+                                <a class="rail-chip" data-css-var="--chip-color" data-css-value="@cat.DisplayColor" href="@href">
                                     <span class="filter-chip__dot" aria-hidden="true"></span>@cat.Name
                                 </a>
                             }
@@ -134,7 +134,7 @@
                                 <div class="index-row__cats">
                                     @foreach (var cat in post.Categories.Where(c => c.Slug.Length > 0))
                                     {
-                                        <a class="post-cat-chip" style="--chip-color:@cat.DisplayColor"
+                                        <a class="post-cat-chip" data-css-var="--chip-color" data-css-value="@cat.DisplayColor"
                                            href="@(Url.RouteUrl("BlogCategory", new { slug = cat.Slug }) ?? "/")"
                                            aria-label="@cat.Name kategorisindeki yazılar">
                                             <span class="post-cat-chip__dot" aria-hidden="true"></span>@cat.Name

@@ -40,11 +40,11 @@
         <div class="me">
             @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
             {
-                <div class="avatar" id="meAvatar" role="button" tabindex="0" title="Avatarı değiştir" aria-label="Profil avatarı — tıklayın değiştirmek için" style="cursor:pointer;background-image:url('@(Model.AvatarUrl.Contains('/') ? $"{Model.ApiBaseUrl}/{Model.AvatarUrl}" : $"{Model.ApiBaseUrl}/images/uploads/{Model.AvatarUrl}")');background-size:cover;background-position:center;"></div>
+                <div class="avatar u-pointer u-cover" id="meAvatar" role="button" tabindex="0" title="Avatarı değiştir" aria-label="Profil avatarı — tıklayın değiştirmek için" data-bg-image="@(Model.AvatarUrl.Contains('/') ? $"{Model.ApiBaseUrl}/{Model.AvatarUrl}" : $"{Model.ApiBaseUrl}/images/uploads/{Model.AvatarUrl}")"></div>
             }
             else
             {
-                <div class="avatar" id="meAvatar" role="button" tabindex="0" title="Avatarı değiştir" aria-label="Profil avatarı — tıklayın değiştirmek için" style="cursor:pointer">@initial</div>
+                <div class="avatar u-pointer" id="meAvatar" role="button" tabindex="0" title="Avatarı değiştir" aria-label="Profil avatarı — tıklayın değiştirmek için">@initial</div>
             }
             <input type="file" id="avatarFileInput" accept="image/*" hidden />
             <div class="me-name">@Model.DisplayName</div>

@@ -96,6 +96,24 @@ public class NewsletterIssueApiClient(HttpClient httpClient, ILogger<NewsletterI
         }
     }
 
+    public async Task<string?> GetBodyAsync(int id, string token, CancellationToken ct = default)
+    {
+        try
+        {
+            using var httpRequest = Get($"{Base}/admin/{id}", token);
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode) return null;
+
+            var wrapper = await response.Content.ReadFromJsonAsync<ApiResult<NewsletterIssueAdminDto>>(JsonOptions, ct);
+            return wrapper?.Data?.Body;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Bülten gövdesi alınırken hata oluştu: {Id}", id);
+            return null;
+        }
+    }
+
     public Task<ApiCallResult> CreateAsync(NewsletterIssueFormDto dto, string token, CancellationToken ct = default)
         => SendAsync(HttpMethod.Post, Base, token, dto, "Bülten oluşturulurken hata oluştu.", ct);
 

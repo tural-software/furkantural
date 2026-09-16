@@ -112,7 +112,7 @@
 
                             @if (!row.IsDeleted && !row.IsApproved)
                             {
-                                <form method="post" action="@Url.Action("SetStatus")" style="display:inline">
+                                <form method="post" action="@Url.Action("SetStatus")" class="u-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@row.Id" />
                                     <input type="hidden" name="status" value="approved" />
@@ -124,7 +124,7 @@
 
                             @if (!row.IsDeleted && !row.IsRejected)
                             {
-                                <form method="post" action="@Url.Action("SetStatus")" style="display:inline">
+                                <form method="post" action="@Url.Action("SetStatus")" class="u-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@row.Id" />
                                     <input type="hidden" name="status" value="rejected" />
@@ -143,7 +143,7 @@
 
                             @if (!row.IsDeleted)
                             {
-                                <form method="post" action="@Url.Action("ToggleActive")" style="display:inline">
+                                <form method="post" action="@Url.Action("ToggleActive")" class="u-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@row.Id" />
                                     @if (row.IsActive)
@@ -163,7 +163,7 @@
 
                             @if (row.IsDeleted)
                             {
-                                <form method="post" action="@Url.Action("Restore")" style="display:inline">
+                                <form method="post" action="@Url.Action("Restore")" class="u-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@row.Id" />
                                     <button type="submit" class="row-btn row-btn--restore" title="Geri Yükle">
@@ -173,7 +173,7 @@
                             }
                             else
                             {
-                                <form method="post" action="@Url.Action("Delete")" style="display:inline">
+                                <form method="post" action="@Url.Action("Delete")" class="u-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@row.Id" />
                                     <button type="submit" class="row-btn row-btn--delete" title="Sil">

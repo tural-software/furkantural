@@ -185,7 +185,7 @@ app.Use(async (context, next) =>
         // 'strict-dynamic' KULLANILMAZ → host allowlist'i ('self' + CDN'ler) geçerli kalır, dış
         // <script src> etiketleri nonce gerektirmez. 'unsafe-inline' nonce varlığında yok sayılır.
         $"script-src 'self' 'nonce-{nonce}' https://challenges.cloudflare.com; " +
-        "style-src 'self' 'unsafe-inline'; " +
+        $"style-src 'self' 'nonce-{nonce}'; " +
         // font-src ZORUNLU: default-src 'none' olduğu için bu direktif yokken
         // kendi sunucumuzdaki Inter dosyaları da engellenirdi.
         "font-src 'self'; " +

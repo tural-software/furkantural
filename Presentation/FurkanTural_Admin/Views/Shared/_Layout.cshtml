@@ -55,6 +55,7 @@
     <link rel="stylesheet" href="~/css/layout/base.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layout/chrome.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/module-launcher.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/utilities.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -88,6 +89,7 @@
        IconLibrary tek doğruluk kaynağı; _Icons.cshtml ile aynı SVG'leri paylaşır. *@
     <script nonce="@Context.Items["csp-nonce"]">window.__ICONS = @Html.Raw(FurkanTural_Admin.Helpers.IconLibrary.Json);</script>
     <script src="~/js/ft-time.js" asp-append-version="true"></script>
+    <script src="~/js/dynamic-style.js" asp-append-version="true"></script>
     <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/toast.js" asp-append-version="true"></script>
     <script src="~/js/reveal.js" asp-append-version="true"></script>

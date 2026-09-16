@@ -355,7 +355,7 @@
         .then(function (data) {
             if (!data) return;
             DetailModal.close();
-            HtmlPreviewModal.open(record.name || 'Şablon Önizlemesi', data.htmlContent || '');
+            HtmlPreviewModal.open(record.name || 'Şablon Önizlemesi', data.htmlContent || '', '/Preview/MailTemplate/' + encodeURIComponent(record.id));
         })
         .catch(function () {
             if (typeof showToast === 'function') {

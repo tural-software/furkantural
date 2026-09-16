@@ -2,7 +2,7 @@
  * HtmlPreviewModal — sandboxed HTML template preview
  *
  * API:
- *   HtmlPreviewModal.open(templateName, htmlContent)
+ *   HtmlPreviewModal.open(templateName, htmlContent, previewUrl)
  *   HtmlPreviewModal.close()
  */
 (function () {
@@ -40,8 +40,7 @@
         });
     }
 
-    function buildModal(name, htmlContent) {
-        const srcDoc = escapeHtml(htmlContent);
+    function buildModal(name, htmlContent, previewUrl) {
         const srcRaw = escapeHtml(htmlContent);
 
         return `
@@ -72,7 +71,7 @@
                 class="hpm-iframe"
                 sandbox=""
                 title="Şablon önizlemesi"
-                srcdoc="${srcDoc}">
+                src="${escapeHtml(previewUrl || 'about:blank')}">
             </iframe>
         </div>
         <div class="hpm-panel hpm-panel--hidden" id="hpm-source-panel">
@@ -150,9 +149,9 @@
     }
 
     window.HtmlPreviewModal = {
-        open: function (templateName, htmlContent) {
+        open: function (templateName, htmlContent, previewUrl) {
             ensureOverlay();
-            _overlay.innerHTML = buildModal(templateName || 'Şablon', htmlContent || '');
+            _overlay.innerHTML = buildModal(templateName || 'Şablon', htmlContent || '', previewUrl);
             _overlay.classList.remove('hpm-overlay--hidden');
             document.body.style.overflow = 'hidden';
             bindEvents(htmlContent || '');

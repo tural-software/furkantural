@@ -11,6 +11,7 @@ public interface INewsletterIssueApiClient
     Task<StatusCountsModel?> GetAdminCountsAsync(AdminListRequest request, string token, CancellationToken ct = default);
     Task<int> GetAudienceCountAsync(string token, CancellationToken ct = default);
     Task<NewsletterIssueProgressModel?> GetProgressAsync(int id, string token, CancellationToken ct = default);
+    Task<string?> GetBodyAsync(int id, string token, CancellationToken ct = default);
 
     Task<ApiCallResult> CreateAsync(NewsletterIssueFormDto dto, string token, CancellationToken ct = default);
     Task<ApiCallResult> UpdateAsync(int id, NewsletterIssueFormDto dto, string token, CancellationToken ct = default);

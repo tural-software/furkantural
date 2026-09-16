@@ -96,7 +96,7 @@
         </div>
     </div>
 
-    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+    <div class="card u-card-filter">
         <form method="get" action="@Url.Action("Index")">
             <div class="filter-bar">
                 <div class="filter-group">
@@ -135,7 +135,7 @@
         </form>
     </div>
 
-    <div class="card" id="newsletter-table-card" style="padding: 0; overflow: hidden;">
+    <div class="card u-card-flush" id="newsletter-table-card">
         <div id="newsletter-table-section" data-list-controller="NewsletterIssue" data-list-meta="__newsletterMeta">
             @await Html.PartialAsync("_NewsletterIssueTable", Model)
         </div>

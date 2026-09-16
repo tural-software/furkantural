@@ -36,14 +36,14 @@
                     <td class="col-select"><input type="checkbox" class="row-select" value="@row.Id" aria-label="Kaydı seç" /></td>
                     <td>@row.Id</td>
                     <td>
-                        <span class="cat-chip" style="--cat-color:@color">
+                        <span class="cat-chip" data-css-var="--cat-color" data-css-value="@color">
                             <span class="cat-chip__dot"></span>
                             @(row.Name ?? "—")
                         </span>
                     </td>
                     <td>
                         <span class="cat-swatch">
-                            <span class="cat-swatch__box" style="background:@color"></span>
+                            <span class="cat-swatch__box" data-style-bg="@color"></span>
                             <code class="cat-swatch__hex">@(string.IsNullOrWhiteSpace(row.Color) ? "—" : row.Color)</code>
                         </span>
                     </td>
@@ -89,7 +89,7 @@
                             {
                                 if (row.IsActive)
                                 {
-                                    <form method="post" action="@Url.Action("ToggleActive")" style="display:inline">
+                                    <form method="post" action="@Url.Action("ToggleActive")" class="u-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@row.Id" />
                                         <button type="submit" class="row-btn row-btn--warn" title="Pasife Al">
@@ -99,7 +99,7 @@
                                 }
                                 else
                                 {
-                                    <form method="post" action="@Url.Action("ToggleActive")" style="display:inline">
+                                    <form method="post" action="@Url.Action("ToggleActive")" class="u-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@row.Id" />
                                         <button type="submit" class="row-btn row-btn--success" title="Aktife Al">
@@ -111,7 +111,7 @@
 
                             @if (row.IsDeleted)
                             {
-                                <form method="post" action="@Url.Action("Restore")" style="display:inline">
+                                <form method="post" action="@Url.Action("Restore")" class="u-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@row.Id" />
                                     <button type="submit" class="row-btn row-btn--restore" title="Geri Yükle">
@@ -121,7 +121,7 @@
                             }
                             else if (row.IsActive)
                             {
-                                <form method="post" action="@Url.Action("Delete")" style="display:inline">
+                                <form method="post" action="@Url.Action("Delete")" class="u-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@row.Id" />
                                     <button type="submit" class="row-btn row-btn--delete" title="Sil">

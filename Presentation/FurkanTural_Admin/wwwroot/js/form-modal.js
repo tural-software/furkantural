@@ -121,7 +121,7 @@
         var boxes = options.map(function (o) {
             var ov = String(o.value);
             var checked = selected.indexOf(ov) !== -1 ? ' checked' : '';
-            var dot = o.color ? '<span class="fm-ms__dot" style="background:' + escAttr(o.color) + '"></span>' : '';
+            var dot = o.color ? '<span class="fm-ms__dot" data-style-bg="' + escAttr(o.color) + '"></span>' : '';
             return '<label class="fm-ms__opt">' +
                 '<input type="checkbox" name="' + field.name + '" value="' + escAttr(ov) + '"' + checked + ' />' +
                 dot + '<span>' + escHtml(o.label || '') + '</span>' +

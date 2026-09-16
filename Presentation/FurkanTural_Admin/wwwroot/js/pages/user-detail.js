@@ -69,8 +69,8 @@
             var src  = rel.indexOf('/') >= 0 ? base + '/' + rel : base + '/images/uploads/' + rel;
             var safe = src.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
             var alt  = (r.displayName || r.username || 'Avatar').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-            return '<div class="dm-image-preview" style="border:none;background:transparent;max-height:none;padding:.25rem 0;">'
-                + '<img src="' + safe + '" alt="' + alt + '" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);" />'
+            return '<div class="dm-image-preview dm-image-preview--avatar">'
+                + '<img src="' + safe + '" alt="' + alt + '" class="dm-avatar-lg" />'
                 + '</div>';
         }
     };

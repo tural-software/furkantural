@@ -41,7 +41,10 @@ public static class MarkdownRenderer
         renderer.Render(document);
         writer.Flush();
 
-        return new HtmlString(writer.ToString());
+        return new HtmlString(writer.ToString()
+            .Replace(" style=\"text-align: left;\"", " class=\"md-align-left\"")
+            .Replace(" style=\"text-align: center;\"", " class=\"md-align-center\"")
+            .Replace(" style=\"text-align: right;\"", " class=\"md-align-right\""));
     }
 
     /// <summary>Biçimlendirme atılıp düz metin üretir; sayfada değil, özet ve meta etiketlerinde kullanılır.</summary>

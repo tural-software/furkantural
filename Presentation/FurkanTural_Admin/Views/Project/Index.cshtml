@@ -98,7 +98,7 @@
         </div>
     </div>
 
-    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+    <div class="card u-card-filter">
         <form method="get" action="@Url.Action("Index")">
             <div class="filter-bar">
                 <div class="filter-group">
@@ -168,7 +168,7 @@
         </form>
     </div>
 
-    <div class="card" id="project-table-card" style="padding: 0; overflow: hidden;">
+    <div class="card u-card-flush" id="project-table-card">
         <div id="project-table-section" data-list-controller="Project" data-list-meta="__projectMeta">
             @await Html.PartialAsync("_ProjectTable", Model)
         </div>

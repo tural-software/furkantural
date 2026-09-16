@@ -26,7 +26,7 @@
             {
                 <span class="user-chip">@Model</span>
             }
-            <form asp-controller="Auth" asp-action="Logout" method="post" style="margin:0;">
+            <form asp-controller="Auth" asp-action="Logout" method="post" class="u-m-0">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="btn-outline logout-chip">Çıkış</button>
             </form>

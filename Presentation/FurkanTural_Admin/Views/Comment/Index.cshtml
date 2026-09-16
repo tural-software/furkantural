@@ -96,7 +96,7 @@
         </div>
     </div>
 
-    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+    <div class="card u-card-filter">
         <form method="get" action="@Url.Action("Index")">
             <div class="filter-bar">
                 <div class="filter-group">
@@ -144,7 +144,7 @@
         </form>
     </div>
 
-    <div class="card" id="comment-table-card" style="padding: 0; overflow: hidden;">
+    <div class="card u-card-flush" id="comment-table-card">
         <div id="comment-table-section" data-list-controller="Comment" data-list-meta="__commentMeta">
             @await Html.PartialAsync("_CommentTable", Model)
         </div>

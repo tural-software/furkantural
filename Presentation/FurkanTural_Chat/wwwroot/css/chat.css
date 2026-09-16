@@ -1547,3 +1547,12 @@ html[data-consent="1"] .consent-notice { display: none; }
 @media (max-width: 360px) {
   .cf-turnstile { transform: scale(0.72); transform-origin: center top; --ts-h: 47px; }
 }
+
+.u-pointer { cursor: pointer !important; }
+.u-cover { background-size: cover !important; background-position: center !important; }
+.wave-h6 { height: 6px !important; }
+.wave-h7 { height: 7px !important; }
+.wave-h9 { height: 9px !important; }
+.wave-h12 { height: 12px !important; }
+.wave-h14 { height: 14px !important; }
+.wave-h16 { height: 16px !important; }

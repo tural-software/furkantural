@@ -1,0 +1,19 @@
+.u-inline { display: inline !important; }
+.u-card-filter { padding: 1.25rem !important; margin-bottom: 1.25rem !important; }
+.u-card-flush { padding: 0 !important; overflow: hidden !important; }
+.u-m-0 { margin: 0 !important; }
+.u-inline-flex-gap { display: inline-flex !important; align-items: center; gap: 6px; }
+
+.status-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+    border: 1px solid rgba(128, 128, 128, .4);
+}
+
+.cm-media { max-width: 100%; }
+.cm-media--visual { max-height: 320px; border-radius: 8px; }
+
+.dm-image-preview.dm-image-preview--avatar { border: none; background: transparent; max-height: none; padding: .25rem 0; }
+.dm-avatar-lg { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }

@@ -90,7 +90,7 @@
         </div>
     </div>
 
-    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+    <div class="card u-card-filter">
         <form method="get" action="@Url.Action("Index")">
             <div class="filter-bar">
                 <div class="filter-group">
@@ -145,7 +145,7 @@
         </form>
     </div>
 
-    <div class="card" id="contact-table-card" style="padding: 0; overflow: hidden;">
+    <div class="card u-card-flush" id="contact-table-card">
         <div id="contact-table-section" data-list-controller="Contact" data-list-meta="__contactMeta">
             @await Html.PartialAsync("_ContactTable", Model)
         </div>

@@ -836,3 +836,8 @@ html.lightbox-open { overflow: hidden; }
 @media (max-width: 360px) {
   .cf-turnstile { transform: scale(0.72); transform-origin: center top; --ts-h: 47px; }
 }
+
+.md-align-left { text-align: left; }
+.md-align-center { text-align: center; }
+.md-align-right { text-align: right; }
+.consent-banner[hidden] { display: none; }

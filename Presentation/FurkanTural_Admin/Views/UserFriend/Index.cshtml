@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+    <div class="card u-card-filter">
         <form method="get" action="@Url.Action("Index")">
             <div class="filter-bar">
                 <div class="filter-group">
@@ -98,7 +98,7 @@
         </form>
     </div>
 
-    <div class="card" id="friend-table-card" style="padding: 0; overflow: hidden;">
+    <div class="card u-card-flush" id="friend-table-card">
         <div id="friend-table-section" data-list-controller="UserFriend" data-list-meta="__friendMeta">
             @await Html.PartialAsync("_UserFriendTable", Model)
         </div>

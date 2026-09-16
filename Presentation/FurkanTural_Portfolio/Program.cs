@@ -94,7 +94,7 @@ app.Use(async (context, next) =>
     headers["Content-Security-Policy"] =
         "default-src 'self'; " +
         $"script-src 'self' 'nonce-{nonce}' https://challenges.cloudflare.com; " +
-        "style-src 'self' 'unsafe-inline'; " +
+        $"style-src 'self' 'nonce-{nonce}'; " +
         // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
         "font-src 'self'; " +
         "img-src 'self' https: data:; " +

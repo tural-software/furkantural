@@ -57,15 +57,15 @@
                             var type = (r.messageType || '').toLowerCase();
                             if (type === 'audio') {
                                 var cap = '<div class="dm-media-cap">' + MIC_SVG + ' Ses Kaydı</div>';
-                                return cap + (r.attachmentUrl ? '<audio controls preload="metadata" src="' + attachmentSrc(r) + '" style="max-width:100%"></audio>' : '');
+                                return cap + (r.attachmentUrl ? '<audio controls preload="metadata" src="' + attachmentSrc(r) + '" class="cm-media"></audio>' : '');
                             }
                             if (type === 'image') {
                                 var capI = '<div class="dm-media-cap">' + IMG_SVG + ' Görsel</div>';
-                                return capI + (r.attachmentUrl ? '<img src="' + attachmentSrc(r) + '" alt="Görsel" loading="lazy" style="max-width:100%;max-height:320px;border-radius:8px">' : '');
+                                return capI + (r.attachmentUrl ? '<img src="' + attachmentSrc(r) + '" alt="Görsel" loading="lazy" class="cm-media cm-media--visual">' : '');
                             }
                             if (type === 'video') {
                                 var capV = '<div class="dm-media-cap">' + IMG_SVG + ' Video</div>';
-                                return capV + (r.attachmentUrl ? '<video controls preload="metadata" src="' + attachmentSrc(r) + '" style="max-width:100%;max-height:320px;border-radius:8px"></video>' : '');
+                                return capV + (r.attachmentUrl ? '<video controls preload="metadata" src="' + attachmentSrc(r) + '" class="cm-media cm-media--visual"></video>' : '');
                             }
                             return r.content ? esc(r.content) : '—';
                         }

@@ -114,7 +114,7 @@
                             <span class="related-card__cats">
                                 @foreach (var cat in rel.Categories.Take(2))
                                 {
-                                    <span class="related-card__cat" style="--chip-color:@cat.DisplayColor">
+                                    <span class="related-card__cat" data-css-var="--chip-color" data-css-value="@cat.DisplayColor">
                                         <span class="post-cat-chip__dot" aria-hidden="true"></span>@cat.Name
                                     </span>
                                 }
@@ -141,7 +141,7 @@
             <div class="index-row__cats">
                 @foreach (var cat in Model.Categories.Where(c => c.Slug.Length > 0))
                 {
-                    <a class="post-cat-chip" style="--chip-color:@cat.DisplayColor"
+                    <a class="post-cat-chip" data-css-var="--chip-color" data-css-value="@cat.DisplayColor"
                        href="@(Url.RouteUrl("BlogCategory", new { slug = cat.Slug }) ?? "/")"
                        aria-label="@cat.Name kategorisindeki yazılar">
                         <span class="post-cat-chip__dot" aria-hidden="true"></span>@cat.Name

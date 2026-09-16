@@ -69,7 +69,7 @@
         </div>
     </div>
 
-    <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+    <div class="card u-card-filter">
         <form method="get" action="@Url.Action("Index")">
             <div class="filter-bar">
                 <div class="filter-group">
@@ -123,7 +123,7 @@
         </form>
     </div>
 
-    <div class="card" id="log-table-card" style="padding: 0; overflow: hidden;">
+    <div class="card u-card-flush" id="log-table-card">
         <div id="log-table-section" data-list-controller="Log" data-list-meta="__logMeta">
             @await Html.PartialAsync("_LogTable", Model)
         </div>
