@@ -118,4 +118,60 @@ public class UserServiceSecurityStampTests
         user.SecurityStamp.Should().NotBe(EskiDamga,
             "silinen hesabın jetonu de facto geçerli kalmamalı");
     }
+
+    [Theory]
+    [InlineData(FurkanTural_Application.DTOs.Common.BulkAction.Deactivate, true, false)]
+    [InlineData(FurkanTural_Application.DTOs.Common.BulkAction.Delete, true, false)]
+    [InlineData(FurkanTural_Application.DTOs.Common.BulkAction.Activate, false, false)]
+    [InlineData(FurkanTural_Application.DTOs.Common.BulkAction.Restore, false, true)]
+    public async Task Toplu_islemde_etkilenen_her_kullanicinin_damgasi_tazelenir(
+        FurkanTural_Application.DTOs.Common.BulkAction action, bool isActive, bool isDeleted)
+    {
+        var users = new[] { Account(7), Account(8) };
+        foreach (var u in users) { u.IsActive = isActive; u.IsDeleted = isDeleted; }
+        _users.Setup(r => r.GetAllForAdminAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(users.AsEnumerable());
+
+        var result = await _sut.BulkAsync(action, [7, 8], 1);
+
+        result.Data!.Affected.Should().Be(2);
+        users.Should().OnlyContain(u => u.SecurityStamp != EskiDamga,
+            "tek tek yapılan işlem damgayı tazeliyordu; toplu yol tazelemezse panelden toplu yasaklanan kullanıcıların jetonları geçerli kalırdı");
+    }
+
+    [Fact]
+    public async Task Hesap_kapatmada_hatali_parola_deneme_kilidine_sayilir()
+    {
+        Account();
+        _hasher.Setup(h => h.Verify(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
+        var throttle = new Mock<ILoginThrottle>();
+        throttle.Setup(t => t.GetRemainingLockout(It.IsAny<string?>())).Returns((TimeSpan?)null);
+        var clock = Mock.Of<IClock>(c => c.UtcNow == new DateTime(2026, 9, 15, 9, 0, 0, DateTimeKind.Utc));
+        var sut = new UserService(_uow.Object, _hasher.Object,
+            new ActivityLogger(Mock.Of<ILogService>(), Mock.Of<IHttpContextAccessor>(), clock),
+            Mock.Of<IUserFriendService>(), clock, throttle.Object);
+
+        var result = await sut.DeactivateMyAccountAsync(7, "yanlis");
+
+        result.StatusCode.Should().Be(401);
+        throttle.Verify(t => t.RegisterFailure("hesap-kapatma#7"), Times.Once,
+            "sınırsız deneme, çalınmış bir oturumla parolanın kaba kuvvetle bulunmasına izin verirdi");
+    }
+
+    [Fact]
+    public async Task Hesap_kapatma_kilitliyken_parola_hic_sinanmaz()
+    {
+        Account();
+        var throttle = new Mock<ILoginThrottle>();
+        throttle.Setup(t => t.GetRemainingLockout("hesap-kapatma#7")).Returns(TimeSpan.FromSeconds(90));
+        var clock = Mock.Of<IClock>(c => c.UtcNow == new DateTime(2026, 9, 15, 9, 0, 0, DateTimeKind.Utc));
+        var sut = new UserService(_uow.Object, _hasher.Object,
+            new ActivityLogger(Mock.Of<ILogService>(), Mock.Of<IHttpContextAccessor>(), clock),
+            Mock.Of<IUserFriendService>(), clock, throttle.Object);
+
+        var result = await sut.DeactivateMyAccountAsync(7, "dogru-parola");
+
+        result.StatusCode.Should().Be(429);
+        _hasher.Verify(h => h.Verify(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
 }

@@ -146,7 +146,18 @@ public class AccountController(IChatAuthApiClient authApiClient, IAppConfigServi
     }
 
     private bool IsAuthenticated()
-        => !string.IsNullOrEmpty(HttpContext.Session.GetString("token"));
+    {
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("token")))
+            return false;
+
+        if (DateTimeOffset.TryParse(HttpContext.Session.GetString("expiresAt"), null,
+                System.Globalization.DateTimeStyles.RoundtripKind, out var expiresAt)
+            && expiresAt > DateTimeOffset.UtcNow)
+            return true;
+
+        HttpContext.Session.Clear();
+        return false;
+    }
 
     private void StoreSession(AuthResultModel data)
     {

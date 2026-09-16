@@ -11,8 +11,9 @@ using FurkanTural_Domain.Constants;
 
 namespace FurkanTural_Business.Services.Concrete;
 
-public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, ActivityLogger activityLogger, IUserFriendService userFriendService, IClock clock) : IUserService
+public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, ActivityLogger activityLogger, IUserFriendService userFriendService, IClock clock, ILoginThrottle? loginThrottle = null) : IUserService
 {
+    private readonly ILoginThrottle? _loginThrottle = loginThrottle;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly ActivityLogger _activityLogger = activityLogger;
@@ -302,8 +303,19 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         if (entity is null)
             return Result.Fail("Kullanıcı bulunamadı.", $"Hesap kapatma reddedildi: #{userId} etkin değil ya da silinmiş.", 404);
 
+        var throttleKey = $"hesap-kapatma#{userId}";
+        if (_loginThrottle?.GetRemainingLockout(throttleKey) is { } remaining)
+            return Result.Fail(
+                $"Çok fazla hatalı deneme yapıldı. Lütfen {Math.Ceiling(remaining.TotalSeconds)} saniye sonra tekrar deneyin.",
+                $"Hesap kapatma reddedildi: #{userId} deneme kilidinde.", 429);
+
         if (string.IsNullOrWhiteSpace(entity.Password) || !_passwordHasher.Verify(password, entity.Password))
+        {
+            _loginThrottle?.RegisterFailure(throttleKey);
             return Result.Fail("Parola hatalı.", $"Hesap kapatma reddedildi: #{userId} parola doğrulanamadı.", 401);
+        }
+
+        _loginThrottle?.Reset(throttleKey);
 
         entity.IsActive = false;
         entity.SecurityStamp = SecurityStamps.New();
@@ -348,5 +360,6 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         => Result<AdminStatusCountsDto>.Ok(await _unitOfWork.Users.GetAdminStatusCountsAsync(AdminPredicate(query, roleId, seenSince), cancellationToken));
 
     public Task<Result<BulkActionResultDto>> BulkAsync(BulkAction action, IReadOnlyCollection<int> ids, int? userId, CancellationToken cancellationToken = default)
-        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Users, action, ids, userId, "kullanıcı", _activityLogger, cancellationToken);
+        => BulkActions.ApplyAsync(_unitOfWork, _unitOfWork.Users, action, ids, userId, "kullanıcı", _activityLogger, cancellationToken,
+            onAffected: user => user.SecurityStamp = SecurityStamps.New());
 }

@@ -52,8 +52,14 @@ public class AuthController(IAuthService authService, IAccountActivationService 
         if (!int.TryParse(sub, out var userId))
             return Unauthorized();
 
-        var appSource = User.FindFirst("app_source")?.Value;
-        return ToActionResult(await _authService.RefreshAsync(userId, appSource, cancellationToken));
+        var appSource = User.FindFirst(ClaimDefinitions.AppSource)?.Value;
+        var securityStamp = User.FindFirst(ClaimDefinitions.SecurityStamp)?.Value;
+        var authTimeClaim = User.FindFirst(ClaimDefinitions.AuthTime) ?? User.FindFirst(ClaimTypes.AuthenticationInstant);
+        DateTime? authTime = long.TryParse(authTimeClaim?.Value, out var seconds)
+            ? DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime
+            : null;
+
+        return ToActionResult(await _authService.RefreshAsync(userId, appSource, securityStamp, authTime, cancellationToken));
     }
 
     /// <summary>Yeni üye kaydı oluştur ve giriş token'ı al</summary>

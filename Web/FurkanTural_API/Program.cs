@@ -136,14 +136,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             OnTokenValidated = async context =>
             {
-                var stamp = context.Principal?.FindFirst(FurkanTural_Domain.Constants.ClaimDefinitions.SecurityStamp)?.Value;
-                if (string.IsNullOrEmpty(stamp))
-                    return;
-
                 var sub = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                        ?? context.Principal?.FindFirst("sub")?.Value;
 
-                if (!int.TryParse(sub, out var userId))
+                if (sub is null)
+                    return;
+
+                var stamp = context.Principal?.FindFirst(FurkanTural_Domain.Constants.ClaimDefinitions.SecurityStamp)?.Value;
+                if (string.IsNullOrEmpty(stamp) || !int.TryParse(sub, out var userId))
                 {
                     context.Fail("Kimlik doğrulanamadı.");
                     return;

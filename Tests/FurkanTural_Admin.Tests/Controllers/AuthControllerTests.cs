@@ -46,7 +46,11 @@ public class AuthControllerTests
     public void Login_Get_WhenTokenExists_RedirectsToDashboard()
     {
         // Arrange
-        _sut.ControllerContext = ControllerTestHelper.BuildControllerContext("existing-jwt-token");
+        _sut.ControllerContext = ControllerTestHelper.BuildControllerContext(new Dictionary<string, string>
+        {
+            ["token"] = "existing-jwt-token",
+            ["expiresAt"] = DateTimeOffset.UtcNow.AddMinutes(30).ToString("O")
+        });
 
         // Act
         var result = _sut.Login();
@@ -55,6 +59,23 @@ public class AuthControllerTests
         result.Should().BeOfType<RedirectToActionResult>()
               .Which.ActionName.Should().Be("Index");
         result.As<RedirectToActionResult>().ControllerName.Should().Be("Dashboard");
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(null)]
+    public void Login_Get_WhenTokenExpiredOrUndated_ClearsSessionAndShowsLogin(int? minutesFromNow)
+    {
+        var values = new Dictionary<string, string> { ["token"] = "eski-jwt" };
+        if (minutesFromNow is { } minutes)
+            values["expiresAt"] = DateTimeOffset.UtcNow.AddMinutes(minutes).ToString("O");
+        _sut.ControllerContext = ControllerTestHelper.BuildControllerContext(values);
+
+        var result = _sut.Login();
+
+        result.Should().BeOfType<ViewResult>(
+            "süresi dolmuş oturumu panele girilmiş saymak, API'nin 401'i ile giriş sayfası arasında sonsuz yönlendirme demekti");
+        _sut.HttpContext.Session.Keys.Should().BeEmpty();
     }
 
     [Fact]

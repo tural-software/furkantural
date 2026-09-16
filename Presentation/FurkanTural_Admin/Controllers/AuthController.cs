@@ -12,7 +12,14 @@ public class AuthController(IAuthApiClient authApiClient) : Controller
     public IActionResult Login()
     {
         if (!string.IsNullOrEmpty(HttpContext.Session.GetString("token")))
-            return RedirectToAction("Index", "Dashboard");
+        {
+            if (DateTimeOffset.TryParse(HttpContext.Session.GetString("expiresAt"), null,
+                    System.Globalization.DateTimeStyles.RoundtripKind, out var expiresAt)
+                && expiresAt > DateTimeOffset.UtcNow)
+                return RedirectToAction("Index", "Dashboard");
+
+            HttpContext.Session.Clear();
+        }
 
         return View(new LoginRequestModel());
     }

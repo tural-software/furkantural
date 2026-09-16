@@ -257,6 +257,12 @@ static async Task<string?> TryRefreshTokenAsync(HttpContext httpContext, string 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/Auth/refresh");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", currentToken);
         using var response = await client.SendAsync(request, httpContext.RequestAborted);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            httpContext.Session.Clear();
+            return null;
+        }
+
         if (!response.IsSuccessStatusCode)
             return null;
 

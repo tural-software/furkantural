@@ -117,10 +117,17 @@ public class AuthService(
         var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId, cancellationToken);
         var roleName = role?.Name ?? "User";
 
+        if (string.IsNullOrEmpty(user.SecurityStamp))
+        {
+            user.SecurityStamp = SecurityStamps.New();
+            await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
         await _activityLogger.LogAsync(
             $"Giriş yapıldı: #{user.Id} ({roleName}), uygulama: {Ad(dto.AppSource)}", cancellationToken);
 
-        return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, dto.AppSource));
+        return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, dto.AppSource, _clock.UtcNow));
     }
 
     public async Task<Result<LoginResultDto>> RegisterAsync(RegisterDto dto, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
@@ -175,19 +182,32 @@ public class AuthService(
         await _unitOfWork.Users.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<LoginResultDto>.Ok(BuildLoginResult(user, role.Name ?? "User"));
+        return Result<LoginResultDto>.Ok(BuildLoginResult(user, role.Name ?? "User", AppSourceDefinitions.Chat, _clock.UtcNow));
     }
 
-    public async Task<Result<LoginResultDto>> RefreshAsync(int userId, string? appSource, CancellationToken cancellationToken = default)
+    public async Task<Result<LoginResultDto>> RefreshAsync(int userId, string? appSource, string? securityStamp, DateTime? authTime, CancellationToken cancellationToken = default)
     {
+        if (authTime is null)
+            return Result<LoginResultDto>.Fail("Oturumun süresi doldu. Lütfen yeniden giriş yapın.",
+                $"Yenileme reddedildi: #{userId} jetonunda giriş anı yok.", 401);
+
+        if (_clock.UtcNow - authTime.Value >= SessionLifetimes.For(appSource))
+            return Result<LoginResultDto>.Fail("Oturumun süresi doldu. Lütfen yeniden giriş yapın.",
+                $"Yenileme reddedildi: #{userId} oturumu mutlak ömrünü doldurdu.", 401);
+
         var user = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
         if (user is null)
             return Result<LoginResultDto>.Fail("Kullanıcı bulunamadı.", statusCode: 401);
 
+        if (string.IsNullOrEmpty(securityStamp)
+            || !string.Equals(user.SecurityStamp, securityStamp, StringComparison.Ordinal))
+            return Result<LoginResultDto>.Fail("Oturumun süresi doldu. Lütfen yeniden giriş yapın.",
+                $"Yenileme reddedildi: #{userId} güvenlik damgası eşleşmedi.", 401);
+
         var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId, cancellationToken);
         var roleName = role?.Name ?? "User";
 
-        return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, appSource));
+        return Result<LoginResultDto>.Ok(BuildLoginResult(user, roleName, appSource, authTime.Value));
     }
 
     private const string ReopenHint = " Hesap sizinse ve kapalıysa, kayıtlı adresinize hesabı yeniden açma bağlantısı gönderilir.";
@@ -223,27 +243,34 @@ public class AuthService(
         return !string.Equals(trustedAppSource, AppSourceDefinitions.Admin, StringComparison.Ordinal);
     }
 
-    private LoginResultDto BuildLoginResult(User user, string roleName, string? appSource = null)
+    private LoginResultDto BuildLoginResult(User user, string roleName, string? appSource, DateTime authTime)
     {
         var (secret, issuer, audience, expiryMinutes) = GetJwtConfig();
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var issuedAppSource = !string.IsNullOrWhiteSpace(appSource)
+            && _appTokenSettings.Apps.Any(a => string.Equals(a.AppName, appSource, StringComparison.Ordinal))
+                ? appSource
+                : null;
+
+        var sessionEnd = authTime.Add(SessionLifetimes.For(issuedAppSource));
         var expiresAt = _clock.UtcNow.AddMinutes(expiryMinutes);
+        if (expiresAt > sessionEnd)
+            expiresAt = sessionEnd;
 
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.UniqueName, user.Username ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, roleName)
+            new(ClaimTypes.Role, roleName),
+            new(ClaimDefinitions.AuthTime, new DateTimeOffset(DateTime.SpecifyKind(authTime, DateTimeKind.Utc)).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+            new(ClaimDefinitions.SecurityStamp, user.SecurityStamp ?? string.Empty)
         };
 
-        if (!string.IsNullOrEmpty(user.SecurityStamp))
-            claims.Add(new Claim(ClaimDefinitions.SecurityStamp, user.SecurityStamp));
-
-        if (!string.IsNullOrWhiteSpace(appSource)
-            && _appTokenSettings.Apps.Any(a => string.Equals(a.AppName, appSource, StringComparison.Ordinal)))
-            claims.Add(new Claim("app_source", appSource));
+        if (issuedAppSource is not null)
+            claims.Add(new Claim(ClaimDefinitions.AppSource, issuedAppSource));
 
         var token = new JwtSecurityToken(
             issuer: issuer,

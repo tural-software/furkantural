@@ -18,7 +18,8 @@ public static class BulkActions
         int? userId,
         string entityName,
         ActivityLogger? activityLogger = null,
-        CancellationToken cancellationToken = default) where T : BaseEntity
+        CancellationToken cancellationToken = default,
+        Action<T>? onAffected = null) where T : BaseEntity
     {
         var wanted = ids.Where(i => i > 0).Distinct().ToList();
         if (wanted.Count == 0)
@@ -31,6 +32,8 @@ public static class BulkActions
         foreach (var row in rows)
         {
             if (!IsEligible(row, action)) continue;
+
+            onAffected?.Invoke(row);
 
             switch (action)
             {
