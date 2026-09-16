@@ -6,7 +6,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__logMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             levelFilter   = Model.LevelFilter ?? "",
             searchSource = Model.SearchSource ?? "",

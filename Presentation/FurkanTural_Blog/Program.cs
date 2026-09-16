@@ -69,14 +69,12 @@ if (!app.Environment.IsDevelopment())
 // img-src: yerel varlıklar ('self') + API'den gelen kapak görselleri (Api:BaseUrl) + data URI
 // (Service Worker önbelleği için 'self' yeterli; API origin eklenmesi zorunlu çünkü
 //  kapak URL'leri BuildImageUrl() ile API sunucusundan mutlak adres olarak oluşturulur).
-// script-src: 'unsafe-inline' — head'deki FOUC-önleme inline bloğu ve JSON-LD @Html.Raw()
-//  çıktıları nedeniyle zorunlu. Nonce yaklaşımı bu projede aşırı karmaşıklık getirir;
-//  'unsafe-inline' burada kabul edilebilir çünkü tüm inline içerik sunucu tarafından
-//  üretilen sabit değerlerdir (kullanıcı girdisi inline script'e dönüşmüyor).
 // worker-src: Service Worker kaydı için ('self') gerekli.
 var apiBase = (builder.Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
 app.Use(async (context, next) =>
 {
+    var nonce = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16));
+    context.Items["csp-nonce"] = nonce;
     var headers = context.Response.Headers;
     headers["X-Content-Type-Options"] = "nosniff";
     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
@@ -88,7 +86,7 @@ app.Use(async (context, next) =>
         : $"'self' data: {apiBase}";
     headers["Content-Security-Policy"] =
         "default-src 'none'; " +
-        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; " +
+        $"script-src 'self' 'nonce-{nonce}' https://challenges.cloudflare.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
         "font-src 'self'; " +

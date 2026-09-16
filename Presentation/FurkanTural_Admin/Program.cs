@@ -283,6 +283,8 @@ app.UseHttpsRedirection();
 var apiOrigin = new Uri(apiBaseUrl).GetLeftPart(UriPartial.Authority);
 app.Use(async (context, next) =>
 {
+    var nonce = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16));
+    context.Items["csp-nonce"] = nonce;
     var headers = context.Response.Headers;
     headers["X-Content-Type-Options"] = "nosniff";
     headers["X-Frame-Options"] = "DENY";
@@ -295,7 +297,7 @@ app.Use(async (context, next) =>
     });
     headers["Content-Security-Policy"] =
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline'; " +
+        $"script-src 'self' 'nonce-{nonce}'; " +
         "style-src 'self' 'unsafe-inline'; " +
         // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
         "font-src 'self' data:; " +

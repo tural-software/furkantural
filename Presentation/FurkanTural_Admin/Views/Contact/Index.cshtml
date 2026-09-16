@@ -6,7 +6,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__contactMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             name          = Model.SearchName ?? "",
             activeFilter  = Model.ActiveFilter ?? "",

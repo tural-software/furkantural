@@ -6,7 +6,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__educationMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             institution   = Model.SearchInstitution ?? "",
             degree        = Model.SearchDegree ?? "",

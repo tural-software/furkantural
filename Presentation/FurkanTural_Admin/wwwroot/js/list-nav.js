@@ -243,6 +243,17 @@
         params: function () { return new URLSearchParams(params ? params.toString() : ''); }
     };
 
+    document.addEventListener('change', function (event) {
+        var select = event.target;
+        if (!select || !select.classList || !select.classList.contains('page-size-sel') || !select.form) return;
+
+        if (typeof select.form.requestSubmit === 'function') {
+            select.form.requestSubmit();
+        } else {
+            select.form.submit();
+        }
+    });
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {

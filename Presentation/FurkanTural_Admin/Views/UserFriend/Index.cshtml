@@ -6,7 +6,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__friendMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             statusFilter  = Model.StatusFilter ?? "",
             activeFilter  = Model.ActiveFilter ?? "",

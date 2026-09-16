@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="~/icons/apple-touch-icon.png" />
 
     @* Tema, stil bağlantılarından önce satır içi olarak uygulanır; sonraya kalırsa sayfa bir kare yanlış temayla çizilir. *@
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         (function () {
             try {
                 var saved = localStorage.getItem('theme');
@@ -84,7 +84,7 @@
 
     @* Tek kaynak ikon sözlüğü — detail-modal.js (ve diğer istemci modülleri) buradan okur.
        IconLibrary tek doğruluk kaynağı; _Icons.cshtml ile aynı SVG'leri paylaşır. *@
-    <script>window.__ICONS = @Html.Raw(FurkanTural_Admin.Helpers.IconLibrary.Json);</script>
+    <script nonce="@Context.Items["csp-nonce"]">window.__ICONS = @Html.Raw(FurkanTural_Admin.Helpers.IconLibrary.Json);</script>
     <script src="~/js/ft-time.js" asp-append-version="true"></script>
     <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/toast.js" asp-append-version="true"></script>

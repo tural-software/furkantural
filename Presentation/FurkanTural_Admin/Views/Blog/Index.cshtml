@@ -7,7 +7,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__blogMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             title         = Model.SearchTitle ?? "",
             activeFilter  = Model.ActiveFilter ?? "",

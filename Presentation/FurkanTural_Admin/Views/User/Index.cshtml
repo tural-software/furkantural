@@ -10,7 +10,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__apiBaseUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewData["ApiBaseUrl"] ?? "")));
         window.__userMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             searchUsername = Model.SearchUsername ?? "",

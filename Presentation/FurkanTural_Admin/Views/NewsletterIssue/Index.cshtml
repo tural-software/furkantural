@@ -6,7 +6,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__newsletterMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             subject       = Model.SearchSubject ?? "",
             activeFilter  = Model.ActiveFilter ?? "",

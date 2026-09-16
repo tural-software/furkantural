@@ -6,7 +6,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__reportMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             search        = Model.Search ?? "",
             typeFilter    = Model.TypeFilter ?? "",

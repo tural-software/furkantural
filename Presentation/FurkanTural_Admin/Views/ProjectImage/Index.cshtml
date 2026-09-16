@@ -7,7 +7,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__projectImageMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             url           = Model.SearchUrl ?? "",
             isCoverFilter = Model.IsCoverFilter ?? "",

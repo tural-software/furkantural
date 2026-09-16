@@ -64,6 +64,8 @@ if (!app.Environment.IsDevelopment())
 
 app.Use(async (context, next) =>
 {
+    var nonce = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16));
+    context.Items["csp-nonce"] = nonce;
     var headers = context.Response.Headers;
 
     headers["X-Content-Type-Options"] = "nosniff";
@@ -73,18 +75,13 @@ app.Use(async (context, next) =>
     // Tarayıcı özellik politikası: kamera/mikrofon/konum/ödeme gereksinimi yok (Blog/Chat ile tutarlı).
     headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
 
-    // script-src notu: 'unsafe-inline' gerekli — sayfada sunucu-kontrollü iki inline blok var:
-    //   (1) document.documentElement.classList.add('js')  (_Layout.cshtml, FOUC önleme)
-    //   (2) <script type="application/ld+json"> JSON-LD blokları (_Layout + Detail sayfaları)
-    // Nonce tabanlı yaklaşım, bu iki ayrı inline bloğun her birine middleware nonce enjeksiyonu
-    // ve Razor tag güncellemesi gerektirir — siteyi bozma riski taşır.
     // 'unsafe-eval' eklenmedi: hiçbir yerde eval/Function() kullanımı yok.
     // frame-src: Turnstile doğrulama widget'ı challenges.cloudflare.com iframe'i açar.
     // img-src https: — API sunucusu (proje/müzik görselleri) domain'i config'e göre değişir;
     //   'self' + https: ile tüm HTTPS origin'lere izin verildi.
     headers["Content-Security-Policy"] =
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; " +
+        $"script-src 'self' 'nonce-{nonce}' https://challenges.cloudflare.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
         "font-src 'self'; " +

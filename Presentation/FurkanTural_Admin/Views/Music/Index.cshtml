@@ -7,7 +7,7 @@
 }
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         window.__musicMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             searchName    = Model.SearchName ?? "",
             searchArtist  = Model.SearchArtist ?? "",
