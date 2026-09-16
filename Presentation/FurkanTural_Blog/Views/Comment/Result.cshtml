@@ -1,6 +1,6 @@
 @model CommentNotificationViewModel
 @{
-    ViewData["Title"] = Model.TokenMissing ? "Yorum bildirimleri" : (Model.Succeeded ? "Bildirimler kapatıldı" : "Bağlantı geçersiz");
+    ViewData["Title"] = Model.TokenMissing || Model.Pending ? "Yorum bildirimleri" : (Model.Succeeded ? "Bildirimler kapatıldı" : "Bağlantı geçersiz");
     ViewData["MetaDescription"] = "Yorum yanıtı bildirimi bağlantısının sonucu.";
     ViewData["Robots"] = "noindex, nofollow";
 }
@@ -25,6 +25,19 @@
                     yoksa yeni bir yorum bırakırken bildirim kutusunu işaretlemeden bırakabilirsiniz.
                 </p>
                 <a class="btn btn--ghost" href="@(Url.Action("Index", "Home") ?? "/")">Yazılara dön</a>
+            </div>
+        }
+        else if (Model.Pending)
+        {
+            <div class="newsletter-result newsletter-result--ok">
+                <h2 class="newsletter-result__title">Yanıt bildirimlerini kapatın</h2>
+                <p class="newsletter-result__text">
+                    Bu adrese bir daha yorum yanıtı bildirimi gönderilmemesi için aşağıdaki düğmeye basın.
+                </p>
+                <form method="post" asp-route="BlogCommentNotificationOffPost">
+                    <input type="hidden" name="token" value="@Model.Token" />
+                    <button class="btn btn--primary" type="submit">Bildirimleri kapat</button>
+                </form>
             </div>
         }
         else if (Model.Succeeded)

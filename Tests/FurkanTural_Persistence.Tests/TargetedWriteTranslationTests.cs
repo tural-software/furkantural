@@ -110,4 +110,22 @@ public class TargetedWriteTranslationTests
         sql.Should().Contain("[IsDeleted]", "silinmiş jeton satırı canlı okumada olduğu gibi harcanamaz");
         db.ChangeTracker.Entries().Should().BeEmpty("hedefli yazma kaydetme yoluna uğramaz");
     }
+
+    [Fact]
+    public async Task Abonenin_bekleyen_baglantilari_tek_yazmayla_harcanir()
+    {
+        var capture = new CommandCapture();
+        await using var db = Context(capture);
+
+        await new UnitOfWork(db).ConsumePendingSubscriberVerificationsAsync(7, new DateTime(2026, 9, 16, 12, 0, 0, DateTimeKind.Utc));
+
+        var sql = capture.Statements.Should().ContainSingle().Subject;
+        var set = SetClause(sql);
+
+        sql.Should().StartWith("UPDATE");
+        sql.Should().Contain("[SubscriberVerifications]");
+        set.Should().Contain("[ConsumedAt]").And.Contain("[UpdatedAt]");
+        sql.Should().Contain("[SubscriberId]").And.Contain("IS NULL",
+            "yalnızca bu abonenin henüz harcanmamış bağlantıları işaretlenmeli; harcanmış olanların anı değişmemeli");
+    }
 }

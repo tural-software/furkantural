@@ -62,29 +62,31 @@ public class NewsletterController(INewsletterClient newsletter, IAppConfigServic
         return View(model);
     }
 
-    /// <summary>Doğrulama bağlantısının indiği sayfa. Jeton adres satırından gelir ve harcanır; sayfa yalnızca sonucu gösterir.</summary>
+    /// <summary>Doğrulama bağlantısının indiği sayfa. Sayfayı açmak jetonu harcamaz, yalnızca onay düğmesini gösterir; jeton düğmeye basılınca harcanır. Posta sunucularının güvenlik tarayıcıları bağlantıları kendiliğinden açar — açmak işlemi yapsaydı abonelik okur hiç tıklamadan onaylanmış olurdu.</summary>
     [HttpGet]
     [Route("bulten/onay", Name = "BlogNewsletterConfirm")]
     public Task<IActionResult> Confirm(string? token, CancellationToken cancellationToken)
+        => Task.FromResult<IActionResult>(View("Result", Pending(token, NewsletterTokenViewModel.ConfirmAction)));
+
+    [HttpPost]
+    [Route("bulten/onay", Name = "BlogNewsletterConfirmPost")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> ConfirmPost(string? token, CancellationToken cancellationToken)
         => ResolveAsync(token, t => _newsletter.ConfirmAsync(t, cancellationToken), "Onay");
 
-    /// <summary>Çıkış bağlantısının indiği sayfa. Jeton yoksa sonuç değil form gösterilir: bağlantısız gelen ziyaretçi adresini yazıp bağlantıyı isteyebilir.</summary>
+    /// <summary>Çıkış bağlantısının indiği sayfa. Jeton yoksa sonuç değil form gösterilir: bağlantısız gelen ziyaretçi adresini yazıp bağlantıyı isteyebilir. Jeton varsa sayfa yalnızca çıkış düğmesini gösterir; çıkış düğmeye basılınca yapılır, aksi hâlde posta güvenlik tarayıcısı bağlantıyı açtığı anda okur listeden düşerdi.</summary>
     [HttpGet]
     [Route("bulten/cikis", Name = "BlogNewsletterUnsubscribe")]
-    public async Task<IActionResult> Unsubscribe(string? token, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(token))
-            return View("Unsubscribe", new NewsletterViewModel());
+    public Task<IActionResult> Unsubscribe(string? token, CancellationToken cancellationToken)
+        => Task.FromResult<IActionResult>(string.IsNullOrWhiteSpace(token)
+            ? View("Unsubscribe", new NewsletterViewModel())
+            : View("Result", Pending(token, NewsletterTokenViewModel.UnsubscribeAction)));
 
-        var outcome = await _newsletter.UnsubscribeAsync(token.Trim(), cancellationToken);
-        return View("Result", new NewsletterTokenViewModel
-        {
-            Succeeded = outcome.Succeeded,
-            Message = string.IsNullOrWhiteSpace(outcome.Message)
-                ? (outcome.Succeeded ? "Aboneliğiniz iptal edildi." : "Bu bağlantı artık geçerli değil.")
-                : outcome.Message
-        });
-    }
+    [HttpPost]
+    [Route("bulten/cikis/onay", Name = "BlogNewsletterUnsubscribeConfirm")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> UnsubscribeConfirm(string? token, CancellationToken cancellationToken)
+        => ResolveAsync(token, t => _newsletter.UnsubscribeAsync(t, cancellationToken), "Çıkış");
 
     /// <summary>Çıkış bağlantısını ister. Listeden düşürmez ve yanıt adresin listede olup olmadığını ele vermez.</summary>
     [HttpPost]
@@ -113,6 +115,11 @@ public class NewsletterController(INewsletterClient newsletter, IAppConfigServic
 
         return View("Unsubscribe", model);
     }
+
+    private static NewsletterTokenViewModel Pending(string? token, string action)
+        => string.IsNullOrWhiteSpace(token)
+            ? new NewsletterTokenViewModel { TokenMissing = true }
+            : new NewsletterTokenViewModel { Token = token.Trim(), PendingAction = action };
 
     private async Task<IActionResult> ResolveAsync(string? token, Func<string, Task<NewsletterOutcome>> action, string kind)
     {

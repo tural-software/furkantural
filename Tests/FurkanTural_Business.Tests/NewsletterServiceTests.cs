@@ -398,6 +398,50 @@ public class NewsletterServiceTests
     }
 
     [Fact]
+    public async Task Cikista_aboneye_ait_bekleyen_butun_baglantilar_harcanir()
+    {
+        RowIs(Row(confirmedAt: Now.AddDays(-1)));
+        await _sut.RequestUnsubscribeAsync(Email, null, null);
+        var token = TokenFromMail();
+
+        var result = await _sut.UnsubscribeAsync(token);
+
+        result.Success.Should().BeTrue();
+        _uow.Verify(u => u.ConsumePendingSubscriberVerificationsAsync(7, Now, It.IsAny<CancellationToken>()), Times.Once,
+            "bültenlere gömülü çıkış bağlantıları yıllarca geçerli; harcanmazsa kişi yeniden abone olduğunda eski bir posta yeni aboneliği iptal ederdi");
+    }
+
+    [Fact]
+    public async Task Yoneticinin_listeden_cikardigi_adres_formdan_geri_acilmaz()
+    {
+        var row = Row(isActive: false, isDeleted: true);
+        row.DeletedBy = 1;
+        RowIs(row);
+
+        var result = await _sut.SubscribeAsync(Email, "jeton", null, null);
+
+        result.Success.Should().BeTrue("yanıt adresin durumunu ele vermemeli");
+        _restored.Should().BeEmpty();
+        _sent.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Yoneticinin_listeden_cikardigi_adres_onay_baglantisiyla_geri_acilmaz()
+    {
+        RowIs(null);
+        await _sut.SubscribeAsync(Email, "jeton", null, null);
+        var token = TokenFromMail();
+        _byId!.IsDeleted = true;
+        _byId.DeletedBy = 1;
+
+        var result = await _sut.ConfirmAsync(token);
+
+        result.IsFailure.Should().BeTrue();
+        _restored.Should().BeEmpty();
+        _byId.ConfirmedAt.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Ayni_anda_harcanan_jeton_ikinci_istekte_aboneligi_baslatmaz()
     {
         RowIs(null);

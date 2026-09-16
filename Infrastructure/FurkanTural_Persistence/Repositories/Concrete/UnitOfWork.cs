@@ -67,6 +67,13 @@ public class UnitOfWork(FurkanTuralDbContext context) : IUnitOfWork
                 .SetProperty(x => EF.Property<DateTime?>(x, nameof(ISingleUseToken.ConsumedAt)), consumedAt)
                 .SetProperty(x => x.UpdatedAt, consumedAt), cancellationToken) == 1;
 
+    public Task<int> ConsumePendingSubscriberVerificationsAsync(int subscriberId, DateTime consumedAt, CancellationToken cancellationToken = default)
+        => context.Set<SubscriberVerification>()
+            .Where(x => x.SubscriberId == subscriberId && x.ConsumedAt == null)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.ConsumedAt, consumedAt)
+                .SetProperty(x => x.UpdatedAt, consumedAt), cancellationToken);
+
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try

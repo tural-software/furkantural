@@ -104,4 +104,6 @@ public sealed class CommentNotificationViewModel
     public bool Succeeded { get; set; }
     public string? Message { get; set; }
     public bool TokenMissing { get; set; }
+    public bool Pending { get; set; }
+    public string? Token { get; set; }
 }

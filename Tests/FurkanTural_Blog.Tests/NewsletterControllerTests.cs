@@ -141,11 +141,24 @@ public class NewsletterControllerTests
     // ── Onay bağlantısı ───────────────────────────────────────────────────────
 
     [Fact]
-    public async Task Onay_baglantisi_jetonu_harcar()
+    public async Task Onay_baglantisini_acmak_jetonu_harcamaz_yalnizca_dugmeyi_gosterir()
+    {
+        var client = new Mock<INewsletterClient>(MockBehavior.Strict);
+
+        var result = TokenResultOf(await Build(client.Object).Confirm(" jeton ", default));
+
+        result.PendingAction.Should().Be(NewsletterTokenViewModel.ConfirmAction);
+        result.Token.Should().Be("jeton");
+        client.Verify(c => c.ConfirmAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never,
+            "posta güvenlik tarayıcıları bağlantıları kendiliğinden açar; açmak işlemi yapsaydı abonelik okur tıklamadan onaylanırdı");
+    }
+
+    [Fact]
+    public async Task Onay_dugmesi_jetonu_harcar()
     {
         var client = ClientReturning(true, "Aboneliğiniz doğrulandı.");
 
-        var result = TokenResultOf(await Build(client.Object).Confirm("jeton", default));
+        var result = TokenResultOf(await Build(client.Object).ConfirmPost("jeton", default));
 
         result.Succeeded.Should().BeTrue();
         result.Message.Should().Be("Aboneliğiniz doğrulandı.");
@@ -169,14 +182,36 @@ public class NewsletterControllerTests
     // ── Çıkış ─────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task Cikis_baglantisi_jetonla_gelirse_aboneligi_bitirir()
+    public async Task Cikis_baglantisini_acmak_aboneligi_bitirmez()
     {
-        var client = ClientReturning(true, "Aboneliğiniz iptal edildi.");
+        var client = new Mock<INewsletterClient>(MockBehavior.Strict);
 
         var result = TokenResultOf(await Build(client.Object).Unsubscribe("jeton", default));
 
+        result.PendingAction.Should().Be(NewsletterTokenViewModel.UnsubscribeAction);
+        client.Verify(c => c.UnsubscribeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Cikis_dugmesi_aboneligi_bitirir()
+    {
+        var client = ClientReturning(true, "Aboneliğiniz iptal edildi.");
+
+        var result = TokenResultOf(await Build(client.Object).UnsubscribeConfirm("jeton", default));
+
         result.Succeeded.Should().BeTrue();
         client.Verify(c => c.UnsubscribeAsync("jeton", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(nameof(NewsletterController.ConfirmPost))]
+    [InlineData(nameof(NewsletterController.UnsubscribeConfirm))]
+    public void Jetonu_harcayan_uc_yalnizca_sahtecilik_jetonlu_POST_kabul_eder(string action)
+    {
+        var method = typeof(NewsletterController).GetMethod(action)!;
+
+        method.GetCustomAttributes(typeof(HttpPostAttribute), false).Should().NotBeEmpty();
+        method.GetCustomAttributes(typeof(ValidateAntiForgeryTokenAttribute), false).Should().NotBeEmpty();
     }
 
     [Fact]

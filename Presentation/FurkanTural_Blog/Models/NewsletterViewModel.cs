@@ -20,7 +20,7 @@ public sealed class NewsletterViewModel
     public string? ResultMessage { get; set; }
 }
 
-/// <summary>Doğrulama ve çıkış bağlantılarının indiği sayfa. Jeton adres satırından gelir ve tek kullanımlıktır; sayfa yalnızca sonucu gösterir.</summary>
+/// <summary>Doğrulama ve çıkış bağlantılarının indiği sayfa. Jeton adres satırından gelir ve tek kullanımlıktır. Sayfa önce onay düğmesini (<see cref="PendingAction"/>), düğmeye basıldıktan sonra sonucu gösterir.</summary>
 public sealed class NewsletterTokenViewModel
 {
     public bool Succeeded { get; set; }
@@ -28,4 +28,12 @@ public sealed class NewsletterTokenViewModel
 
     /// <summary>Jeton hiç gelmediğinde sayfa sonuç değil yönerge gösterir: bağlantısız gelen ziyaretçiye "geçersiz" demek, yanlış bir şey yaptığını sanmasına yol açar.</summary>
     public bool TokenMissing { get; set; }
+
+    public const string ConfirmAction = "confirm";
+
+    public const string UnsubscribeAction = "unsubscribe";
+
+    public string? PendingAction { get; set; }
+
+    public string? Token { get; set; }
 }

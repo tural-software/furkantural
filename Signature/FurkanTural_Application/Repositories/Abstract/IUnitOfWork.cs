@@ -44,4 +44,7 @@ public interface IUnitOfWork
     /// <summary>Tek kullanımlık jetonu yalnızca henüz harcanmamışken harcanmış olarak işaretler ve işaretlemeyi gerçekten kendisinin yaptığını döndürür. Koşul veri tabanında sınandığı için okuma ile yazma arasına başka bir istek giremez; aynı bağlantıya iki kez tıklayan kullanıcıda ikinci çağrı false alır.<para>Yazma kaydetme yolundan geçmez: <see cref="SaveChangesAsync"/> beklemez, değişiklik izleyicisine uğramaz ve bu yüzden canlı bildirim kancasına da görünmez. Jetonun kendisi panelde izlenen bir kayıt olmadığı için bu bilinçli bir seçimdir.</para></summary>
     Task<bool> TryConsumeTokenAsync<T>(int id, DateTime consumedAt, CancellationToken cancellationToken = default)
         where T : BaseEntity, ISingleUseToken;
+
+    /// <summary>Bir aboneye ait henüz harcanmamış bütün doğrulama bağlantılarını tek yazmayla harcanmış işaretler ve kaç tanesinin işaretlendiğini döndürür. Bültenden çıkışta çağrılır: bültenlere gömülü çıkış bağlantıları yıllarca geçerlidir ve abonelik dönemine değil abone satırına bağlıdır; kişi çıkıp yeniden abone olduğunda aynı satır geri açıldığı için eski bir postadaki bağlantı yeni aboneliği iptal edebilirdi.</summary>
+    Task<int> ConsumePendingSubscriberVerificationsAsync(int subscriberId, DateTime consumedAt, CancellationToken cancellationToken = default);
 }

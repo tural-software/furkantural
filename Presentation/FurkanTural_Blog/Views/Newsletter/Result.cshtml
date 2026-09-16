@@ -1,6 +1,7 @@
 @model NewsletterTokenViewModel
 @{
-    ViewData["Title"] = Model.TokenMissing ? "Bülten" : (Model.Succeeded ? "İşlem tamamlandı" : "Bağlantı geçersiz");
+    var confirming = Model.PendingAction == NewsletterTokenViewModel.ConfirmAction;
+    ViewData["Title"] = Model.TokenMissing || Model.PendingAction is not null ? "Bülten" : (Model.Succeeded ? "İşlem tamamlandı" : "Bağlantı geçersiz");
     ViewData["MetaDescription"] = "Bülten bağlantısı sonucu.";
     ViewData["Robots"] = "noindex, nofollow";
 }
@@ -27,6 +28,21 @@
                     bülten sayfasından yeniden isteyebilirsiniz.
                 </p>
                 <a class="btn btn--ghost" href="@(Url.RouteUrl("BlogNewsletter") ?? "/bulten")">Bülten sayfası</a>
+            </div>
+        }
+        else if (Model.PendingAction is not null)
+        {
+            <div class="newsletter-result newsletter-result--ok">
+                <h2 class="newsletter-result__title">@(confirming ? "Aboneliği onaylayın" : "Bültenden çıkın")</h2>
+                <p class="newsletter-result__text">
+                    @(confirming
+                        ? "Aboneliği başlatmak için aşağıdaki düğmeye basın."
+                        : "Bülten listesinden çıkmak için aşağıdaki düğmeye basın.")
+                </p>
+                <form method="post" asp-route="@(confirming ? "BlogNewsletterConfirmPost" : "BlogNewsletterUnsubscribeConfirm")">
+                    <input type="hidden" name="token" value="@Model.Token" />
+                    <button class="btn btn--primary" type="submit">@(confirming ? "Aboneliği onayla" : "Bültenden çık")</button>
+                </form>
             </div>
         }
         else if (Model.Succeeded)

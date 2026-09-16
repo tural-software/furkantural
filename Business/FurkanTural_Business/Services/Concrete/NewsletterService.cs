@@ -58,6 +58,12 @@ public class NewsletterService(
 
         var subscriber = await _unitOfWork.Subscribers.GetByEmailForAdminAsync(address, cancellationToken);
 
+        if (subscriber is { IsDeleted: true, DeletedBy: not null })
+        {
+            _logger.LogInformation("Abonelik postası gönderilmedi: adres yönetici tarafından listeden çıkarılmış.");
+            return Result.Ok(NeutralSubscribeMessage);
+        }
+
         if (subscriber is { IsDeleted: false, IsActive: true, ConfirmedAt: not null })
         {
             _logger.LogInformation("Abonelik postası gönderilmedi: adres zaten doğrulanmış.");
@@ -93,6 +99,10 @@ public class NewsletterService(
         var subscriber = await _unitOfWork.Subscribers.GetByIdForAdminAsync(verification!.SubscriberId, cancellationToken);
         if (subscriber is null)
             return Result.Fail("Bu bağlantı artık geçerli değil.", $"Abonelik onayı reddedildi: #{verification.SubscriberId} yok.");
+
+        if (subscriber.IsDeleted && subscriber.DeletedBy is not null)
+            return Result.Fail("Bu adres listeye yeniden eklenemez. Bilgi için destek@furkantural.com adresine yazın.",
+                $"Abonelik onayı reddedildi: #{subscriber.Id} yönetici tarafından listeden çıkarılmış.", 403);
 
         if (!await _unitOfWork.TryConsumeTokenAsync<SubscriberVerification>(verification.Id, _clock.UtcNow, cancellationToken))
             return Result.Fail("Bu bağlantı daha önce kullanılmış.",
@@ -153,6 +163,7 @@ public class NewsletterService(
             await _unitOfWork.Subscribers.SoftDeleteAsync(subscriber, null, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.ConsumePendingSubscriberVerificationsAsync(subscriber.Id, _clock.UtcNow, cancellationToken);
         await _activityLogger.LogAsync($"Bülten aboneliği iptal edildi. Id: {subscriber.Id}", cancellationToken);
 
         return Result.Ok("Aboneliğiniz iptal edildi. Bundan sonra bülten göndermeyeceğiz.");
