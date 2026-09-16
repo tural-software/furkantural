@@ -28,7 +28,8 @@ public class AntiforgeryContractTests
 
         program.Should().Contain("options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute())",
             "aksiyon başına öznitelik yeni bir aksiyonda unutulabilir; global süzgeç unutulamaz");
-        program.Should().Contain("options.Cookie.SecurePolicy = CookieSecurePolicy.Always;");
+        program.Should().Contain("options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;",
+            "yayında jeton çerezi yalnızca HTTPS ile taşınır; yerel http profilinde Always doğrulamada istisna fırlatır");
         program.Should().Contain("options.Cookie.SameSite = SameSiteMode.Strict;");
     }
 
