@@ -12,6 +12,22 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
     private readonly IChatMessageApiClient _chatMessageApiClient = chatMessageApiClient;
     private readonly ApiOptions _apiOptions = apiOptions.Value;
 
+    private static readonly Dictionary<string, string> AttachmentContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [".jpg"] = "image/jpeg",
+        [".jpeg"] = "image/jpeg",
+        [".png"] = "image/png",
+        [".gif"] = "image/gif",
+        [".webp"] = "image/webp",
+        [".mp3"] = "audio/mpeg",
+        [".ogg"] = "audio/ogg",
+        [".wav"] = "audio/wav",
+        [".m4a"] = "audio/mp4",
+        [".mp4"] = "video/mp4",
+        [".webm"] = "video/webm",
+        [".mov"] = "video/quicktime"
+    };
+
     public async Task<IActionResult> Index(string? search = null, string? usernameFilter = null, string? typeFilter = null, string? activeFilter = null,
         string? deletedFilter = null, string? dateFrom = null, string? dateTo = null,
         int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
@@ -94,16 +110,16 @@ public class ChatMessageController(IChatMessageApiClient chatMessageApiClient, I
         if (file.Contains("..") || file.Contains('/') || file.Contains('\\'))
             return BadRequest();
 
-        var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp3", ".ogg", ".wav", ".m4a", ".mp4", ".webm", ".mov" };
         var ext = Path.GetExtension(file);
-        if (string.IsNullOrEmpty(ext) || !allowedExtensions.Contains(ext))
+        if (string.IsNullOrEmpty(ext) || !AttachmentContentTypes.TryGetValue(ext, out var contentType))
             return BadRequest();
 
-        var (stream, contentType) = await _chatMessageApiClient.GetAttachmentAsync(file, token, cancellationToken);
+        var (stream, _) = await _chatMessageApiClient.GetAttachmentAsync(file, token, cancellationToken);
         if (stream is null) return NotFound();
 
-        return File(stream, contentType ?? "application/octet-stream", enableRangeProcessing: true);
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.ContentDisposition = "inline";
+        return File(stream, contentType, enableRangeProcessing: true);
     }
 
     [HttpPost]

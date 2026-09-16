@@ -141,6 +141,8 @@ public class MessageController(IChatMessageService chatMessageService, IChatNoti
             contentType = "application/octet-stream";
 
         Response.Headers.CacheControl = "private, max-age=3600";
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.ContentDisposition = "inline";
         return PhysicalFile(physicalPath, contentType, enableRangeProcessing: true);
     }
 
