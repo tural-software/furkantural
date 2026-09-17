@@ -401,14 +401,17 @@ public sealed class LiveSiteFixture : IAsyncLifetime
     public Task<T> WithPageAsync<T>(SitePage page, Func<IPage, Task<T>> action) =>
         WithPageAsync(page, Viewport.Desktop, action);
 
-    public async Task<T> WithPageAsync<T>(SitePage page, Viewport viewport, Func<IPage, Task<T>> action)
+    public Task<T> WithPageAsync<T>(SitePage page, Viewport viewport, Func<IPage, Task<T>> action) =>
+        WithPageAsync(page, viewport, Themes.Dark, action);
+
+    public async Task<T> WithPageAsync<T>(SitePage page, Viewport viewport, string theme, Func<IPage, Task<T>> action)
     {
         await RequireAppAsync(page.App);
 
         await _gate.WaitAsync();
         try
         {
-            var context = await GetContextAsync(page.Access, Themes.Dark);
+            var context = await GetContextAsync(page.Access, theme);
             var path = await ResolvePathAsync(page, context);
             var browserPage = await context.NewPageAsync();
             try
