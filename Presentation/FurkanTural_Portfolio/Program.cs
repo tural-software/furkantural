@@ -74,6 +74,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+var apiBase = (builder.Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
+var imgSrc = string.IsNullOrWhiteSpace(apiBase) ? "'self' data:" : $"'self' data: {apiBase}";
+
 app.Use(async (context, next) =>
 {
     var nonce = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16));
@@ -89,15 +92,15 @@ app.Use(async (context, next) =>
 
     // 'unsafe-eval' eklenmedi: hiçbir yerde eval/Function() kullanımı yok.
     // frame-src: Turnstile doğrulama widget'ı challenges.cloudflare.com iframe'i açar.
-    // img-src https: — API sunucusu (proje/müzik görselleri) domain'i config'e göre değişir;
-    //   'self' + https: ile tüm HTTPS origin'lere izin verildi.
+    // img-src: yerel varlıklar ('self') + API'den gelen proje/müzik görselleri (Api:BaseUrl) + data URI.
+    //   Blog ile aynı kalıp: adres yapılandırmadan gelir, böylece rastgele bir HTTPS origin'i görsel basamaz.
     headers["Content-Security-Policy"] =
         "default-src 'self'; " +
         $"script-src 'self' 'nonce-{nonce}' https://challenges.cloudflare.com; " +
         $"style-src 'self' 'nonce-{nonce}'; " +
         // Inter kendi sunucumuzda barındırılıyor → üçüncü-taraf font alanına gerek yok.
         "font-src 'self'; " +
-        "img-src 'self' https: data:; " +
+        $"img-src {imgSrc}; " +
         "connect-src 'self'; " +
         "frame-src https://challenges.cloudflare.com; " +
         "manifest-src 'self'; " +
