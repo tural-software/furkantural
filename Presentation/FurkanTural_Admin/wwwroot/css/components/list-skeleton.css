@@ -265,7 +265,7 @@
         font-size: var(--fs-3xs);
     }
 
-    [data-filter-card] {
+    .card[data-filter-card] {
         position: fixed;
         left: 0;
         right: 0;

@@ -4,6 +4,10 @@
     ViewData["Title"] = "Veri Saklama";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/data-retention/data-retention-index.css" asp-append-version="true" />
+}
+
 <div class="container">
 
     @await Html.PartialAsync("_Breadcrumb", "Veri Saklama")
@@ -47,11 +51,14 @@
     @if (Model.Preview is not null)
     {
         <div class="card u-card-flush">
+            <div class="retention-summary">
+                <p class="retention-summary__cutoff" id="retention-cutoff">
+                    @Model.Preview.Cutoff.ToString("dd.MM.yyyy") (UTC) tarihinden eski olup silinecek kayıtlar
+                </p>
+                <p class="retention-summary__total">Toplam @Model.Preview.Total.ToString("N0") kayıt</p>
+            </div>
             <div class="data-table-wrap">
-                <table class="data-table">
-                    <caption class="section-desc">
-                        @Model.Preview.Cutoff.ToString("dd.MM.yyyy") (UTC) tarihinden eski olup silinecek kayıtlar
-                    </caption>
+                <table class="data-table retention-table" aria-describedby="retention-cutoff">
                     <thead>
                         <tr>
                             <th scope="col">Veri</th>
@@ -67,17 +74,11 @@
                             </tr>
                         }
                     </tbody>
-                    <tfoot>
-                        <tr>
-                            <th scope="row">Toplam</th>
-                            <td>@Model.Preview.Total.ToString("N0")</td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>
 
-        <form method="post" asp-action="Purge" class="card u-card-filter">
+        <form method="post" asp-action="Purge" class="card u-card-filter retention-form">
             <label class="retention-confirm">
                 <input type="checkbox" name="confirm" value="true" required />
                 <span>Bu kayıtların ve dosyalarının kalıcı olarak silineceğini, işlemin geri alınamayacağını anlıyorum.</span>
