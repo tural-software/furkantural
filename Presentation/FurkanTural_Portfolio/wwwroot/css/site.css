@@ -321,6 +321,7 @@ main:focus { outline: none; }
   background-clip: text;
   color: transparent;
 }
+.error-page__code--word { font-size: clamp(2.25rem, 8vw, 3.5rem); }
 .error-page h1 { margin: 0 0 1rem; }
 .error-page .btn { margin-top: 1.5rem; }
 .error-page__req { margin-top: 2rem; opacity: 0.6; }

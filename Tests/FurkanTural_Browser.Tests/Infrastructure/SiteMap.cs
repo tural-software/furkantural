@@ -39,7 +39,7 @@ public static class SiteMap
     private static readonly string[] AdminSections =
     [
         "Dashboard", "Blog", "BlogImage", "CallLog", "Category", "ChatMessage", "Comment", "Contact",
-        "Education", "Experience", "Log", "MailTemplate", "Music", "MusicImage", "NewsletterIssue", "Project",
+        "DataRetention", "Education", "Experience", "Log", "MailTemplate", "Music", "MusicImage", "NewsletterIssue", "Project",
         "ProjectImage", "Report", "Role", "Skill", "Status", "Subscriber", "Tag", "User", "UserFriend"
     ];
 
@@ -72,6 +72,7 @@ public static class SiteMap
             new(Blog, "/bulten/onay"),
             new(Blog, "/yorum/bildirim-kapat"),
             new(Blog, "/ara?q=ef"),
+            new(Blog, "/offline.html"),
             new(Blog, "/yazi", Access.Public, Discover: "a[href*='/yazi/']", DiscoverFrom: "/"),
             new(Blog, "/kategori", Access.Public, Discover: "a[href*='/kategori/']", DiscoverFrom: "/"),
             new(Blog, "/etiket", Access.Public, Discover: "a[href*='/etiket/']", DiscoverFrom: "/arsiv"),
@@ -79,6 +80,7 @@ public static class SiteMap
             new(Portfolio, "/"),
             new(Portfolio, "/Home/Privacy"),
             new(Portfolio, "/Home/Imprint"),
+            new(Portfolio, "/offline.html"),
             new(Portfolio, "/Projects/Detail", Access.Public, Discover: "a[href*='/Projects/Detail/']", DiscoverFrom: "/"),
             new(Portfolio, "/Music/Detail", Access.Public, Discover: "a[href*='/Music/Detail/']", DiscoverFrom: "/"),
 
