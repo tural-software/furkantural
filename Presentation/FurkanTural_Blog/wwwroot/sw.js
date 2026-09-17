@@ -1,7 +1,7 @@
 // Kurulabilirlik ve çevrimdışı kabuk için service worker.
-const CACHE = 'ft-blog-v2';
+const CACHE = 'ft-blog-v3';
 const OFFLINE = '/offline.html';
-const PRECACHE = [OFFLINE, '/css/site.css', '/js/site.js', '/icons/icon-192.png'];
+const PRECACHE = [OFFLINE, '/css/site.css', '/js/site.js', '/js/theme.js', '/icons/icon-192.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
