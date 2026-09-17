@@ -30,7 +30,12 @@ div.hero-art > div.preview > div.preview-thread > span.preview-bubble.preview-bu
 div.hero-art > div.preview > div.preview-thread > span.preview-voice  867,319,115,40
 div.preview > div.preview-thread > span.preview-voice > span.preview-play  880,328,22,22
 div.preview > div.preview-thread > span.preview-voice > span.preview-wave  911,331,22,16
-div.preview-thread > span.preview-voice > span.preview-wave > i.on  919,331,2,16
+div.preview-thread > span.preview-voice > span.preview-wave > i.wave-h6  911,341,2,6
+div.preview-thread > span.preview-voice > span.preview-wave > i.wave-h12  915,335,2,12
+div.preview-thread > span.preview-voice > span.preview-wave > i.on.wave-h16  919,331,2,16
+div.preview-thread > span.preview-voice > span.preview-wave > i.wave-h9  923,338,2,9
+div.preview-thread > span.preview-voice > span.preview-wave > i.wave-h14  927,333,2,14
+div.preview-thread > span.preview-voice > span.preview-wave > i.wave-h7  931,340,2,7
 div.preview > div.preview-thread > span.preview-voice > span.preview-time  942,332,27,15
 section.hero > div.hero-art > div.preview > div.preview-composer  853,375,358,51
 div.hero-art > div.preview > div.preview-composer > span.preview-add  867,387,28,28

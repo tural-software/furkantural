@@ -217,7 +217,7 @@ public sealed class LiveSiteFixture : IAsyncLifetime
             await browserPage.EvaluateAsync("() => document.fonts ? document.fonts.ready.then(() => true) : true");
             await browserPage.EvaluateAsync(
                 "() => Promise.all(Array.from(document.images).filter(i => !i.complete)" +
-                ".map(i => new Promise(done => { i.onload = i.onerror = done; })))");
+                ".map(i => new Promise(done => { i.onload = i.onerror = done; setTimeout(done, 5000); })))");
             await browserPage.WaitForTimeoutAsync(150);
 
             var probe = await browserPage.EvaluateAsync<JsonElement>(_probeScript);
@@ -262,6 +262,15 @@ public sealed class LiveSiteFixture : IAsyncLifetime
 
     private static bool Ignored(string text) =>
         IgnoredOrigins.Any(o => text.Contains(o, StringComparison.OrdinalIgnoreCase));
+
+    private const string AdoptStyleScript =
+        """
+        css => {
+          const sheet = new CSSStyleSheet();
+          sheet.replaceSync(css);
+          document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+        }
+        """;
 
     private const string StopScript =
         """
@@ -328,11 +337,9 @@ public sealed class LiveSiteFixture : IAsyncLifetime
                 await browserPage.SetViewportSizeAsync(Viewport.Desktop.Width, Viewport.Desktop.Height);
                 await browserPage.GotoAsync(page.App.BaseUrl + path,
                     new PageGotoOptions { WaitUntil = WaitUntilState.Load, Timeout = 30000 });
-                await browserPage.AddStyleTagAsync(new PageAddStyleTagOptions
-                {
-                    Content = "*, *::before, *::after { transition: none !important; animation: none !important; " +
-                              "scroll-behavior: auto !important; }"
-                });
+                await browserPage.EvaluateAsync(AdoptStyleScript,
+                    "*, *::before, *::after { transition: none !important; animation: none !important; " +
+                    "scroll-behavior: auto !important; }");
                 await browserPage.EvaluateAsync("() => { window.__ftStops = []; window.__ftFocused = []; }");
 
                 var seen = new List<TabStopRaw>();
@@ -370,14 +377,12 @@ public sealed class LiveSiteFixture : IAsyncLifetime
 
         return await WithPageAsync(page, viewport, async browserPage =>
         {
-            await browserPage.AddStyleTagAsync(new PageAddStyleTagOptions
-            {
-                Content = "*, *::before, *::after { transition: none !important; animation: none !important; }"
-            });
+            await browserPage.EvaluateAsync(AdoptStyleScript,
+                "*, *::before, *::after { transition: none !important; animation: none !important; }");
             await browserPage.EvaluateAsync("() => document.fonts ? document.fonts.ready.then(() => true) : true");
             await browserPage.EvaluateAsync(
                 "() => Promise.all(Array.from(document.images).filter(i => !i.complete)" +
-                ".map(i => new Promise(done => { i.onload = i.onerror = done; })))");
+                ".map(i => new Promise(done => { i.onload = i.onerror = done; setTimeout(done, 5000); })))");
             await browserPage.WaitForTimeoutAsync(200);
             return await browserPage.EvaluateAsync<string>(script);
         });
