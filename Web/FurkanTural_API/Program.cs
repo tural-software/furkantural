@@ -167,7 +167,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly",      policy => policy.RequireRole("Admin"));
     options.AddPolicy("UserOrAdmin",    policy => policy.RequireRole("Admin", "User"));
     options.AddPolicy("VisitorOrAbove", policy => policy.RequireRole("Admin", "User", "Subscriber", "Visitor"));
-    options.AddPolicy("AppClient",      policy => policy.RequireRole("Visitor").RequireClaim("app_source"));
+    options.AddPolicy("AppClient",      policy => policy.RequireRole("Visitor").RequireClaim("app_source").RequireClaim(FurkanTural_Domain.Constants.ClaimDefinitions.AppKeyId));
 });
 
 var swaggerEnabled = builder.Configuration.GetValue<bool>("Swagger:Enabled");

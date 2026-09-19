@@ -24,13 +24,17 @@ public class ForwardedClientMiddlewareTests
         return context;
     }
 
-    private static ClaimsPrincipal Token(string? appSource = null, string? role = null)
+    private const string KeyId = "anahtar-kimligi";
+
+    private static ClaimsPrincipal Token(string? appSource = null, string? role = null, string? keyId = null)
     {
         var claims = new List<Claim>();
         if (appSource is not null)
             claims.Add(new Claim("app_source", appSource));
         if (role is not null)
             claims.Add(new Claim(ClaimTypes.Role, role));
+        if (keyId is not null)
+            claims.Add(new Claim("app_kid", keyId));
         return new ClaimsPrincipal(new ClaimsIdentity(claims, "Bearer"));
     }
 
@@ -44,7 +48,7 @@ public class ForwardedClientMiddlewareTests
     [InlineData("Admin")]
     public async Task Sitelerimizin_jetonuyla_gelen_ziyaretci_bilgisi_kullanilir(string app)
     {
-        var context = Request(Token(appSource: app, role: "Visitor"));
+        var context = Request(Token(appSource: app, role: "Visitor", keyId: KeyId));
 
         await Run(context);
 
@@ -64,6 +68,20 @@ public class ForwardedClientMiddlewareTests
         context.Connection.RemoteIpAddress.Should().Be(ServerIp,
             "yönetici jetonunun yalnızca panelde durduğu varsayımı yanlıştı: jeton API'ye doğrudan da " +
             "sunulabilir, o yüzden rol tek başına başlık yazma yetkisi vermemeli");
+    }
+
+    [Theory]
+    [InlineData("Chat")]
+    [InlineData("Admin")]
+    public async Task Anahtar_kimligi_olmayan_Visitor_jetonu_ziyaretci_bilgisi_yazdirmaz(string app)
+    {
+        var context = Request(Token(appSource: app, role: "Visitor"));
+
+        await Run(context);
+
+        context.Connection.RemoteIpAddress.Should().Be(ServerIp,
+            "Visitor veri tabanında da bir roldür; bu role atanmış bir üyenin kendi giriş jetonu da Visitor ve " +
+            "app_source taşır, uygulama jetonunu ondan ayıran tek şey anahtar kimliğidir");
     }
 
     [Fact]
@@ -103,7 +121,7 @@ public class ForwardedClientMiddlewareTests
     [InlineData("   ")]
     public async Task Gecersiz_ip_baglanti_adresini_degistirmez(string ip)
     {
-        var context = Request(Token(appSource: "Blog", role: "Visitor"), ip: ip);
+        var context = Request(Token(appSource: "Blog", role: "Visitor", keyId: KeyId), ip: ip);
 
         await Run(context);
 
@@ -113,7 +131,7 @@ public class ForwardedClientMiddlewareTests
     [Fact]
     public async Task IPv6_adresi_kabul_edilir()
     {
-        var context = Request(Token(appSource: "Chat", role: "Visitor"), ip: "2001:db8::7");
+        var context = Request(Token(appSource: "Chat", role: "Visitor", keyId: KeyId), ip: "2001:db8::7");
 
         await Run(context);
 
@@ -123,7 +141,7 @@ public class ForwardedClientMiddlewareTests
     [Fact]
     public async Task Tarayici_bilgisi_olmadan_mevcut_deger_korunur()
     {
-        var context = Request(Token(appSource: "Portfolio", role: "Visitor"), userAgent: null);
+        var context = Request(Token(appSource: "Portfolio", role: "Visitor", keyId: KeyId), userAgent: null);
         context.Request.Headers.UserAgent = "sunucu-istemcisi";
 
         await Run(context);
@@ -134,7 +152,7 @@ public class ForwardedClientMiddlewareTests
     [Fact]
     public async Task Uzun_tarayici_bilgisi_kirpilir()
     {
-        var context = Request(Token(appSource: "Blog", role: "Visitor"), userAgent: new string('a', 2000));
+        var context = Request(Token(appSource: "Blog", role: "Visitor", keyId: KeyId), userAgent: new string('a', 2000));
 
         await Run(context);
 

@@ -53,7 +53,7 @@ public class AuthServiceSessionTests
         _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
     }
 
-    private AuthService Build()
+    private AuthService Build(params string[] extraApps)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -63,7 +63,8 @@ public class AuthServiceSessionTests
 
         var settings = new AppTokenSettings
         {
-            Apps = [new AppRegistration { AppName = AppSourceDefinitions.Chat, AppKey = "anahtar" }]
+            Apps = [new AppRegistration { AppName = AppSourceDefinitions.Chat, AppKey = "anahtar" },
+                .. extraApps.Select(app => new AppRegistration { AppName = app, AppKey = "anahtar-" + app })]
         };
 
         var logService = new Mock<ILogService>();
@@ -91,6 +92,70 @@ public class AuthServiceSessionTests
 
     private static string? ClaimOf(JwtSecurityToken token, string type)
         => token.Claims.FirstOrDefault(c => c.Type == type)?.Value;
+
+    private static string? RoleOf(JwtSecurityToken token)
+        => ClaimOf(token, "role") ?? ClaimOf(token, System.Security.Claims.ClaimTypes.Role);
+
+    private void UserIsAdmin()
+        => _roles.Setup(r => r.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new Role { Id = 1, Name = "Admin" });
+
+    [Fact]
+    public async Task Chat_uzerinden_giren_yonetici_jetonda_uye_olarak_gorunur()
+    {
+        UserIsAdmin();
+
+        var result = await Build().LoginAsync(
+            new LoginDto { Username = "deneme", Password = Password, AppSource = AppSourceDefinitions.Chat }, null, null, AppSourceDefinitions.Chat);
+
+        RoleOf(Read(result)).Should().Be("User",
+            "Chat oturumu yedi gün yaşar ve BFF API'nin her yoluna vekillik eder; yönetici rolü taşısaydı Chat çerezi " +
+            "panelin bir saatlik kuralını aşan bir yönetici kimliği olurdu");
+        result.Data!.RoleName.Should().Be("User");
+        ClaimOf(Read(result), ClaimDefinitions.AppSource).Should().Be(AppSourceDefinitions.Chat);
+    }
+
+    [Fact]
+    public async Task Panelden_giren_yonetici_yonetici_kalir()
+    {
+        UserIsAdmin();
+
+        var result = await Build().LoginAsync(new LoginDto { Username = "deneme", Password = Password }, null, null, AppSourceDefinitions.Admin);
+
+        RoleOf(Read(result)).Should().Be("Admin");
+        result.Data!.RoleName.Should().Be("Admin", "panel girişi rolü yanıttan okuyup yönetici olmayanı geri çevirir");
+    }
+
+    [Fact]
+    public async Task Kayitli_panel_kaynagiyla_giren_yonetici_yonetici_kalir()
+    {
+        UserIsAdmin();
+
+        var result = await Build(AppSourceDefinitions.Admin).LoginAsync(
+            new LoginDto { Username = "deneme", Password = Password, AppSource = AppSourceDefinitions.Admin }, null, null, AppSourceDefinitions.Admin);
+
+        RoleOf(Read(result)).Should().Be("Admin");
+    }
+
+    [Fact]
+    public async Task Chat_oturumundaki_yonetici_jetonu_yenilemede_uyeye_iner()
+    {
+        UserIsAdmin();
+
+        var result = await Build().RefreshAsync(7, AppSourceDefinitions.Chat, Stamp, Now.AddDays(-2));
+
+        result.Success.Should().BeTrue();
+        RoleOf(Read(result)).Should().Be("User",
+            "yayından önce verilmiş yedi günlük Chat oturumları ilk yenilemede yönetici rolünü bırakmalı");
+    }
+
+    [Fact]
+    public async Task Chat_uzerinden_giren_uyenin_rolu_degismez()
+    {
+        var result = await Build().LoginAsync(
+            new LoginDto { Username = "deneme", Password = Password, AppSource = AppSourceDefinitions.Chat }, null, null, AppSourceDefinitions.Chat);
+
+        RoleOf(Read(result)).Should().Be("User");
+    }
 
     [Fact]
     public async Task Giris_jetonu_damgayi_ve_giris_anini_tasir()

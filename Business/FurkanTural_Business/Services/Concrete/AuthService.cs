@@ -265,6 +265,12 @@ public class AuthService(
                 ? appSource
                 : null;
 
+        var issuedRole = issuedAppSource is not null
+            && !string.Equals(issuedAppSource, AppSourceDefinitions.Admin, StringComparison.Ordinal)
+            && string.Equals(roleName, "Admin", StringComparison.Ordinal)
+                ? "User"
+                : roleName;
+
         var sessionEnd = authTime.Add(SessionLifetimes.For(issuedAppSource));
         var expiresAt = _clock.UtcNow.AddMinutes(expiryMinutes);
         if (expiresAt > sessionEnd)
@@ -275,7 +281,7 @@ public class AuthService(
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.UniqueName, user.Username ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, roleName),
+            new(ClaimTypes.Role, issuedRole),
             new(ClaimDefinitions.AuthTime, new DateTimeOffset(DateTime.SpecifyKind(authTime, DateTimeKind.Utc)).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
             new(ClaimDefinitions.SecurityStamp, user.SecurityStamp ?? string.Empty)
         };
@@ -297,7 +303,7 @@ public class AuthService(
             Token = tokenString,
             UserId = user.Id,
             Username = user.Username,
-            RoleName = roleName,
+            RoleName = issuedRole,
             AvatarUrl = user.AvatarUrl,
             ExpiresAt = expiresAt,
             MembershipAgreementAccepted = user.MembershipAgreementAcceptedAt != null

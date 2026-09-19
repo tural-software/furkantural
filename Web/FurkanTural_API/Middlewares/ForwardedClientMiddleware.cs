@@ -1,5 +1,6 @@
 using System.Net;
 using System.Security.Claims;
+using FurkanTural_API.Helpers;
 using FurkanTural_Domain.Constants;
 
 namespace FurkanTural_API.Middlewares;
@@ -9,7 +10,6 @@ public sealed class ForwardedClientMiddleware(RequestDelegate next)
     public const string IpHeader = "X-FT-Client-IP";
     public const string UserAgentHeader = "X-FT-Client-UA";
     public const int MaxUserAgentLength = 512;
-    private const string AppTokenRole = "Visitor";
 
     private static readonly HashSet<string> TrustedApps = new(StringComparer.Ordinal)
     {
@@ -39,10 +39,7 @@ public sealed class ForwardedClientMiddleware(RequestDelegate next)
 
     private static bool IsTrustedCaller(ClaimsPrincipal user)
     {
-        if (user.Identity?.IsAuthenticated != true)
-            return false;
-
-        var app = user.FindFirst("app_source")?.Value;
-        return app is not null && TrustedApps.Contains(app) && user.IsInRole(AppTokenRole);
+        var app = AppTokenPrincipal.AppSource(user);
+        return app is not null && TrustedApps.Contains(app);
     }
 }

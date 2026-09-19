@@ -4,6 +4,7 @@ using FurkanTural_Application.DTOs.Auth;
 using FurkanTural_Application.DTOs.User;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_API.Controllers.Base;
+using FurkanTural_API.Helpers;
 using FurkanTural_API.Models.Auth;
 using FurkanTural_Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
@@ -17,8 +18,6 @@ public class AuthController(IAuthService authService, IAccountActivationService 
 {
     private readonly IAuthService _authService = authService;
     private readonly IAccountActivationService _accountActivationService = accountActivationService;
-
-    private const string AppTokenRole = "Visitor";
 
     /// <summary>Kullanıcı girişi yap ve JWT token al</summary>
     [HttpPost("login")]
@@ -85,9 +84,7 @@ public class AuthController(IAuthService authService, IAccountActivationService 
 
     /// <summary>İsteği yapan ön-yüzün kimliği. Yalnızca uygulama jetonundan okunur: o jeton <c>AppTokens:Apps</c> altındaki anahtarla üretilir ve her zaman Visitor rolü taşır, dolayısıyla değeri istemci uyduramaz. Gövdedeki AppSource bu karara hiç girmez — girseydi robot doğrulamasından kaçmak için alanı boş göndermek yeterdi.</summary>
     private string? TrustedAppSource()
-        => User.Identity?.IsAuthenticated == true && User.IsInRole(AppTokenRole)
-            ? User.FindFirst(ClaimDefinitions.AppSource)?.Value
-            : null;
+        => AppTokenPrincipal.AppSource(User);
 
     /// <summary>Adres <c>UseRealClientIp</c> middleware'inden sonra okunur, dolayısıyla Cloudflare kenar adresini değil ziyaretçinin kendi adresini verir.</summary>
     private string? ClientIp()
