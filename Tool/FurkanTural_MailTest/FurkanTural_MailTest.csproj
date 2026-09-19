@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>FurkanTural_MailTest</AssemblyName>
+    <RootNamespace>FurkanTural_MailTest</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Business\FurkanTural_Business\FurkanTural_Business.csproj" />
+  </ItemGroup>
+
+</Project>
