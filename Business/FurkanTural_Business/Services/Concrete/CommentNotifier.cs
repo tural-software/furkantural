@@ -3,7 +3,7 @@ using System.Text;
 using FurkanTural_Application.DTOs.Mail;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
-using FurkanTural_Application.Wrappers;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +16,7 @@ public class CommentNotifier(
     IUnitOfWork unitOfWork,
     IMailSender mailSender,
     IConfiguration configuration,
+    ActivityLogger activityLogger,
     ILogger<CommentNotifier> logger,
     IClock clock) : ICommentNotifier
 {
@@ -28,8 +29,11 @@ public class CommentNotifier(
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMailSender _mailSender = mailSender;
     private readonly IConfiguration _configuration = configuration;
+    private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly ILogger<CommentNotifier> _logger = logger;
     private readonly IClock _clock = clock;
+
+    private const string LogLabel = "Comment-Notify";
 
     public async Task<int> NotifyAsync(CancellationToken cancellationToken = default)
     {
@@ -49,6 +53,7 @@ public class CommentNotifier(
 
         var processed = 0;
         var cursor = 0;
+        var tally = new MailTally();
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -64,17 +69,20 @@ public class CommentNotifier(
             foreach (var notification in batch)
             {
                 cursor = notification.Id;
-                await AttemptAsync(notification, unsubscribeUrl!, postUrlFormat!, cancellationToken);
+                await AttemptAsync(notification, unsubscribeUrl!, postUrlFormat!, tally, cancellationToken);
                 processed++;
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
+        if (!tally.IsEmpty)
+            await _activityLogger.LogMailAsync($"Yorum yanıtı bildirim turu bitti. {tally.Summary()}", tally.HasFailures, LogLabel, cancellationToken);
+
         return processed;
     }
 
-    private async Task AttemptAsync(CommentNotification notification, string unsubscribeUrl, string postUrlFormat, CancellationToken cancellationToken)
+    private async Task AttemptAsync(CommentNotification notification, string unsubscribeUrl, string postUrlFormat, MailTally tally, CancellationToken cancellationToken)
     {
         var skip = await SkipReasonAsync(notification, cancellationToken);
         if (skip.Reason is not null)
@@ -82,6 +90,7 @@ public class CommentNotifier(
             notification.Status = CommentNotificationStatuses.Skipped;
             notification.Error = skip.Reason;
             await _unitOfWork.CommentNotifications.UpdateAsync(notification, cancellationToken);
+            tally.RecordSkipped();
             return;
         }
 
@@ -113,16 +122,17 @@ public class CommentNotifier(
             notification.SentAt = _clock.UtcNow;
             notification.TokenHash = Hash(token);
             notification.Error = null;
+            tally.RecordSent();
         }
         else
         {
-            notification.Error = Truncate(Reason(sent), 500);
+            notification.Error = Truncate(MailLog.Reason(sent), 500);
 
-            if (notification.AttemptCount >= MaxAttempts)
-            {
+            var final = notification.AttemptCount >= MaxAttempts;
+            if (final)
                 notification.Status = CommentNotificationStatuses.Failed;
-                _logger.LogWarning("Yorum bildirimi kalıcı olarak başarısız. Bildirim: {NotificationId}", notification.Id);
-            }
+
+            tally.RecordFailure(MailLog.Reason(sent), final);
         }
 
         await _unitOfWork.CommentNotifications.UpdateAsync(notification, cancellationToken);
@@ -152,12 +162,6 @@ public class CommentNotifier(
 
         return (null, reply, parent, blog);
     }
-
-    /// <summary>Başarısızlığın kayda geçecek metni. Zarf, iç mesajı boş bir dize olarak taşıyabilir ve o hâlde hata sütununa boşluk yazılırdı; sütun bir bildirimin niçin gitmediğini söyleyen tek kayıt olduğu için sırayla en açıklayıcı olan seçilir.</summary>
-    private static string Reason(Result sent)
-        => !string.IsNullOrWhiteSpace(sent.InternalMessage) ? sent.InternalMessage
-         : sent.Errors.FirstOrDefault(e => !string.IsNullOrWhiteSpace(e))
-           ?? (string.IsNullOrWhiteSpace(sent.Message) ? "Posta gönderilemedi." : sent.Message);
 
     private static string GenerateToken()
         => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');

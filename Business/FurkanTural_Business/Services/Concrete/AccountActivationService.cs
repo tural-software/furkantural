@@ -8,7 +8,6 @@ using FurkanTural_Business.Helpers;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace FurkanTural_Business.Services.Concrete;
 
@@ -17,13 +16,13 @@ public class AccountActivationService(
     IUnitOfWork unitOfWork,
     IMailSender mailSender,
     IConfiguration configuration,
-    ILogger<AccountActivationService> logger,
+    ActivityLogger activityLogger,
     IClock clock) : IAccountActivationService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMailSender _mailSender = mailSender;
     private readonly IConfiguration _configuration = configuration;
-    private readonly ILogger<AccountActivationService> _logger = logger;
+    private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly IClock _clock = clock;
 
     private static readonly TimeSpan Lifetime = TimeSpan.FromHours(24);
@@ -41,19 +40,25 @@ public class AccountActivationService(
         if (string.IsNullOrWhiteSpace(user.Email))
             return Result.Fail("Hesaba bağlı bir e-posta adresi yok.", $"Aktivasyon üretilemedi: #{userId} adressiz.");
 
+        var mail = $"Aktivasyon postası (kullanıcı #{user.Id}, tetikleyen: {triggerSource})";
+
         var landingUrl = _configuration["Activation:LandingUrl"];
         if (string.IsNullOrWhiteSpace(landingUrl))
+        {
+            await _activityLogger.LogMailAsync(MailLog.Failed(mail, "Activation:LandingUrl yapılandırılmamış"), failed: true, cancellationToken);
             return Result.Fail("Aktivasyon gönderilemedi.", "Activation:LandingUrl yapılandırılmamış.", 500);
+        }
 
-        var cutoff = _clock.UtcNow.Subtract(Cooldown);
+        var now = _clock.UtcNow;
+        var cutoff = now.Subtract(Cooldown);
         var pending = await _unitOfWork.AccountActivations
-            .GetAsync(x => x.UserId == user.Id && x.ConsumedAt == null && x.CreatedAt > cutoff, cancellationToken);
+            .GetAsync(x => x.UserId == user.Id && x.ConsumedAt == null && x.CreatedAt > cutoff && x.ExpiresAt > now, cancellationToken);
 
         if (pending is not null)
         {
-            _logger.LogInformation(
-                "Aktivasyon gönderilmedi: #{UserId} için {Minutes} dakika içinde üretilmiş, henüz harcanmamış bir bağlantı var ({TriggerSource}).",
-                userId, Cooldown.TotalMinutes, triggerSource);
+            await _activityLogger.LogAsync(
+                MailLog.Skipped(mail, $"{Cooldown.TotalMinutes:0} dakika içinde üretilmiş, henüz harcanmamış bir bağlantı var"),
+                cancellationToken);
             return Result.Ok();
         }
 
@@ -83,6 +88,15 @@ public class AccountActivationService(
             ContactEmail = _configuration["Contact:ContactEmail"] ?? "",
             CurrentYear = _clock.UtcNow.Year.ToString()
         }, cancellationToken);
+
+        if (sent.IsFailure)
+        {
+            activation.ExpiresAt = _clock.UtcNow;
+            await _unitOfWork.AccountActivations.UpdateAsync(activation, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        await _activityLogger.LogMailAsync(MailLog.Describe(mail, sent), sent.IsFailure, cancellationToken);
 
         return sent.IsFailure
             ? Result.Fail("Aktivasyon gönderilemedi.", sent.InternalMessage, sent.StatusCode)

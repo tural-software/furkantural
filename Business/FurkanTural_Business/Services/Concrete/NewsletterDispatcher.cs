@@ -3,6 +3,7 @@ using System.Text;
 using FurkanTural_Application.DTOs.Mail;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
+using FurkanTural_Business.Helpers;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,7 @@ public class NewsletterDispatcher(
     IUnitOfWork unitOfWork,
     IMailSender mailSender,
     IConfiguration configuration,
+    ActivityLogger activityLogger,
     ILogger<NewsletterDispatcher> logger,
     IClock clock) : INewsletterDispatcher
 {
@@ -33,8 +35,11 @@ public class NewsletterDispatcher(
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMailSender _mailSender = mailSender;
     private readonly IConfiguration _configuration = configuration;
+    private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly ILogger<NewsletterDispatcher> _logger = logger;
     private readonly IClock _clock = clock;
+
+    private const string LogLabel = "Newsletter-Dispatch";
 
     public async Task<int> DispatchAsync(CancellationToken cancellationToken = default)
     {
@@ -62,6 +67,7 @@ public class NewsletterDispatcher(
     {
         var processed = 0;
         var cursor = 0;
+        var tally = new MailTally();
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -80,7 +86,7 @@ public class NewsletterDispatcher(
             foreach (var delivery in batch)
             {
                 cursor = delivery.Id;
-                await AttemptAsync(issue, delivery, live.Contains(delivery.SubscriberId), unsubscribeUrl, cancellationToken);
+                await AttemptAsync(issue, delivery, live.Contains(delivery.SubscriberId), unsubscribeUrl, tally, cancellationToken);
                 processed++;
             }
 
@@ -88,16 +94,30 @@ public class NewsletterDispatcher(
         }
 
         await RefreshAsync(issue, cancellationToken);
+
+        if (issue.Status == NewsletterIssueStatuses.Sent)
+        {
+            var lastError = tally.LastError is null ? "" : $" Son hata: {tally.LastError.TrimEnd('.', ' ')}.";
+            await _activityLogger.LogMailAsync(
+                $"Bülten dağıtımı tamamlandı (sayı #{issue.Id}). Gönderilen: {issue.SentCount}, başarısız: {issue.FailedCount}, atlanan: {issue.SkippedCount}.{lastError}",
+                issue.FailedCount > 0, LogLabel, cancellationToken);
+        }
+        else if (!tally.IsEmpty)
+        {
+            await _activityLogger.LogMailAsync($"Bülten dağıtım turu bitti (sayı #{issue.Id}). {tally.Summary()}", tally.HasFailures, LogLabel, cancellationToken);
+        }
+
         return processed;
     }
 
-    private async Task AttemptAsync(NewsletterIssue issue, NewsletterDelivery delivery, bool subscribed, string unsubscribeUrl, CancellationToken cancellationToken)
+    private async Task AttemptAsync(NewsletterIssue issue, NewsletterDelivery delivery, bool subscribed, string unsubscribeUrl, MailTally tally, CancellationToken cancellationToken)
     {
         if (!subscribed)
         {
             delivery.Status = NewsletterDeliveryStatuses.Skipped;
             delivery.Error = "Liste dondurulduktan sonra abonelik sona erdi.";
             await _unitOfWork.NewsletterDeliveries.UpdateAsync(delivery, cancellationToken);
+            tally.RecordSkipped();
             return;
         }
 
@@ -130,16 +150,17 @@ public class NewsletterDispatcher(
             delivery.Status = NewsletterDeliveryStatuses.Sent;
             delivery.SentAt = _clock.UtcNow;
             delivery.Error = null;
+            tally.RecordSent();
         }
         else
         {
             delivery.Error = Truncate(sent.InternalMessage ?? sent.Message, 500);
 
-            if (delivery.AttemptCount >= MaxAttempts)
-            {
+            var final = delivery.AttemptCount >= MaxAttempts;
+            if (final)
                 delivery.Status = NewsletterDeliveryStatuses.Failed;
-                _logger.LogWarning("Bülten gönderimi kalıcı olarak başarısız. Sayı: {IssueId}, Dağıtım: {DeliveryId}", issue.Id, delivery.Id);
-            }
+
+            tally.RecordFailure(MailLog.Reason(sent), final);
         }
 
         await _unitOfWork.NewsletterDeliveries.UpdateAsync(delivery, cancellationToken);
@@ -177,11 +198,6 @@ public class NewsletterDispatcher(
 
         await _unitOfWork.NewsletterIssues.UpdateAsync(issue, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        if (completed)
-            _logger.LogInformation(
-                "Bülten dağıtımı bitti. Sayı: {IssueId}, Gönderilen: {Sent}, Başarısız: {Failed}, Atlanan: {Skipped}",
-                issue.Id, sent, failed, skipped);
     }
 
     private Task<int> CountAsync(int issueId, string status, CancellationToken cancellationToken)

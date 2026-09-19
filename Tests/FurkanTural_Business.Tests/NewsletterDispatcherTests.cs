@@ -32,6 +32,7 @@ public class NewsletterDispatcherTests
     private readonly List<Subscriber> _subscriberRows = [];
     private readonly List<SubscriberVerification> _issuedTokens = [];
     private readonly List<(string? To, object Payload)> _sent = [];
+    private readonly ActivityJournal _journal = new();
 
     private Func<string?, Result> _sendOutcome = _ => Result.Ok();
 
@@ -75,6 +76,7 @@ public class NewsletterDispatcherTests
             {
                 var outcome = _sendOutcome(to);
                 if (outcome.Success) _sent.Add((to, payload));
+                _journal.Mail();
                 return outcome;
             });
 
@@ -82,17 +84,19 @@ public class NewsletterDispatcherTests
         _uow.SetupGet(u => u.NewsletterIssues).Returns(_issues.Object);
         _uow.SetupGet(u => u.NewsletterDeliveries).Returns(_deliveries.Object);
         _uow.SetupGet(u => u.SubscriberVerifications).Returns(_verifications.Object);
-        _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => _journal.Save())
+            .ReturnsAsync(1);
 
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["Newsletter:UnsubscribeUrl"] = UnsubscribeUrl
         }).Build();
 
+        var clock = Mock.Of<IClock>(c => c.UtcNow == Now);
         _sut = new NewsletterDispatcher(
-            _uow.Object, _mail.Object, config,
-            NullLogger<NewsletterDispatcher>.Instance,
-            Mock.Of<IClock>(c => c.UtcNow == Now));
+            _uow.Object, _mail.Object, config, _journal.Logger(clock),
+            NullLogger<NewsletterDispatcher>.Instance, clock);
     }
 
     /// <summary>Küresel süzgecin karşılığı; dağıtıcının bütün okumaları bundan geçer.</summary>
@@ -142,6 +146,44 @@ public class NewsletterDispatcherTests
         issue.Status.Should().Be(NewsletterIssueStatuses.Sent);
         issue.CompletedAt.Should().Be(Now);
         issue.SentCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task Dagitim_kaydi_sonuc_kaydedildikten_sonra_tek_satir_yazilir()
+    {
+        Sending(2);
+
+        await _sut.DispatchAsync();
+
+        _journal.Events.Should().Equal("mail", "mail", "save", "save", "log:Information");
+        _journal.Logs[0].Message.Should().Contain("tamamlandı").And.Contain("Gönderilen: 2");
+    }
+
+    [Fact]
+    public async Task Basarisiz_tur_hata_olarak_kayda_gecer()
+    {
+        Sending(2);
+        _sendOutcome = _ => Result.Fail("Posta gönderilemedi.", "SMTP hatası (newsletter-issue): 535", 502);
+
+        await _sut.DispatchAsync();
+
+        _journal.Events.Should().Equal("mail", "mail", "save", "log:Error");
+        _journal.Logs[0].Message.Should().Contain("yeniden denenecek: 2").And.Contain("535");
+    }
+
+    [Fact]
+    public async Task Kalici_basarisizlikla_biten_dagitim_hata_olarak_kayda_gecer()
+    {
+        var issue = Sending(1);
+        _sendOutcome = _ => Result.Fail("Posta gönderilemedi.", "SMTP hatası", 502);
+
+        for (var i = 0; i < NewsletterDispatcher.MaxAttempts; i++)
+            await _sut.DispatchAsync();
+
+        issue.Status.Should().Be(NewsletterIssueStatuses.Sent);
+        _journal.Logs.Should().HaveCount(NewsletterDispatcher.MaxAttempts, "her tur kendi sonucunu yazar");
+        _journal.Logs[^1].Level.Should().Be("Error");
+        _journal.Logs[^1].Message.Should().Contain("tamamlandı").And.Contain("başarısız: 1");
     }
 
     [Fact]
@@ -290,10 +332,10 @@ public class NewsletterDispatcherTests
     public async Task Cikis_adresi_yoksa_hicbir_posta_gitmez()
     {
         Sending(2);
+        var clock = Mock.Of<IClock>(c => c.UtcNow == Now);
         var dispatcher = new NewsletterDispatcher(
-            _uow.Object, _mail.Object, new ConfigurationBuilder().Build(),
-            NullLogger<NewsletterDispatcher>.Instance,
-            Mock.Of<IClock>(c => c.UtcNow == Now));
+            _uow.Object, _mail.Object, new ConfigurationBuilder().Build(), _journal.Logger(clock),
+            NullLogger<NewsletterDispatcher>.Instance, clock);
 
         var processed = await dispatcher.DispatchAsync();
 

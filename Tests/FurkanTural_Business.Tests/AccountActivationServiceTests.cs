@@ -10,7 +10,6 @@ using FurkanTural_Business.Services.Concrete;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace FurkanTural_Business.Tests;
@@ -27,6 +26,8 @@ public class AccountActivationServiceTests
     private readonly List<AccountActivation> _added = [];
     private readonly List<AccountActivationMailDto> _sent = [];
     private readonly Dictionary<string, string?> _settings = new() { ["Activation:LandingUrl"] = Landing };
+    private readonly ActivityJournal _journal = new();
+    private Result _outcome = Result.Ok();
     private DateTime _now = Now;
     private AccountActivationService _sut;
 
@@ -44,8 +45,8 @@ public class AccountActivationServiceTests
             .ReturnsAsync((Expression<Func<AccountActivation, bool>> p, CancellationToken _) => _added.FirstOrDefault(p.Compile()));
 
         _mail.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
-            .Callback<string, string?, string?, object, CancellationToken>((_, _, _, p, _) => _sent.Add((AccountActivationMailDto)p))
-            .ReturnsAsync(Result.Ok());
+            .Callback<string, string?, string?, object, CancellationToken>((_, _, _, p, _) => { _sent.Add((AccountActivationMailDto)p); _journal.Mail(); })
+            .ReturnsAsync(() => _outcome);
 
         _uow.SetupGet(u => u.Users).Returns(_users.Object);
         _uow.SetupGet(u => u.AccountActivations).Returns(_activations.Object);
@@ -63,7 +64,7 @@ public class AccountActivationServiceTests
 
         return new AccountActivationService(_uow.Object, _mail.Object,
             new ConfigurationBuilder().AddInMemoryCollection(_settings).Build(),
-            NullLogger<AccountActivationService>.Instance,
+            _journal.Logger(clock.Object),
             clock.Object);
     }
 
@@ -152,6 +153,58 @@ public class AccountActivationServiceTests
         result.Success.Should().BeTrue("çağıran için sonuç değişmez");
         _sent.Should().ContainSingle("aynı hesabı kendi gelen kutusunda boğmamak gerekir");
         _added.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Aktivasyon_sonucu_gonderimden_sonra_kayda_gecer()
+    {
+        UserIs(Passive());
+
+        await _sut.IssueAsync(7, "Login", null, null);
+
+        _journal.Events.Should().Equal("mail", "log:Information");
+        _journal.Logs[0].Message.Should().Contain("kullanıcı #7").And.Contain("gönderildi");
+    }
+
+    [Fact]
+    public async Task Gonderilemeyen_aktivasyon_hata_olarak_kayda_gecer()
+    {
+        UserIs(Passive());
+        _outcome = Result.Fail("Posta gönderilemedi.", "SMTP hatası (account-activation): 535", 502);
+
+        var result = await _sut.IssueAsync(7, "Login", null, null);
+
+        result.IsFailure.Should().BeTrue();
+        _journal.Events.Should().Equal("mail", "log:Error");
+        _journal.Logs[0].Message.Should().Contain("gönderilemedi").And.Contain("535");
+    }
+
+    [Fact]
+    public async Task Gonderilemeyen_aktivasyon_bekleme_suresi_saymaz()
+    {
+        UserIs(Passive());
+        _outcome = Result.Fail("Posta gönderilemedi.", "SMTP hatası", 502);
+        await _sut.IssueAsync(7, "Login", null, null);
+
+        _outcome = Result.Ok();
+        _now = _now.AddMinutes(1);
+        var result = await _sut.IssueAsync(7, "Login", null, null);
+
+        result.Success.Should().BeTrue();
+        _sent.Should().HaveCount(2, "hiç ulaşmamış bir bağlantı kullanıcıyı beş dakika postasız bekletmemeli");
+    }
+
+    [Fact]
+    public async Task Bekleyen_baglanti_yuzunden_gonderilmeyen_posta_da_kayda_gecer()
+    {
+        UserIs(Passive());
+        await _sut.IssueAsync(7, "Login", null, null);
+        _now = _now.AddMinutes(1);
+
+        await _sut.IssueAsync(7, "Login", null, null);
+
+        _journal.Events.Should().Equal("mail", "log:Information", "log:Information");
+        _journal.Logs[1].Message.Should().Contain("gönderilmedi");
     }
 
     [Fact]

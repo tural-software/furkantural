@@ -59,14 +59,18 @@ public class ContactService(
         var entity = createDto.ToEntity();
         await _unitOfWork.Contacts.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _activityLogger.LogAsync($"Yeni iletişim mesajı alındı. Id: {entity.Id}", cancellationToken);
 
-        await SendEmailsAsync(dto, ipAddress, userAgent, cancellationToken);
+        var (owner, user) = await SendEmailsAsync(dto, ipAddress, userAgent, cancellationToken);
+
+        await _activityLogger.LogMailAsync(
+            $"Yeni iletişim mesajı alındı. Id: {entity.Id}. {MailLog.Describe("Site sahibine bildirim", owner)} {MailLog.Describe("Gönderene yanıt", user)}",
+            owner.IsFailure || user.IsFailure,
+            cancellationToken);
 
         return Result.Ok();
     }
 
-    private async Task SendEmailsAsync(SubmitContactDto dto, string? ipAddress, string? userAgent, CancellationToken ct)
+    private async Task<(Result Owner, Result User)> SendEmailsAsync(SubmitContactDto dto, string? ipAddress, string? userAgent, CancellationToken ct)
     {
         var now = _clock.UtcNow;
         var createdAt = now.ToString("dd.MM.yyyy HH:mm");
@@ -86,9 +90,6 @@ public class ContactService(
                 FormPageUrl = _configuration["Contact:FormPageUrl"] ?? ""
             }, ct);
 
-        if (ownerResult.IsFailure)
-            await _activityLogger.LogAsync($"İletişim bildirimi gönderilemedi (site sahibi): {ownerResult.InternalMessage}", ct);
-
         var userResult = await _mailSender.SendAsync(
             MailTemplateDefinitions.ContactUser,
             AppSourceDefinitions.Portfolio,
@@ -106,8 +107,7 @@ public class ContactService(
                 InstagramUrl = _configuration["Contact:InstagramUrl"] ?? ""
             }, ct);
 
-        if (userResult.IsFailure)
-            await _activityLogger.LogAsync($"İletişim yanıtı gönderilemedi (gönderen): {userResult.InternalMessage}", ct);
+        return (ownerResult, userResult);
     }
 
     public async Task<Result<ContactDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)

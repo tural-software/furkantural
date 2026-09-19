@@ -11,7 +11,6 @@ using FurkanTural_Business.Mappers;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace FurkanTural_Business.Services.Concrete;
 
@@ -22,7 +21,6 @@ public class NewsletterService(
     ITurnstileVerifier turnstileVerifier,
     IConfiguration configuration,
     ActivityLogger activityLogger,
-    ILogger<NewsletterService> logger,
     IClock clock) : INewsletterService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -30,11 +28,13 @@ public class NewsletterService(
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
     private readonly IConfiguration _configuration = configuration;
     private readonly ActivityLogger _activityLogger = activityLogger;
-    private readonly ILogger<NewsletterService> _logger = logger;
     private readonly IClock _clock = clock;
 
     private static readonly TimeSpan Lifetime = TimeSpan.FromHours(24);
     private static readonly TimeSpan Cooldown = TimeSpan.FromMinutes(5);
+
+    private const string ConfirmMail = "Bülten doğrulama postası";
+    private const string UnsubscribeMail = "Bülten çıkış postası";
 
     /// <summary>Adres kayıtlı olsun olmasın dönen tek metin. İki durumu ayırmak, uçları kimin abone olduğunu tek tek sınayabilen bir sorgulama aracına çevirirdi.</summary>
     private const string NeutralSubscribeMessage =
@@ -54,40 +54,45 @@ public class NewsletterService(
 
         var confirmUrl = _configuration["Newsletter:ConfirmUrl"];
         if (string.IsNullOrWhiteSpace(confirmUrl))
+        {
+            await _activityLogger.LogMailAsync(MailLog.Failed(ConfirmMail, "Newsletter:ConfirmUrl yapılandırılmamış"), failed: true, cancellationToken);
             return Result.Fail("Abonelik şu anda alınamıyor.", "Newsletter:ConfirmUrl yapılandırılmamış.", 500);
+        }
 
         var subscriber = await _unitOfWork.Subscribers.GetByEmailForAdminAsync(address, cancellationToken);
 
         if (subscriber is { IsDeleted: true, DeletedBy: not null })
         {
-            _logger.LogInformation("Abonelik postası gönderilmedi: adres yönetici tarafından listeden çıkarılmış.");
+            await _activityLogger.LogAsync(MailLog.Skipped(MailFor(ConfirmMail, subscriber), "adres yönetici tarafından listeden çıkarılmış"), cancellationToken);
             return Result.Ok(NeutralSubscribeMessage);
         }
 
         if (subscriber is { IsDeleted: false, IsActive: true, ConfirmedAt: not null })
         {
-            _logger.LogInformation("Abonelik postası gönderilmedi: adres zaten doğrulanmış.");
+            await _activityLogger.LogAsync(MailLog.Skipped(MailFor(ConfirmMail, subscriber), "adres zaten doğrulanmış"), cancellationToken);
             return Result.Ok(NeutralSubscribeMessage);
         }
+
+        string? opened = null;
 
         if (subscriber is null)
         {
             subscriber = new CreateSubscriberDto { Email = address }.ToEntity();
             await _unitOfWork.Subscribers.AddAsync(subscriber, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _activityLogger.LogAsync($"Bülten kaydı açıldı, doğrulama bekleniyor. Id: {subscriber.Id}", cancellationToken);
+            opened = "Bülten kaydı açıldı.";
         }
         else if (subscriber.IsDeleted || !subscriber.IsActive)
         {
             await _unitOfWork.Subscribers.RestoreAsync(subscriber, cancellationToken);
             subscriber.ConfirmedAt = null;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _activityLogger.LogAsync($"Bülten kaydı yeniden açıldı, doğrulama bekleniyor. Id: {subscriber.Id}", cancellationToken);
+            opened = "Bülten kaydı yeniden açıldı.";
         }
 
         return await IssueAsync(
             subscriber, SubscriberVerificationPurposes.Confirm, MailTemplateDefinitions.NewsletterConfirm,
-            confirmUrl, ipAddress, userAgent, NeutralSubscribeMessage, cancellationToken);
+            confirmUrl, ipAddress, userAgent, NeutralSubscribeMessage, opened, cancellationToken);
     }
 
     public async Task<Result> ConfirmAsync(string? token, CancellationToken cancellationToken = default)
@@ -129,18 +134,21 @@ public class NewsletterService(
 
         var unsubscribeUrl = _configuration["Newsletter:UnsubscribeUrl"];
         if (string.IsNullOrWhiteSpace(unsubscribeUrl))
+        {
+            await _activityLogger.LogMailAsync(MailLog.Failed(UnsubscribeMail, "Newsletter:UnsubscribeUrl yapılandırılmamış"), failed: true, cancellationToken);
             return Result.Fail("İstek şu anda alınamıyor.", "Newsletter:UnsubscribeUrl yapılandırılmamış.", 500);
+        }
 
         var subscriber = await _unitOfWork.Subscribers.GetByEmailForAdminAsync(address, cancellationToken);
         if (subscriber is null || subscriber.IsDeleted || !subscriber.IsActive)
         {
-            _logger.LogInformation("Çıkış postası gönderilmedi: adres listede değil.");
+            await _activityLogger.LogAsync(MailLog.Skipped(UnsubscribeMail, "adres listede değil"), cancellationToken);
             return Result.Ok(NeutralUnsubscribeMessage);
         }
 
         return await IssueAsync(
             subscriber, SubscriberVerificationPurposes.Unsubscribe, MailTemplateDefinitions.NewsletterUnsubscribe,
-            unsubscribeUrl, ipAddress, userAgent, NeutralUnsubscribeMessage, cancellationToken);
+            unsubscribeUrl, ipAddress, userAgent, NeutralUnsubscribeMessage, null, cancellationToken);
     }
 
     public async Task<Result> UnsubscribeAsync(string? token, CancellationToken cancellationToken = default)
@@ -172,27 +180,29 @@ public class NewsletterService(
     /// <summary>Jeton üretir, kaydeder ve bağlantıyı postalar. Soğuma penceresi içinde bekleyen bir bağlantı varsa yenisi üretilmez ve sonuç yine <paramref name="neutralMessage"/> ile başarılı döner; duran bağlantı zaten yirmi dört saat geçerli olduğu için bekleyen kullanıcı bir şey kaybetmez.<para>Soğuma yalnızca kısa ömürlü, yani bu akışın kendi ürettiği bağlantıları sayar. Bültene gömülen çıkış bağlantıları çok daha uzun ömürlüdür ve bir posta isteğinin karşılığı değildir; onları da sayan bir pencere, bülteni yeni almış birinin çıkış isteğini sessizce yutardı.</para></summary>
     private async Task<Result> IssueAsync(
         Subscriber subscriber, string purpose, string mailType, string landingUrl,
-        string? ipAddress, string? userAgent, string neutralMessage, CancellationToken cancellationToken)
+        string? ipAddress, string? userAgent, string neutralMessage, string? opened, CancellationToken cancellationToken)
     {
-        var cutoff = _clock.UtcNow.Subtract(Cooldown);
-        var horizon = _clock.UtcNow.Add(Lifetime);
+        var mail = MailFor(purpose == SubscriberVerificationPurposes.Confirm ? ConfirmMail : UnsubscribeMail, subscriber);
+        var now = _clock.UtcNow;
+        var cutoff = now.Subtract(Cooldown);
+        var horizon = now.Add(Lifetime);
         var pending = await _unitOfWork.SubscriberVerifications.GetAsync(
             x => x.SubscriberId == subscriber.Id && x.Purpose == purpose && x.ConsumedAt == null
-                 && x.CreatedAt > cutoff && x.ExpiresAt <= horizon,
+                 && x.CreatedAt > cutoff && x.ExpiresAt > now && x.ExpiresAt <= horizon,
             cancellationToken);
 
         if (pending is not null)
         {
-            _logger.LogInformation(
-                "Bülten postası gönderilmedi: #{SubscriberId} için {Minutes} dakika içinde üretilmiş, henüz harcanmamış bir {Purpose} bağlantısı var.",
-                subscriber.Id, Cooldown.TotalMinutes, purpose);
+            await _activityLogger.LogAsync(
+                Join(opened, MailLog.Skipped(mail, $"{Cooldown.TotalMinutes:0} dakika içinde üretilmiş, henüz harcanmamış bir bağlantı var")),
+                cancellationToken);
             return Result.Ok(neutralMessage);
         }
 
         var token = GenerateToken();
         var expiresAt = _clock.UtcNow.Add(Lifetime);
 
-        await _unitOfWork.SubscriberVerifications.AddAsync(new SubscriberVerification
+        var verification = new SubscriberVerification
         {
             SubscriberId = subscriber.Id,
             TokenHash = Hash(token),
@@ -200,7 +210,9 @@ public class NewsletterService(
             ExpiresAt = expiresAt,
             RequestIpAddress = Truncate(ipAddress, 45),
             RequestUserAgent = Truncate(userAgent, 300)
-        }, cancellationToken);
+        };
+
+        await _unitOfWork.SubscriberVerifications.AddAsync(verification, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var url = $"{landingUrl}?token={Uri.EscapeDataString(token)}";
@@ -231,6 +243,15 @@ public class NewsletterService(
             };
 
         var sent = await _mailSender.SendAsync(mailType, AppSourceDefinitions.Blog, subscriber.Email, payload, cancellationToken);
+
+        if (sent.IsFailure)
+        {
+            verification.ExpiresAt = _clock.UtcNow;
+            await _unitOfWork.SubscriberVerifications.UpdateAsync(verification, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        await _activityLogger.LogMailAsync(Join(opened, MailLog.Describe(mail, sent)), sent.IsFailure, cancellationToken);
 
         return sent.IsFailure
             ? Result.Fail("Posta gönderilemedi. Kısa süre sonra tekrar deneyin.", sent.InternalMessage, sent.StatusCode)
@@ -272,6 +293,10 @@ public class NewsletterService(
 
         return trimmed.ToLowerInvariant();
     }
+
+    private static string MailFor(string mail, Subscriber subscriber) => $"{mail} (abone #{subscriber.Id})";
+
+    private static string Join(string? opened, string message) => opened is null ? message : $"{opened} {message}";
 
     private static string GenerateToken()
         => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');

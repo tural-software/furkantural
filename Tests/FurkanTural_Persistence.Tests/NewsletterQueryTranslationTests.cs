@@ -101,6 +101,7 @@ public class NewsletterQueryTranslationTests
     public void Cikis_jetonu_sogumasi_omur_penceresiyle_cevrilebilir()
     {
         using var db = Context();
+        var now = new DateTime(2026, 9, 7, 10, 0, 0, DateTimeKind.Utc);
         var cutoff = new DateTime(2026, 9, 7, 9, 55, 0, DateTimeKind.Utc);
         var horizon = new DateTime(2026, 9, 8, 10, 0, 0, DateTimeKind.Utc);
 
@@ -110,6 +111,7 @@ public class NewsletterQueryTranslationTests
                         && x.Purpose == SubscriberVerificationPurposes.Unsubscribe
                         && x.ConsumedAt == null
                         && x.CreatedAt > cutoff
+                        && x.ExpiresAt > now
                         && x.ExpiresAt <= horizon)
             .ToQueryString();
 

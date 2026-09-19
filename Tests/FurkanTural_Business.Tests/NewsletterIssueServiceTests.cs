@@ -33,7 +33,9 @@ public class NewsletterIssueServiceTests
     private readonly List<Subscriber> _audience = [];
     private readonly List<NewsletterDelivery> _queued = [];
     private readonly List<(string Type, string? To, object Payload)> _sent = [];
+    private readonly ActivityJournal _journal = new();
 
+    private Result _outcome = Result.Ok();
     private NewsletterIssue? _issue;
     private bool _templateExists = true;
 
@@ -80,8 +82,8 @@ public class NewsletterIssueServiceTests
             .ReturnsAsync(() => _templateExists);
 
         _mail.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
-            .Callback<string, string?, string?, object, CancellationToken>((type, _, to, payload, _) => _sent.Add((type, to, payload)))
-            .ReturnsAsync(Result.Ok());
+            .Callback<string, string?, string?, object, CancellationToken>((type, _, to, payload, _) => { _sent.Add((type, to, payload)); _journal.Mail(); })
+            .ReturnsAsync(() => _outcome);
 
         _uow.SetupGet(u => u.Subscribers).Returns(_subscribers.Object);
         _uow.SetupGet(u => u.NewsletterIssues).Returns(_issues.Object);
@@ -96,9 +98,7 @@ public class NewsletterIssueServiceTests
         }).Build();
 
         var clock = Mock.Of<IClock>(c => c.UtcNow == Now);
-        _sut = new NewsletterIssueService(
-            _uow.Object, _mail.Object, config, _signal,
-            new ActivityLogger(Mock.Of<ILogService>(), Mock.Of<IHttpContextAccessor>(), clock), clock);
+        _sut = new NewsletterIssueService(_uow.Object, _mail.Object, config, _signal, _journal.Logger(clock), clock);
     }
 
     private static NewsletterIssue Issue(string status = NewsletterIssueStatuses.Draft, bool isActive = true, bool isDeleted = false)
@@ -329,6 +329,30 @@ public class NewsletterIssueServiceTests
 
         ((NewsletterIssueMailDto)_sent[0].Payload).UnsubscribeUrl
             .Should().Be(UnsubscribeUrl, "deneme alıcısı abone olmayabilir; ona gerçek jeton üretmek listeye ait olmayan bir kimlik bilgisi yaratırdı");
+    }
+
+    [Fact]
+    public async Task Deneme_kaydi_gonderimden_sonra_yazilir()
+    {
+        _issue = Issue();
+
+        await _sut.SendTestAsync(3, "deneme@ornek.test");
+
+        _journal.Events.Should().Equal("mail", "log:Information");
+        _journal.Logs[0].Message.Should().Contain("sayı #3").And.Contain("gönderildi");
+    }
+
+    [Fact]
+    public async Task Gonderilemeyen_deneme_hata_olarak_kayda_gecer()
+    {
+        _issue = Issue();
+        _outcome = Result.Fail("Posta gönderilemedi.", "SMTP hatası (newsletter-issue): 535", 502);
+
+        var result = await _sut.SendTestAsync(3, "deneme@ornek.test");
+
+        result.IsFailure.Should().BeTrue();
+        _journal.Events.Should().Equal("mail", "log:Error");
+        _journal.Logs[0].Message.Should().Contain("gönderilemedi").And.Contain("535");
     }
 
     [Theory]

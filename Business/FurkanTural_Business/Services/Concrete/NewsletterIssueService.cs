@@ -236,9 +236,14 @@ public class NewsletterIssueService(
         if (address is null)
             return Result.Fail("Geçerli bir e-posta adresi girin.");
 
+        var mail = $"Bülten denemesi (sayı #{entity.Id})";
+
         var unsubscribeUrl = _configuration["Newsletter:UnsubscribeUrl"];
         if (string.IsNullOrWhiteSpace(unsubscribeUrl))
+        {
+            await _activityLogger.LogMailAsync(MailLog.Failed(mail, "Newsletter:UnsubscribeUrl yapılandırılmamış"), failed: true, cancellationToken);
             return Result.Fail("Deneme gönderilemiyor: çıkış adresi yapılandırılmamış.", "Newsletter:UnsubscribeUrl yapılandırılmamış.", 500);
+        }
 
         var sent = await _mailSender.SendAsync(
             MailTemplateDefinitions.NewsletterIssue, AppSourceDefinitions.Blog, address,
@@ -253,11 +258,11 @@ public class NewsletterIssueService(
             },
             cancellationToken);
 
-        if (sent.IsFailure)
-            return Result.Fail("Deneme gönderilemedi.", sent.InternalMessage, sent.StatusCode);
+        await _activityLogger.LogMailAsync(MailLog.Describe(mail, sent), sent.IsFailure, cancellationToken);
 
-        await _activityLogger.LogAsync($"Bülten denemesi gönderildi. Id: {entity.Id}", cancellationToken);
-        return Result.Ok("Deneme gönderildi.");
+        return sent.IsFailure
+            ? Result.Fail("Deneme gönderilemedi.", sent.InternalMessage, sent.StatusCode)
+            : Result.Ok("Deneme gönderildi.");
     }
 
     public async Task<Result<int>> GetAudienceCountAsync(CancellationToken cancellationToken = default)

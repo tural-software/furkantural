@@ -12,7 +12,6 @@ using FurkanTural_Business.Services.Concrete;
 using FurkanTural_Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -130,7 +129,7 @@ public class AdminDeactivationTests
 
         return new AccountActivationService(_uow.Object, Mock.Of<IMailSender>(),
             new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Activation:LandingUrl"] = "https://ornek.test/a" }).Build(),
-            NullLogger<AccountActivationService>.Instance, _clock);
+            new ActivityLogger(Mock.Of<ILogService>(), Mock.Of<IHttpContextAccessor>(), _clock), _clock);
     }
 
     [Fact]

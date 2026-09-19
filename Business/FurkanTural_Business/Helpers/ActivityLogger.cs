@@ -20,6 +20,12 @@ public sealed class ActivityLogger(ILogService logService, IHttpContextAccessor 
     public Task LogWarningAsync(string message, string label, CancellationToken cancellationToken = default)
         => WriteAsync("Warning", message, label, cancellationToken);
 
+    public Task LogMailAsync(string message, bool failed, CancellationToken cancellationToken = default)
+        => WriteAsync(failed ? "Error" : "Information", message, null, cancellationToken);
+
+    public Task LogMailAsync(string message, bool failed, string label, CancellationToken cancellationToken = default)
+        => WriteAsync(failed ? "Error" : "Information", message, label, cancellationToken);
+
     private async Task WriteAsync(string level, string message, string? label, CancellationToken cancellationToken)
     {
         try

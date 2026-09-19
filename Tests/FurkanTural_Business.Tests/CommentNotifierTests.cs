@@ -31,6 +31,7 @@ public class CommentNotifierTests
     private readonly List<Comment> _commentRows = [];
     private readonly List<CommentNotification> _notificationRows = [];
     private readonly List<(string? To, CommentReplyMailDto Payload)> _sent = [];
+    private readonly ActivityJournal _journal = new();
 
     private Func<string?, Result> _sendOutcome = _ => Result.Ok();
 
@@ -65,21 +66,24 @@ public class CommentNotifierTests
             .ReturnsAsync((string _, string? __, string? to, object payload, CancellationToken ___) =>
             {
                 _sent.Add((to, (CommentReplyMailDto)payload));
+                _journal.Mail();
                 return _sendOutcome(to);
             });
 
         _uow.SetupGet(u => u.Blogs).Returns(_blogs.Object);
         _uow.SetupGet(u => u.Comments).Returns(_comments.Object);
         _uow.SetupGet(u => u.CommentNotifications).Returns(_notifications.Object);
-        _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => _journal.Save())
+            .ReturnsAsync(1);
     }
 
     private CommentNotifier Build()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(_settings).Build();
+        var clock = Mock.Of<IClock>(c => c.UtcNow == Now);
         return new CommentNotifier(
-            _uow.Object, _mail.Object, config, NullLogger<CommentNotifier>.Instance,
-            Mock.Of<IClock>(c => c.UtcNow == Now));
+            _uow.Object, _mail.Object, config, _journal.Logger(clock), NullLogger<CommentNotifier>.Instance, clock);
     }
 
     private void Scene(bool parentNotify = true, string replyStatus = CommentStatuses.Approved, bool parentDeleted = false, bool blogActive = true)
@@ -213,6 +217,37 @@ public class CommentNotifierTests
 
         _notificationRows[0].Status.Should().Be(CommentNotificationStatuses.Failed);
         _notificationRows[0].Error.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Tur_kaydi_turun_sonucu_kaydedildikten_sonra_yazilir()
+    {
+        Scene();
+
+        await Build().NotifyAsync();
+
+        _journal.Events.Should().Equal("mail", "save", "log:Information");
+        _journal.Logs[0].Message.Should().Contain("Gönderilen: 1");
+    }
+
+    [Fact]
+    public async Task Basarisiz_tur_hata_olarak_kayda_gecer()
+    {
+        Scene();
+        _sendOutcome = _ => Result.Fail("Posta gönderilemedi.", "SMTP hatası (comment-reply): 535", 502);
+
+        await Build().NotifyAsync();
+
+        _journal.Events.Should().Equal("mail", "save", "log:Error");
+        _journal.Logs[0].Message.Should().Contain("yeniden denenecek: 1").And.Contain("535");
+    }
+
+    [Fact]
+    public async Task Bekleyen_bildirim_yoksa_kayit_yazilmaz()
+    {
+        await Build().NotifyAsync();
+
+        _journal.Logs.Should().BeEmpty("her otuz saniyede bir boş tur kaydı, gerçek kayıtları gürültüye boğardı");
     }
 
     [Fact]

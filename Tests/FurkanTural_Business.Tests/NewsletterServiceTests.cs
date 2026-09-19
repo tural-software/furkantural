@@ -4,13 +4,10 @@ using FurkanTural_Application.DTOs.Mail;
 using FurkanTural_Application.Repositories.Abstract;
 using FurkanTural_Application.Services.Abstract;
 using FurkanTural_Application.Wrappers;
-using FurkanTural_Business.Helpers;
 using FurkanTural_Business.Services.Concrete;
 using FurkanTural_Domain.Constants;
 using FurkanTural_Domain.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace FurkanTural_Business.Tests;
@@ -33,7 +30,9 @@ public class NewsletterServiceTests
     private readonly List<Subscriber> _softDeleted = [];
     private readonly List<SubscriberVerification> _issued = [];
     private readonly List<(string Type, string? To, object Payload)> _sent = [];
+    private readonly ActivityJournal _journal = new();
 
+    private Result _outcome = Result.Ok();
     private SubscriberVerification? _pending;
     private SubscriberVerification? _stored;
     private Subscriber? _byId;
@@ -62,7 +61,7 @@ public class NewsletterServiceTests
             .ReturnsAsync(() => _byId);
 
         _verifications.Setup(r => r.AddAsync(It.IsAny<SubscriberVerification>(), It.IsAny<CancellationToken>()))
-            .Callback<SubscriberVerification, CancellationToken>((v, _) => { _issued.Add(v); _stored = v; })
+            .Callback<SubscriberVerification, CancellationToken>((v, _) => { v.CreatedAt = Now; _issued.Add(v); _stored = v; })
             .Returns(Task.CompletedTask);
         _verifications.Setup(r => r.UpdateAsync(It.IsAny<SubscriberVerification>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -75,8 +74,8 @@ public class NewsletterServiceTests
             });
 
         _mail.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
-            .Callback<string, string?, string?, object, CancellationToken>((type, _, to, payload, _) => _sent.Add((type, to, payload)))
-            .ReturnsAsync(Result.Ok());
+            .Callback<string, string?, string?, object, CancellationToken>((type, _, to, payload, _) => { _sent.Add((type, to, payload)); _journal.Mail(); })
+            .ReturnsAsync(() => _outcome);
 
         _uow.SetupGet(u => u.Subscribers).Returns(_subscribers.Object);
         _uow.SetupGet(u => u.SubscriberVerifications).Returns(_verifications.Object);
@@ -91,10 +90,7 @@ public class NewsletterServiceTests
         }).Build();
 
         var clock = Mock.Of<IClock>(c => c.UtcNow == Now);
-        _sut = new NewsletterService(
-            _uow.Object, _mail.Object, _turnstile.Object, config,
-            new ActivityLogger(Mock.Of<ILogService>(), Mock.Of<IHttpContextAccessor>(), clock),
-            NullLogger<NewsletterService>.Instance, clock);
+        _sut = new NewsletterService(_uow.Object, _mail.Object, _turnstile.Object, config, _journal.Logger(clock), clock);
     }
 
     private void RowIs(Subscriber? row)
@@ -245,6 +241,7 @@ public class NewsletterServiceTests
 
         result.Success.Should().BeTrue();
         _sent.Should().BeEmpty("aksi hâlde uç, istediği adrese arka arkaya posta yollatabilen bir mekanizmaya dönerdi");
+        _journal.Events.Should().Equal("log:Information");
     }
 
     [Fact]
@@ -252,10 +249,7 @@ public class NewsletterServiceTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build();
         var clock = Mock.Of<IClock>(c => c.UtcNow == Now);
-        var sut = new NewsletterService(
-            _uow.Object, _mail.Object, _turnstile.Object, config,
-            new ActivityLogger(Mock.Of<ILogService>(), Mock.Of<IHttpContextAccessor>(), clock),
-            NullLogger<NewsletterService>.Instance, clock);
+        var sut = new NewsletterService(_uow.Object, _mail.Object, _turnstile.Object, config, _journal.Logger(clock), clock);
         RowIs(null);
 
         var result = await sut.SubscribeAsync(Email, "jeton", null, null);
@@ -264,6 +258,57 @@ public class NewsletterServiceTests
         result.StatusCode.Should().Be(500);
         _issued.Should().BeEmpty();
         _sent.Should().BeEmpty();
+        _journal.Events.Should().Equal("log:Error");
+    }
+
+    [Fact]
+    public async Task Kayit_postanin_sonucu_belli_olduktan_sonra_yazilir()
+    {
+        RowIs(null);
+
+        await _sut.SubscribeAsync(Email, "jeton", null, null);
+
+        _journal.Events.Should().Equal("mail", "log:Information");
+        _journal.Logs[0].Message.Should().Contain("Bülten kaydı açıldı").And.Contain("gönderildi");
+    }
+
+    [Fact]
+    public async Task Gonderilemeyen_posta_hata_olarak_kayda_gecer()
+    {
+        RowIs(null);
+        _outcome = Result.Fail("Posta gönderilemedi.", "SMTP hatası (newsletter-confirm): 535 Invalid Username or Password", 502);
+
+        var result = await _sut.SubscribeAsync(Email, "jeton", null, null);
+
+        result.IsFailure.Should().BeTrue();
+        _journal.Events.Should().Equal("mail", "log:Error");
+        _journal.Logs[0].Message.Should().Contain("gönderilemedi").And.Contain("535");
+    }
+
+    [Fact]
+    public async Task Gonderilemeyen_postanin_baglantisi_yeni_denemeyi_bekletmez()
+    {
+        RowIs(Row());
+        _outcome = Result.Fail("Posta gönderilemedi.", "SMTP hatası", 502);
+        await _sut.SubscribeAsync(Email, "jeton", null, null);
+
+        _outcome = Result.Ok();
+        var result = await _sut.SubscribeAsync(Email, "jeton", null, null);
+
+        result.Success.Should().BeTrue();
+        _sent.Should().HaveCount(2, "hiç ulaşmamış bir bağlantı soğuma penceresini doldurursa ikinci deneme posta göndermeden 'gönderdik' der");
+        _issued[0].ExpiresAt.Should().Be(Now);
+    }
+
+    [Fact]
+    public async Task Gonderilmeyen_posta_da_kayda_gecer()
+    {
+        RowIs(Row(confirmedAt: Now.AddDays(-1)));
+
+        await _sut.SubscribeAsync(Email, "jeton", null, null);
+
+        _journal.Events.Should().Equal("log:Information");
+        _journal.Logs[0].Message.Should().Contain("gönderilmedi").And.Contain("zaten doğrulanmış");
     }
 
     // ── Onay ──────────────────────────────────────────────────────────────────
