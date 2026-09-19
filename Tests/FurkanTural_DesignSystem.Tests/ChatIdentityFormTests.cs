@@ -70,7 +70,7 @@ public class ChatIdentityFormTests
     {
         var css = Css();
         var blok = Regex.Matches(css, @"@media \(max-width: 1024px\)\s*\{((?:[^{}]|\{[^{}]*\})*)\}")
-            .Select(m => m.Groups[1].Value)
+            .Select(m => Regex.Replace(m.Groups[1].Value, @"\s+", " "))
             .FirstOrDefault(b => b.Contains(".auth-aside"));
 
         blok.Should().NotBeNull("yan kolonun duyarlı kuralları bulunamadı");

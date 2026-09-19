@@ -21,9 +21,21 @@
     line-height: 1;
     white-space: nowrap;
 }
-.nl-state--draft { background: var(--pending-bg); color: var(--pending-fg); }
-.nl-state--sending { background: var(--accent-soft); color: var(--accent-text); }
-.nl-state--sent { background: var(--chip-create-bg); color: var(--chip-create-fg); }
+
+.nl-state--draft {
+    background: var(--pending-bg);
+    color: var(--pending-fg);
+}
+
+.nl-state--sending {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+}
+
+.nl-state--sent {
+    background: var(--chip-create-bg);
+    color: var(--chip-create-fg);
+}
 
 .nl-progress {
     display: inline-flex;
@@ -33,8 +45,14 @@
     font-variant-numeric: tabular-nums;
     color: var(--text-main);
 }
-.nl-progress__done { font-weight: 600; }
-.nl-progress__total { color: var(--text-dim); }
+
+.nl-progress__done {
+    font-weight: 600;
+}
+
+.nl-progress__total {
+    color: var(--text-dim);
+}
 
 .nl-progress__note {
     display: inline-flex;
@@ -42,8 +60,14 @@
     gap: .35rem;
     font-size: var(--fs-2xs);
 }
-.nl-progress__failed { color: var(--chip-delete-fg); }
-.nl-progress__skipped { color: var(--text-dim); }
+
+.nl-progress__failed {
+    color: var(--chip-delete-fg);
+}
+
+.nl-progress__skipped {
+    color: var(--text-dim);
+}
 
 .nl-progress__idle {
     font-size: var(--fs-sm);

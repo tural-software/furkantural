@@ -1,4 +1,23 @@
-.data-table .col-title { min-width: 180px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
-.data-table .col-techstack { min-width: 140px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
-.sbadge--null { background: var(--pending-bg); color: var(--pending-fg); }
-.sbadge--cover { background: var(--chip-feature-bg); color: var(--chip-feature-fg); }
+.data-table .col-title {
+    min-width: 180px;
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.data-table .col-techstack {
+    min-width: 140px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sbadge--null {
+    background: var(--pending-bg);
+    color: var(--pending-fg);
+}
+
+.sbadge--cover {
+    background: var(--chip-feature-bg);
+    color: var(--chip-feature-fg);
+}

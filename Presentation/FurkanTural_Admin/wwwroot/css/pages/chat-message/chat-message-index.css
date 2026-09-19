@@ -1,5 +1,32 @@
-.content-media { display: inline-flex; align-items: center; gap: 6px; color: var(--text-dim); }
-.content-media svg { width: 15px; height: 15px; flex: 0 0 auto; }
-.dm-media-cap { display: inline-flex; align-items: center; gap: 6px; margin-bottom: .5rem; font-weight: 600; color: var(--text-dim); }
-.dm-media-cap svg { width: 16px; height: 16px; flex: 0 0 auto; }
-.dm audio { width: 100%; margin-top: .25rem; }
+.content-media {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+}
+
+.content-media svg {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+}
+
+.dm-media-cap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: .5rem;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.dm-media-cap svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+}
+
+.dm audio {
+    width: 100%;
+    margin-top: .25rem;
+}

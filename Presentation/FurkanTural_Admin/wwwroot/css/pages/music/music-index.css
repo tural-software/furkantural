@@ -1,5 +1,23 @@
-.data-table .col-name { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
-.data-table .col-artist { min-width: 120px; max-width: 160px; }
-.data-table .col-album { min-width: 120px; max-width: 150px; }
-.data-table .col-genre { min-width: 100px; }
-.data-table .col-duration { width: 90px; }
+.data-table .col-name {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.data-table .col-artist {
+    min-width: 120px;
+    max-width: 160px;
+}
+
+.data-table .col-album {
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.data-table .col-genre {
+    min-width: 100px;
+}
+
+.data-table .col-duration {
+    width: 90px;
+}

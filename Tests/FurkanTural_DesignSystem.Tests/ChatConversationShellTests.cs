@@ -29,7 +29,7 @@ public class ChatConversationShellTests
 
     private static string RuleBody(string css, string selector)
     {
-        var match = Regex.Match(css, @"(?<![\w-])" + Regex.Escape(selector) + @"\s*\{([^{}]*)\}");
+        var match = Regex.Match(css, @"(?<![\w-])" + Regex.Escape(selector).Replace(@"\ ", @"\s+") + @"\s*\{([^{}]*)\}");
 
         match.Success.Should().BeTrue($"'{selector}' kuralı bulunamadı");
         return match.Groups[1].Value;
@@ -38,7 +38,7 @@ public class ChatConversationShellTests
     private static string MediaBlock(string css, string query, string icerir)
     {
         var blok = Regex.Matches(css, Regex.Escape(query) + @"\s*\{((?:[^{}]|\{[^{}]*\})*)\}")
-            .Select(m => m.Groups[1].Value)
+            .Select(m => Regex.Replace(m.Groups[1].Value, @"\s+", " "))
             .FirstOrDefault(b => b.Contains(icerir));
 
         blok.Should().NotBeNull($"'{query}' içinde '{icerir}' taşıyan blok bulunamadı");

@@ -10,15 +10,30 @@
     font-weight: 600;
     font-size: var(--fs-sm);
 }
+
 .cat-chip__dot {
-    width: 9px; height: 9px; border-radius: 50%;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
     background: var(--cat-color, var(--accent));
     flex: 0 0 auto;
 }
-.cat-swatch { display: inline-flex; align-items: center; gap: .5rem; }
+
+.cat-swatch {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+}
+
 .cat-swatch__box {
-    width: 18px; height: 18px; border-radius: 5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
     border: 1px solid var(--border-color);
     flex: 0 0 auto;
 }
-.cat-swatch__hex { font-size: var(--fs-sm); color: var(--text-dim); }
+
+.cat-swatch__hex {
+    font-size: var(--fs-sm);
+    color: var(--text-dim);
+}

@@ -152,7 +152,7 @@ public class ChatLegalPageTests
     public void Dizin_dar_ekranda_yer_kaplamaz()
     {
         var blok = Regex.Matches(Css(), @"@media \(max-width: 1024px\)\s*\{((?:[^{}]|\{[^{}]*\})*)\}")
-            .Select(m => m.Groups[1].Value)
+            .Select(m => Regex.Replace(m.Groups[1].Value, @"\s+", " "))
             .FirstOrDefault(b => b.Contains(".legal-index"));
 
         blok.Should().NotBeNull("dizinin duyarlı kuralı bulunamadı");

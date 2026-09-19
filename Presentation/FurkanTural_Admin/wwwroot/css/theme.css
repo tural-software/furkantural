@@ -18,6 +18,7 @@
     src: url('../fonts/inter-latin-ext.woff2') format('woff2');
     unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
+
 @font-face {
     font-family: 'Inter';
     font-style: normal;
@@ -35,18 +36,30 @@
        Bir değeri burada değiştirirsen diğer üç dosyada da değiştir: bu ölçeğin
        tek amacı siteler arası eşitlik, tek dosyada sapması onu işlevsiz kılar.
        px karşılıkları 16px kök font-size'a göredir. */
-    --fs-3xs: 0.625rem;   /* 10px — büyük harfli mikro rozet */
-    --fs-2xs: 0.6875rem;  /* 11px — etiket, meta, tablo üstbilgisi */
-    --fs-xs: 0.75rem;     /* 12px */
-    --fs-sm: 0.8125rem;   /* 13px — yoğun arayüz metni */
-    --fs-md: 0.875rem;    /* 14px — düğme, form, gezinme bağlantısı */
-    --fs-base: 1rem;      /* 16px — gövde metni */
-    --fs-lg: 1.125rem;    /* 18px — kart başlığı, giriş paragrafı, h4 */
-    --fs-xl: 1.25rem;     /* 20px — h3 */
-    --fs-2xl: 1.5rem;     /* 24px — h2, sayfa ve legal başlığı */
-    --fs-3xl: 1.875rem;   /* 30px — istatistik sayısı */
-    --fs-title: clamp(1.75rem, 4vw, 2.5rem); /* bölüm ve detay başlığı */
-    --fs-hero: clamp(2.5rem, 6vw, 4rem); /* açılış başlığı — Portfolio esas alındı */
+    --fs-3xs: 0.625rem;
+    /* 10px — büyük harfli mikro rozet */
+    --fs-2xs: 0.6875rem;
+    /* 11px — etiket, meta, tablo üstbilgisi */
+    --fs-xs: 0.75rem;
+    /* 12px */
+    --fs-sm: 0.8125rem;
+    /* 13px — yoğun arayüz metni */
+    --fs-md: 0.875rem;
+    /* 14px — düğme, form, gezinme bağlantısı */
+    --fs-base: 1rem;
+    /* 16px — gövde metni */
+    --fs-lg: 1.125rem;
+    /* 18px — kart başlığı, giriş paragrafı, h4 */
+    --fs-xl: 1.25rem;
+    /* 20px — h3 */
+    --fs-2xl: 1.5rem;
+    /* 24px — h2, sayfa ve legal başlığı */
+    --fs-3xl: 1.875rem;
+    /* 30px — istatistik sayısı */
+    --fs-title: clamp(1.75rem, 4vw, 2.5rem);
+    /* bölüm ve detay başlığı */
+    --fs-hero: clamp(2.5rem, 6vw, 4rem);
+    /* açılış başlığı — Portfolio esas alındı */
     --fs-page: clamp(1.375rem, 1.28rem + 0.38vw, 1.625rem);
     --radius-sm: .5rem;
     --radius-md: .75rem;
@@ -152,8 +165,19 @@
 }
 
 /* Smooth tema geçişi — global */
-html, body, .navbar, .bottombar, .card, .tag, .btn-primary, .btn-outline,
-.theme-toggle-btn, .user-chip, input, button, #toastBox {
+html,
+body,
+.navbar,
+.bottombar,
+.card,
+.tag,
+.btn-primary,
+.btn-outline,
+.theme-toggle-btn,
+.user-chip,
+input,
+button,
+#toastBox {
     transition:
         background 0.25s ease,
         background-color 0.25s ease,
@@ -163,8 +187,22 @@ html, body, .navbar, .bottombar, .card, .tag, .btn-primary, .btn-outline,
 }
 
 @media (prefers-reduced-motion: reduce) {
-    html, body, .navbar, .bottombar, .tabbar, .card, .tag, .btn-primary, .btn-outline,
-    .theme-toggle-btn, .nav-btn, .user-chip, input, button, #toastBox {
+
+    html,
+    body,
+    .navbar,
+    .bottombar,
+    .tabbar,
+    .card,
+    .tag,
+    .btn-primary,
+    .btn-outline,
+    .theme-toggle-btn,
+    .nav-btn,
+    .user-chip,
+    input,
+    button,
+    #toastBox {
         transition: none;
     }
 }

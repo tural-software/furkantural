@@ -1,4 +1,7 @@
-.data-table .col-content { min-width: 180px; max-width: 280px; }
+.data-table .col-content {
+    min-width: 180px;
+    max-width: 280px;
+}
 
 .content-cell {
     max-width: 280px;

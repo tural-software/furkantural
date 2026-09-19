@@ -30,7 +30,7 @@ public class ControlSizingTests
 
     private static string RuleBody(string css, string selector)
     {
-        var match = Regex.Match(css, Regex.Escape(selector) + @"\s*\{([^}]*)\}", RegexOptions.Singleline);
+        var match = Regex.Match(css, Regex.Escape(selector).Replace(@"\ ", @"\s+") + @"\s*\{([^}]*)\}", RegexOptions.Singleline);
 
         match.Success.Should().BeTrue($"'{selector}' kuralı bulunamadı");
         return match.Groups[1].Value;
@@ -48,7 +48,7 @@ public class ControlSizingTests
     [Fact]
     public void Mobil_suzgec_sayfasinda_arama_kutusu_sarmalini_doldurur()
     {
-        var css = ComponentCss("list-skeleton.css");
+        var css = Regex.Replace(ComponentCss("list-skeleton.css"), @"\s+", " ");
 
         css.Should().Contain(".filter-input-wrap .filter-input { width: 100%; }",
             "sayfa açıldığında sarmal geniyor, içindeki kutu kendi genişliğinde kalıyordu");

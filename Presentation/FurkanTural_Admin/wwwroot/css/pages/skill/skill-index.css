@@ -1,4 +1,7 @@
-.data-table .col-proficiency { width: 100px; }
+.data-table .col-proficiency {
+    width: 100px;
+}
+
 .prof-badge {
     display: inline-flex;
     align-items: center;
@@ -6,6 +9,7 @@
     font-size: var(--fs-sm);
     font-weight: 600;
 }
+
 .prof-badge__bar {
     display: inline-block;
     width: 40px;
@@ -15,15 +19,42 @@
     overflow: hidden;
     flex-shrink: 0;
 }
+
 .prof-badge__fill {
     height: 100%;
     border-radius: 999px;
 }
-.prof-badge--high .prof-badge__fill { background: var(--chip-create-fg); }
-.prof-badge--high { color: var(--chip-create-fg); }
-.prof-badge--mid .prof-badge__fill { background: var(--chip-update-fg); }
-.prof-badge--mid { color: var(--chip-update-fg); }
-.prof-badge--low .prof-badge__fill { background: var(--chip-delete-fg); }
-.prof-badge--low { color: var(--chip-delete-fg); }
-.prof-badge__value { font-variant-numeric: tabular-nums; }
-.prof-badge__value small { font-size: .85em; opacity: .75; margin-left: .05rem; }
+
+.prof-badge--high .prof-badge__fill {
+    background: var(--chip-create-fg);
+}
+
+.prof-badge--high {
+    color: var(--chip-create-fg);
+}
+
+.prof-badge--mid .prof-badge__fill {
+    background: var(--chip-update-fg);
+}
+
+.prof-badge--mid {
+    color: var(--chip-update-fg);
+}
+
+.prof-badge--low .prof-badge__fill {
+    background: var(--chip-delete-fg);
+}
+
+.prof-badge--low {
+    color: var(--chip-delete-fg);
+}
+
+.prof-badge__value {
+    font-variant-numeric: tabular-nums;
+}
+
+.prof-badge__value small {
+    font-size: .85em;
+    opacity: .75;
+    margin-left: .05rem;
+}

@@ -4,13 +4,25 @@
     gap: .45rem;
     margin-left: auto;
 }
-.data-table .col-email { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
-.data-table .col-subject { max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+
+.data-table .col-email {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.data-table .col-subject {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .row-btn--read:hover {
     border-color: var(--chip-info-fg);
     color: var(--chip-info-fg);
     background: var(--chip-info-bg);
 }
+
 .badge {
     display: inline-flex;
     align-items: center;
@@ -21,13 +33,40 @@
     font-weight: 600;
     line-height: 1;
 }
-.badge + .badge { margin-left: .35rem; }
-.badge--success { background: var(--chip-create-bg); color: var(--chip-create-fg); }
-.badge--warning { background: var(--chip-update-bg); color: var(--chip-update-fg); }
-.badge--danger { background: var(--chip-delete-bg); color: var(--chip-delete-fg); }
-.badge--secondary { background: var(--pending-bg); color: var(--pending-fg); }
-.badge--primary { background: var(--accent-soft); color: var(--accent-text); }
-.badge--info { background: var(--chip-info-bg); color: var(--chip-info-fg); }
+
+.badge + .badge {
+    margin-left: .35rem;
+}
+
+.badge--success {
+    background: var(--chip-create-bg);
+    color: var(--chip-create-fg);
+}
+
+.badge--warning {
+    background: var(--chip-update-bg);
+    color: var(--chip-update-fg);
+}
+
+.badge--danger {
+    background: var(--chip-delete-bg);
+    color: var(--chip-delete-fg);
+}
+
+.badge--secondary {
+    background: var(--pending-bg);
+    color: var(--pending-fg);
+}
+
+.badge--primary {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+}
+
+.badge--info {
+    background: var(--chip-info-bg);
+    color: var(--chip-info-fg);
+}
 
 @media (min-width: 768px) {
     .td-truncate {

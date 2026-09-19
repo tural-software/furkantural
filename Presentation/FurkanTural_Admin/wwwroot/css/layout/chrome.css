@@ -27,11 +27,26 @@
     align-items: center;
     gap: .5rem;
 }
+
 /* Wordmark logosu — şeffaf zemin + site paleti; aktif temaya göre dark/light değişir. */
-.brand-logo { display: block; height: 40px; width: auto; flex: 0 0 auto; }
-.brand-logo--light { display: none; }
-[data-theme="light"] .brand-logo--dark { display: none; }
-[data-theme="light"] .brand-logo--light { display: block; }
+.brand-logo {
+    display: block;
+    height: 40px;
+    width: auto;
+    flex: 0 0 auto;
+}
+
+.brand-logo--light {
+    display: none;
+}
+
+[data-theme="light"] .brand-logo--dark {
+    display: none;
+}
+
+[data-theme="light"] .brand-logo--light {
+    display: block;
+}
 
 .brand:hover {
     transform: scale(1.05);
@@ -214,15 +229,37 @@
 }
 
 @media (max-width: 1023px) {
-    .nav-btn__kbd { display: none; }
-    .nav-actions .user-chip { display: none; }
+    .nav-btn__kbd {
+        display: none;
+    }
+
+    .nav-actions .user-chip {
+        display: none;
+    }
 }
 
 @media (max-width: 767px) {
-    .nav-inner { padding: .6rem .875rem; }
-    .brand-logo { height: 32px; }
-    .nav-nav { display: none; }
-    .nav-actions .theme-toggle-btn { display: none; }
-    .tabbar { display: flex; }
-    .app { padding-bottom: 3.75rem; }
+    .nav-inner {
+        padding: .6rem .875rem;
+    }
+
+    .brand-logo {
+        height: 32px;
+    }
+
+    .nav-nav {
+        display: none;
+    }
+
+    .nav-actions .theme-toggle-btn {
+        display: none;
+    }
+
+    .tabbar {
+        display: flex;
+    }
+
+    .app {
+        padding-bottom: 3.75rem;
+    }
 }

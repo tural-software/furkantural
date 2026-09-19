@@ -1,6 +1,11 @@
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .reveal {
@@ -15,8 +20,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .reveal { opacity: 1; transform: none; transition: none; }
-    .theme-toggle-btn:hover [data-theme-icon] { animation: none; }
-    .brand:hover { transform: none; }
-    html { scroll-behavior: auto; }
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .theme-toggle-btn:hover [data-theme-icon] {
+        animation: none;
+    }
+
+    .brand:hover {
+        transform: none;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
 }

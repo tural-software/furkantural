@@ -445,7 +445,7 @@ public class FrontEndReadabilityTests
     public void Chat_durum_renkleri_ham_deger_degil_tokendan_gelir(string selector, string property)
     {
         var css = ChatCss();
-        var rule = Regex.Match(css, $@"^\s*{Regex.Escape(selector)}\s*\{{([^}}]*)\}}", RegexOptions.Multiline);
+        var rule = Regex.Match(css, $@"(?<!,\s*)^\s*{Regex.Escape(selector)}\s*\{{([^}}]*)\}}", RegexOptions.Multiline);
 
         rule.Success.Should().BeTrue(
             $"'{selector}' kuralı bulunamadıysa test bir şey doğrulamıyor demektir");

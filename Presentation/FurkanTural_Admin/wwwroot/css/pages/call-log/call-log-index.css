@@ -1,18 +1,102 @@
-.sbadge--status { background: var(--accent-soft); color: var(--accent-text); }
-.call-settings-card { border-left: 3px solid var(--accent); }
-.cs-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.cs-title { font-size: var(--fs-base); font-weight: 700; color: var(--text-main); margin: 0 0 .25rem; }
-.cs-desc { font-size: var(--fs-sm); color: var(--text-dim); margin: 0; max-width: 640px; }
-.cs-switch { display: inline-flex; align-items: center; gap: .5rem; font-size: var(--fs-sm); font-weight: 600; color: var(--text-main); cursor: pointer; white-space: nowrap; }
-.cs-switch input[type="checkbox"] { --cb-size: 1.05rem; }
-.cs-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; }
-.cs-field { display: flex; flex-direction: column; gap: .3rem; }
-.cs-field label { font-size: var(--fs-2xs); color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; }
-.cs-field input { background: var(--bg-card-solid); border: 1px solid var(--border-color); color: var(--text-main); border-radius: var(--radius-md); padding: .55rem .7rem; font-size: var(--fs-md); outline: none; }
-.cs-field input:focus { border-color: var(--accent); }
-.cs-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
-.cs-actions .btn-primary { display: inline-flex; align-items: center; gap: .4rem; }
-.cs-actions .btn-primary svg { width: .9rem; height: .9rem; }
+.sbadge--status {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+}
+
+.call-settings-card {
+    border-left: 3px solid var(--accent);
+}
+
+.cs-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.cs-title {
+    font-size: var(--fs-base);
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 .25rem;
+}
+
+.cs-desc {
+    font-size: var(--fs-sm);
+    color: var(--text-dim);
+    margin: 0;
+    max-width: 640px;
+}
+
+.cs-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.cs-switch input[type="checkbox"] {
+    --cb-size: 1.05rem;
+}
+
+.cs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .75rem;
+}
+
+.cs-field {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+}
+
+.cs-field label {
+    font-size: var(--fs-2xs);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.cs-field input {
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: var(--radius-md);
+    padding: .55rem .7rem;
+    font-size: var(--fs-md);
+    outline: none;
+}
+
+.cs-field input:focus {
+    border-color: var(--accent);
+}
+
+.cs-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.cs-actions .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.cs-actions .btn-primary svg {
+    width: .9rem;
+    height: .9rem;
+}
+
 @media (max-width: 640px) {
-    .cs-grid { grid-template-columns: repeat(2, 1fr); }
+    .cs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

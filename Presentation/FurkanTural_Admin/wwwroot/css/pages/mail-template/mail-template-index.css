@@ -4,7 +4,11 @@
     gap: .45rem;
     margin-left: auto;
 }
-.data-table .col-type { min-width: 100px; }
+
+.data-table .col-type {
+    min-width: 100px;
+}
+
 .badge {
     display: inline-flex;
     align-items: center;
@@ -15,11 +19,42 @@
     font-weight: 600;
     line-height: 1;
 }
-.badge + .badge { margin-left: .35rem; }
-.badge--success { background: var(--chip-create-bg); color: var(--chip-create-fg); }
-.badge--warning { background: var(--chip-update-bg); color: var(--chip-update-fg); }
-.badge--danger { background: var(--chip-delete-bg); color: var(--chip-delete-fg); }
-.badge--secondary { background: var(--pending-bg); color: var(--pending-fg); }
-.badge--primary { background: var(--accent-soft); color: var(--accent-text); }
-.badge--info { background: var(--chip-info-bg); color: var(--chip-info-fg); }
-.badge--neutral { background: var(--pending-bg); color: var(--pending-fg); }
+
+.badge + .badge {
+    margin-left: .35rem;
+}
+
+.badge--success {
+    background: var(--chip-create-bg);
+    color: var(--chip-create-fg);
+}
+
+.badge--warning {
+    background: var(--chip-update-bg);
+    color: var(--chip-update-fg);
+}
+
+.badge--danger {
+    background: var(--chip-delete-bg);
+    color: var(--chip-delete-fg);
+}
+
+.badge--secondary {
+    background: var(--pending-bg);
+    color: var(--pending-fg);
+}
+
+.badge--primary {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+}
+
+.badge--info {
+    background: var(--chip-info-bg);
+    color: var(--chip-info-fg);
+}
+
+.badge--neutral {
+    background: var(--pending-bg);
+    color: var(--pending-fg);
+}
