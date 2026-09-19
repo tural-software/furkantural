@@ -31,6 +31,7 @@ public class MusicImageController(
             return RedirectToAction("Login", "Auth");
 
         var vm = await BuildViewModelAsync(token, url, isCoverFilter, activeFilter, deletedFilter, musicId, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        ViewData["ApiBaseUrl"] = _apiBaseUrl;
         return View(vm);
     }
 
@@ -86,6 +87,7 @@ public class MusicImageController(
             IsCoverFilter = isCoverFilter,
             ActiveFilter  = activeFilter,
             DeletedFilter = deletedFilter,
+            MusicIdFilter = musicId,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
             PageNumber    = request.PageNumber,

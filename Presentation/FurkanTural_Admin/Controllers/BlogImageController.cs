@@ -28,6 +28,7 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
             return RedirectToAction("Login", "Auth");
 
         var vm = await BuildViewModelAsync(token, url, isCoverFilter, activeFilter, deletedFilter, blogId, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        ViewData["ApiBaseUrl"] = _apiBaseUrl;
         return View(vm);
     }
 
@@ -83,6 +84,7 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
             IsCoverFilter = isCoverFilter,
             ActiveFilter  = activeFilter,
             DeletedFilter = deletedFilter,
+            BlogIdFilter  = blogId,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
             PageNumber    = request.PageNumber,

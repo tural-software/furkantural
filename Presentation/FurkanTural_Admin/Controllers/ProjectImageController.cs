@@ -31,6 +31,7 @@ public class ProjectImageController(
             return RedirectToAction("Login", "Auth");
 
         var vm = await BuildViewModelAsync(token, url, isCoverFilter, activeFilter, deletedFilter, projectId, dateFrom, dateTo, pageNumber, pageSize, cancellationToken);
+        ViewData["ApiBaseUrl"] = _apiBaseUrl;
         return View(vm);
     }
 
@@ -86,6 +87,7 @@ public class ProjectImageController(
             IsCoverFilter = isCoverFilter,
             ActiveFilter  = activeFilter,
             DeletedFilter = deletedFilter,
+            ProjectIdFilter = projectId,
             DateFrom      = dateFrom,
             DateTo        = dateTo,
             PageNumber    = request.PageNumber,
