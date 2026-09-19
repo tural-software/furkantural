@@ -28,7 +28,7 @@
     var CLOSE_ICON = (window.__ICONS || {})['close'] || '';
 
     var _overlay = null;
-    var _config  = null;
+    var _config = null;
 
     function getToken() {
         var el = document.querySelector('input[name="__RequestVerificationToken"]');
@@ -162,8 +162,8 @@
 
     function buildSearchableSelectField(field, value) {
         var reqClass = field.required ? ' fm-field__label--required' : '';
-        var options  = field.options || [];
-        var ph       = field.placeholder || 'Seçin veya arayın...';
+        var options = field.options || [];
+        var ph = field.placeholder || 'Seçin veya arayın...';
         var hiddenVal = (value !== undefined && value !== null) ? String(value) : '';
         var displayVal = '';
         if (hiddenVal) {
@@ -213,23 +213,23 @@
 
     function buildField(field, initialValues) {
         var value = initialValues ? initialValues[field.name] : undefined;
-        if (field.type === 'number')            return buildNumberField(field, value);
-        if (field.type === 'checkbox')          return buildCheckboxField(field, value);
-        if (field.type === 'textarea')          return buildTextareaField(field, value);
-        if (field.type === 'file')              return buildFileField(field);
-        if (field.type === 'hidden')            return buildHiddenField(field, value);
+        if (field.type === 'number') return buildNumberField(field, value);
+        if (field.type === 'checkbox') return buildCheckboxField(field, value);
+        if (field.type === 'textarea') return buildTextareaField(field, value);
+        if (field.type === 'file') return buildFileField(field);
+        if (field.type === 'hidden') return buildHiddenField(field, value);
         if (field.type === 'searchable-select') return buildSearchableSelectField(field, value);
-        if (field.type === 'multiselect')       return buildMultiselectField(field, value);
-        if (field.type === 'date')              return buildDateField(field, value);
-        if (field.type === 'password')          return buildPasswordField(field, value);
+        if (field.type === 'multiselect') return buildMultiselectField(field, value);
+        if (field.type === 'date') return buildDateField(field, value);
+        if (field.type === 'password') return buildPasswordField(field, value);
         return buildTextField(field, value);
     }
 
     function escHtml(s) {
-        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
     function escAttr(s) {
-        return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+        return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     }
 
     function validateField(field, el) {
@@ -290,10 +290,10 @@
     }
 
     function validateSearchableSelectField(field) {
-        var hiddenEl  = _overlay.querySelector('[name="' + field.name + '"]');
-        var wrapper   = _overlay.querySelector('#fmss-' + field.name);
+        var hiddenEl = _overlay.querySelector('[name="' + field.name + '"]');
+        var wrapper = _overlay.querySelector('#fmss-' + field.name);
         var textInput = wrapper ? wrapper.querySelector('.fm-ss__input') : null;
-        var errEl     = _overlay.querySelector('#fmerr-' + field.name);
+        var errEl = _overlay.querySelector('#fmerr-' + field.name);
         if (field.required && (!hiddenEl || !hiddenEl.value)) {
             if (textInput) textInput.classList.add('fm-field__input--error');
             if (errEl) { errEl.textContent = field.label + ' seçimi zorunludur.'; errEl.classList.add('fm-field__error--visible'); }
@@ -321,7 +321,7 @@
             if (field.type !== 'checkbox') return;
             var toggle = _overlay.querySelector('#fmtoggle-' + field.name);
             var hidden = _overlay.querySelector('#fmtoggleval-' + field.name);
-            var label  = _overlay.querySelector('#fmtogglelbl-' + field.name);
+            var label = _overlay.querySelector('#fmtogglelbl-' + field.name);
             if (!toggle) return;
 
             function flip() {
@@ -351,7 +351,7 @@
     /* ── Searchable-select helpers ───────────────────────── */
 
     function buildDropdownItems(options, query) {
-        var lower    = (query || '').toLowerCase().trim();
+        var lower = (query || '').toLowerCase().trim();
         var filtered = lower
             ? options.filter(function (o) { return (o.label || '').toLowerCase().indexOf(lower) !== -1; })
             : options;
@@ -365,11 +365,11 @@
     function bindSearchableSelects(fields) {
         fields.forEach(function (field) {
             if (field.type !== 'searchable-select') return;
-            var options     = field.options || [];
-            var wrapper     = _overlay.querySelector('#fmss-' + field.name);
+            var options = field.options || [];
+            var wrapper = _overlay.querySelector('#fmss-' + field.name);
             if (!wrapper) return;
-            var textInput   = wrapper.querySelector('.fm-ss__input');
-            var dropdown    = wrapper.querySelector('.fm-ss__dropdown');
+            var textInput = wrapper.querySelector('.fm-ss__input');
+            var dropdown = wrapper.querySelector('.fm-ss__dropdown');
             var hiddenInput = _overlay.querySelector('[name="' + field.name + '"]');
 
             function populateDropdown(query) {
@@ -379,7 +379,7 @@
                     opt.addEventListener('mousedown', function (e) {
                         e.preventDefault();
                         hiddenInput.value = opt.dataset.value;
-                        textInput.value   = opt.textContent.trim();
+                        textInput.value = opt.textContent.trim();
                         dropdown.classList.remove('fm-ss__dropdown--open');
                         dropdown.innerHTML = '';
                         var errEl = _overlay.querySelector('#fmerr-' + field.name);
@@ -467,36 +467,36 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data
         })
-        .then(function (r) {
-            if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
+            .then(function (r) {
+                if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
 
-            if (r.ok) {
-                FormModal.close();
-                if (typeof config.onSuccess === 'function') config.onSuccess();
-            } else {
-                return r.text().then(function (body) {
-                    var msg = '';
-                    try { msg = JSON.parse(body).message || ''; } catch (_) {}
-                    var errorText = msg || 'İşlem gerçekleştirilemedi.';
-                    if (banner) {
-                        banner.textContent = errorText;
-                        banner.classList.add('fm-error-banner--visible');
-                    }
-                    fm.classList.remove('fm--loading');
-                    submitBtn.textContent = config.submitLabel || 'Kaydet';
-                    submitBtn.disabled = false;
-                });
-            }
-        })
-        .catch(function () {
-            if (banner) {
-                banner.textContent = 'Sunucuya bağlanılamadı.';
-                banner.classList.add('fm-error-banner--visible');
-            }
-            fm.classList.remove('fm--loading');
-            submitBtn.textContent = config.submitLabel || 'Kaydet';
-            submitBtn.disabled = false;
-        });
+                if (r.ok) {
+                    FormModal.close();
+                    if (typeof config.onSuccess === 'function') config.onSuccess();
+                } else {
+                    return r.text().then(function (body) {
+                        var msg = '';
+                        try { msg = JSON.parse(body).message || ''; } catch (_) { }
+                        var errorText = msg || 'İşlem gerçekleştirilemedi.';
+                        if (banner) {
+                            banner.textContent = errorText;
+                            banner.classList.add('fm-error-banner--visible');
+                        }
+                        fm.classList.remove('fm--loading');
+                        submitBtn.textContent = config.submitLabel || 'Kaydet';
+                        submitBtn.disabled = false;
+                    });
+                }
+            })
+            .catch(function () {
+                if (banner) {
+                    banner.textContent = 'Sunucuya bağlanılamadı.';
+                    banner.classList.add('fm-error-banner--visible');
+                }
+                fm.classList.remove('fm--loading');
+                submitBtn.textContent = config.submitLabel || 'Kaydet';
+                submitBtn.disabled = false;
+            });
     }
 
     window.FormModal = {

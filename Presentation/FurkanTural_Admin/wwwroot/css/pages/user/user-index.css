@@ -1,5 +1,5 @@
-.data-table .col-username { max-width: 200px;  }
-.data-table .col-role { min-width: 120px;  }
+.data-table .col-username { max-width: 200px; }
+.data-table .col-role { min-width: 120px; }
 
 .user-avatar { width: 34px; height: 34px; border-radius: 50%; }
 .user-avatar--photo { object-fit: cover; border: 1px solid var(--border-color); }

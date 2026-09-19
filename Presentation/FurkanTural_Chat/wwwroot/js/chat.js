@@ -149,7 +149,7 @@
             div.dataset.id = f.friendUserId;
             div.innerHTML =
                 '<div class="avatar-wrap">' + avatarMarkup(name, f.avatarUrl) +
-                    '<span class="status-dot' + (f.isOnline ? ' online' : '') + '"></span></div>' +
+                '<span class="status-dot' + (f.isOnline ? ' online' : '') + '"></span></div>' +
                 '<div class="friend-meta"><div class="friend-name">' + esc(name) + '</div>' +
                 '<div class="friend-sub">@' + esc(f.username) + '</div>' +
                 '<div class="friend-status' + (f.isOnline ? ' online' : '') + '">' + esc(presenceText(f)) + '</div></div>' +
@@ -720,7 +720,7 @@
         return new Promise((resolve, reject) => {
             const v = document.createElement('video');
             v.preload = 'metadata';
-            v.onloadedmetadata = () => { try { URL.revokeObjectURL(v.src); } catch (e) {} resolve(isFinite(v.duration) ? Math.round(v.duration) : null); };
+            v.onloadedmetadata = () => { try { URL.revokeObjectURL(v.src); } catch (e) { } resolve(isFinite(v.duration) ? Math.round(v.duration) : null); };
             v.onerror = reject;
             v.src = URL.createObjectURL(file);
         });

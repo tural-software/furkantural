@@ -34,11 +34,11 @@
             {
                 var levelCss = row.Level switch
                 {
-                    "Error"   => "level-badge level-badge--error",
+                    "Error" => "level-badge level-badge--error",
                     "Warning" => "level-badge level-badge--warning",
-                    "Info"    => "level-badge level-badge--info",
-                    "Debug"   => "level-badge level-badge--debug",
-                    _         => "level-badge level-badge--neutral"
+                    "Info" => "level-badge level-badge--info",
+                    "Debug" => "level-badge level-badge--debug",
+                    _ => "level-badge level-badge--neutral"
                 };
                 var msgTrunc = row.Message != null && row.Message.Length > 80
                     ? row.Message[..80] + "…"
@@ -74,9 +74,9 @@
 @await Html.PartialAsync("_TableFooter", new TableFooterModel(
     Model.PageNumber, Model.PageSize, Model.TotalPages, Model.TotalFiltered,
     [
-        new("levelFilter",   Model.LevelFilter),
+        new("levelFilter", Model.LevelFilter),
         new("searchSource", Model.SearchSource),
         new("searchMessage", Model.SearchMessage),
-        new("dateFrom",      Model.DateFrom),
-        new("dateTo",        Model.DateTo),
+        new("dateFrom", Model.DateFrom),
+        new("dateTo", Model.DateTo),
     ]))

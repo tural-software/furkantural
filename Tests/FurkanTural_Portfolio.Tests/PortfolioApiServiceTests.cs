@@ -155,7 +155,7 @@ public class PortfolioApiServiceTests
         SetupResponse(handler, JsonSerializer.Serialize(new ApiResult<IEnumerable<ProjectViewModel>>
         {
             Success = true,
-            Data    = null
+            Data = null
         }, SerializeOpts));
 
         // Act
@@ -352,7 +352,7 @@ public class PortfolioApiServiceTests
                 Id = 1, Position = "Backend Dev",
                 CompanyName = "Acme Corp",
                 StartDate = new DateTime(2020, 1, 1),
-                EndDate   = new DateTime(2022, 6, 30)
+                EndDate = new DateTime(2022, 6, 30)
             }
         };
         var (sut, handler) = CreateSut();

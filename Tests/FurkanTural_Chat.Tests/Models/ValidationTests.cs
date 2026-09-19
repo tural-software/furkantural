@@ -96,7 +96,10 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = null, Email = "e@e.com", Password = "P@ss1234", AcceptAgreement = true
+            Username = null,
+            Email = "e@e.com",
+            Password = "P@ss1234",
+            AcceptAgreement = true
         };
         var errors = Validate(model);
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Username)));
@@ -108,7 +111,10 @@ public class ValidationTests
         // StringLength MinimumLength=3
         var model = new RegisterRequestModel
         {
-            Username = "ab", Email = "e@e.com", Password = "P@ss1234", AcceptAgreement = true
+            Username = "ab",
+            Email = "e@e.com",
+            Password = "P@ss1234",
+            AcceptAgreement = true
         };
         var errors = Validate(model);
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Username)));
@@ -134,7 +140,10 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "not-an-email", Password = "P@ss1234", AcceptAgreement = true
+            Username = "validuser",
+            Email = "not-an-email",
+            Password = "P@ss1234",
+            AcceptAgreement = true
         };
         var errors = Validate(model);
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Email)));
@@ -145,7 +154,10 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = null, Password = "P@ss1234", AcceptAgreement = true
+            Username = "validuser",
+            Email = null,
+            Password = "P@ss1234",
+            AcceptAgreement = true
         };
         var errors = Validate(model);
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Email)));
@@ -157,7 +169,10 @@ public class ValidationTests
         // Politika: en az 6 karakter, dort karakter sinifi ve kisitli sembol kumesi
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com", Password = "abc", AcceptAgreement = true
+            Username = "validuser",
+            Email = "e@e.com",
+            Password = "abc",
+            AcceptAgreement = true
         };
         var errors = Validate(model);
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Password)));
@@ -177,7 +192,10 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com", Password = password, AcceptAgreement = true
+            Username = "validuser",
+            Email = "e@e.com",
+            Password = password,
+            AcceptAgreement = true
         };
         var errors = Validate(model);
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Password)));
@@ -188,8 +206,10 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com",
-            Password = "Abc1!" + new string('x', 60), AcceptAgreement = true
+            Username = "validuser",
+            Email = "e@e.com",
+            Password = "Abc1!" + new string('x', 60),
+            AcceptAgreement = true
         };
         var errors = Validate(model);
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Password)));
@@ -200,8 +220,11 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com",
-            Password = "Abc1!" + new string('x', 59), AcceptAgreement = true, ConfirmAdult = true
+            Username = "validuser",
+            Email = "e@e.com",
+            Password = "Abc1!" + new string('x', 59),
+            AcceptAgreement = true,
+            ConfirmAdult = true
         };
         var errors = Validate(model);
         errors.Should().BeEmpty();
@@ -215,7 +238,11 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com", Password = password, AcceptAgreement = true, ConfirmAdult = true
+            Username = "validuser",
+            Email = "e@e.com",
+            Password = password,
+            AcceptAgreement = true,
+            ConfirmAdult = true
         };
         var errors = Validate(model);
         errors.Should().BeEmpty();
@@ -227,7 +254,10 @@ public class ValidationTests
         // Range(bool, "true", "true") -- false olmamali
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com", Password = "P@ss1234", AcceptAgreement = false
+            Username = "validuser",
+            Email = "e@e.com",
+            Password = "P@ss1234",
+            AcceptAgreement = false
         };
         var errors = Validate(model);
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.AcceptAgreement)));
@@ -238,7 +268,11 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com", Password = "P@ss1234", AcceptAgreement = true, ConfirmAdult = false
+            Username = "validuser",
+            Email = "e@e.com",
+            Password = "P@ss1234",
+            AcceptAgreement = true,
+            ConfirmAdult = false
         };
         var errors = Validate(model);
         errors.Should().ContainSingle(e => e.MemberNames.Contains(nameof(RegisterRequestModel.ConfirmAdult)),
@@ -251,8 +285,12 @@ public class ValidationTests
         // DisplayName attribute yok (sadece Display) -- null olsa da gecerli
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com", Password = "P@ss1234",
-            AcceptAgreement = true, ConfirmAdult = true, DisplayName = null
+            Username = "validuser",
+            Email = "e@e.com",
+            Password = "P@ss1234",
+            AcceptAgreement = true,
+            ConfirmAdult = true,
+            DisplayName = null
         };
         var errors = Validate(model);
         errors.Should().BeEmpty();
@@ -263,7 +301,10 @@ public class ValidationTests
     {
         var model = new RegisterRequestModel
         {
-            Username = "validuser", Email = "e@e.com", Password = null, AcceptAgreement = true
+            Username = "validuser",
+            Email = "e@e.com",
+            Password = null,
+            AcceptAgreement = true
         };
         var errors = Validate(model);
         errors.Should().Contain(e => e.MemberNames.Contains(nameof(RegisterRequestModel.Password)));

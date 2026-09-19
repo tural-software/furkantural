@@ -62,18 +62,18 @@ public class SkillController(ISkillApiClient skillApiClient) : Controller
 
         return new SkillIndexViewModel
         {
-            Rows          = rows,
-            TotalCount    = counts?.Total ?? 0,
-            ActiveCount   = counts?.Active ?? 0,
-            PassiveCount  = counts?.Passive ?? 0,
-            DeletedCount  = counts?.Deleted ?? 0,
-            SearchName    = name,
-            ActiveFilter  = activeFilter,
+            Rows = rows,
+            TotalCount = counts?.Total ?? 0,
+            ActiveCount = counts?.Active ?? 0,
+            PassiveCount = counts?.Passive ?? 0,
+            DeletedCount = counts?.Deleted ?? 0,
+            SearchName = name,
+            ActiveFilter = activeFilter,
             DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = request.PageNumber,
-            PageSize      = request.PageSize,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
             TotalFiltered = totalFiltered
         };
     }

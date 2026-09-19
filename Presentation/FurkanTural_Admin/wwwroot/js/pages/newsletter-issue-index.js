@@ -187,16 +187,16 @@
     }
 
     var ACTION_MESSAGES = {
-        Delete:       { success: 'Silme işlemi başarılı.',        error: 'Silme işlemi başarısız oldu.' },
-        Restore:      { success: 'Geri yükleme işlemi başarılı.', error: 'Geri yükleme işlemi başarısız oldu.' },
-        ToggleActive: { success: null,                            error: 'Durum değiştirme işlemi başarısız oldu.' },
-        Create:       { success: 'Bülten taslağı oluşturuldu.',   error: 'Bülten oluşturulamadı.' },
-        Update:       { success: 'Bülten güncellendi.',           error: 'Bülten güncellenemedi.' }
+        Delete: { success: 'Silme işlemi başarılı.', error: 'Silme işlemi başarısız oldu.' },
+        Restore: { success: 'Geri yükleme işlemi başarılı.', error: 'Geri yükleme işlemi başarısız oldu.' },
+        ToggleActive: { success: null, error: 'Durum değiştirme işlemi başarısız oldu.' },
+        Create: { success: 'Bülten taslağı oluşturuldu.', error: 'Bülten oluşturulamadı.' },
+        Update: { success: 'Bülten güncellendi.', error: 'Bülten güncellenemedi.' }
     };
 
     function resolveActionKey(actionUrl) {
-        if (actionUrl.indexOf('Delete')       !== -1) return 'Delete';
-        if (actionUrl.indexOf('Restore')      !== -1) return 'Restore';
+        if (actionUrl.indexOf('Delete') !== -1) return 'Delete';
+        if (actionUrl.indexOf('Restore') !== -1) return 'Restore';
         if (actionUrl.indexOf('ToggleActive') !== -1) return 'ToggleActive';
         return null;
     }
@@ -216,33 +216,33 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data
         })
-        .then(function (r) {
-            if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
+            .then(function (r) {
+                if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
 
-            var msgs = ACTION_MESSAGES[actionKey] || {};
+                var msgs = ACTION_MESSAGES[actionKey] || {};
 
-            if (r.ok) {
-                var successMsg = msgs.success;
-                if (actionKey === 'ToggleActive') {
-                    if (wasSending) {
-                        successMsg = wasActive ? 'Dağıtım duraklatıldı.' : 'Dağıtım sürdürüldü.';
-                    } else {
-                        successMsg = wasActive ? 'Bülten pasife alındı.' : 'Bülten aktife alındı.';
+                if (r.ok) {
+                    var successMsg = msgs.success;
+                    if (actionKey === 'ToggleActive') {
+                        if (wasSending) {
+                            successMsg = wasActive ? 'Dağıtım duraklatıldı.' : 'Dağıtım sürdürüldü.';
+                        } else {
+                            successMsg = wasActive ? 'Bülten pasife alındı.' : 'Bülten aktife alındı.';
+                        }
                     }
+                    toast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
+                    reloadTable();
+                } else {
+                    return r.text().then(function (body) {
+                        var serverMsg = '';
+                        try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
+                        toast('error', 'Hata', serverMsg || msgs.error || 'İşlem başarısız oldu.');
+                    });
                 }
-                toast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
-                reloadTable();
-            } else {
-                return r.text().then(function (body) {
-                    var serverMsg = '';
-                    try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
-                    toast('error', 'Hata', serverMsg || msgs.error || 'İşlem başarısız oldu.');
-                });
-            }
-        })
-        .catch(function () {
-            toast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
-        });
+            })
+            .catch(function () {
+                toast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
+            });
     }
 
     function queueIssue(record) {
@@ -255,22 +255,22 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data
         })
-        .then(function (r) {
-            if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
-            if (r.ok) {
-                toast('success', 'Dağıtıma verildi', 'Gönderim arka planda sürüyor; ilerleme listede güncellenecek.');
-                reloadTable();
-                return;
-            }
-            return r.text().then(function (body) {
-                var serverMsg = '';
-                try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
-                toast('error', 'Hata', serverMsg || 'Bülten dağıtıma verilemedi.');
+            .then(function (r) {
+                if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
+                if (r.ok) {
+                    toast('success', 'Dağıtıma verildi', 'Gönderim arka planda sürüyor; ilerleme listede güncellenecek.');
+                    reloadTable();
+                    return;
+                }
+                return r.text().then(function (body) {
+                    var serverMsg = '';
+                    try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
+                    toast('error', 'Hata', serverMsg || 'Bülten dağıtıma verilemedi.');
+                });
+            })
+            .catch(function () {
+                toast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
             });
-        })
-        .catch(function () {
-            toast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
-        });
     }
 
     function confirmQueue(record) {
@@ -306,7 +306,7 @@
             reloadTable();
         }), {
             subject: record.subject || '',
-            body:    record.body    || ''
+            body: record.body || ''
         });
     }
 
@@ -351,15 +351,15 @@
                 .then(function (r) { return r.ok ? r.json() : null; })
                 .catch(function () { return null; });
         }))
-        .then(function (results) {
-            var finished = false;
-            results.forEach(function (data, i) {
-                if (!data) return;
-                if (data.status !== 'Sending') { finished = true; return; }
-                paintProgress(ids[i], data);
+            .then(function (results) {
+                var finished = false;
+                results.forEach(function (data, i) {
+                    if (!data) return;
+                    if (data.status !== 'Sending') { finished = true; return; }
+                    paintProgress(ids[i], data);
+                });
+                if (finished) reloadTable();
             });
-            if (finished) reloadTable();
-        });
     }
 
     function startPolling() {

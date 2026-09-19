@@ -39,7 +39,7 @@ public class AppTokenServiceTests
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Api:AppKey"]  = appKey,
+                ["Api:AppKey"] = appKey,
                 ["Api:AppName"] = appName
             })
             .Build();
@@ -98,7 +98,7 @@ public class AppTokenServiceTests
         var (sut, _) = CreateSut(handler);
 
         // Act
-        var first  = await sut.GetTokenAsync();
+        var first = await sut.GetTokenAsync();
         var second = await sut.GetTokenAsync();
 
         // Assert
@@ -138,7 +138,7 @@ public class AppTokenServiceTests
         var (sut, _) = CreateSut(handler);
 
         // Act
-        var first  = await sut.GetTokenAsync();
+        var first = await sut.GetTokenAsync();
         var second = await sut.GetTokenAsync();
 
         // Assert

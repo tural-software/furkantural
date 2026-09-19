@@ -250,7 +250,7 @@
         if (!slot || !config.related || !record || record.id == null) return;
 
         var url = '/Related/Counts?entity=' + encodeURIComponent(config.related.entity)
-                + '&id=' + encodeURIComponent(record.id);
+            + '&id=' + encodeURIComponent(record.id);
 
         fetch(url, { headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.ok ? r.json() : null; })

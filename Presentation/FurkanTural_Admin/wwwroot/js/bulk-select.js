@@ -2,10 +2,10 @@
     'use strict';
 
     var ACTIONS = {
-        deactivate: { label: 'Pasife Al',  variant: 'warning', done: 'kayıt pasife alındı' },
-        activate:   { label: 'Aktife Al',  variant: 'success', done: 'kayıt aktife alındı' },
-        restore:    { label: 'Geri Yükle', variant: 'success', done: 'kayıt geri yüklendi' },
-        delete:     { label: 'Kaydı Sil',  variant: 'danger',  done: 'kayıt silindi' }
+        deactivate: { label: 'Pasife Al', variant: 'warning', done: 'kayıt pasife alındı' },
+        activate: { label: 'Aktife Al', variant: 'success', done: 'kayıt aktife alındı' },
+        restore: { label: 'Geri Yükle', variant: 'success', done: 'kayıt geri yüklendi' },
+        delete: { label: 'Kaydı Sil', variant: 'danger', done: 'kayıt silindi' }
     };
 
     function bar() { return document.querySelector('[data-bulk-url]'); }

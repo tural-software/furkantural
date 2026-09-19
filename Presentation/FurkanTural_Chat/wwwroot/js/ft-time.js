@@ -9,7 +9,7 @@
     function dateTime(v) {
         var d = parse(v); if (!d) return '—';
         return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: TZ })
-             + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: TZ });
+            + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: TZ });
     }
     function date(v) {
         var d = parse(v); if (!d) return '—';

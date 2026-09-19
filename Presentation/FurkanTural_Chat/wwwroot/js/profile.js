@@ -16,11 +16,11 @@
     overlay.className = 'profile-overlay';
     overlay.innerHTML =
         '<div class="profile-card" role="dialog" aria-modal="true">' +
-            '<div class="profile-photo" data-photo title="Büyüt"></div>' +
-            '<div class="profile-name" data-name></div>' +
-            '<div class="profile-username" data-username></div>' +
-            '<div class="profile-rows" data-rows></div>' +
-            '<button type="button" class="btn-outline profile-change" data-change hidden>Fotoğrafı değiştir</button>' +
+        '<div class="profile-photo" data-photo title="Büyüt"></div>' +
+        '<div class="profile-name" data-name></div>' +
+        '<div class="profile-username" data-username></div>' +
+        '<div class="profile-rows" data-rows></div>' +
+        '<button type="button" class="btn-outline profile-change" data-change hidden>Fotoğrafı değiştir</button>' +
         '</div>';
     document.body.appendChild(overlay);
 
@@ -77,7 +77,7 @@
 
     function row(lbl, val, online) {
         return '<div class="profile-row"><span class="lbl">' + esc(lbl) + '</span>' +
-               '<span class="val' + (online ? ' online' : '') + '">' + esc(val) + '</span></div>';
+            '<span class="val' + (online ? ' online' : '') + '">' + esc(val) + '</span></div>';
     }
 
     function open(userId) {

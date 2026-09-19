@@ -25,9 +25,9 @@ public class SharedColorRoleTests
 
     private static readonly (string Project, string RelativePath)[] Stylesheets =
     [
-        ("Admin",     @"Presentation\FurkanTural_Admin\wwwroot\css\theme.css"),
-        ("Chat",      @"Presentation\FurkanTural_Chat\wwwroot\css\theme.css"),
-        ("Blog",      @"Presentation\FurkanTural_Blog\wwwroot\css\site.css"),
+        ("Admin", @"Presentation\FurkanTural_Admin\wwwroot\css\theme.css"),
+        ("Chat", @"Presentation\FurkanTural_Chat\wwwroot\css\theme.css"),
+        ("Blog", @"Presentation\FurkanTural_Blog\wwwroot\css\site.css"),
         ("Portfolio", @"Presentation\FurkanTural_Portfolio\wwwroot\css\site.css"),
     ];
 

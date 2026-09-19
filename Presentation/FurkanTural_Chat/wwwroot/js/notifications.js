@@ -33,8 +33,8 @@
         btn.dataset.state = state;
         btn.classList.toggle('active', state === 'on');
         btn.title = state === 'on' ? 'Bildirimler açık (kapatmak için tıkla)'
-                  : state === 'blocked' ? 'Bildirimler tarayıcı ayarlarında engelli'
-                  : 'Bildirimleri aç';
+            : state === 'blocked' ? 'Bildirimler tarayıcı ayarlarında engelli'
+                : 'Bildirimleri aç';
     }
 
     function csrfToken() {
@@ -49,12 +49,12 @@
         try {
             if (at) localStorage.setItem(BEAT_KEY, String(at));
             else localStorage.removeItem(BEAT_KEY);
-        } catch (e) {}
+        } catch (e) { }
     }
 
     function beatDue() {
         var last = 0;
-        try { last = parseInt(localStorage.getItem(BEAT_KEY) || '0', 10) || 0; } catch (e) {}
+        try { last = parseInt(localStorage.getItem(BEAT_KEY) || '0', 10) || 0; } catch (e) { }
         return Date.now() - last >= BEAT_INTERVAL_MS;
     }
 
@@ -76,8 +76,8 @@
                 method: 'POST', headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': csrfToken() }, keepalive: true,
                 body: JSON.stringify({ endpoint: sub.endpoint })
             });
-        } catch (e) {}
-        try { await sub.unsubscribe(); } catch (e) {}
+        } catch (e) { }
+        try { await sub.unsubscribe(); } catch (e) { }
         markBeat(0);
     }
 
@@ -102,7 +102,7 @@
         var ok = await register(sub);
 
         if (ok) { setState('on'); toast('Bildirimler açıldı. Çevrimdışıyken de mesajların ulaşacak.'); }
-        else { try { await sub.unsubscribe(); } catch (e) {} setState('off'); toast('Abonelik kaydedilemedi.', 'error'); }
+        else { try { await sub.unsubscribe(); } catch (e) { } setState('off'); toast('Abonelik kaydedilemedi.', 'error'); }
     }
 
     async function disable() {
@@ -135,7 +135,7 @@
             setTimeout(proceed, LOGOUT_WAIT_MS);
             currentSub()
                 .then(function (sub) { return sub ? forget(sub) : null; })
-                .catch(function () {})
+                .catch(function () { })
                 .then(proceed);
         });
     }

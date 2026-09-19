@@ -35,16 +35,16 @@
     }
 
     function initWrap(wrap) {
-        var endpoint  = wrap.dataset.fbsEndpoint;
+        var endpoint = wrap.dataset.fbsEndpoint;
         var initialId = (wrap.dataset.fbsInitial || '').trim();
 
         var searchInput = wrap.querySelector('.fbs-search');
-        var valueInput  = wrap.querySelector('.fbs-value');
-        var dropdown    = wrap.querySelector('.fbs-dropdown');
+        var valueInput = wrap.querySelector('.fbs-value');
+        var dropdown = wrap.querySelector('.fbs-dropdown');
 
         if (!searchInput || !valueInput || !dropdown) return;
 
-        var allOptions   = [];
+        var allOptions = [];
         var selectedValue = '';
         var selectedLabel = '';
 
@@ -65,8 +65,8 @@
                 var opt = list[i];
                 var active = String(opt.value) === selectedValue ? ' fbs-option--active' : '';
                 html += '<div class="fbs-option' + active + '" data-value="' + escHtml(opt.value) + '" data-label="' + escHtml(opt.label) + '">'
-                      + escHtml(opt.label)
-                      + '</div>';
+                    + escHtml(opt.label)
+                    + '</div>';
             }
             dropdown.innerHTML = html;
 
@@ -100,7 +100,7 @@
         function selectOption(value, label) {
             selectedValue = String(value);
             selectedLabel = label;
-            valueInput.value  = selectedValue;
+            valueInput.value = selectedValue;
             searchInput.value = selectedLabel;
             closeDropdown();
         }
@@ -108,7 +108,7 @@
         function clearSelection() {
             selectedValue = '';
             selectedLabel = '';
-            valueInput.value  = '';
+            valueInput.value = '';
         }
 
         searchInput.addEventListener('focus', function () {

@@ -44,7 +44,7 @@ var builder = WebApplication.CreateBuilder(args);
         {
             using var aes = System.Security.Cryptography.Aes.Create();
             aes.Key = Encoding.UTF8.GetBytes(encKey);
-            aes.IV  = Encoding.UTF8.GetBytes(encIv);
+            aes.IV = Encoding.UTF8.GetBytes(encIv);
 
             using var ms = new MemoryStream(Convert.FromBase64String(m.Groups[2].Value));
             using var cs = new System.Security.Cryptography.CryptoStream(ms, aes.CreateDecryptor(), System.Security.Cryptography.CryptoStreamMode.Read);
@@ -164,10 +164,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly",      policy => policy.RequireRole("Admin"));
-    options.AddPolicy("UserOrAdmin",    policy => policy.RequireRole("Admin", "User"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("UserOrAdmin", policy => policy.RequireRole("Admin", "User"));
     options.AddPolicy("VisitorOrAbove", policy => policy.RequireRole("Admin", "User", "Subscriber", "Visitor"));
-    options.AddPolicy("AppClient",      policy => policy.RequireRole("Visitor").RequireClaim("app_source").RequireClaim(FurkanTural_Domain.Constants.ClaimDefinitions.AppKeyId));
+    options.AddPolicy("AppClient", policy => policy.RequireRole("Visitor").RequireClaim("app_source").RequireClaim(FurkanTural_Domain.Constants.ClaimDefinitions.AppKeyId));
 });
 
 var swaggerEnabled = builder.Configuration.GetValue<bool>("Swagger:Enabled");
@@ -180,7 +180,7 @@ if (swaggerEnabled)
         var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
         options.IncludeXmlComments(xmlPath);
-    
+
         options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
             Name = "Authorization",
@@ -190,7 +190,7 @@ if (swaggerEnabled)
             In = ParameterLocation.Header,
             Description = "JWT token giriniz. Swagger otomatik 'Bearer ' ekler, sadece token'ı yapıştırın."
         });
-    
+
         options.AddSecurityRequirement(new OpenApiSecurityRequirement
         {
             {

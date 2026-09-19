@@ -56,9 +56,17 @@ public class AdminBlogListShapeTests
         _fullReads.Should().Be(0, "içerik istenmiyorsa tam satır okuyan yol hiç çağrılmamalı");
         var source = new Blog
         {
-            Id = 7, Title = "Yazı", Content = new string('x', 100_000), IsActive = false, IsDeleted = true,
-            CreatedAt = new DateTime(2026, 1, 2), CreatedBy = 1, UpdatedAt = new DateTime(2026, 1, 3), UpdatedBy = 2,
-            DeletedAt = new DateTime(2026, 1, 4), DeletedBy = 3
+            Id = 7,
+            Title = "Yazı",
+            Content = new string('x', 100_000),
+            IsActive = false,
+            IsDeleted = true,
+            CreatedAt = new DateTime(2026, 1, 2),
+            CreatedBy = 1,
+            UpdatedAt = new DateTime(2026, 1, 3),
+            UpdatedBy = 2,
+            DeletedAt = new DateTime(2026, 1, 4),
+            DeletedBy = 3
         };
 
         var row = _shape!.Compile()(source);

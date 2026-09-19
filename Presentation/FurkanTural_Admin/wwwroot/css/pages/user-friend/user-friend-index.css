@@ -1,8 +1,8 @@
-.user-cell__name { color: var(--text-main);  }
-.user-cell__unknown { color: var(--text-dim); font-style: italic;  }
+.user-cell__name { color: var(--text-main); }
+.user-cell__unknown { color: var(--text-dim); font-style: italic; }
 .user-cell__id {
     margin-left: .4rem;
     font-size: var(--fs-2xs);
     color: var(--text-dim);
     font-variant-numeric: tabular-nums;
- }
+}

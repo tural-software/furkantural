@@ -6,7 +6,7 @@
         try {
             const saved = localStorage.getItem(KEY);
             if (saved === 'light' || saved === 'dark') return saved;
-        } catch (_) {}
+        } catch (_) { }
         return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
             ? 'light'
             : 'dark';
@@ -22,7 +22,7 @@
         if (theme !== 'light' && theme !== 'dark') return;
         root.dataset.theme = theme;
         if (persist !== false) {
-            try { localStorage.setItem(KEY, theme); } catch (_) {}
+            try { localStorage.setItem(KEY, theme); } catch (_) { }
         }
         syncIcons(theme);
         window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme } }));

@@ -87,18 +87,33 @@ public class CommentNotifierTests
         _blogRows.Add(new Blog { Id = 7, Title = "Örnek yazı", Slug = "ornek-yazi", IsActive = blogActive });
         _commentRows.Add(new Comment
         {
-            Id = 1, BlogId = 7, AuthorName = "Okur", AuthorEmail = "ust@site.test",
-            Body = "İlk yorum", Status = CommentStatuses.Approved, NotifyOnReply = parentNotify,
-            IsDeleted = parentDeleted, IsActive = !parentDeleted
+            Id = 1,
+            BlogId = 7,
+            AuthorName = "Okur",
+            AuthorEmail = "ust@site.test",
+            Body = "İlk yorum",
+            Status = CommentStatuses.Approved,
+            NotifyOnReply = parentNotify,
+            IsDeleted = parentDeleted,
+            IsActive = !parentDeleted
         });
         _commentRows.Add(new Comment
         {
-            Id = 2, BlogId = 7, ParentId = 1, AuthorName = "Yanıtlayan", AuthorEmail = "yanit@site.test",
-            Body = "Katılıyorum", Status = replyStatus, CreatedAt = Now.AddMinutes(-5)
+            Id = 2,
+            BlogId = 7,
+            ParentId = 1,
+            AuthorName = "Yanıtlayan",
+            AuthorEmail = "yanit@site.test",
+            Body = "Katılıyorum",
+            Status = replyStatus,
+            CreatedAt = Now.AddMinutes(-5)
         });
         _notificationRows.Add(new CommentNotification
         {
-            Id = 10, CommentId = 2, Email = "ust@site.test", Status = CommentNotificationStatuses.Pending
+            Id = 10,
+            CommentId = 2,
+            Email = "ust@site.test",
+            Status = CommentNotificationStatuses.Pending
         });
     }
 

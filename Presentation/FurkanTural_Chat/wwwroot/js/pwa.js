@@ -39,7 +39,7 @@
                     swReg = reg;
 
                     // Her açılışta sunucuda yeni sürüm var mı diye zorla kontrol et (yüklü PWA güncel kalsın).
-                    reg.update().catch(function () {});
+                    reg.update().catch(function () { });
 
                     // Önceki ziyaretten beri hazır bekleyen bir güncelleme varsa hemen sor.
                     if (reg.waiting && navigator.serviceWorker.controller) showUpdateBar();
@@ -63,7 +63,7 @@
             // için bu tekrar-gösterim yalnız kurulu (standalone) uygulamada.
             document.addEventListener('visibilitychange', function () {
                 if (document.visibilityState !== 'visible' || !swReg) return;
-                swReg.update().catch(function () {});
+                swReg.update().catch(function () { });
                 if (isStandalone() && swReg.waiting && navigator.serviceWorker.controller) showUpdateBar();
             });
         });
@@ -104,7 +104,7 @@
             closeBtn.addEventListener('click', function () {
                 bar.hidden = true;
                 deferredPrompt = null;
-                try { localStorage.setItem(DISMISS_KEY, '1'); } catch (_) {}
+                try { localStorage.setItem(DISMISS_KEY, '1'); } catch (_) { }
             });
         }
 

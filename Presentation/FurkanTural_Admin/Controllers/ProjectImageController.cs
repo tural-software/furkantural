@@ -11,8 +11,8 @@ public class ProjectImageController(
     IConfiguration configuration) : Controller
 {
     private readonly IProjectImageApiClient _projectImageApiClient = projectImageApiClient;
-    private readonly IProjectApiClient      _projectApiClient      = projectApiClient;
-    private readonly string                 _apiBaseUrl            = configuration["Api:BaseUrl"]?.TrimEnd('/') ?? string.Empty;
+    private readonly IProjectApiClient _projectApiClient = projectApiClient;
+    private readonly string _apiBaseUrl = configuration["Api:BaseUrl"]?.TrimEnd('/') ?? string.Empty;
 
     public async Task<IActionResult> Index(
         string? url,
@@ -78,20 +78,20 @@ public class ProjectImageController(
 
         return new ProjectImageIndexViewModel
         {
-            Rows          = rows,
-            TotalCount    = counts?.Total ?? 0,
-            ActiveCount   = counts?.Active ?? 0,
-            PassiveCount  = counts?.Passive ?? 0,
-            DeletedCount  = counts?.Deleted ?? 0,
-            SearchUrl     = url,
+            Rows = rows,
+            TotalCount = counts?.Total ?? 0,
+            ActiveCount = counts?.Active ?? 0,
+            PassiveCount = counts?.Passive ?? 0,
+            DeletedCount = counts?.Deleted ?? 0,
+            SearchUrl = url,
             IsCoverFilter = isCoverFilter,
-            ActiveFilter  = activeFilter,
+            ActiveFilter = activeFilter,
             DeletedFilter = deletedFilter,
             ProjectIdFilter = projectId,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = request.PageNumber,
-            PageSize      = request.PageSize,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
             TotalFiltered = totalFiltered
         };
     }
@@ -178,8 +178,8 @@ public class ProjectImageController(
     public async Task<IActionResult> Create(
         IFormFile? imageFile,
         string? altText,
-        bool isCover    = false,
-        int projectId   = 0,
+        bool isCover = false,
+        int projectId = 0,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");
@@ -208,8 +208,8 @@ public class ProjectImageController(
         int id,
         IFormFile? imageFile,
         string? altText,
-        bool isCover         = false,
-        int projectId        = 0,
+        bool isCover = false,
+        int projectId = 0,
         CancellationToken cancellationToken = default)
     {
         var token = HttpContext.Session.GetString("token");

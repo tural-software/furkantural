@@ -8,24 +8,24 @@
 @section Scripts {
     <script nonce="@Context.Items["csp-nonce"]">
         window.__mailTemplateMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
-            name          = Model.SearchName ?? "",
-            activeFilter  = Model.ActiveFilter ?? "",
+            name = Model.SearchName ?? "",
+            activeFilter = Model.ActiveFilter ?? "",
             deletedFilter = Model.DeletedFilter ?? "",
-            dateFrom      = Model.DateFrom ?? "",
-            dateTo        = Model.DateTo ?? "",
-            pageNumber    = Model.PageNumber,
-            pageSize      = Model.PageSize,
-            types         = Model.Types.Select(t => new {
-                id           = t.Id,
-                code         = t.Code,
-                name         = t.Name,
-                description  = t.Description,
+            dateFrom = Model.DateFrom ?? "",
+            dateTo = Model.DateTo ?? "",
+            pageNumber = Model.PageNumber,
+            pageSize = Model.PageSize,
+            types = Model.Types.Select(t => new {
+                id = t.Id,
+                code = t.Code,
+                name = t.Name,
+                description = t.Description,
                 placeholders = t.Placeholders
             }),
-            appSources    = Model.AppSources.Select(a => new {
-                id          = a.Id,
-                code        = a.Code,
-                name        = a.Name,
+            appSources = Model.AppSources.Select(a => new {
+                id = a.Id,
+                code = a.Code,
+                name = a.Name,
                 description = a.Description
             })
         }));

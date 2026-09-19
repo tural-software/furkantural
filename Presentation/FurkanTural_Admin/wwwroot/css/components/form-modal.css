@@ -233,7 +233,7 @@
     font-size: var(--fs-md);
     color: var(--text-main);
 }
-.fm-toggle__label--on  { color: var(--chip-create-fg); font-weight: 600; }
+.fm-toggle__label--on { color: var(--chip-create-fg); font-weight: 600; }
 .fm-toggle__label--off { color: var(--text-dim); }
 
 .fm-error-banner {

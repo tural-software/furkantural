@@ -52,8 +52,14 @@ public class AdminDeactivationTests
     {
         var user = new User
         {
-            Id = 7, Username = "deneme", Email = "deneme@ornek.test", Password = "ozet", RoleId = 2,
-            IsActive = isActive, DeactivatedByAdmin = byAdmin, SecurityStamp = "damga",
+            Id = 7,
+            Username = "deneme",
+            Email = "deneme@ornek.test",
+            Password = "ozet",
+            RoleId = 2,
+            IsActive = isActive,
+            DeactivatedByAdmin = byAdmin,
+            SecurityStamp = "damga",
             DeactivatedAt = isActive ? null : Now.AddDays(-1)
         };
         _users.Setup(r => r.GetByIdAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(user);

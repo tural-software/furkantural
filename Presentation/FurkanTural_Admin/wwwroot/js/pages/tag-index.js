@@ -110,16 +110,16 @@
     }
 
     var ACTION_MESSAGES = {
-        Delete:       { success: 'Silme işlemi başarılı.',        error: 'Silme işlemi başarısız oldu.' },
-        Restore:      { success: 'Geri yükleme işlemi başarılı.', error: 'Geri yükleme işlemi başarısız oldu.' },
-        ToggleActive: { success: null,                            error: 'Durum değiştirme işlemi başarısız oldu.' },
-        Create:       { success: 'Etiket oluşturuldu.',           error: 'Etiket oluşturulamadı.' },
-        Update:       { success: 'Etiket güncellendi.',           error: 'Etiket güncellenemedi.' }
+        Delete: { success: 'Silme işlemi başarılı.', error: 'Silme işlemi başarısız oldu.' },
+        Restore: { success: 'Geri yükleme işlemi başarılı.', error: 'Geri yükleme işlemi başarısız oldu.' },
+        ToggleActive: { success: null, error: 'Durum değiştirme işlemi başarısız oldu.' },
+        Create: { success: 'Etiket oluşturuldu.', error: 'Etiket oluşturulamadı.' },
+        Update: { success: 'Etiket güncellendi.', error: 'Etiket güncellenemedi.' }
     };
 
     function resolveActionKey(actionUrl) {
-        if (actionUrl.indexOf('Delete')       !== -1) return 'Delete';
-        if (actionUrl.indexOf('Restore')      !== -1) return 'Restore';
+        if (actionUrl.indexOf('Delete') !== -1) return 'Delete';
+        if (actionUrl.indexOf('Restore') !== -1) return 'Restore';
         if (actionUrl.indexOf('ToggleActive') !== -1) return 'ToggleActive';
         return null;
     }
@@ -137,29 +137,29 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data
         })
-        .then(function (r) {
-            if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
+            .then(function (r) {
+                if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
 
-            var msgs = ACTION_MESSAGES[actionKey] || {};
+                var msgs = ACTION_MESSAGES[actionKey] || {};
 
-            if (r.ok) {
-                var successMsg = msgs.success;
-                if (actionKey === 'ToggleActive') {
-                    successMsg = isActive ? 'Etiket pasife alındı.' : 'Etiket aktife alındı.';
+                if (r.ok) {
+                    var successMsg = msgs.success;
+                    if (actionKey === 'ToggleActive') {
+                        successMsg = isActive ? 'Etiket pasife alındı.' : 'Etiket aktife alındı.';
+                    }
+                    toast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
+                    reloadTable();
+                } else {
+                    return r.text().then(function (body) {
+                        var serverMsg = '';
+                        try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
+                        toast('error', 'Hata', serverMsg || msgs.error || 'İşlem başarısız oldu.');
+                    });
                 }
-                toast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
-                reloadTable();
-            } else {
-                return r.text().then(function (body) {
-                    var serverMsg = '';
-                    try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
-                    toast('error', 'Hata', serverMsg || msgs.error || 'İşlem başarısız oldu.');
-                });
-            }
-        })
-        .catch(function () {
-            toast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
-        });
+            })
+            .catch(function () {
+                toast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
+            });
     }
 
     function openCreateModal() {

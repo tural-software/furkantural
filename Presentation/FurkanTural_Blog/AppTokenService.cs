@@ -113,7 +113,7 @@ public class DefaultTokenHandler(IAppTokenService appTokenService) : DelegatingH
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await base.SendAsync(request, cancellationToken);
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && response.Headers.WwwAuthenticate.Count > 0 &&!string.IsNullOrWhiteSpace(token))
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && response.Headers.WwwAuthenticate.Count > 0 && !string.IsNullOrWhiteSpace(token))
             _appTokenService.Invalidate(token);
 
         return response;

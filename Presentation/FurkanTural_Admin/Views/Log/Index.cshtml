@@ -8,13 +8,13 @@
 @section Scripts {
     <script nonce="@Context.Items["csp-nonce"]">
         window.__logMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
-            levelFilter   = Model.LevelFilter ?? "",
+            levelFilter = Model.LevelFilter ?? "",
             searchSource = Model.SearchSource ?? "",
             searchMessage = Model.SearchMessage ?? "",
-            dateFrom      = Model.DateFrom ?? "",
-            dateTo        = Model.DateTo ?? "",
-            pageNumber    = Model.PageNumber,
-            pageSize      = Model.PageSize
+            dateFrom = Model.DateFrom ?? "",
+            dateTo = Model.DateTo ?? "",
+            pageNumber = Model.PageNumber,
+            pageSize = Model.PageSize
         }));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>
@@ -76,10 +76,10 @@
                     <label>Seviye</label>
                     <select aria-label="Seviye" name="levelFilter" class="filter-select">
                         <option value="" selected="@(string.IsNullOrEmpty(Model.LevelFilter))">Tümü</option>
-                        <option value="Error"   selected="@(Model.LevelFilter == "Error")">Error</option>
+                        <option value="Error" selected="@(Model.LevelFilter == "Error")">Error</option>
                         <option value="Warning" selected="@(Model.LevelFilter == "Warning")">Warning</option>
-                        <option value="Info"    selected="@(Model.LevelFilter == "Info")">Info</option>
-                        <option value="Debug"   selected="@(Model.LevelFilter == "Debug")">Debug</option>
+                        <option value="Info" selected="@(Model.LevelFilter == "Info")">Info</option>
+                        <option value="Debug" selected="@(Model.LevelFilter == "Debug")">Debug</option>
                     </select>
                 </div>
                 <div class="filter-group">

@@ -14,14 +14,14 @@
         window.__apiBaseUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewData["ApiBaseUrl"] ?? "")));
         window.__userMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             searchUsername = Model.SearchUsername ?? "",
-            roleFilter     = Model.RoleFilter?.ToString() ?? "",
-            activeFilter   = Model.ActiveFilter ?? "",
-            deletedFilter  = Model.DeletedFilter ?? "",
-            dateFrom       = Model.DateFrom ?? "",
-            dateTo         = Model.DateTo ?? "",
-            pageNumber     = Model.PageNumber,
-            pageSize       = Model.PageSize,
-            roles          = Model.RoleOptions.Select(r => new { id = r.Id, name = r.Label })
+            roleFilter = Model.RoleFilter?.ToString() ?? "",
+            activeFilter = Model.ActiveFilter ?? "",
+            deletedFilter = Model.DeletedFilter ?? "",
+            dateFrom = Model.DateFrom ?? "",
+            dateTo = Model.DateTo ?? "",
+            pageNumber = Model.PageNumber,
+            pageSize = Model.PageSize,
+            roles = Model.RoleOptions.Select(r => new { id = r.Id, name = r.Label })
         }, jsonOpts));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>

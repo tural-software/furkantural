@@ -13,7 +13,7 @@
         if (window.FtTime) return FtTime.dateInput(val);
         var d = new Date(val);
         if (isNaN(d.getTime())) return '';
-        var y  = d.getFullYear();
+        var y = d.getFullYear();
         var mo = String(d.getMonth() + 1).padStart(2, '0');
         var dd = String(d.getDate()).padStart(2, '0');
         return y + '-' + mo + '-' + dd;
@@ -102,19 +102,19 @@
 
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' },
-            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: false, hidden: function(r) { return r.isDeleted || !r.isActive; } }
+            { key: 'edit', label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: false, hidden: function (r) { return r.isDeleted || !r.isActive; } }
         ]
     };
 
     var MUSIC_FORM_FIELDS_BASE = [
-        { name: 'name',       label: 'Şarkı Adı',  type: 'text',     required: false, maxLength: 200, placeholder: 'Şarkı adını girin...' },
-        { name: 'artist',     label: 'Sanatçı',    type: 'text',     required: false, maxLength: 200, placeholder: 'Sanatçı adını girin...' },
-        { name: 'productor',  label: 'Prodüktör',  type: 'text',     required: false, maxLength: 200, placeholder: 'Prodüktör adını girin...' },
-        { name: 'album',      label: 'Albüm',      type: 'text',     required: false, maxLength: 200, placeholder: 'Albüm adını girin...' },
-        { name: 'genre',      label: 'Tür',        type: 'text',     required: false, maxLength: 200, placeholder: 'Müzik türünü girin...' },
-        { name: 'lyrics',     label: 'Sözler',     type: 'textarea', required: false, rows: 12, placeholder: 'Şarkı sözlerini girin...' },
-        { name: 'duration',   label: 'Süre',       type: 'text',     required: false, maxLength: 12,  placeholder: 'SS:DD:SN (ör: 00:04:10)' },
-        { name: 'releaseDate', label: 'Yayın Tarihi', type: 'date',  required: false },
+        { name: 'name', label: 'Şarkı Adı', type: 'text', required: false, maxLength: 200, placeholder: 'Şarkı adını girin...' },
+        { name: 'artist', label: 'Sanatçı', type: 'text', required: false, maxLength: 200, placeholder: 'Sanatçı adını girin...' },
+        { name: 'productor', label: 'Prodüktör', type: 'text', required: false, maxLength: 200, placeholder: 'Prodüktör adını girin...' },
+        { name: 'album', label: 'Albüm', type: 'text', required: false, maxLength: 200, placeholder: 'Albüm adını girin...' },
+        { name: 'genre', label: 'Tür', type: 'text', required: false, maxLength: 200, placeholder: 'Müzik türünü girin...' },
+        { name: 'lyrics', label: 'Sözler', type: 'textarea', required: false, rows: 12, placeholder: 'Şarkı sözlerini girin...' },
+        { name: 'duration', label: 'Süre', type: 'text', required: false, maxLength: 12, placeholder: 'SS:DD:SN (ör: 00:04:10)' },
+        { name: 'releaseDate', label: 'Yayın Tarihi', type: 'date', required: false },
         { name: 'youTubeMusicUrl', label: 'YouTube Music URL', type: 'text', required: false, maxLength: 500, placeholder: 'https://music.youtube.com/watch?v=...' }
     ];
 
@@ -153,16 +153,16 @@
     }
 
     var ACTION_MESSAGES = {
-        Delete:       { success: 'Silme işlemi başarılı.',          error: 'Silme işlemi başarısız oldu.' },
-        Restore:      { success: 'Geri yükleme işlemi başarılı.',   error: 'Geri yükleme işlemi başarısız oldu.' },
-        ToggleActive: { success: null,                               error: 'Durum değiştirme işlemi başarısız oldu.' },
-        Create:       { success: 'Kayıt başarıyla oluşturuldu.',    error: 'Kayıt oluşturulamadı.' },
-        Update:       { success: 'Kayıt başarıyla güncellendi.',    error: 'Kayıt güncellenemedi.' }
+        Delete: { success: 'Silme işlemi başarılı.', error: 'Silme işlemi başarısız oldu.' },
+        Restore: { success: 'Geri yükleme işlemi başarılı.', error: 'Geri yükleme işlemi başarısız oldu.' },
+        ToggleActive: { success: null, error: 'Durum değiştirme işlemi başarısız oldu.' },
+        Create: { success: 'Kayıt başarıyla oluşturuldu.', error: 'Kayıt oluşturulamadı.' },
+        Update: { success: 'Kayıt başarıyla güncellendi.', error: 'Kayıt güncellenemedi.' }
     };
 
     function resolveActionKey(actionUrl) {
-        if (actionUrl.indexOf('Delete')       !== -1) return 'Delete';
-        if (actionUrl.indexOf('Restore')      !== -1) return 'Restore';
+        if (actionUrl.indexOf('Delete') !== -1) return 'Delete';
+        if (actionUrl.indexOf('Restore') !== -1) return 'Restore';
         if (actionUrl.indexOf('ToggleActive') !== -1) return 'ToggleActive';
         return null;
     }
@@ -176,36 +176,36 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data
         })
-        .then(function (r) {
-            if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
+            .then(function (r) {
+                if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
 
-            var msgs = ACTION_MESSAGES[actionKey] || {};
+                var msgs = ACTION_MESSAGES[actionKey] || {};
 
-            if (r.ok) {
-                var successMsg = msgs.success;
-                if (actionKey === 'ToggleActive') {
-                    successMsg = isActive ? 'Kayıt pasife alındı.' : 'Kayıt aktife alındı.';
-                }
-                if (typeof showToast === 'function') {
-                    showToast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
-                }
-                reloadTable();
-            } else {
-                return r.text().then(function (body) {
-                    var serverMsg = '';
-                    try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
-                    var errorMsg = serverMsg || msgs.error || 'İşlem başarısız oldu.';
-                    if (typeof showToast === 'function') {
-                        showToast('error', 'Hata', errorMsg);
+                if (r.ok) {
+                    var successMsg = msgs.success;
+                    if (actionKey === 'ToggleActive') {
+                        successMsg = isActive ? 'Kayıt pasife alındı.' : 'Kayıt aktife alındı.';
                     }
-                });
-            }
-        })
-        .catch(function () {
-            if (typeof showToast === 'function') {
-                showToast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
-            }
-        });
+                    if (typeof showToast === 'function') {
+                        showToast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
+                    }
+                    reloadTable();
+                } else {
+                    return r.text().then(function (body) {
+                        var serverMsg = '';
+                        try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
+                        var errorMsg = serverMsg || msgs.error || 'İşlem başarısız oldu.';
+                        if (typeof showToast === 'function') {
+                            showToast('error', 'Hata', errorMsg);
+                        }
+                    });
+                }
+            })
+            .catch(function () {
+                if (typeof showToast === 'function') {
+                    showToast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
+                }
+            });
     }
 
     function openEditModal(record) {
@@ -215,13 +215,13 @@
                 reloadTable();
             }),
             {
-                name:        record.name        || '',
-                artist:      record.artist      || '',
-                productor:   record.productor   || '',
-                album:       record.album       || '',
-                genre:       record.genre       || '',
-                lyrics:      record.lyrics      || '',
-                duration:    record.duration    || '',
+                name: record.name || '',
+                artist: record.artist || '',
+                productor: record.productor || '',
+                album: record.album || '',
+                genre: record.genre || '',
+                lyrics: record.lyrics || '',
+                duration: record.duration || '',
                 releaseDate: toDateInput(record.releaseDate),
                 youTubeMusicUrl: record.youTubeMusicUrl || ''
             }

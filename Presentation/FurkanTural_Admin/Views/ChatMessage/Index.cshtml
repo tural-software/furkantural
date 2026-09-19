@@ -9,15 +9,15 @@
     <script nonce="@Context.Items["csp-nonce"]">
         window.__apiBaseUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewData["ApiBaseUrl"] ?? "")));
         window.__messageMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
-            search        = Model.SearchContent ?? "",
+            search = Model.SearchContent ?? "",
             usernameFilter= Model.UsernameFilter ?? "",
-            typeFilter    = Model.TypeFilter ?? "",
-            activeFilter  = Model.ActiveFilter ?? "",
+            typeFilter = Model.TypeFilter ?? "",
+            activeFilter = Model.ActiveFilter ?? "",
             deletedFilter = Model.DeletedFilter ?? "",
-            dateFrom      = Model.DateFrom ?? "",
-            dateTo        = Model.DateTo ?? "",
-            pageNumber    = Model.PageNumber,
-            pageSize      = Model.PageSize
+            dateFrom = Model.DateFrom ?? "",
+            dateTo = Model.DateTo ?? "",
+            pageNumber = Model.PageNumber,
+            pageSize = Model.PageSize
         }));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>

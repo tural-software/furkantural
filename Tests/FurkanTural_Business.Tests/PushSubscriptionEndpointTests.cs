@@ -70,7 +70,11 @@ public class PushSubscriptionEndpointTests
     {
         var existing = new PushSubscription
         {
-            Id = 1, UserId = ownerId, Endpoint = "https://fcm.googleapis.com/fcm/send/abc", P256dh = "cihaz-anahtari", Auth = "cihaz-sirri"
+            Id = 1,
+            UserId = ownerId,
+            Endpoint = "https://fcm.googleapis.com/fcm/send/abc",
+            P256dh = "cihaz-anahtari",
+            Auth = "cihaz-sirri"
         };
         _subscriptions
             .Setup(r => r.GetAsync(It.IsAny<Expression<Func<PushSubscription, bool>>>(), It.IsAny<CancellationToken>()))
@@ -85,7 +89,9 @@ public class PushSubscriptionEndpointTests
 
         var sonuc = await Sut().SubscribeAsync(7, new PushSubscriptionDto
         {
-            Endpoint = existing.Endpoint, P256dh = "uydurma", Auth = "uydurma"
+            Endpoint = existing.Endpoint,
+            P256dh = "uydurma",
+            Auth = "uydurma"
         });
 
         sonuc.IsFailure.Should().BeTrue(
@@ -101,7 +107,9 @@ public class PushSubscriptionEndpointTests
 
         var sonuc = await Sut().SubscribeAsync(7, new PushSubscriptionDto
         {
-            Endpoint = existing.Endpoint, P256dh = "cihaz-anahtari", Auth = "cihaz-sirri"
+            Endpoint = existing.Endpoint,
+            P256dh = "cihaz-anahtari",
+            Auth = "cihaz-sirri"
         });
 
         sonuc.Success.Should().BeTrue(

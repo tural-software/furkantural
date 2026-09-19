@@ -75,20 +75,20 @@ public class BlogImageController(IBlogImageApiClient blogImageApiClient, IBlogAp
 
         return new BlogImageIndexViewModel
         {
-            Rows          = rows,
-            TotalCount    = counts?.Total ?? 0,
-            ActiveCount   = counts?.Active ?? 0,
-            PassiveCount  = counts?.Passive ?? 0,
-            DeletedCount  = counts?.Deleted ?? 0,
-            SearchUrl     = url,
+            Rows = rows,
+            TotalCount = counts?.Total ?? 0,
+            ActiveCount = counts?.Active ?? 0,
+            PassiveCount = counts?.Passive ?? 0,
+            DeletedCount = counts?.Deleted ?? 0,
+            SearchUrl = url,
             IsCoverFilter = isCoverFilter,
-            ActiveFilter  = activeFilter,
+            ActiveFilter = activeFilter,
             DeletedFilter = deletedFilter,
-            BlogIdFilter  = blogId,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = request.PageNumber,
-            PageSize      = request.PageSize,
+            BlogIdFilter = blogId,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
             TotalFiltered = totalFiltered
         };
     }

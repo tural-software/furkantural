@@ -124,7 +124,7 @@ public class AppTokenFallbackHandler(IAppTokenService appTokenService) : Delegat
         }
 
         var response = await base.SendAsync(request, cancellationToken);
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && response.Headers.WwwAuthenticate.Count > 0 &&attached is not null)
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && response.Headers.WwwAuthenticate.Count > 0 && attached is not null)
             _appTokenService.Invalidate(attached);
 
         return response;

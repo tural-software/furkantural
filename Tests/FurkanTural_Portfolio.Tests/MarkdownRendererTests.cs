@@ -50,7 +50,7 @@ public class MarkdownRendererTests
     {
         // Act
         var result = MarkdownRenderer.ToHtml("**bold**");
-        var html   = result.ToString();
+        var html = result.ToString();
 
         // Assert
         html.Should().Contain("<strong>bold</strong>");
@@ -61,7 +61,7 @@ public class MarkdownRendererTests
     {
         // Act
         var result = MarkdownRenderer.ToHtml("# Title");
-        var html   = result.ToString();
+        var html = result.ToString();
 
         // Assert
         html.Should().Contain("<h1");
@@ -73,7 +73,7 @@ public class MarkdownRendererTests
     {
         // Act
         var result = MarkdownRenderer.ToHtml("- item1\n- item2");
-        var html   = result.ToString();
+        var html = result.ToString();
 
         // Assert
         html.Should().Contain("<li>");

@@ -3,7 +3,7 @@
 @model TableFooterModel
 @{
     int rangeStart = Model.TotalFiltered > 0 ? (Model.PageNumber - 1) * Model.PageSize + 1 : 0;
-    int rangeEnd   = Math.Min(Model.PageNumber * Model.PageSize, Model.TotalFiltered);
+    int rangeEnd = Math.Min(Model.PageNumber * Model.PageSize, Model.TotalFiltered);
 
     string PageUrl(int p)
     {
@@ -12,7 +12,7 @@
             values[filter.Key] = filter.Value;
 
         values["pageNumber"] = p;
-        values["pageSize"]   = Model.PageSize;
+        values["pageSize"] = Model.PageSize;
 
         return Url.Action("Index", values) ?? "#";
     }

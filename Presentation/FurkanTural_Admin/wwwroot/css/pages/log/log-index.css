@@ -1,5 +1,5 @@
-.stat-box__icon--date { background: var(--chip-feature-bg);  color: var(--chip-feature-fg);  }
-.stat-box__value--sm { font-size: var(--fs-base); line-height: 1.3;  }
+.stat-box__icon--date { background: var(--chip-feature-bg); color: var(--chip-feature-fg); }
+.stat-box__value--sm { font-size: var(--fs-base); line-height: 1.3; }
 .level-badge {
     display: inline-flex;
     align-items: center;
@@ -9,17 +9,17 @@
     font-weight: 600;
     letter-spacing: .02em;
     white-space: nowrap;
- }
-.level-badge--error { background: var(--chip-delete-bg); color: var(--chip-delete-fg);  }
-.level-badge--warning { background: var(--chip-update-bg); color: var(--chip-update-fg);  }
-.level-badge--info { background: var(--accent-soft); color: var(--accent-text);  }
-.level-badge--debug { background: var(--pending-bg); color: var(--pending-fg);  }
-.level-badge--neutral { background: var(--pending-bg); color: var(--pending-fg);  }
+}
+.level-badge--error { background: var(--chip-delete-bg); color: var(--chip-delete-fg); }
+.level-badge--warning { background: var(--chip-update-bg); color: var(--chip-update-fg); }
+.level-badge--info { background: var(--accent-soft); color: var(--accent-text); }
+.level-badge--debug { background: var(--pending-bg); color: var(--pending-fg); }
+.level-badge--neutral { background: var(--pending-bg); color: var(--pending-fg); }
 .col-message {
     max-width: 320px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     cursor: default;
- }
-.col-date { width: 150px; white-space: nowrap;  }
+}
+.col-date { width: 150px; white-space: nowrap; }

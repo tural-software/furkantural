@@ -8,7 +8,7 @@
         if (!window.RTCPeerConnection || !navigator.mediaDevices) { return; } // tarayıcı desteklemiyor
 
         var conn = B.connection;
-        var toast = B.toast || function () {};
+        var toast = B.toast || function () { };
 
         var pc = null, localStream = null, remoteStream = null;
         var audioSender = null, videoSender = null;
@@ -32,23 +32,23 @@
             overlay.hidden = true;
             overlay.innerHTML =
                 '<div class="call-box">' +
-                  '<button type="button" class="call-min" title="Küçült" aria-label="Küçült">⤡</button>' +
-                  '<video class="call-remote" autoplay playsinline></video>' +
-                  '<div class="call-poster"><div class="call-avatar"></div></div>' +
-                  '<video class="call-local" autoplay playsinline muted></video>' +
-                  '<div class="call-head"><div class="call-name"></div><div class="call-state"></div></div>' +
-                  '<div class="call-actions">' +
-                    '<button type="button" class="call-btn call-mute" title="Sustur">🎙️</button>' +
-                    '<button type="button" class="call-btn call-cam" title="Kamera">🎥</button>' +
-                    '<button type="button" class="call-btn call-cog" title="Ses/cihaz ayarları">⚙️</button>' +
-                    '<button type="button" class="call-btn call-accept" title="Kabul et">📞</button>' +
-                    '<button type="button" class="call-btn call-hang" title="Kapat">📵</button>' +
-                  '</div>' +
-                  '<div class="call-mini">' +
-                    '<button type="button" class="call-mbtn call-expand" title="Büyüt" aria-label="Büyüt">⤢</button>' +
-                    '<button type="button" class="call-mbtn call-mmute" title="Sustur" aria-label="Sustur">🎙️</button>' +
-                    '<button type="button" class="call-mbtn call-mhang" title="Kapat" aria-label="Kapat">📵</button>' +
-                  '</div>' +
+                '<button type="button" class="call-min" title="Küçült" aria-label="Küçült">⤡</button>' +
+                '<video class="call-remote" autoplay playsinline></video>' +
+                '<div class="call-poster"><div class="call-avatar"></div></div>' +
+                '<video class="call-local" autoplay playsinline muted></video>' +
+                '<div class="call-head"><div class="call-name"></div><div class="call-state"></div></div>' +
+                '<div class="call-actions">' +
+                '<button type="button" class="call-btn call-mute" title="Sustur">🎙️</button>' +
+                '<button type="button" class="call-btn call-cam" title="Kamera">🎥</button>' +
+                '<button type="button" class="call-btn call-cog" title="Ses/cihaz ayarları">⚙️</button>' +
+                '<button type="button" class="call-btn call-accept" title="Kabul et">📞</button>' +
+                '<button type="button" class="call-btn call-hang" title="Kapat">📵</button>' +
+                '</div>' +
+                '<div class="call-mini">' +
+                '<button type="button" class="call-mbtn call-expand" title="Büyüt" aria-label="Büyüt">⤢</button>' +
+                '<button type="button" class="call-mbtn call-mmute" title="Sustur" aria-label="Sustur">🎙️</button>' +
+                '<button type="button" class="call-mbtn call-mhang" title="Kapat" aria-label="Kapat">📵</button>' +
+                '</div>' +
                 '</div>';
             return {
                 overlay: overlay,
@@ -101,8 +101,8 @@
             ui.min.hidden = (mode === 'incoming'); // gelen aramada küçültme yok
             ui.state.textContent =
                 mode === 'incoming' ? ((type === 'video' ? 'Görüntülü' : 'Sesli') + ' arıyor…')
-              : mode === 'calling' ? 'Çalıyor…'
-              : 'Bağlandı';
+                    : mode === 'calling' ? 'Çalıyor…'
+                        : 'Bağlandı';
         }
         function hideOverlay() {
             setMinimized(false);
@@ -139,7 +139,7 @@
         function ensureAudio() {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(function () { });
             } catch (e) { audioCtx = null; }
             return audioCtx;
         }
@@ -177,7 +177,7 @@
         }
         function stopRinging() {
             if (ringTimer) { clearInterval(ringTimer); ringTimer = null; }
-            ringNodes.forEach(function (n) { try { n.stop(); } catch (e) {} });
+            ringNodes.forEach(function (n) { try { n.stop(); } catch (e) { } });
             ringNodes = [];
         }
 
@@ -198,7 +198,7 @@
                 localStorage.setItem('ft.call.camId', prefs.camId || '');
                 localStorage.setItem('ft.call.speakerId', prefs.speakerId || '');
                 localStorage.setItem('ft.call.volume', String(prefs.volume));
-            } catch (e) {}
+            } catch (e) { }
         }
         function audioConstraint() {
             return (prefs.micId && prefs.micId !== 'none') ? { deviceId: { exact: prefs.micId } } : true;
@@ -238,8 +238,8 @@
 
         function applyOutput() {
             var muted = (prefs.speakerId === 'none');
-            try { ui.remote.muted = muted; ui.remote.volume = muted ? 0 : prefs.volume; } catch (e) {}
-            if (!muted && canSetSink && prefs.speakerId) ui.remote.setSinkId(prefs.speakerId).catch(function () {});
+            try { ui.remote.muted = muted; ui.remote.volume = muted ? 0 : prefs.volume; } catch (e) { }
+            if (!muted && canSetSink && prefs.speakerId) ui.remote.setSinkId(prefs.speakerId).catch(function () { });
         }
         function setVolume(v) {
             prefs.volume = Math.min(1, Math.max(0, v)); savePrefs();
@@ -264,7 +264,7 @@
         // Kamera durumunu eşe bildir (eşte avatar/video gösterimi için — replaceTrack(null) mute olayını güvenilir tetiklemediğinden).
         function isVideoOn() { return !!(videoSender && videoSender.track && videoSender.track.enabled); }
         function sendVideoState() {
-            if (callId) conn.invoke('NotifyMediaState', callId, isVideoOn()).catch(function () {});
+            if (callId) conn.invoke('NotifyMediaState', callId, isVideoOn()).catch(function () { });
         }
         function applyBitrate() {
             if (!videoSender || !videoPolicy || !videoPolicy.enabled || !(videoPolicy.maxBitrateKbps > 0)) return;
@@ -273,7 +273,7 @@
                 if (!p.encodings || !p.encodings.length) p.encodings = [{}];
                 p.encodings[0].maxBitrate = videoPolicy.maxBitrateKbps * 1000;
                 videoSender.setParameters(p);
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // Sender'ları kur (caller addTransceiver yapar; callee SRD sonrası getTransceivers'tan bulur).
@@ -289,8 +289,8 @@
         async function attachLocalTracks(wantVideo) {
             var aTrack = await acquireTrack('audio');
             var vTrack = wantVideo ? await acquireTrack('video') : null;
-            if (audioSender) { try { await audioSender.replaceTrack(aTrack); } catch (e) {} }
-            if (videoSender) { try { await videoSender.replaceTrack(vTrack); } catch (e) {} }
+            if (audioSender) { try { await audioSender.replaceTrack(aTrack); } catch (e) { } }
+            if (videoSender) { try { await videoSender.replaceTrack(vTrack); } catch (e) { } }
             // yerel akış (önizleme + cleanup)
             localStream = new MediaStream();
             if (aTrack) localStream.addTrack(aTrack);
@@ -309,12 +309,12 @@
             var kindStr = (kind === 'mic') ? 'audio' : 'video';
             if (!pc || !sender) { return; } // çağrı yoksa pref bir sonraki aramada uygulanır
             if (id === 'none') {
-                try { await sender.replaceTrack(null); } catch (e) {}
+                try { await sender.replaceTrack(null); } catch (e) { }
                 setLocalTrack(kindStr, null);
             } else {
                 var track = await acquireTrack(kindStr);
                 if (!track) return; // hata zaten toast'landı
-                try { await sender.replaceTrack(track); } catch (e) {}
+                try { await sender.replaceTrack(track); } catch (e) { }
                 setLocalTrack(kindStr, track);
                 if (kind === 'cam') applyBitrate();
             }
@@ -341,7 +341,7 @@
             // Etiketleri açmak için bir kez izin (aktif çağrıda zaten izinli → atla). Kamera etiketleri için video da iste.
             if (!localStream) {
                 try { var s = await navigator.mediaDevices.getUserMedia({ audio: true, video: true }); s.getTracks().forEach(function (t) { t.stop(); }); }
-                catch (e) { try { var s2 = await navigator.mediaDevices.getUserMedia({ audio: true }); s2.getTracks().forEach(function (t) { t.stop(); }); } catch (e2) {} }
+                catch (e) { try { var s2 = await navigator.mediaDevices.getUserMedia({ audio: true }); s2.getTracks().forEach(function (t) { t.stop(); }); } catch (e2) { } }
             }
             deviceCache = await listDevices();
             return deviceCache;
@@ -353,20 +353,20 @@
             m.hidden = true;
             m.innerHTML =
                 '<div class="dev-card">' +
-                  '<div class="dev-head"><span>Ayarlar</span><button type="button" class="dev-close" aria-label="Kapat">✕</button></div>' +
-                  '<div class="dev-row"><label>Ses seviyesi</label><input type="range" class="dev-vol" min="0" max="100" step="1"></div>' +
-                  '<div class="dev-row"><label>Mikrofon</label><select class="dev-mic"></select></div>' +
-                  '<div class="dev-row dev-row--cam"><label>Kamera</label><select class="dev-cam"></select></div>' +
-                  '<div class="dev-row dev-row--spk"><label>Hoparlör</label><select class="dev-spk"></select></div>' +
-                  '<div class="dev-row"><button type="button" class="dev-rescan btn-outline">🔄 Cihazlarımı Algıla</button></div>' +
-                  '<div class="dev-row dev-row--legal">' +
-                    '<label>Yasal</label>' +
-                    '<div class="dev-legal-actions">' +
-                      '<button type="button" class="dev-legal btn-outline" data-doc="agreement">Üyelik Sözleşmesi</button>' +
-                      '<button type="button" class="dev-legal btn-outline" data-doc="privacy">Gizlilik Politikası</button>' +
-                      '<button type="button" class="dev-legal btn-outline" data-doc="rules">Topluluk Kuralları</button>' +
-                    '</div>' +
-                  '</div>' +
+                '<div class="dev-head"><span>Ayarlar</span><button type="button" class="dev-close" aria-label="Kapat">✕</button></div>' +
+                '<div class="dev-row"><label>Ses seviyesi</label><input type="range" class="dev-vol" min="0" max="100" step="1"></div>' +
+                '<div class="dev-row"><label>Mikrofon</label><select class="dev-mic"></select></div>' +
+                '<div class="dev-row dev-row--cam"><label>Kamera</label><select class="dev-cam"></select></div>' +
+                '<div class="dev-row dev-row--spk"><label>Hoparlör</label><select class="dev-spk"></select></div>' +
+                '<div class="dev-row"><button type="button" class="dev-rescan btn-outline">🔄 Cihazlarımı Algıla</button></div>' +
+                '<div class="dev-row dev-row--legal">' +
+                '<label>Yasal</label>' +
+                '<div class="dev-legal-actions">' +
+                '<button type="button" class="dev-legal btn-outline" data-doc="agreement">Üyelik Sözleşmesi</button>' +
+                '<button type="button" class="dev-legal btn-outline" data-doc="privacy">Gizlilik Politikası</button>' +
+                '<button type="button" class="dev-legal btn-outline" data-doc="rules">Topluluk Kuralları</button>' +
+                '</div>' +
+                '</div>' +
                 '</div>';
             document.body.appendChild(m);
             m.addEventListener('click', function (e) { if (e.target === m) m.hidden = true; });
@@ -397,8 +397,8 @@
         var legalCache = {};
         var LEGAL_DOCS = {
             agreement: { url: '/Home/Agreement', title: 'Üyelik Sözleşmesi' },
-            privacy:   { url: '/Home/Privacy',   title: 'Gizlilik Politikası' },
-            rules:     { url: '/Home/Rules',     title: 'Topluluk Kuralları' }
+            privacy: { url: '/Home/Privacy', title: 'Gizlilik Politikası' },
+            rules: { url: '/Home/Rules', title: 'Topluluk Kuralları' }
         };
 
         function closeLegal() {
@@ -413,9 +413,9 @@
             m.hidden = true;
             m.innerHTML =
                 '<div class="dev-card legal-modal-card" role="dialog" aria-modal="true">' +
-                  '<div class="dev-head"><span class="legal-modal-title"></span>' +
-                  '<button type="button" class="dev-close" aria-label="Kapat">✕</button></div>' +
-                  '<div class="legal-modal-body" tabindex="0"></div>' +
+                '<div class="dev-head"><span class="legal-modal-title"></span>' +
+                '<button type="button" class="dev-close" aria-label="Kapat">✕</button></div>' +
+                '<div class="legal-modal-body" tabindex="0"></div>' +
                 '</div>';
             document.body.appendChild(m);
             m.addEventListener('click', function (e) { if (e.target === m) closeLegal(); });
@@ -455,7 +455,7 @@
                 body.scrollTop = 0;
             } catch (e) {
                 body.innerHTML = 'Belge yüklenemedi. <a href="' + meta.url +
-                                 '" target="_blank" rel="noopener">Yeni sekmede aç</a>';
+                    '" target="_blank" rel="noopener">Yeni sekmede aç</a>';
             }
         }
         function fillSelect(sel, items, selectedId, fallback) {
@@ -511,11 +511,11 @@
             ui.remote.srcObject = remoteStream;
             ui.overlay.dataset.remoteVideo = 'off'; // uzak kamera durumu (avatar/video seçimi)
             pc.onicecandidate = function (e) {
-                if (e.candidate && callId) conn.invoke('SendIceCandidate', callId, JSON.stringify(e.candidate)).catch(function () {});
+                if (e.candidate && callId) conn.invoke('SendIceCandidate', callId, JSON.stringify(e.candidate)).catch(function () { });
             };
             // transceiver+replaceTrack'te e.streams boş olabilir → track'leri kendi akışımıza biriktir.
             pc.ontrack = function (e) {
-                try { if (remoteStream && !remoteStream.getTracks().includes(e.track)) remoteStream.addTrack(e.track); } catch (err) {}
+                try { if (remoteStream && !remoteStream.getTracks().includes(e.track)) remoteStream.addTrack(e.track); } catch (err) { }
                 if (e.track.kind === 'video') {
                     e.track.onmute = refreshRemoteVideo;
                     e.track.onunmute = refreshRemoteVideo;
@@ -573,18 +573,18 @@
                     vadRAF = requestAnimationFrame(loop);
                 };
                 loop();
-            } catch (e) {}
+            } catch (e) { }
         }
         function stopVad() {
             if (vadRAF) { cancelAnimationFrame(vadRAF); vadRAF = null; }
-            if (vadSource) { try { vadSource.disconnect(); } catch (e) {} vadSource = null; }
+            if (vadSource) { try { vadSource.disconnect(); } catch (e) { } vadSource = null; }
             vadAnalyser = null;
             ui.avatar.classList.remove('speaking');
         }
 
         async function drainCandidates() {
             for (var i = 0; i < pendingCandidates.length; i++) {
-                try { await pc.addIceCandidate(pendingCandidates[i]); } catch (e) {}
+                try { await pc.addIceCandidate(pendingCandidates[i]); } catch (e) { }
             }
             pendingCandidates = [];
         }
@@ -606,7 +606,7 @@
                 callId = await conn.invoke('CallUser', targetId, type === 'video' ? 'Video' : 'Audio', JSON.stringify(offer));
                 if (!callId) { endCall(); return; }     // CallError ayrı olarak toast'lar
                 ringTimeout = setTimeout(function () {
-                    if (callId && isCaller) { conn.invoke('CancelCall', callId).catch(function () {}); endCall('Cevap yok.'); }
+                    if (callId && isCaller) { conn.invoke('CancelCall', callId).catch(function () { }); endCall('Cevap yok.'); }
                 }, 45000);
             } catch (e) {
                 toast('Arama başlatılamadı.', 'error'); endCall();
@@ -614,7 +614,7 @@
         }
 
         conn.on('IncomingCall', function (data) {
-            if (callId || incoming) { conn.invoke('RejectCall', data.callId).catch(function () {}); return; } // meşgul
+            if (callId || incoming) { conn.invoke('RejectCall', data.callId).catch(function () { }); return; } // meşgul
             incoming = data; // { callId, callerId, callType, offer }
             showOverlay('incoming', data.callerId, (data.callType || '').toLowerCase() === 'video' ? 'video' : 'audio');
             startRinging('incoming');
@@ -629,7 +629,7 @@
             stopRinging();
             try {
                 var ice = await getCallConfig();
-                if (!ice) { conn.invoke('RejectCall', data.callId).catch(function () {}); endCall('Arama altyapısı kullanılamıyor.'); return; }
+                if (!ice) { conn.invoke('RejectCall', data.callId).catch(function () { }); endCall('Arama altyapısı kullanılamıyor.'); return; }
                 createPeer(ice);
                 // Önce remote description → transceiver'lar offer'dan oluşur (m-line hizası garanti).
                 await pc.setRemoteDescription(JSON.parse(data.offer));
@@ -644,14 +644,14 @@
                 sendVideoState();
             } catch (e) {
                 toast('Arama kabul edilemedi.', 'error');
-                conn.invoke('RejectCall', data.callId).catch(function () {});
+                conn.invoke('RejectCall', data.callId).catch(function () { });
                 endCall();
             }
         }
 
         function rejectIncoming() {
             if (!incoming) return;
-            conn.invoke('RejectCall', incoming.callId).catch(function () {});
+            conn.invoke('RejectCall', incoming.callId).catch(function () { });
             incoming = null; stopRinging(); hideOverlay(); resetState();
         }
 
@@ -672,7 +672,7 @@
             var cand;
             try { cand = JSON.parse(data.candidate); } catch (e) { return; }
             if (pc.remoteDescription && pc.remoteDescription.type) {
-                try { await pc.addIceCandidate(cand); } catch (e) {}
+                try { await pc.addIceCandidate(cand); } catch (e) { }
             } else {
                 pendingCandidates.push(cand);
             }
@@ -695,14 +695,14 @@
         });
 
         function hangup(msg) {
-            if (callId) conn.invoke('HangUp', callId).catch(function () {});
+            if (callId) conn.invoke('HangUp', callId).catch(function () { });
             endCall(msg);
         }
         // Kapat butonu mantığı: gelen aramayı reddet / çalan giden aramayı iptal et / görüşmeyi sonlandır.
         function terminate() {
             if (incoming) { rejectIncoming(); return; }                              // aranan: gelen aramayı reddet
             if (isCaller && callId && ui.overlay.dataset.mode === 'calling') {
-                conn.invoke('CancelCall', callId).catch(function () {});             // arayan: cevaplanmadan iptal → eşe CallCanceled
+                conn.invoke('CancelCall', callId).catch(function () { });             // arayan: cevaplanmadan iptal → eşe CallCanceled
                 endCall();
             } else {
                 hangup();                                                            // görüşme sürüyor → HangUp
@@ -719,7 +719,7 @@
             stopVad();
             if (localStream) { localStream.getTracks().forEach(function (t) { t.stop(); }); localStream = null; }
             remoteStream = null;
-            if (pc) { try { pc.close(); } catch (e) {} pc = null; }
+            if (pc) { try { pc.close(); } catch (e) { } pc = null; }
             audioSender = null; videoSender = null;
             resetState();
         }
@@ -756,7 +756,7 @@
                 dragging = true; moved = false; sx = e.clientX; sy = e.clientY;
                 var r = ui.box.getBoundingClientRect();
                 offX = e.clientX - r.left; offY = e.clientY - r.top;
-                try { ui.box.setPointerCapture(e.pointerId); } catch (er) {}
+                try { ui.box.setPointerCapture(e.pointerId); } catch (er) { }
                 e.preventDefault();
             });
             ui.box.addEventListener('pointermove', function (e) {
@@ -767,7 +767,7 @@
             ui.box.addEventListener('pointerup', function (e) {
                 if (!dragging) return;
                 dragging = false;
-                try { ui.box.releasePointerCapture(e.pointerId); } catch (er) {}
+                try { ui.box.releasePointerCapture(e.pointerId); } catch (er) { }
                 // Sürüklenmediyse (temiz tık) ve uzak video/avatara basıldıysa → büyüt
                 if (!moved && (e.target === ui.remote || ui.poster.contains(e.target))) setMinimized(false);
             });
@@ -796,7 +796,7 @@
 
         // Sayfa kapanırken aktif aramayı düşür.
         window.addEventListener('beforeunload', function () {
-            if (callId) { try { conn.invoke('HangUp', callId); } catch (e) {} }
+            if (callId) { try { conn.invoke('HangUp', callId); } catch (e) { } }
         });
     }
 

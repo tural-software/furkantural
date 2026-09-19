@@ -29,8 +29,8 @@
     if (REDUCED || !webglSupported()) return;
     import(THREE_URL)
       .then(function (THREE) {
-        try { initHero(THREE); } catch (e) {}
-        try { initVisualizer(THREE); } catch (e) {}
+        try { initHero(THREE); } catch (e) { }
+        try { initVisualizer(THREE); } catch (e) { }
       })
       .catch(function () { /* yükleme başarısız → statik içerik korunur */ });
   });

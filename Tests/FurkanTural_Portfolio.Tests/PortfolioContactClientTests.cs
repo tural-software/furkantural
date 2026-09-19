@@ -25,9 +25,9 @@ public class PortfolioContactClientTests
 
     private static ContactFormModel ValidModel() => new()
     {
-        Name           = "Test User",
-        Email          = "test@example.com",
-        Message        = "Hello from unit test",
+        Name = "Test User",
+        Email = "test@example.com",
+        Message = "Hello from unit test",
         TurnstileToken = "cf-token-abc"
     };
 

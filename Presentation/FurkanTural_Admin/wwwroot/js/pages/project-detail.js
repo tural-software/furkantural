@@ -13,7 +13,7 @@
         if (window.FtTime) return FtTime.dateInput(val);
         var d = new Date(val);
         if (isNaN(d.getTime())) return '';
-        var y  = d.getFullYear();
+        var y = d.getFullYear();
         var mo = String(d.getMonth() + 1).padStart(2, '0');
         var dd = String(d.getDate()).padStart(2, '0');
         return y + '-' + mo + '-' + dd;
@@ -93,18 +93,18 @@
 
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' },
-            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: false, hidden: function(r) { return r.isDeleted || !r.isActive; } }
+            { key: 'edit', label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: false, hidden: function (r) { return r.isDeleted || !r.isActive; } }
         ]
     };
 
     var FORM_FIELDS_BASE = [
-        { name: 'title',            label: 'Başlık',        type: 'text',     required: false, maxLength: 500,  placeholder: 'Proje başlığını girin...' },
-        { name: 'description',      label: 'Açıklama',      type: 'textarea', required: false, rows: 9,         placeholder: 'Proje açıklamasını girin...', helpText: 'Markdown desteklenir — **kalın**, *italik*, ## başlık, - liste, [bağlantı](https://…), > alıntı, `kod`.' },
-        { name: 'shortDescription', label: 'Kısa Açıklama', type: 'text',     required: false, maxLength: 300,  placeholder: 'Kısa açıklama girin...' },
-        { name: 'techStack',        label: 'Teknolojiler',  type: 'text',     required: false, maxLength: 500,  placeholder: 'Kullanılan teknolojileri girin...' },
-        { name: 'gitHubUrl',        label: 'GitHub URL',    type: 'text',     required: false, maxLength: 1000, placeholder: 'GitHub URL girin...' },
-        { name: 'demoUrl',          label: 'Demo URL',      type: 'text',     required: false, maxLength: 1000, placeholder: 'Demo URL girin...' },
-        { name: 'isCompleted',      label: 'Tamamlandı',    type: 'checkbox', required: false }
+        { name: 'title', label: 'Başlık', type: 'text', required: false, maxLength: 500, placeholder: 'Proje başlığını girin...' },
+        { name: 'description', label: 'Açıklama', type: 'textarea', required: false, rows: 9, placeholder: 'Proje açıklamasını girin...', helpText: 'Markdown desteklenir — **kalın**, *italik*, ## başlık, - liste, [bağlantı](https://…), > alıntı, `kod`.' },
+        { name: 'shortDescription', label: 'Kısa Açıklama', type: 'text', required: false, maxLength: 300, placeholder: 'Kısa açıklama girin...' },
+        { name: 'techStack', label: 'Teknolojiler', type: 'text', required: false, maxLength: 500, placeholder: 'Kullanılan teknolojileri girin...' },
+        { name: 'gitHubUrl', label: 'GitHub URL', type: 'text', required: false, maxLength: 1000, placeholder: 'GitHub URL girin...' },
+        { name: 'demoUrl', label: 'Demo URL', type: 'text', required: false, maxLength: 1000, placeholder: 'Demo URL girin...' },
+        { name: 'isCompleted', label: 'Tamamlandı', type: 'checkbox', required: false }
     ];
 
     function buildCreateConfig(onSuccess) {
@@ -142,16 +142,16 @@
     }
 
     var ACTION_MESSAGES = {
-        Delete:       { success: 'Silme işlemi başarılı.',          error: 'Silme işlemi başarısız oldu.' },
-        Restore:      { success: 'Geri yükleme işlemi başarılı.',   error: 'Geri yükleme işlemi başarısız oldu.' },
-        ToggleActive: { success: null,                               error: 'Durum değiştirme işlemi başarısız oldu.' },
-        Create:       { success: 'Kayıt başarıyla oluşturuldu.',    error: 'Kayıt oluşturulamadı.' },
-        Update:       { success: 'Kayıt başarıyla güncellendi.',    error: 'Kayıt güncellenemedi.' }
+        Delete: { success: 'Silme işlemi başarılı.', error: 'Silme işlemi başarısız oldu.' },
+        Restore: { success: 'Geri yükleme işlemi başarılı.', error: 'Geri yükleme işlemi başarısız oldu.' },
+        ToggleActive: { success: null, error: 'Durum değiştirme işlemi başarısız oldu.' },
+        Create: { success: 'Kayıt başarıyla oluşturuldu.', error: 'Kayıt oluşturulamadı.' },
+        Update: { success: 'Kayıt başarıyla güncellendi.', error: 'Kayıt güncellenemedi.' }
     };
 
     function resolveActionKey(actionUrl) {
-        if (actionUrl.indexOf('Delete')       !== -1) return 'Delete';
-        if (actionUrl.indexOf('Restore')      !== -1) return 'Restore';
+        if (actionUrl.indexOf('Delete') !== -1) return 'Delete';
+        if (actionUrl.indexOf('Restore') !== -1) return 'Restore';
         if (actionUrl.indexOf('ToggleActive') !== -1) return 'ToggleActive';
         return null;
     }
@@ -165,36 +165,36 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data
         })
-        .then(function (r) {
-            if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
+            .then(function (r) {
+                if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
 
-            var msgs = ACTION_MESSAGES[actionKey] || {};
+                var msgs = ACTION_MESSAGES[actionKey] || {};
 
-            if (r.ok) {
-                var successMsg = msgs.success;
-                if (actionKey === 'ToggleActive') {
-                    successMsg = isActive ? 'Kayıt pasife alındı.' : 'Kayıt aktife alındı.';
-                }
-                if (typeof showToast === 'function') {
-                    showToast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
-                }
-                reloadTable();
-            } else {
-                return r.text().then(function (body) {
-                    var serverMsg = '';
-                    try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
-                    var errorMsg = serverMsg || msgs.error || 'İşlem başarısız oldu.';
-                    if (typeof showToast === 'function') {
-                        showToast('error', 'Hata', errorMsg);
+                if (r.ok) {
+                    var successMsg = msgs.success;
+                    if (actionKey === 'ToggleActive') {
+                        successMsg = isActive ? 'Kayıt pasife alındı.' : 'Kayıt aktife alındı.';
                     }
-                });
-            }
-        })
-        .catch(function () {
-            if (typeof showToast === 'function') {
-                showToast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
-            }
-        });
+                    if (typeof showToast === 'function') {
+                        showToast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
+                    }
+                    reloadTable();
+                } else {
+                    return r.text().then(function (body) {
+                        var serverMsg = '';
+                        try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
+                        var errorMsg = serverMsg || msgs.error || 'İşlem başarısız oldu.';
+                        if (typeof showToast === 'function') {
+                            showToast('error', 'Hata', errorMsg);
+                        }
+                    });
+                }
+            })
+            .catch(function () {
+                if (typeof showToast === 'function') {
+                    showToast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
+                }
+            });
     }
 
     function openEditModal(record) {
@@ -204,13 +204,13 @@
                 reloadTable();
             }),
             {
-                title:            record.title            || '',
-                description:      record.description      || '',
+                title: record.title || '',
+                description: record.description || '',
                 shortDescription: record.shortDescription || '',
-                techStack:        record.techStack        || '',
-                gitHubUrl:        record.gitHubUrl        || '',
-                demoUrl:          record.demoUrl          || '',
-                isCompleted:      record.isCompleted      ? 'true' : ''
+                techStack: record.techStack || '',
+                gitHubUrl: record.gitHubUrl || '',
+                demoUrl: record.demoUrl || '',
+                isCompleted: record.isCompleted ? 'true' : ''
             }
         );
     }

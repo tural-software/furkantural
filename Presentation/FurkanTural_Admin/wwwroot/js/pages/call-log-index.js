@@ -124,6 +124,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () { bindAll(); bindSettings(); });
-        document.addEventListener('ft:table-rendered', bindAll);
+    document.addEventListener('ft:table-rendered', bindAll);
     document.dispatchEvent(new CustomEvent('ft:table-rendered'));
 })();

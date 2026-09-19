@@ -73,20 +73,20 @@ public class UserController(IUserApiClient userApiClient, IRoleApiClient roleApi
 
         return new UserIndexViewModel
         {
-            Rows          = rows,
-            RoleOptions   = await rolesTask,
-            TotalCount    = counts?.Total ?? 0,
-            ActiveCount   = counts?.Active ?? 0,
-            PassiveCount  = counts?.Passive ?? 0,
-            DeletedCount  = counts?.Deleted ?? 0,
+            Rows = rows,
+            RoleOptions = await rolesTask,
+            TotalCount = counts?.Total ?? 0,
+            ActiveCount = counts?.Active ?? 0,
+            PassiveCount = counts?.Passive ?? 0,
+            DeletedCount = counts?.Deleted ?? 0,
             SearchUsername = searchUsername,
-            RoleFilter    = roleFilter,
-            ActiveFilter  = activeFilter,
+            RoleFilter = roleFilter,
+            ActiveFilter = activeFilter,
             DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = request.PageNumber,
-            PageSize      = request.PageSize,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
             TotalFiltered = totalFiltered
         };
     }

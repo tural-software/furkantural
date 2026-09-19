@@ -14,7 +14,7 @@ public class ProjectImageApiClient(HttpClient httpClient, ILogger<ProjectImageAp
     private readonly HttpClient _httpClient = httpClient;
     private readonly ILogger<ProjectImageApiClient> _logger = logger;
 
-    private static readonly JsonSerializerOptions JsonOptions  = new() { PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private static readonly JsonSerializerOptions WriteOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public async Task<IReadOnlyList<ProjectImageAdminDto>> GetAllForAdminAsync(string token, CancellationToken ct = default)
@@ -137,14 +137,14 @@ public class ProjectImageApiClient(HttpClient httpClient, ILogger<ProjectImageAp
     {
         try
         {
-            byte[]? bytes    = null;
+            byte[]? bytes = null;
             string? imageName = null;
 
             if (imageFile is { Length: > 0 })
             {
                 using var ms = new MemoryStream();
                 await imageFile.CopyToAsync(ms, ct);
-                bytes     = ms.ToArray();
+                bytes = ms.ToArray();
                 imageName = imageFile.FileName;
             }
 

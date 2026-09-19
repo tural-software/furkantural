@@ -117,22 +117,22 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data
         })
-        .then(function (r) {
-            if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
-            if (r.ok) {
-                onSuccess();
-                reloadTable();
-            } else {
-                return r.text().then(function (body) {
-                    var serverMsg = '';
-                    try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
-                    onError(serverMsg);
-                });
-            }
-        })
-        .catch(function () {
-            onError('Sunucudan beklenmeyen bir hata döndü.');
-        });
+            .then(function (r) {
+                if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
+                if (r.ok) {
+                    onSuccess();
+                    reloadTable();
+                } else {
+                    return r.text().then(function (body) {
+                        var serverMsg = '';
+                        try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
+                        onError(serverMsg);
+                    });
+                }
+            })
+            .catch(function () {
+                onError('Sunucudan beklenmeyen bir hata döndü.');
+            });
     }
 
     function bindAll() {

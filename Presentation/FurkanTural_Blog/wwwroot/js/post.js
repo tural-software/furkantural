@@ -34,7 +34,7 @@
     if (shareBtn && navigator.share) {
         shareBtn.hidden = false;
         shareBtn.addEventListener('click', function () {
-            navigator.share({ title: document.title, url: location.href }).catch(function () {});
+            navigator.share({ title: document.title, url: location.href }).catch(function () { });
         });
     }
 
@@ -48,7 +48,7 @@
                 window.setTimeout(function () { copyBtn.textContent = old; }, 2000);
             };
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(location.href).then(done).catch(function () {});
+                navigator.clipboard.writeText(location.href).then(done).catch(function () { });
             }
         });
     }

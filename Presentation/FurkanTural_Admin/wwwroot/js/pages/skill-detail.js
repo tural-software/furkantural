@@ -51,7 +51,7 @@
 
         actions: [
             { key: 'close', label: 'Kapat', variant: 'secondary' },
-            { key: 'edit',  label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: false, hidden: function(r) { return r.isDeleted || !r.isActive; } }
+            { key: 'edit', label: 'Düzenle', icon: 'pencil', variant: 'primary', disabled: false, hidden: function (r) { return r.isDeleted || !r.isActive; } }
         ]
     };
 
@@ -108,16 +108,16 @@
     }
 
     var ACTION_MESSAGES = {
-        Delete:       { success: 'Silme işlemi başarılı.',          error: 'Silme işlemi başarısız oldu.' },
-        Restore:      { success: 'Geri yükleme işlemi başarılı.',   error: 'Geri yükleme işlemi başarısız oldu.' },
-        ToggleActive: { success: null,                               error: 'Durum değiştirme işlemi başarısız oldu.' },
-        Create:       { success: 'Kayıt başarıyla oluşturuldu.',    error: 'Kayıt oluşturulamadı.' },
-        Update:       { success: 'Kayıt başarıyla güncellendi.',    error: 'Kayıt güncellenemedi.' }
+        Delete: { success: 'Silme işlemi başarılı.', error: 'Silme işlemi başarısız oldu.' },
+        Restore: { success: 'Geri yükleme işlemi başarılı.', error: 'Geri yükleme işlemi başarısız oldu.' },
+        ToggleActive: { success: null, error: 'Durum değiştirme işlemi başarısız oldu.' },
+        Create: { success: 'Kayıt başarıyla oluşturuldu.', error: 'Kayıt oluşturulamadı.' },
+        Update: { success: 'Kayıt başarıyla güncellendi.', error: 'Kayıt güncellenemedi.' }
     };
 
     function resolveActionKey(actionUrl) {
-        if (actionUrl.indexOf('Delete')       !== -1) return 'Delete';
-        if (actionUrl.indexOf('Restore')      !== -1) return 'Restore';
+        if (actionUrl.indexOf('Delete') !== -1) return 'Delete';
+        if (actionUrl.indexOf('Restore') !== -1) return 'Restore';
         if (actionUrl.indexOf('ToggleActive') !== -1) return 'ToggleActive';
         return null;
     }
@@ -131,36 +131,36 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data
         })
-        .then(function (r) {
-            if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
+            .then(function (r) {
+                if (r.status === 401) { window.location.href = '/Auth/Login'; return; }
 
-            var msgs = ACTION_MESSAGES[actionKey] || {};
+                var msgs = ACTION_MESSAGES[actionKey] || {};
 
-            if (r.ok) {
-                var successMsg = msgs.success;
-                if (actionKey === 'ToggleActive') {
-                    successMsg = isActive ? 'Kayıt pasife alındı.' : 'Kayıt aktife alındı.';
-                }
-                if (typeof showToast === 'function') {
-                    showToast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
-                }
-                reloadTable();
-            } else {
-                return r.text().then(function (body) {
-                    var serverMsg = '';
-                    try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
-                    var errorMsg = serverMsg || msgs.error || 'İşlem başarısız oldu.';
-                    if (typeof showToast === 'function') {
-                        showToast('error', 'Hata', errorMsg);
+                if (r.ok) {
+                    var successMsg = msgs.success;
+                    if (actionKey === 'ToggleActive') {
+                        successMsg = isActive ? 'Kayıt pasife alındı.' : 'Kayıt aktife alındı.';
                     }
-                });
-            }
-        })
-        .catch(function () {
-            if (typeof showToast === 'function') {
-                showToast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
-            }
-        });
+                    if (typeof showToast === 'function') {
+                        showToast('success', 'Başarılı', successMsg || 'İşlem başarıyla tamamlandı.');
+                    }
+                    reloadTable();
+                } else {
+                    return r.text().then(function (body) {
+                        var serverMsg = '';
+                        try { serverMsg = JSON.parse(body).message || ''; } catch (e) { serverMsg = ''; }
+                        var errorMsg = serverMsg || msgs.error || 'İşlem başarısız oldu.';
+                        if (typeof showToast === 'function') {
+                            showToast('error', 'Hata', errorMsg);
+                        }
+                    });
+                }
+            })
+            .catch(function () {
+                if (typeof showToast === 'function') {
+                    showToast('error', 'Hata', 'Sunucudan beklenmeyen bir hata döndü.');
+                }
+            });
     }
 
     function bindAll() {
@@ -210,17 +210,17 @@
                 var actionLabel, actionVariant;
 
                 if (action.indexOf('Delete') !== -1) {
-                    actionLabel   = 'Kaydı Sil';
+                    actionLabel = 'Kaydı Sil';
                     actionVariant = 'danger';
                 } else if (action.indexOf('Restore') !== -1) {
-                    actionLabel   = 'Geri Yükle';
+                    actionLabel = 'Geri Yükle';
                     actionVariant = 'success';
                 } else if (action.indexOf('ToggleActive') !== -1) {
-                    var isActive  = record ? record.isActive : false;
-                    actionLabel   = isActive ? 'Pasife Al' : 'Aktife Al';
+                    var isActive = record ? record.isActive : false;
+                    actionLabel = isActive ? 'Pasife Al' : 'Aktife Al';
                     actionVariant = isActive ? 'warning' : 'success';
                 } else {
-                    actionLabel   = 'İşlemi Gerçekleştir';
+                    actionLabel = 'İşlemi Gerçekleştir';
                     actionVariant = 'neutral';
                 }
 
@@ -255,7 +255,7 @@
             }
             reloadTable();
         }), {
-            name:        record.name        || '',
+            name: record.name || '',
             proficiency: record.proficiency
         });
     }

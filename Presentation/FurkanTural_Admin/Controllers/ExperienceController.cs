@@ -69,19 +69,19 @@ public class ExperienceController(IExperienceApiClient experienceApiClient) : Co
 
         return new ExperienceIndexViewModel
         {
-            Rows          = rows,
-            TotalCount    = counts?.Total ?? 0,
-            ActiveCount   = counts?.Active ?? 0,
-            PassiveCount  = counts?.Passive ?? 0,
-            DeletedCount  = counts?.Deleted ?? 0,
+            Rows = rows,
+            TotalCount = counts?.Total ?? 0,
+            ActiveCount = counts?.Active ?? 0,
+            PassiveCount = counts?.Passive ?? 0,
+            DeletedCount = counts?.Deleted ?? 0,
             SearchPosition = position,
             SearchCompany = company,
-            ActiveFilter  = activeFilter,
+            ActiveFilter = activeFilter,
             DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = request.PageNumber,
-            PageSize      = request.PageSize,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
             TotalFiltered = totalFiltered
         };
     }

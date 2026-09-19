@@ -132,13 +132,13 @@ public class ProjectApiClient(HttpClient httpClient, ILogger<ProjectApiClient> l
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var body = new
             {
-                title            = dto.Title,
-                description      = dto.Description,
+                title = dto.Title,
+                description = dto.Description,
                 shortDescription = dto.ShortDescription,
-                techStack        = dto.TechStack,
-                gitHubUrl        = dto.GitHubUrl,
-                demoUrl          = dto.DemoUrl,
-                isCompleted      = dto.IsCompleted
+                techStack = dto.TechStack,
+                gitHubUrl = dto.GitHubUrl,
+                demoUrl = dto.DemoUrl,
+                isCompleted = dto.IsCompleted
             };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
@@ -161,13 +161,13 @@ public class ProjectApiClient(HttpClient httpClient, ILogger<ProjectApiClient> l
             var body = new
             {
                 id,
-                title            = dto.Title,
-                description      = dto.Description,
+                title = dto.Title,
+                description = dto.Description,
                 shortDescription = dto.ShortDescription,
-                techStack        = dto.TechStack,
-                gitHubUrl        = dto.GitHubUrl,
-                demoUrl          = dto.DemoUrl,
-                isCompleted      = dto.IsCompleted
+                techStack = dto.TechStack,
+                gitHubUrl = dto.GitHubUrl,
+                demoUrl = dto.DemoUrl,
+                isCompleted = dto.IsCompleted
             };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 

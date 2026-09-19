@@ -14,7 +14,7 @@ namespace FurkanTural_API.Controllers;
 public class SkillController(ISkillService skillService) : JwtBaseController
 {
     private readonly ISkillService _skillService = skillService;
-    
+
     /// <summary>Yetkinliği ID ile getir</summary>
     [HttpGet("{id:int}")]
     [Authorize(Policy = "VisitorOrAbove")]

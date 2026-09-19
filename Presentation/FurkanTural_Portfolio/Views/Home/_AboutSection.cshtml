@@ -13,9 +13,9 @@
                 @{
                     var stats = new[]
                     {
-                        (Count: Model.Skills.Count,   Label: SharedLocalizer["About_Stat_Skills"].Value),
+                        (Count: Model.Skills.Count, Label: SharedLocalizer["About_Stat_Skills"].Value),
                         (Count: Model.Projects.Count, Label: SharedLocalizer["About_Stat_Projects"].Value),
-                        (Count: Model.Songs.Count,    Label: SharedLocalizer["About_Stat_Songs"].Value)
+                        (Count: Model.Songs.Count, Label: SharedLocalizer["About_Stat_Songs"].Value)
                     }.Where(s => s.Count > 0).ToList();
                 }
                 @if (stats.Count > 0)

@@ -8,12 +8,12 @@
 
     var meta = new (string Label, string? Value)[]
     {
-        ("Sanatçı",  s.Artist),
+        ("Sanatçı", s.Artist),
         ("Prodüktör", s.Productor),
-        ("Albüm",    s.Album),
-        ("Tür",      s.Genre),
-        ("Süre",     s.Duration?.ToString(@"mm\:ss")),
-        ("Yayın",    s.ReleaseDate?.Year.ToString())
+        ("Albüm", s.Album),
+        ("Tür", s.Genre),
+        ("Süre", s.Duration?.ToString(@"mm\:ss")),
+        ("Yayın", s.ReleaseDate?.Year.ToString())
     }.Where(m => !string.IsNullOrWhiteSpace(m.Value)).ToArray();
 
     // og:type "music.song" sosyal paylaşımda müzik içeriğini açıkça işaretler.

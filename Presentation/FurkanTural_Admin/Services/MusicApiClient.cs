@@ -132,13 +132,13 @@ public class MusicApiClient(HttpClient httpClient, ILogger<MusicApiClient> logge
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var body = new
             {
-                name        = dto.Name,
-                artist      = dto.Artist,
-                productor   = dto.Productor,
-                album       = dto.Album,
-                genre       = dto.Genre,
-                lyrics      = dto.Lyrics,
-                duration    = string.IsNullOrWhiteSpace(dto.Duration) ? (TimeSpan?)null : TimeSpan.TryParse(dto.Duration, out var ts) ? ts : (TimeSpan?)null,
+                name = dto.Name,
+                artist = dto.Artist,
+                productor = dto.Productor,
+                album = dto.Album,
+                genre = dto.Genre,
+                lyrics = dto.Lyrics,
+                duration = string.IsNullOrWhiteSpace(dto.Duration) ? (TimeSpan?)null : TimeSpan.TryParse(dto.Duration, out var ts) ? ts : (TimeSpan?)null,
                 releaseDate = dto.ReleaseDate,
                 youTubeMusicUrl = dto.YouTubeMusicUrl
             };
@@ -163,13 +163,13 @@ public class MusicApiClient(HttpClient httpClient, ILogger<MusicApiClient> logge
             var body = new
             {
                 id,
-                name        = dto.Name,
-                artist      = dto.Artist,
-                productor   = dto.Productor,
-                album       = dto.Album,
-                genre       = dto.Genre,
-                lyrics      = dto.Lyrics,
-                duration    = string.IsNullOrWhiteSpace(dto.Duration) ? (TimeSpan?)null : TimeSpan.TryParse(dto.Duration, out var ts) ? ts : (TimeSpan?)null,
+                name = dto.Name,
+                artist = dto.Artist,
+                productor = dto.Productor,
+                album = dto.Album,
+                genre = dto.Genre,
+                lyrics = dto.Lyrics,
+                duration = string.IsNullOrWhiteSpace(dto.Duration) ? (TimeSpan?)null : TimeSpan.TryParse(dto.Duration, out var ts) ? ts : (TimeSpan?)null,
                 releaseDate = dto.ReleaseDate,
                 youTubeMusicUrl = dto.YouTubeMusicUrl
             };

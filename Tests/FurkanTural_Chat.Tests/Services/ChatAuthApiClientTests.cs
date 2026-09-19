@@ -82,7 +82,10 @@ public class ChatAuthApiClientTests
         // Arrange
         var apiResp = new ApiResult<AuthResultModel>
         {
-            Success = false, StatusCode = 401, Message = "Hatali kimlik.", Data = null
+            Success = false,
+            StatusCode = 401,
+            Message = "Hatali kimlik.",
+            Data = null
         };
         var (sut, _) = CreateSut(OkJson(apiResp, HttpStatusCode.Unauthorized));
 
@@ -221,8 +224,11 @@ public class ChatAuthApiClientTests
         // Act
         await sut.RegisterAsync(new RegisterRequestModel
         {
-            Username = "newuser", Email = "new@ex.com", Password = "P@ss1",
-            AcceptAgreement = true, ConfirmAdult = true
+            Username = "newuser",
+            Email = "new@ex.com",
+            Password = "P@ss1",
+            AcceptAgreement = true,
+            ConfirmAdult = true
         });
 
         // Assert
@@ -242,7 +248,10 @@ public class ChatAuthApiClientTests
         var (sut, _) = CreateSut(OkJson(apiResp));
         var req = new RegisterRequestModel
         {
-            Username = "newuser", Email = "new@ex.com", Password = "P@ss1", AcceptAgreement = true
+            Username = "newuser",
+            Email = "new@ex.com",
+            Password = "P@ss1",
+            AcceptAgreement = true
         };
 
         // Act

@@ -15,7 +15,7 @@ public sealed class MusicIndexViewModel
     public string? DeletedFilter { get; init; }
     public string? DateFrom { get; init; }
     public string? DateTo { get; init; }
-    public int?    MusicIdFilter { get; init; }
+    public int? MusicIdFilter { get; init; }
 
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = 10;

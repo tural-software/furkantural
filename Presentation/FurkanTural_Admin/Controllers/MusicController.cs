@@ -83,19 +83,19 @@ public class MusicController(IMusicApiClient musicApiClient) : Controller
 
         return new MusicIndexViewModel
         {
-            Rows          = rows,
-            TotalCount    = counts?.Total ?? 0,
-            ActiveCount   = counts?.Active ?? 0,
-            PassiveCount  = counts?.Passive ?? 0,
-            DeletedCount  = counts?.Deleted ?? 0,
-            SearchName    = searchName,
-            SearchArtist  = searchArtist,
-            ActiveFilter  = activeFilter,
+            Rows = rows,
+            TotalCount = counts?.Total ?? 0,
+            ActiveCount = counts?.Active ?? 0,
+            PassiveCount = counts?.Passive ?? 0,
+            DeletedCount = counts?.Deleted ?? 0,
+            SearchName = searchName,
+            SearchArtist = searchArtist,
+            ActiveFilter = activeFilter,
             DeletedFilter = deletedFilter,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = request.PageNumber,
-            PageSize      = request.PageSize,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
             TotalFiltered = totalFiltered
         };
     }

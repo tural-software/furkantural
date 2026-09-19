@@ -35,7 +35,7 @@ public class AppTokenInvalidationTests
     {
         var tokens = Tokens();
         var client = new HttpClient(new DefaultTokenHandler(tokens.Object) { InnerHandler = new Responder(Unauthorized(challenge: true)) })
-            { BaseAddress = new Uri("http://api.test") };
+        { BaseAddress = new Uri("http://api.test") };
 
         await client.GetAsync("/api/v1/config/app");
 
@@ -47,7 +47,7 @@ public class AppTokenInvalidationTests
     {
         var tokens = Tokens();
         var client = new HttpClient(new AppTokenFallbackHandler(tokens.Object) { InnerHandler = new Responder(Unauthorized(challenge: false)) })
-            { BaseAddress = new Uri("http://api.test") };
+        { BaseAddress = new Uri("http://api.test") };
 
         await client.PostAsync("/api/v1/Auth/login", new StringContent("{}"));
 
@@ -60,7 +60,7 @@ public class AppTokenInvalidationTests
     {
         var tokens = Tokens();
         var client = new HttpClient(new AppTokenFallbackHandler(tokens.Object) { InnerHandler = new Responder(Unauthorized(challenge: true)) })
-            { BaseAddress = new Uri("http://api.test") };
+        { BaseAddress = new Uri("http://api.test") };
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/User/me/deactivate");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "kullanici-jetonu");
 

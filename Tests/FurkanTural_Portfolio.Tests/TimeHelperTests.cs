@@ -18,7 +18,7 @@ public class TimeHelperTests
 
         // Assert - must be within 3h ± 1 min of the captured UTC snapshot
         var expectedMin = utcBefore.AddHours(3).AddMinutes(-1);
-        var expectedMax = utcBefore.AddHours(3).AddMinutes( 1);
+        var expectedMax = utcBefore.AddHours(3).AddMinutes(1);
         istanbul.Should().BeOnOrAfter(expectedMin)
                          .And.BeOnOrBefore(expectedMax);
     }
@@ -36,7 +36,7 @@ public class TimeHelperTests
     public void NowIstanbul_IsGreaterThanUtcNow()
     {
         // Istanbul is always ahead of UTC
-        var utc      = DateTime.UtcNow;
+        var utc = DateTime.UtcNow;
         var istanbul = TimeHelper.NowIstanbul;
 
         istanbul.Should().BeAfter(utc.AddHours(2).AddMinutes(59));
@@ -46,7 +46,7 @@ public class TimeHelperTests
     public void NowIstanbul_CalledTwiceReturnsMonotonicallyIncreasingOrEqualTimes()
     {
         // Consecutive calls must not go backwards
-        var first  = TimeHelper.NowIstanbul;
+        var first = TimeHelper.NowIstanbul;
         var second = TimeHelper.NowIstanbul;
 
         second.Should().BeOnOrAfter(first);

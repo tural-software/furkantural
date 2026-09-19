@@ -19,9 +19,9 @@
                     label: function (r) { return r.level || '—'; },
                     variant: function (r) {
                         var lvl = (r.level || '').toLowerCase();
-                        if (lvl === 'error')   return 'danger';
+                        if (lvl === 'error') return 'danger';
                         if (lvl === 'warning') return 'warn';
-                        if (lvl === 'info')    return 'info';
+                        if (lvl === 'info') return 'info';
                         return 'neutral';
                     }
                 },
@@ -52,9 +52,9 @@
                         value: function (r) { return r.level || '—'; },
                         badgeVariant: function (r) {
                             var lvl = (r.level || '').toLowerCase();
-                            if (lvl === 'error')   return 'danger';
+                            if (lvl === 'error') return 'danger';
                             if (lvl === 'warning') return 'warn';
-                            if (lvl === 'info')    return 'info';
+                            if (lvl === 'info') return 'info';
                             return 'neutral';
                         }
                     },
@@ -124,7 +124,7 @@
                     if (rows[i].id === id) { record = rows[i]; break; }
                 }
                 if (!record) return;
-                DetailModal.open(LogDetailConfig, record, function () {});
+                DetailModal.open(LogDetailConfig, record, function () { });
             });
         });
     }

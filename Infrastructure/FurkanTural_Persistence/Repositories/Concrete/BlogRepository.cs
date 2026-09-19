@@ -33,11 +33,11 @@ public class BlogRepository(FurkanTuralDbContext context) : Repository<Blog>(con
 
         var parameters = new
         {
-            Search     = !string.IsNullOrWhiteSpace(search) ? LikePattern.Contains(search.Trim()) : (string?)null,
+            Search = !string.IsNullOrWhiteSpace(search) ? LikePattern.Contains(search.Trim()) : (string?)null,
             CategoryId = categoryId,
-            TagId      = tagId,
-            Offset     = (pageNumber - 1) * pageSize,
-            Size       = pageSize
+            TagId = tagId,
+            Offset = (pageNumber - 1) * pageSize,
+            Size = pageSize
         };
 
         var conn = (DbConnection)_context.Database.GetDbConnection();

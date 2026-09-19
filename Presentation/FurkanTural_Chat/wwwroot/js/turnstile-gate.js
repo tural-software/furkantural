@@ -16,9 +16,9 @@
     var BEKLEME_MS = 15000;
     var zamanlayici = null;
 
-    function alan()   { return document.getElementById('turnstileToken'); }
-    function dugme()  { return document.querySelector('form[data-auth-form] button[type="submit"]'); }
-    function ipucu()  { return document.getElementById('turnstileHint'); }
+    function alan() { return document.getElementById('turnstileToken'); }
+    function dugme() { return document.querySelector('form[data-auth-form] button[type="submit"]'); }
+    function ipucu() { return document.getElementById('turnstileHint'); }
 
     function ipucuYaz(metin) {
         var el = ipucu();

@@ -20,7 +20,7 @@ public class SessionGuardTests
     {
         // Arrange
         var mock = new Mock<ISkillApiClient>(MockBehavior.Loose);
-        var sut  = new SkillController(mock.Object)
+        var sut = new SkillController(mock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };
@@ -39,7 +39,7 @@ public class SessionGuardTests
     {
         // Arrange
         var mock = new Mock<ISkillApiClient>(MockBehavior.Loose);
-        var sut  = new SkillController(mock.Object)
+        var sut = new SkillController(mock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };
@@ -56,7 +56,7 @@ public class SessionGuardTests
     {
         // Arrange
         var mock = new Mock<ISkillApiClient>(MockBehavior.Loose);
-        var sut  = new SkillController(mock.Object)
+        var sut = new SkillController(mock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };
@@ -73,7 +73,7 @@ public class SessionGuardTests
     {
         // Arrange
         var mock = new Mock<ISkillApiClient>(MockBehavior.Loose);
-        var sut  = new SkillController(mock.Object)
+        var sut = new SkillController(mock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };
@@ -91,9 +91,9 @@ public class SessionGuardTests
     public async Task BlogController_Index_WithoutToken_RedirectsToLogin()
     {
         // Arrange
-        var blogMock     = new Mock<IBlogApiClient>(MockBehavior.Loose);
+        var blogMock = new Mock<IBlogApiClient>(MockBehavior.Loose);
         var categoryMock = new Mock<ICategoryApiClient>(MockBehavior.Loose);
-        var tagMock      = new Mock<ITagApiClient>(MockBehavior.Loose);
+        var tagMock = new Mock<ITagApiClient>(MockBehavior.Loose);
         var sut = new BlogController(blogMock.Object, categoryMock.Object, tagMock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
@@ -111,9 +111,9 @@ public class SessionGuardTests
     public async Task BlogController_Delete_WithoutToken_Returns401()
     {
         // Arrange
-        var blogMock     = new Mock<IBlogApiClient>(MockBehavior.Loose);
+        var blogMock = new Mock<IBlogApiClient>(MockBehavior.Loose);
         var categoryMock = new Mock<ICategoryApiClient>(MockBehavior.Loose);
-        var tagMock      = new Mock<ITagApiClient>(MockBehavior.Loose);
+        var tagMock = new Mock<ITagApiClient>(MockBehavior.Loose);
         var sut = new BlogController(blogMock.Object, categoryMock.Object, tagMock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
@@ -133,7 +133,7 @@ public class SessionGuardTests
     {
         // Arrange
         var mock = new Mock<IAdminDashboardClient>(MockBehavior.Loose);
-        var sut  = new DashboardController(mock.Object)
+        var sut = new DashboardController(mock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };
@@ -151,7 +151,7 @@ public class SessionGuardTests
     public async Task DashboardController_Live_WithoutToken_Returns401()
     {
         var mock = new Mock<IAdminDashboardClient>(MockBehavior.Loose);
-        var sut  = new DashboardController(mock.Object)
+        var sut = new DashboardController(mock.Object)
         {
             ControllerContext = ControllerTestHelper.BuildControllerContext((string?)null)
         };

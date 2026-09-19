@@ -24,13 +24,13 @@ public class LogController(ILogApiClient logApiClient) : Controller
             return RedirectToAction("Login", "Auth");
 
         DateTime? from = DateTime.TryParse(dateFrom, out var df) ? df : null;
-        DateTime? to   = DateTime.TryParse(dateTo, out var dt) ? dt : null;
+        DateTime? to = DateTime.TryParse(dateTo, out var dt) ? dt : null;
 
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
+        var safePageSize = pageSize is > 0 and <= 100 ? pageSize : 10;
         var safePageNumber = pageNumber > 0 ? pageNumber : 1;
 
         var summaryTask = _logApiClient.GetAdminSummaryAsync(token, cancellationToken);
-        var pagedTask   = _logApiClient.GetAdminPagedAsync(levelFilter, searchSource, searchMessage, from, to, safePageNumber, safePageSize, token, cancellationToken);
+        var pagedTask = _logApiClient.GetAdminPagedAsync(levelFilter, searchSource, searchMessage, from, to, safePageNumber, safePageSize, token, cancellationToken);
 
         await Task.WhenAll(summaryTask, pagedTask);
 
@@ -39,16 +39,16 @@ public class LogController(ILogApiClient logApiClient) : Controller
 
         var vm = new LogIndexViewModel
         {
-            Rows          = rows,
-            TotalCount    = summary?.TotalCount ?? 0,
+            Rows = rows,
+            TotalCount = summary?.TotalCount ?? 0,
             LastActivityAt = summary?.LastActivityAt,
-            LevelFilter   = levelFilter,
+            LevelFilter = levelFilter,
             SearchSource = searchSource,
             SearchMessage = searchMessage,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = safePageNumber,
+            PageSize = safePageSize,
             TotalFiltered = totalFiltered
         };
 
@@ -71,9 +71,9 @@ public class LogController(ILogApiClient logApiClient) : Controller
             return Unauthorized();
 
         DateTime? from = DateTime.TryParse(dateFrom, out var df) ? df : null;
-        DateTime? to   = DateTime.TryParse(dateTo, out var dt) ? dt : null;
+        DateTime? to = DateTime.TryParse(dateTo, out var dt) ? dt : null;
 
-        var safePageSize   = pageSize is > 0 and <= 100 ? pageSize : 10;
+        var safePageSize = pageSize is > 0 and <= 100 ? pageSize : 10;
         var safePageNumber = pageNumber > 0 ? pageNumber : 1;
 
         var (rows, totalFiltered) = await _logApiClient.GetAdminPagedAsync(
@@ -82,14 +82,14 @@ public class LogController(ILogApiClient logApiClient) : Controller
 
         var vm = new LogIndexViewModel
         {
-            Rows          = rows,
-            LevelFilter   = levelFilter,
+            Rows = rows,
+            LevelFilter = levelFilter,
             SearchSource = searchSource,
             SearchMessage = searchMessage,
-            DateFrom      = dateFrom,
-            DateTo        = dateTo,
-            PageNumber    = safePageNumber,
-            PageSize      = safePageSize,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            PageNumber = safePageNumber,
+            PageSize = safePageSize,
             TotalFiltered = totalFiltered
         };
 

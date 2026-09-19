@@ -27,9 +27,9 @@ public class AuthControllerTests
             Success = true,
             Data = new LoginResultModel
             {
-                Token     = token,
-                Username  = "furkan",
-                RoleName  = role,
+                Token = token,
+                Username = "furkan",
+                RoleName = role,
                 ExpiresAt = DateTime.UtcNow.AddHours(8)
             }
         };
@@ -39,7 +39,7 @@ public class AuthControllerTests
         {
             Success = false,
             Message = message,
-            Data    = null
+            Data = null
         };
 
     [Fact]
@@ -186,7 +186,7 @@ public class AuthControllerTests
 
         // Assert
         var json = result.Should().BeOfType<JsonResult>().Subject;
-        var ok     = json.Value!.GetType().GetProperty("ok")!.GetValue(json.Value);
+        var ok = json.Value!.GetType().GetProperty("ok")!.GetValue(json.Value);
         var errors = json.Value!.GetType().GetProperty("errors")!.GetValue(json.Value) as IEnumerable<string>;
 
         ok.Should().Be(false);
@@ -211,7 +211,7 @@ public class AuthControllerTests
 
         // Assert
         var json = result.Should().BeOfType<JsonResult>().Subject;
-        var ok     = json.Value!.GetType().GetProperty("ok")!.GetValue(json.Value);
+        var ok = json.Value!.GetType().GetProperty("ok")!.GetValue(json.Value);
         var errors = json.Value!.GetType().GetProperty("errors")!.GetValue(json.Value) as IEnumerable<string>;
 
         ok.Should().Be(false);
@@ -232,7 +232,7 @@ public class AuthControllerTests
 
         // Assert
         var json = result.Should().BeOfType<JsonResult>().Subject;
-        var ok     = json.Value!.GetType().GetProperty("ok")!.GetValue(json.Value);
+        var ok = json.Value!.GetType().GetProperty("ok")!.GetValue(json.Value);
         var errors = json.Value!.GetType().GetProperty("errors")!.GetValue(json.Value) as IEnumerable<string>;
 
         ok.Should().Be(false);
@@ -247,9 +247,9 @@ public class AuthControllerTests
         _sut.ControllerContext = ControllerTestHelper.BuildControllerContext(
             new Dictionary<string, string>
             {
-                { "token",    "some-jwt" },
-                { "username", "furkan"   },
-                { "role",     "Admin"    }
+                { "token", "some-jwt" },
+                { "username", "furkan" },
+                { "role", "Admin" }
             });
 
         // Act

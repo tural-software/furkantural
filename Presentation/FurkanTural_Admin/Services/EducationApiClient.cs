@@ -132,11 +132,11 @@ public class EducationApiClient(HttpClient httpClient, ILogger<EducationApiClien
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var body = new
             {
-                institution  = dto.Institution,
-                degree       = dto.Degree,
+                institution = dto.Institution,
+                degree = dto.Degree,
                 fieldOfStudy = dto.FieldOfStudy,
-                startDate    = dto.StartDate,
-                endDate      = dto.EndDate
+                startDate = dto.StartDate,
+                endDate = dto.EndDate
             };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 
@@ -159,11 +159,11 @@ public class EducationApiClient(HttpClient httpClient, ILogger<EducationApiClien
             var body = new
             {
                 id,
-                institution  = dto.Institution,
-                degree       = dto.Degree,
+                institution = dto.Institution,
+                degree = dto.Degree,
                 fieldOfStudy = dto.FieldOfStudy,
-                startDate    = dto.StartDate,
-                endDate      = dto.EndDate
+                startDate = dto.StartDate,
+                endDate = dto.EndDate
             };
             request.Content = new StringContent(JsonSerializer.Serialize(body, WriteOptions), Encoding.UTF8, "application/json");
 

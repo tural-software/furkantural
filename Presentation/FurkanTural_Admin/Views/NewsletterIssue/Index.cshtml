@@ -8,14 +8,14 @@
 @section Scripts {
     <script nonce="@Context.Items["csp-nonce"]">
         window.__newsletterMeta = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
-            subject       = Model.SearchSubject ?? "",
-            activeFilter  = Model.ActiveFilter ?? "",
+            subject = Model.SearchSubject ?? "",
+            activeFilter = Model.ActiveFilter ?? "",
             deletedFilter = Model.DeletedFilter ?? "",
-            dateFrom      = Model.DateFrom ?? "",
-            dateTo        = Model.DateTo ?? "",
-            pageNumber    = Model.PageNumber,
-            pageSize      = Model.PageSize,
-            audience      = Model.ConfirmedSubscriberCount
+            dateFrom = Model.DateFrom ?? "",
+            dateTo = Model.DateTo ?? "",
+            pageNumber = Model.PageNumber,
+            pageSize = Model.PageSize,
+            audience = Model.ConfirmedSubscriberCount
         }));
     </script>
     <script src="~/js/detail-modal.js" asp-append-version="true"></script>

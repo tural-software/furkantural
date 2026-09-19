@@ -187,7 +187,7 @@
 
       const parent = el.parentElement;
       if (parent && parent !== main && main.contains(parent) &&
-          intersectionDepth(parent.getBoundingClientRect(), f)) continue;
+        intersectionDepth(parent.getBoundingClientRect(), f)) continue;
 
       hits.push(describe(el) + ' altbilginin ' + depth + 'px altına giriyor');
     }
@@ -216,7 +216,7 @@
       if (overflowers.length < MAX_ITEMS) {
         let holder = el.parentElement;
         while (holder && holder !== document.body &&
-               holder.getBoundingClientRect().right > viewportWidth + 1) {
+          holder.getBoundingClientRect().right > viewportWidth + 1) {
           holder = holder.parentElement;
         }
         const inside = holder ? ' -- tutamayan kutu: ' + describe(holder) : '';

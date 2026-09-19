@@ -46,12 +46,12 @@
     var pcolors = new Float32Array(count * 3);   // her parçacığa kendi rengi (çok-renkli)
     var pc = new THREE.Color();
     for (var i = 0; i < count; i++) {
-      positions[i * 3]     = (Math.random() - 0.5) * 820;
+      positions[i * 3] = (Math.random() - 0.5) * 820;
       positions[i * 3 + 1] = (Math.random() - 0.5) * 520;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 520;
       // Renk çarkı boyunca rastgele canlı ton (yüksek doygunluk → koyu fonda okunur).
       pc.setHSL(Math.random(), 0.65 + Math.random() * 0.3, 0.52 + Math.random() * 0.16);
-      pcolors[i * 3]     = pc.r;
+      pcolors[i * 3] = pc.r;
       pcolors[i * 3 + 1] = pc.g;
       pcolors[i * 3 + 2] = pc.b;
     }
@@ -63,7 +63,7 @@
     // Konumlar STATİK kalır → constellation çizgileri geçerli (statik-çizgi optimizasyonu korunur).
     // Renk artık per-parçacık (aColor); imlece yakın noktalar beyaza doğru parlar.
     var pointsUniforms = {
-      u_size:  { value: 3.6 },
+      u_size: { value: 3.6 },
       u_mouse: { value: new THREE.Vector2(99, 99) }   // başlangıçta uzak → parlama yok
     };
     var material = new THREE.ShaderMaterial({
@@ -171,9 +171,9 @@
     if (window.innerWidth >= 768) {
       var auroraUniforms = {
         u_time: { value: 0 },
-        u_res:  { value: new THREE.Vector2(1, 1) },
-        u_c1:   { value: new THREE.Color(0x38bdf8) },
-        u_c2:   { value: new THREE.Color(0x4f46e5) }
+        u_res: { value: new THREE.Vector2(1, 1) },
+        u_c1: { value: new THREE.Color(0x38bdf8) },
+        u_c2: { value: new THREE.Color(0x4f46e5) }
       };
       var auroraMat = new THREE.ShaderMaterial({
         uniforms: auroraUniforms,
@@ -277,7 +277,7 @@
     }
 
     function start() { if (raf === null) raf = requestAnimationFrame(frame); }
-    function stop()  { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } }
+    function stop() { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } }
 
     resize();
     window.addEventListener('resize', resize);

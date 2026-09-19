@@ -51,9 +51,9 @@ public class AuthApiClientTests
             Success = true,
             Data = new LoginResultModel
             {
-                Token     = "jwt-token",
-                Username  = "furkan",
-                RoleName  = "Admin",
+                Token = "jwt-token",
+                Username = "furkan",
+                RoleName = "Admin",
                 ExpiresAt = DateTime.UtcNow.AddHours(8)
             }
         };
@@ -88,8 +88,8 @@ public class AuthApiClientTests
         // API 500 döndüğünde, response JSON okunabilir ama Success=false olur
         var apiResult = new ApiResult<LoginResultModel>
         {
-            Success    = false,
-            Message    = "İç sunucu hatası.",
+            Success = false,
+            Message = "İç sunucu hatası.",
             StatusCode = 500
         };
 
@@ -101,7 +101,7 @@ public class AuthApiClientTests
                 "application/json")
         };
 
-        var sut     = BuildSut(BuildHandlerMock(response).Object);
+        var sut = BuildSut(BuildHandlerMock(response).Object);
         var request = new LoginRequestModel { Username = "furkan", Password = "pass" };
 
         // Act
@@ -128,7 +128,7 @@ public class AuthApiClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ThrowsAsync(new HttpRequestException("Sunucuya bağlanılamadı."));
 
-        var sut     = BuildSut(handlerMock.Object);
+        var sut = BuildSut(handlerMock.Object);
         var request = new LoginRequestModel { Username = "furkan", Password = "pass" };
 
         // Act
@@ -156,7 +156,7 @@ public class AuthApiClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ThrowsAsync(new TaskCanceledException("Request timed out."));
 
-        var sut     = BuildSut(handlerMock.Object);
+        var sut = BuildSut(handlerMock.Object);
         var request = new LoginRequestModel { Username = "furkan", Password = "pass" };
 
         // Act
@@ -180,7 +180,7 @@ public class AuthApiClientTests
             Content = new StringContent("null", System.Text.Encoding.UTF8, "application/json")
         };
 
-        var sut     = BuildSut(BuildHandlerMock(response).Object);
+        var sut = BuildSut(BuildHandlerMock(response).Object);
         var request = new LoginRequestModel { Username = "furkan", Password = "pass" };
 
         // Act

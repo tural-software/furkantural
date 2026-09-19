@@ -67,7 +67,7 @@
                 body: payload,
                 keepalive: true,
                 credentials: 'same-origin'
-            }).catch(function () {});
+            }).catch(function () { });
         } catch (e) {
         } finally {
             sending = false;
@@ -76,8 +76,8 @@
 
     window.ClientLog = {
         error: function (message, detail, where) { send('Error', message, detail, where); },
-        warn:  function (message, detail, where) { send('Warning', message, detail, where); },
-        info:  function (message, detail, where) { send('Information', message, detail, where); }
+        warn: function (message, detail, where) { send('Warning', message, detail, where); },
+        info: function (message, detail, where) { send('Information', message, detail, where); }
     };
 
     function isSameOrigin(url) {
@@ -94,15 +94,15 @@
                 window.ClientLog.error('Kaynak yüklenemedi: ' + resUrl, e.target.tagName);
             return;
         }
-        try { e.preventDefault(); } catch (_) {} // konsola yansımasın
+        try { e.preventDefault(); } catch (_) { } // konsola yansımasın
         var msg = e.message || 'Bilinmeyen hata';
         var detail = (e.filename ? e.filename + ':' + e.lineno + ':' + e.colno + '\n' : '') +
-                     (e.error && e.error.stack ? e.error.stack : '');
+            (e.error && e.error.stack ? e.error.stack : '');
         window.ClientLog.error(msg, detail);
     }, true); // capture: kaynak hatalarını da yakalamak için
 
     window.addEventListener('unhandledrejection', function (e) {
-        try { e.preventDefault(); } catch (_) {} // konsola yansımasın
+        try { e.preventDefault(); } catch (_) { } // konsola yansımasın
         var r = e ? e.reason : null;
         var msg = (r && (r.message || r.toString())) || 'İşlenmemiş promise reddi';
         var detail = (r && r.stack) ? r.stack : '';
@@ -115,7 +115,7 @@
         var orig = window.showToast;
         window.showToast = function (type, title, msg) {
             if (type === 'error') {
-                try { window.ClientLog.error((title ? title + ': ' : '') + (msg || '')); } catch (e) {}
+                try { window.ClientLog.error((title ? title + ': ' : '') + (msg || '')); } catch (e) { }
             }
             return orig.apply(this, arguments);
         };

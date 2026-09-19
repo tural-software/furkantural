@@ -31,9 +31,9 @@ public class FrontEndReadabilityTests
 
     private static readonly (string Project, string Prefix, string ThemeFile)[] Sites =
     [
-        ("FurkanTural_Admin",     "--",       "theme.css"),
-        ("FurkanTural_Chat",      "--",       "theme.css"),
-        ("FurkanTural_Blog",      "--",       "site.css"),
+        ("FurkanTural_Admin", "--", "theme.css"),
+        ("FurkanTural_Chat", "--", "theme.css"),
+        ("FurkanTural_Blog", "--", "site.css"),
         ("FurkanTural_Portfolio", "--color-", "site.css"),
     ];
 
@@ -368,10 +368,10 @@ public class FrontEndReadabilityTests
 
     private static readonly (string Project, string ThemeFile, string Surface)[] SemanticSurfaces =
     [
-        ("FurkanTural_Admin",     "theme.css", "--bg-card-solid"),
-        ("FurkanTural_Chat",      "theme.css", "--bg-card-solid"),
-        ("FurkanTural_Blog",      "site.css",  "--bg-elev"),
-        ("FurkanTural_Portfolio", "site.css",  "--color-bg-card"),
+        ("FurkanTural_Admin", "theme.css", "--bg-card-solid"),
+        ("FurkanTural_Chat", "theme.css", "--bg-card-solid"),
+        ("FurkanTural_Blog", "site.css", "--bg-elev"),
+        ("FurkanTural_Portfolio", "site.css", "--color-bg-card"),
     ];
 
     private static bool AnlamsalRenkMi(string token)

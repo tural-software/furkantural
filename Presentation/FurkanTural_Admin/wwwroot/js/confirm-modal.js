@@ -50,27 +50,27 @@
 
             _overlay.innerHTML = '<div class="cm" role="dialog" aria-modal="true" aria-labelledby="cm-title">' +
                 '<div class="cm-head">' +
-                    '<span class="cm-head__icon">' + WARN_ICON + '</span>' +
-                    '<div class="cm-head__text">' +
-                        '<p class="cm-head__title" id="cm-title">İşlem Onayı</p>' +
-                        '<p class="cm-head__sub">Bu kayıt üzerinde seçtiğiniz işlemi gerçekleştirmek istediğinize emin misiniz?</p>' +
-                    '</div>' +
-                    '<button class="dm-close" id="cm-close-x" aria-label="Kapat">' + CLOSE_ICON + '</button>' +
+                '<span class="cm-head__icon">' + WARN_ICON + '</span>' +
+                '<div class="cm-head__text">' +
+                '<p class="cm-head__title" id="cm-title">İşlem Onayı</p>' +
+                '<p class="cm-head__sub">Bu kayıt üzerinde seçtiğiniz işlemi gerçekleştirmek istediğinize emin misiniz?</p>' +
+                '</div>' +
+                '<button class="dm-close" id="cm-close-x" aria-label="Kapat">' + CLOSE_ICON + '</button>' +
                 '</div>' +
                 '<div class="cm-record">' +
-                    '<div class="cm-record__row"><span class="cm-record__key">Kayıt ID:</span><strong class="cm-record__val">' + (opts.id || '—') + '</strong></div>' +
-                    '<div class="cm-record__row"><span class="cm-record__key">' + safeLabel + '</span><span class="cm-record__val">' + safeEmail + '</span></div>' +
+                '<div class="cm-record__row"><span class="cm-record__key">Kayıt ID:</span><strong class="cm-record__val">' + (opts.id || '—') + '</strong></div>' +
+                '<div class="cm-record__row"><span class="cm-record__key">' + safeLabel + '</span><span class="cm-record__val">' + safeEmail + '</span></div>' +
                 '</div>' +
                 '<div class="cm-action-row">' +
-                    '<span class="cm-action-label">Seçilen işlem:</span>' +
-                    '<span class="dm-badge dm-badge--' + variant + '">' + (opts.actionLabel || 'İşlem') + '</span>' +
+                '<span class="cm-action-label">Seçilen işlem:</span>' +
+                '<span class="dm-badge dm-badge--' + variant + '">' + (opts.actionLabel || 'İşlem') + '</span>' +
                 '</div>' +
                 noteRow +
                 '<div class="cm-footer">' +
-                    '<button class="btn-outline" id="cm-cancel">Hayır</button>' +
-                    '<button class="btn-primary" id="cm-confirm">Evet, Devam Et</button>' +
+                '<button class="btn-outline" id="cm-cancel">Hayır</button>' +
+                '<button class="btn-primary" id="cm-confirm">Evet, Devam Et</button>' +
                 '</div>' +
-            '</div>';
+                '</div>';
 
             _overlay.classList.remove('cm-overlay--hidden');
             document.body.style.overflow = 'hidden';

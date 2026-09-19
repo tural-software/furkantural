@@ -32,8 +32,14 @@ public class AuthServiceSessionTests
     private readonly Mock<IPasswordHasher> _hasher = new();
     private readonly User _user = new()
     {
-        Id = 7, Username = "deneme", Email = "deneme@ornek.test", Password = Hashed, RoleId = 2,
-        IsActive = true, IsDeleted = false, SecurityStamp = Stamp
+        Id = 7,
+        Username = "deneme",
+        Email = "deneme@ornek.test",
+        Password = Hashed,
+        RoleId = 2,
+        IsActive = true,
+        IsDeleted = false,
+        SecurityStamp = Stamp
     };
 
     private DateTime _now = Now;
@@ -251,8 +257,11 @@ public class AuthServiceSessionTests
 
         var result = await Build().RegisterAsync(new FurkanTural_Application.DTOs.User.RegisterDto
         {
-            Username = "yenikullanici", Email = "yeni@ornek.test", Password = "Yeni-Parola7",
-            AcceptAgreement = true, ConfirmAdult = true
+            Username = "yenikullanici",
+            Email = "yeni@ornek.test",
+            Password = "Yeni-Parola7",
+            AcceptAgreement = true,
+            ConfirmAdult = true
         }, null, null);
 
         var token = Read(result);
