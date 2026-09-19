@@ -205,16 +205,19 @@ if (swaggerEnabled)
 }
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+var allowedMethods = builder.Configuration.GetSection("Cors:AllowedMethods").Get<string[]>() ?? ["GET", "POST"];
+var allowedHeaders = builder.Configuration.GetSection("Cors:AllowedHeaders").Get<string[]>() ?? ["Content-Type", "Authorization"];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DefaultPolicy", policy =>
     {
         policy.WithOrigins(allowedOrigins)
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .WithMethods(allowedMethods)
+              .WithHeaders(allowedHeaders);
     });
 });
+
+var swaggerHosts = builder.Configuration.GetSection("Swagger:AllowedHosts").Get<string[]>() ?? [];
 
 var app = builder.Build();
 
@@ -250,7 +253,7 @@ if (swaggerEnabled)
         branch => branch.Use(async (ctx, next) =>
         {
             var requestOrigin = $"{ctx.Request.Scheme}://{ctx.Request.Host.Value}";
-            if (!allowedOrigins.Any(o => string.Equals(o, requestOrigin, StringComparison.OrdinalIgnoreCase)))
+            if (!swaggerHosts.Any(o => string.Equals(o, requestOrigin, StringComparison.OrdinalIgnoreCase)))
             {
                 ctx.Response.StatusCode = 404;
                 return;
