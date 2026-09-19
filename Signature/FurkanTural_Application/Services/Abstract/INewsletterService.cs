@@ -11,8 +11,8 @@ public interface INewsletterService
     /// <summary>Doğrulama jetonunu harcar ve aboneliği açar. Jeton tek kullanımlıktır; süresi geçmiş ile harcanmış ayrı ayrı bildirilir, çünkü bağlantıyı elinde tutan kişi zaten meşru kabul edilir ve ayırmamak yalnızca onu ne yapacağını bilmez hâlde bırakırdı.</summary>
     Task<Result> ConfirmAsync(string? token, CancellationToken cancellationToken = default);
 
-    /// <summary>Çıkış bağlantısını adrese gönderir. Listeden düşürmez — yalnızca adresin sahibine ulaşır.</summary>
-    Task<Result> RequestUnsubscribeAsync(string? email, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default);
+    /// <summary>Çıkış bağlantısını adrese gönderir. Listeden düşürmez — yalnızca adresin sahibine ulaşır. Bot doğrulaması abonelikteki gibi koşulsuzdur: uç, adres kabul ettiği ve karşılığında posta yolladığı için istenen adrese posta yollatmanın aracı olabilir.</summary>
+    Task<Result> RequestUnsubscribeAsync(string? email, string? turnstileToken, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default);
 
     /// <summary>Çıkış jetonunu harcar ve aboneliği listeden düşürür.</summary>
     Task<Result> UnsubscribeAsync(string? token, CancellationToken cancellationToken = default);

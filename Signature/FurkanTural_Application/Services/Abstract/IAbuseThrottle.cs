@@ -3,6 +3,7 @@ namespace FurkanTural_Application.Services.Abstract;
 public static class AbuseBuckets
 {
     public const string Contact = "Contact";
+    public const string Newsletter = "Newsletter";
     public const string Report = "Report";
     public const string FriendRequest = "FriendRequest";
     public const string CallConfig = "CallConfig";

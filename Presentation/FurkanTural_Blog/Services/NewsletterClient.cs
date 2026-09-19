@@ -21,8 +21,8 @@ public class NewsletterClient(HttpClient httpClient, ILogger<NewsletterClient> l
     public Task<NewsletterOutcome> ConfirmAsync(string token, CancellationToken ct = default)
         => PostAsync("confirm", new { token }, "Bülten aboneliği doğrulanamadı.", ct);
 
-    public Task<NewsletterOutcome> RequestUnsubscribeAsync(string email, CancellationToken ct = default)
-        => PostAsync("request-unsubscribe", new { email }, "Çıkış bağlantısı istenemedi.", ct);
+    public Task<NewsletterOutcome> RequestUnsubscribeAsync(string email, string? turnstileToken, CancellationToken ct = default)
+        => PostAsync("request-unsubscribe", new { email, turnstileToken }, "Çıkış bağlantısı istenemedi.", ct);
 
     public Task<NewsletterOutcome> UnsubscribeAsync(string token, CancellationToken ct = default)
         => PostAsync("unsubscribe", new { token }, "Abonelik iptal edilemedi.", ct);

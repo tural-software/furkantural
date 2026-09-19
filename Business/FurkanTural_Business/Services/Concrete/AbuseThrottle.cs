@@ -9,6 +9,7 @@ public sealed class AbuseThrottle : IAbuseThrottle
     private static readonly Dictionary<string, (int Max, int Seconds)> Defaults = new(StringComparer.Ordinal)
     {
         [AbuseBuckets.Contact] = (3, 600),
+        [AbuseBuckets.Newsletter] = (5, 600),
         [AbuseBuckets.Report] = (10, 3600),
         [AbuseBuckets.FriendRequest] = (20, 3600),
         [AbuseBuckets.CallConfig] = (30, 3600)

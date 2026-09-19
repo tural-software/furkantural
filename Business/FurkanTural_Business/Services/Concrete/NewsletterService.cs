@@ -19,6 +19,7 @@ public class NewsletterService(
     IUnitOfWork unitOfWork,
     IMailSender mailSender,
     ITurnstileVerifier turnstileVerifier,
+    IAbuseThrottle abuseThrottle,
     IConfiguration configuration,
     ActivityLogger activityLogger,
     IClock clock) : INewsletterService
@@ -26,6 +27,7 @@ public class NewsletterService(
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMailSender _mailSender = mailSender;
     private readonly ITurnstileVerifier _turnstileVerifier = turnstileVerifier;
+    private readonly IAbuseThrottle _abuseThrottle = abuseThrottle;
     private readonly IConfiguration _configuration = configuration;
     private readonly ActivityLogger _activityLogger = activityLogger;
     private readonly IClock _clock = clock;
@@ -45,6 +47,10 @@ public class NewsletterService(
 
     public async Task<Result> SubscribeAsync(string? email, string? turnstileToken, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
+        if (!_abuseThrottle.TryRegister(AbuseBuckets.Newsletter, ipAddress))
+            return Result.Fail("Çok fazla istek gönderdiniz. Lütfen bir süre sonra tekrar deneyin.",
+                $"Bülten hız sınırı aşıldı: {ipAddress}", 429);
+
         if (!await _turnstileVerifier.VerifyAsync(turnstileToken, ipAddress, cancellationToken))
             return Result.Fail("Bot doğrulaması başarısız. Lütfen tekrar deneyin.");
 
@@ -126,8 +132,15 @@ public class NewsletterService(
         return Result.Ok("Aboneliğiniz doğrulandı. Yeni yazıları duyurduğumuzda haberiniz olacak.");
     }
 
-    public async Task<Result> RequestUnsubscribeAsync(string? email, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
+    public async Task<Result> RequestUnsubscribeAsync(string? email, string? turnstileToken, string? ipAddress, string? userAgent, CancellationToken cancellationToken = default)
     {
+        if (!_abuseThrottle.TryRegister(AbuseBuckets.Newsletter, ipAddress))
+            return Result.Fail("Çok fazla istek gönderdiniz. Lütfen bir süre sonra tekrar deneyin.",
+                $"Bülten hız sınırı aşıldı: {ipAddress}", 429);
+
+        if (!await _turnstileVerifier.VerifyAsync(turnstileToken, ipAddress, cancellationToken))
+            return Result.Fail("Bot doğrulaması başarısız. Lütfen tekrar deneyin.");
+
         var address = Normalize(email);
         if (address is null)
             return Result.Fail("Geçerli bir e-posta adresi girin.");

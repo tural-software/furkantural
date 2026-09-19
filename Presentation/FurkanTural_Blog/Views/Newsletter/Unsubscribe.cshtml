@@ -3,6 +3,7 @@
     ViewData["Title"] = "Abonelikten çıkış";
     ViewData["MetaDescription"] = "Bülten listesinden çıkış.";
     ViewData["Robots"] = "noindex, follow";
+    var siteKey = ViewBag.TurnstileSiteKey as string;
 }
 
 <section class="page-head reveal">
@@ -50,6 +51,12 @@
                 </label>
                 <span asp-validation-for="Email" class="newsletter-field__error"></span>
 
+                @if (!string.IsNullOrEmpty(siteKey))
+                {
+                    <div class="cf-turnstile" data-sitekey="@siteKey" data-callback="onTurnstileSuccess"></div>
+                }
+                <input type="hidden" id="turnstileToken" name="TurnstileToken" />
+
                 <button class="btn btn--primary newsletter-submit" type="submit">Çıkış bağlantısı gönder</button>
 
                 <p class="newsletter-note" id="cikis-not">
@@ -60,3 +67,11 @@
         }
     </div>
 </section>
+
+@section Scripts {
+    @if (!string.IsNullOrEmpty(siteKey))
+    {
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    }
+    <script src="~/js/newsletter.js" asp-append-version="true" defer></script>
+}

@@ -24,6 +24,7 @@ public class NewsletterServiceTests
     private readonly Mock<IRepository<SubscriberVerification>> _verifications = new();
     private readonly Mock<IMailSender> _mail = new();
     private readonly Mock<ITurnstileVerifier> _turnstile = new();
+    private readonly Mock<IAbuseThrottle> _throttle = new();
 
     private readonly List<Subscriber> _added = [];
     private readonly List<Subscriber> _restored = [];
@@ -45,6 +46,8 @@ public class NewsletterServiceTests
     {
         _turnstile.Setup(t => t.VerifyAsync(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
+
+        _throttle.Setup(t => t.TryRegister(It.IsAny<string>(), It.IsAny<string?>())).Returns(true);
 
         _subscribers.Setup(r => r.AddAsync(It.IsAny<Subscriber>(), It.IsAny<CancellationToken>()))
             .Callback<Subscriber, CancellationToken>((s, _) => { s.Id = 7; _added.Add(s); _byId ??= s; })
@@ -90,7 +93,7 @@ public class NewsletterServiceTests
         }).Build();
 
         var clock = Mock.Of<IClock>(c => c.UtcNow == Now);
-        _sut = new NewsletterService(_uow.Object, _mail.Object, _turnstile.Object, config, _journal.Logger(clock), clock);
+        _sut = new NewsletterService(_uow.Object, _mail.Object, _turnstile.Object, _throttle.Object, config, _journal.Logger(clock), clock);
     }
 
     private void RowIs(Subscriber? row)
@@ -249,7 +252,7 @@ public class NewsletterServiceTests
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build();
         var clock = Mock.Of<IClock>(c => c.UtcNow == Now);
-        var sut = new NewsletterService(_uow.Object, _mail.Object, _turnstile.Object, config, _journal.Logger(clock), clock);
+        var sut = new NewsletterService(_uow.Object, _mail.Object, _turnstile.Object, _throttle.Object, config, _journal.Logger(clock), clock);
         RowIs(null);
 
         var result = await sut.SubscribeAsync(Email, "jeton", null, null);
@@ -366,7 +369,7 @@ public class NewsletterServiceTests
     public async Task Cikis_jetonu_aboneligi_onaylayamaz()
     {
         RowIs(Row(confirmedAt: Now.AddDays(-1)));
-        await _sut.RequestUnsubscribeAsync(Email, null, null);
+        await _sut.RequestUnsubscribeAsync(Email, "jeton", null, null);
         var token = TokenFromMail();
 
         var result = await _sut.ConfirmAsync(token);
@@ -381,7 +384,7 @@ public class NewsletterServiceTests
     {
         RowIs(Row(confirmedAt: Now.AddDays(-1)));
 
-        var result = await _sut.RequestUnsubscribeAsync(Email, null, null);
+        var result = await _sut.RequestUnsubscribeAsync(Email, "jeton", null, null);
 
         result.Success.Should().BeTrue();
         _softDeleted.Should().BeEmpty("istek tek başına listeden düşürmemeli");
@@ -393,10 +396,10 @@ public class NewsletterServiceTests
     public async Task Listede_olmayan_adres_icin_de_ayni_yanit_doner()
     {
         RowIs(Row(confirmedAt: Now.AddDays(-1)));
-        var listede = await _sut.RequestUnsubscribeAsync(Email, null, null);
+        var listede = await _sut.RequestUnsubscribeAsync(Email, "jeton", null, null);
 
         RowIs(null);
-        var listede_degil = await _sut.RequestUnsubscribeAsync(Email, null, null);
+        var listede_degil = await _sut.RequestUnsubscribeAsync(Email, "jeton", null, null);
 
         listede.Success.Should().Be(listede_degil.Success);
         listede.Message.Should().Be(listede_degil.Message);
@@ -407,7 +410,7 @@ public class NewsletterServiceTests
     public async Task Postadaki_baglanti_aboneligi_listeden_duserir()
     {
         RowIs(Row(confirmedAt: Now.AddDays(-1)));
-        await _sut.RequestUnsubscribeAsync(Email, null, null);
+        await _sut.RequestUnsubscribeAsync(Email, "jeton", null, null);
         var token = TokenFromMail();
 
         var result = await _sut.UnsubscribeAsync(token);
@@ -431,22 +434,61 @@ public class NewsletterServiceTests
     }
 
     [Fact]
-    public async Task Cikis_bot_dogrulamasi_istemez()
+    public async Task Cikis_istegi_bot_dogrulamasi_ister()
     {
         _turnstile.Setup(t => t.VerifyAsync(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
         RowIs(Row(confirmedAt: Now.AddDays(-1)));
 
-        var result = await _sut.RequestUnsubscribeAsync(Email, null, null);
+        var result = await _sut.RequestUnsubscribeAsync(Email, "kotu", null, null);
 
-        result.Success.Should().BeTrue("çıkışı zorlaştırmak, izinli listeyi kirletmenin yolu olurdu");
+        result.IsFailure.Should().BeTrue();
+        _sent.Should().BeEmpty("uç adres alıp karşılığında posta yolluyor; doğrulamasız hâli istenen adrese posta yollatmanın aracı olurdu");
+    }
+
+    [Fact]
+    public async Task Cikis_istegi_hiz_sinirina_takilir()
+    {
+        _throttle.Setup(t => t.TryRegister(AbuseBuckets.Newsletter, It.IsAny<string?>())).Returns(false);
+        RowIs(Row(confirmedAt: Now.AddDays(-1)));
+
+        var result = await _sut.RequestUnsubscribeAsync(Email, "jeton", "203.0.113.9", null);
+
+        result.StatusCode.Should().Be(429);
+        _sent.Should().BeEmpty();
+        _issued.Should().BeEmpty();
+        _turnstile.Verify(t => t.VerifyAsync(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
+            "sınıra takılan istek Turnstile'a gidip ağ turu harcamamalı");
+    }
+
+    [Fact]
+    public async Task Abonelik_hiz_sinirina_takilir()
+    {
+        _throttle.Setup(t => t.TryRegister(AbuseBuckets.Newsletter, It.IsAny<string?>())).Returns(false);
+        RowIs(null);
+
+        var result = await _sut.SubscribeAsync(Email, "jeton", "203.0.113.9", null);
+
+        result.StatusCode.Should().Be(429);
+        _added.Should().BeEmpty();
+        _sent.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Hiz_siniri_ayni_kovadan_sayilir()
+    {
+        RowIs(Row(confirmedAt: Now.AddDays(-1)));
+
+        await _sut.RequestUnsubscribeAsync(Email, "jeton", "203.0.113.9", null);
+
+        _throttle.Verify(t => t.TryRegister(AbuseBuckets.Newsletter, "203.0.113.9"), Times.Once);
     }
 
     [Fact]
     public async Task Cikista_aboneye_ait_bekleyen_butun_baglantilar_harcanir()
     {
         RowIs(Row(confirmedAt: Now.AddDays(-1)));
-        await _sut.RequestUnsubscribeAsync(Email, null, null);
+        await _sut.RequestUnsubscribeAsync(Email, "jeton", null, null);
         var token = TokenFromMail();
 
         var result = await _sut.UnsubscribeAsync(token);

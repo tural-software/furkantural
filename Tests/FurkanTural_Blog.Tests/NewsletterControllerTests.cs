@@ -36,7 +36,7 @@ public class NewsletterControllerTests
               .ReturnsAsync(new NewsletterOutcome(succeeded, message));
         client.Setup(c => c.UnsubscribeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(new NewsletterOutcome(succeeded, message));
-        client.Setup(c => c.RequestUnsubscribeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        client.Setup(c => c.RequestUnsubscribeAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(new NewsletterOutcome(succeeded, message));
         return client;
     }
@@ -214,6 +214,18 @@ public class NewsletterControllerTests
         method.GetCustomAttributes(typeof(ValidateAntiForgeryTokenAttribute), false).Should().NotBeEmpty();
     }
 
+    [Theory]
+    [InlineData(nameof(NewsletterController.Index))]
+    [InlineData(nameof(NewsletterController.Unsubscribe))]
+    public void Adres_alan_formlar_yalnizca_sahtecilik_jetonlu_POST_kabul_eder(string action)
+    {
+        var method = typeof(NewsletterController).GetMethods()
+            .Single(m => m.Name == action && m.GetParameters().Any(p => p.ParameterType == typeof(NewsletterViewModel)));
+
+        method.GetCustomAttributes(typeof(HttpPostAttribute), false).Should().NotBeEmpty();
+        method.GetCustomAttributes(typeof(ValidateAntiForgeryTokenAttribute), false).Should().NotBeEmpty();
+    }
+
     [Fact]
     public async Task Cikis_sayfasi_jetonsuz_gelirse_form_gosterir()
     {
@@ -231,11 +243,33 @@ public class NewsletterControllerTests
     {
         var client = ClientReturning(true, "Adres listemizdeyse çıkış bağlantısını gönderdik.");
 
-        var result = ResultOf(await Build(client.Object).Unsubscribe(Model(turnstile: null), default));
+        var result = ResultOf(await Build(client.Object).Unsubscribe(Model(), default));
 
         result.Succeeded.Should().BeTrue();
-        client.Verify(c => c.RequestUnsubscribeAsync("okur@example.invalid", It.IsAny<CancellationToken>()), Times.Once);
+        client.Verify(c => c.RequestUnsubscribeAsync("okur@example.invalid", "bot-jetonu", It.IsAny<CancellationToken>()), Times.Once);
         client.Verify(c => c.UnsubscribeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Cikis_formunda_turnstile_jetonu_yoksa_istek_api_ye_cikmaz()
+    {
+        var client = new Mock<INewsletterClient>(MockBehavior.Strict);
+
+        var result = ResultOf(await Build(client.Object).Unsubscribe(Model(turnstile: null), default));
+
+        result.Succeeded.Should().BeFalse();
+        result.ResultMessage.Should().Contain("Bot doğrulaması");
+        client.Verify(c => c.RequestUnsubscribeAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Cikis_sayfasi_site_anahtarini_tasir()
+    {
+        var controller = Build(Mock.Of<INewsletterClient>(), "anahtar-42");
+
+        await controller.Unsubscribe((string?)null, default);
+
+        ((string?)controller.ViewBag.TurnstileSiteKey).Should().Be("anahtar-42", "widget olmadan ziyaretçi jetonu hiç üretemez");
     }
 
     [Fact]
@@ -248,6 +282,6 @@ public class NewsletterControllerTests
         var result = ResultOf(await controller.Unsubscribe(Model("abc"), default));
 
         result.Succeeded.Should().BeFalse();
-        client.Verify(c => c.RequestUnsubscribeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        client.Verify(c => c.RequestUnsubscribeAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

@@ -104,7 +104,7 @@ public class NewsletterClientTests
         _ = path switch
         {
             "confirm" => await client.ConfirmAsync("jeton"),
-            "request-unsubscribe" => await client.RequestUnsubscribeAsync("okur@example.invalid"),
+            "request-unsubscribe" => await client.RequestUnsubscribeAsync("okur@example.invalid", "bot-jetonu"),
             _ => await client.UnsubscribeAsync("jeton")
         };
 
@@ -118,11 +118,12 @@ public class NewsletterClientTests
     {
         var (client, requests) = Build(HttpStatusCode.OK, new ApiResult { Success = true });
 
-        await client.RequestUnsubscribeAsync("okur@example.invalid");
+        await client.RequestUnsubscribeAsync("okur@example.invalid", "bot-jetonu");
 
         var body = await requests[0].Content!.ReadAsStringAsync();
         body.Should().Contain("okur@example.invalid");
-        body.Should().NotContain("token");
+        body.Should().Contain("bot-jetonu", "bot doğrulaması API tarafında yapılır");
+        body.Should().NotContain("\"token\"", "çıkış isteği tek kullanımlık jetonu taşımaz");
     }
 
     [Fact]

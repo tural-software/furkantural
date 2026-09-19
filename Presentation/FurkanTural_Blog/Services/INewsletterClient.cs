@@ -9,7 +9,7 @@ public interface INewsletterClient
     Task<NewsletterOutcome> ConfirmAsync(string token, CancellationToken ct = default);
 
     /// <summary>Çıkış bağlantısının adrese gönderilmesini ister. Listeden düşürmez.</summary>
-    Task<NewsletterOutcome> RequestUnsubscribeAsync(string email, CancellationToken ct = default);
+    Task<NewsletterOutcome> RequestUnsubscribeAsync(string email, string? turnstileToken, CancellationToken ct = default);
 
     /// <summary>Çıkış jetonunu harcar ve aboneliği listeden düşürür.</summary>
     Task<NewsletterOutcome> UnsubscribeAsync(string token, CancellationToken ct = default);

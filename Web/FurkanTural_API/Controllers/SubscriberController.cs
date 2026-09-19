@@ -63,7 +63,7 @@ public class SubscriberController(ISubscriberService subscriberService, INewslet
     [Authorize(Policy = "VisitorOrAbove")]
     public async Task<IActionResult> RequestUnsubscribe([FromBody] SubscribeRequest request, CancellationToken cancellationToken)
         => ToActionResult(await _newsletterService.RequestUnsubscribeAsync(
-            request.Email, ClientIp(), UserAgent(), cancellationToken));
+            request.Email, request.TurnstileToken, ClientIp(), UserAgent(), cancellationToken));
 
     /// <summary>Bülten aboneliğini iptal et. Yalnızca postayla gönderilen jetonla yapılır: adres tek başına yeterli olsaydı herhangi biri başkasının aboneliğini iptal edebilirdi.</summary>
     [HttpPost("unsubscribe")]

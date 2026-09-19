@@ -77,10 +77,14 @@ public class NewsletterController(INewsletterClient newsletter, IAppConfigServic
     /// <summary>Çıkış bağlantısının indiği sayfa. Jeton yoksa sonuç değil form gösterilir: bağlantısız gelen ziyaretçi adresini yazıp bağlantıyı isteyebilir. Jeton varsa sayfa yalnızca çıkış düğmesini gösterir; çıkış düğmeye basılınca yapılır, aksi hâlde posta güvenlik tarayıcısı bağlantıyı açtığı anda okur listeden düşerdi.</summary>
     [HttpGet]
     [Route("bulten/cikis", Name = "BlogNewsletterUnsubscribe")]
-    public Task<IActionResult> Unsubscribe(string? token, CancellationToken cancellationToken)
-        => Task.FromResult<IActionResult>(string.IsNullOrWhiteSpace(token)
-            ? View("Unsubscribe", new NewsletterViewModel())
-            : View("Result", Pending(token, NewsletterTokenViewModel.UnsubscribeAction)));
+    public async Task<IActionResult> Unsubscribe(string? token, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(token))
+            return View("Result", Pending(token, NewsletterTokenViewModel.UnsubscribeAction));
+
+        await AttachSiteKeyAsync(cancellationToken);
+        return View("Unsubscribe", new NewsletterViewModel());
+    }
 
     [HttpPost]
     [Route("bulten/cikis/onay", Name = "BlogNewsletterUnsubscribeConfirm")]
@@ -94,6 +98,7 @@ public class NewsletterController(INewsletterClient newsletter, IAppConfigServic
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Unsubscribe(NewsletterViewModel model, CancellationToken cancellationToken)
     {
+        await AttachSiteKeyAsync(cancellationToken);
         model.Submitted = true;
 
         if (!ModelState.IsValid)
@@ -102,7 +107,14 @@ public class NewsletterController(INewsletterClient newsletter, IAppConfigServic
             return View("Unsubscribe", model);
         }
 
-        var outcome = await _newsletter.RequestUnsubscribeAsync(model.Email!.Trim(), cancellationToken);
+        if (string.IsNullOrWhiteSpace(model.TurnstileToken))
+        {
+            model.Succeeded = false;
+            model.ResultMessage = "Bot doğrulaması tamamlanmadı. Lütfen tekrar deneyin.";
+            return View("Unsubscribe", model);
+        }
+
+        var outcome = await _newsletter.RequestUnsubscribeAsync(model.Email!.Trim(), model.TurnstileToken, cancellationToken);
         model.Succeeded = outcome.Succeeded;
         model.ResultMessage = string.IsNullOrWhiteSpace(outcome.Message)
             ? (outcome.Succeeded
